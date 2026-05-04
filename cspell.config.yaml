@@ -1,10 +1,11 @@
-version: '0.2'
+version: "0.2"
 import:
-  - '@joshuafolkken/kit/cspell/sveltekit'
+  - "@joshuafolkken/kit/cspell/sveltekit"
 words:
   - docstrings
   - esac
   - languagetool
   - sandboxed
   - shellcheck
+  - threlte
 ignorePaths: []
