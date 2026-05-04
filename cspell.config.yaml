@@ -3,4 +3,13 @@ import:
   - "@joshuafolkken/kit/cspell/sveltekit"
 words:
   - threlte
+  - Orbitron
+  - orbitron
+  - unstub
+  - spacebar
+  - WASD
+  - gameover
+  - GAMEOVER
+  - Raycaster
+  - raycaster
 ignorePaths: []
