@@ -17,6 +17,9 @@ importers:
       '@joshuafolkken/kit':
         specifier: ^0.125.0
         version: 0.125.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))
+      '@playwright/test':
+        specifier: 1.59.1
+        version: 1.59.1
       '@size-limit/file':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0)
@@ -2321,7 +2324,6 @@ snapshots:
   '@playwright/test@1.59.1':
     dependencies:
       playwright: 1.59.1
-    optional: true
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -3179,15 +3181,13 @@ snapshots:
 
   picomatch@4.0.4: {}
 
-  playwright-core@1.59.1:
-    optional: true
+  playwright-core@1.59.1: {}
 
   playwright@1.59.1:
     dependencies:
       playwright-core: 1.59.1
     optionalDependencies:
       fsevents: 2.3.2
-    optional: true
 
   postcss-load-config@3.1.4(postcss@8.5.13):
     dependencies:
