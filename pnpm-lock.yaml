@@ -18,8 +18,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.3.0)
       '@joshuafolkken/kit':
-        specifier: 0.126.0
-        version: 0.126.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))
+        specifier: 0.127.0
+        version: 0.127.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))
       '@size-limit/file':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0)
@@ -571,18 +571,13 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@joshuafolkken/kit@0.126.0':
-    resolution: {integrity: sha512-PNl7xnbIx+BrDiCwtglB5QWJSHpo4JuyQHtqU2XJmI/RmBExZs2qwxnJD8XBoroCJnHpRIPuGWkGJQ8+vblvaQ==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.126.0/fadb30539635bf1cbae123a24814b6bf2da593f3}
+  '@joshuafolkken/kit@0.127.0':
+    resolution: {integrity: sha512-31fl3KxlCSlF9Yf1962xVDRcV8+6BNgLut/enI2ncjYeSald5NcAHSN5UXneVOqC1/12sUniWNzzFCLbcUe2ow==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.127.0/0270626b4d656807f541550ef0d43e13574e1617}
     engines: {node: '>=22.19.0'}
     hasBin: true
     peerDependencies:
       '@playwright/test': '>=1.0.0'
       svelte: '>=5.0.0'
-    peerDependenciesMeta:
-      '@playwright/test':
-        optional: true
-      svelte:
-        optional: true
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -2409,15 +2404,14 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@joshuafolkken/kit@0.126.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))':
+  '@joshuafolkken/kit@0.127.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))':
     dependencies:
+      '@playwright/test': 1.59.1
       js-yaml: 4.1.1
       strip-json-comments: 5.0.3
+      svelte: 5.55.5(@typescript-eslint/types@8.59.1)
       tsx: 4.21.0
       zod: 4.4.2
-    optionalDependencies:
-      '@playwright/test': 1.59.1
-      svelte: 5.55.5(@typescript-eslint/types@8.59.1)
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -2450,7 +2444,6 @@ snapshots:
   '@playwright/test@1.59.1':
     dependencies:
       playwright: 1.59.1
-    optional: true
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -3373,15 +3366,13 @@ snapshots:
 
   picomatch@4.0.4: {}
 
-  playwright-core@1.59.1:
-    optional: true
+  playwright-core@1.59.1: {}
 
   playwright@1.59.1:
     dependencies:
       playwright-core: 1.59.1
     optionalDependencies:
       fsevents: 2.3.2
-    optional: true
 
   postcss-load-config@3.1.4(postcss@8.5.13):
     dependencies:

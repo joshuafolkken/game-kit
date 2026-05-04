@@ -1,5 +1,6 @@
 import { config } from '@joshuafolkken/kit/prettier';
 
 export default {
-	...config
+	...config,
+	tailwindStylesheet: './src/routes/layout.css'
 };
