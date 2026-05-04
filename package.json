@@ -70,5 +70,10 @@
 	"sideEffects": [
 		"**/*.css"
 	],
-	"svelte": "./dist/index.js"
+	"svelte": "./dist/index.js",
+	"pnpm": {
+		"overrides": {
+			"cookie": "^0.7.0"
+		}
+	}
 }
