@@ -1,10 +1,10 @@
 <script lang="ts">
 	interface Props {
-		label_action: string;
-		label_look: string;
+		label_action: string
+		label_look: string
 	}
 
-	let { label_action, label_look }: Props = $props();
+	let { label_action, label_look }: Props = $props()
 </script>
 
 <svg
@@ -25,15 +25,12 @@
 		fill="rgba(80,60,180,0.12)"
 		stroke="rgba(140,110,255,0.7)"
 		stroke-width="1"
-	/>
+	></rect>
 	<!-- Button divider line -->
-	<line x1="45" y1="8" x2="45" y2="44" stroke="rgba(140,110,255,0.5)" stroke-width="1" />
+	<line x1="45" y1="8" x2="45" y2="44" stroke="rgba(140,110,255,0.5)" stroke-width="1"></line>
 	<!-- Top cut-off line (top of button area) -->
-	<path
-		d="M18 44 Q15 44 15 44 L75 44 Q75 44 75 44"
-		stroke="rgba(140,110,255,0.5)"
-		stroke-width="1"
-	/>
+	<path d="M18 44 Q15 44 15 44 L75 44 Q75 44 75 44" stroke="rgba(140,110,255,0.5)" stroke-width="1"
+	></path>
 	<!-- Left click indicator (action) -->
 	<g class="left-click" aria-hidden="true">
 		<circle
@@ -43,9 +40,9 @@
 			fill="rgba(140,100,255,0.2)"
 			stroke="rgba(160,130,255,0.7)"
 			stroke-width="1"
-		/>
+		></circle>
 		<!-- tap/click dot -->
-		<circle cx="30" cy="28" r="2.5" fill="rgba(200,180,255,0.9)" />
+		<circle cx="30" cy="28" r="2.5" fill="rgba(200,180,255,0.9)"></circle>
 	</g>
 
 	<!-- Right click indicator (look/camera) -->
@@ -57,11 +54,11 @@
 			fill="rgba(140,100,255,0.2)"
 			stroke="rgba(160,130,255,0.7)"
 			stroke-width="1"
-		/>
+		></circle>
 		<!-- hold dots -->
-		<circle cx="57" cy="28" r="1.5" fill="rgba(200,180,255,0.9)" />
-		<circle cx="60" cy="28" r="1.5" fill="rgba(200,180,255,0.9)" />
-		<circle cx="63" cy="28" r="1.5" fill="rgba(200,180,255,0.9)" />
+		<circle cx="57" cy="28" r="1.5" fill="rgba(200,180,255,0.9)"></circle>
+		<circle cx="60" cy="28" r="1.5" fill="rgba(200,180,255,0.9)"></circle>
+		<circle cx="63" cy="28" r="1.5" fill="rgba(200,180,255,0.9)"></circle>
 	</g>
 </svg>
 

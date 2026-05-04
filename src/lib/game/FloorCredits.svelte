@@ -1,32 +1,32 @@
 <script lang="ts">
-	import { Text } from '@threlte/extras';
-	import { useTask } from '@threlte/core';
-	import { fonts } from '$lib/game/fonts';
+	import { useTask } from '@threlte/core'
+	import { Text } from '@threlte/extras'
+	import { fonts } from '$lib/game/fonts'
 	import {
-		CREDITS_FONT_SIZE,
-		CREDITS_LINE_HEIGHT,
-		CREDITS_NORMAL_COLOR,
 		CREDITS_CYBER_COLOR,
-		CREDITS_POSITION_Y,
-		CREDITS_SCROLL_SPEED,
+		CREDITS_FONT_SIZE,
 		CREDITS_GLOW_BLUR,
 		CREDITS_GLOW_OPACITY,
+		CREDITS_LINE_HEIGHT,
+		CREDITS_NORMAL_COLOR,
+		CREDITS_POSITION_Y,
+		credits_scroll,
+		CREDITS_SCROLL_SPEED,
 		FLOOR_TEXT_ROTATION_X,
-		credits_scroll
-	} from './credits-config';
+	} from './credits-config'
 
 	interface Props {
-		is_alt: boolean;
-		credits: string;
-		scroll_start_z: number;
-		scroll_end_z: number;
+		is_alt: boolean
+		credits: string
+		scroll_start_z: number
+		scroll_end_z: number
 	}
 
-	let { is_alt, credits, scroll_start_z, scroll_end_z }: Props = $props();
+	let { is_alt, credits, scroll_start_z, scroll_end_z }: Props = $props()
 
-	let current_font = $derived(fonts.get_font(is_alt));
-	let color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR);
-	let scroll_z = $state(scroll_start_z);
+	let current_font = $derived(fonts.get_font(is_alt))
+	let color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
+	let scroll_z = $state(scroll_start_z)
 
 	function tick(delta: number): void {
 		scroll_z = credits_scroll.advance_scroll(
@@ -34,11 +34,11 @@
 			delta,
 			scroll_start_z,
 			scroll_end_z,
-			CREDITS_SCROLL_SPEED
-		);
+			CREDITS_SCROLL_SPEED,
+		)
 	}
 
-	useTask(tick);
+	useTask(tick)
 </script>
 
 <Text

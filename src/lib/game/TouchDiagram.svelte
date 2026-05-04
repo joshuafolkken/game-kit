@@ -1,11 +1,11 @@
 <script lang="ts">
 	interface Props {
-		label_move: string;
-		label_look: string;
-		label_action: string;
+		label_move: string
+		label_look: string
+		label_action: string
 	}
 
-	let { label_move, label_look, label_action }: Props = $props();
+	let { label_move, label_look, label_action }: Props = $props()
 </script>
 
 {#snippet swipe_gesture(animation_class: string)}
@@ -21,7 +21,7 @@
 			stroke="rgba(160,130,255,0.7)"
 			stroke-width="2"
 			stroke-linecap="round"
-		/>
+		></path>
 		<polyline
 			points="72,50 72,57 79,57"
 			stroke="rgba(160,130,255,0.7)"
@@ -29,7 +29,7 @@
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			fill="none"
-		/>
+		></polyline>
 		<circle
 			cx="55"
 			cy="56"
@@ -37,8 +37,8 @@
 			fill="rgba(140,100,255,0.2)"
 			stroke="rgba(160,130,255,0.7)"
 			stroke-width="1.5"
-		/>
-		<circle cx="55" cy="56" r="2" fill="rgba(200,180,255,0.9)" />
+		></circle>
+		<circle cx="55" cy="56" r="2" fill="rgba(200,180,255,0.9)"></circle>
 	</svg>
 {/snippet}
 

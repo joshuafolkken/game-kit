@@ -1,8 +1,8 @@
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	compilerOptions: {
-		runes: true
-	}
-};
+		runes: true,
+	},
+}
 
-export default config;
+export default config

@@ -20,5 +20,5 @@ export const base_messages = {
 	controls_look: 'Look around',
 	controls_action: 'Action',
 	controls_jump: 'Jump',
-	controls_return: 'Return to start'
-} as const;
+	controls_return: 'Return to start',
+} as const
