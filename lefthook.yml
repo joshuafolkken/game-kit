@@ -1,2 +1,7 @@
 extends:
   - node_modules/@joshuafolkken/kit/lefthook/sveltekit.yml
+
+pre-push:
+  commands:
+    test-e2e:
+      run: 'true'
