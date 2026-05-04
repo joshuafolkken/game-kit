@@ -1,61 +1,61 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { T, useThrelte, useTask } from '@threlte/core';
-	import { interactivity, Text } from '@threlte/extras';
-	import Room from './Room.svelte';
-	import Player from './player/Player.svelte';
-	import ScoreDisplay from './ScoreDisplay.svelte';
-	import Switch from './Switch.svelte';
-	import FpsDisplay from './FpsDisplay.svelte';
-	import FloorCredits from './FloorCredits.svelte';
-	import { fullscreen } from '$lib/game/fullscreen.svelte';
-	import { game_state } from '$lib/game/state.svelte';
-	import { make_pointer_compute } from '$lib/game/pointer-compute.js';
-	import { lighting } from '$lib/game/lighting';
-	import { fonts } from '$lib/game/fonts';
-	import type { SceneObjectsMessages } from '$lib/game/scene-objects-messages';
-	import { ROOM_W, ROOM_D, ROOM_H } from '$lib/game/room-config';
+	import { T, useTask, useThrelte } from '@threlte/core'
+	import { interactivity, Text } from '@threlte/extras'
+	import { alt_switch_input } from '$lib/game/alt-switch-input'
+	import { fonts } from '$lib/game/fonts'
+	import { fps_switch_input } from '$lib/game/fps-switch-input'
+	import { fps } from '$lib/game/fps.svelte'
+	import { fullscreen_switch_input } from '$lib/game/fullscreen-switch-input'
+	import { fullscreen } from '$lib/game/fullscreen.svelte'
+	import { lighting } from '$lib/game/lighting'
+	import { make_pointer_compute } from '$lib/game/pointer-compute.js'
+	import { ROOM_D, ROOM_H, ROOM_W } from '$lib/game/room-config'
 	import {
-		CYBER_SWITCH_COLORS,
-		FULLSCREEN_SWITCH_COLORS,
-		FPS_SWITCH_COLORS
-	} from '$lib/game/switch-colors';
-	import { FPS_SWITCH_Y, LEFT_SWITCH_X, FULLSCREEN_SWITCH_X } from '$lib/game/switch-config';
-	import { alt_switch_input } from '$lib/game/alt-switch-input';
-	import { fullscreen_switch_input } from '$lib/game/fullscreen-switch-input';
-	import { fps_switch_input } from '$lib/game/fps-switch-input';
-	import { fps } from '$lib/game/fps.svelte';
-	import type { ScoreData } from '$lib/game/score-display-types';
-	import {
-		NORMAL_BG,
-		CYBER_BG,
-		FLOOR_COLOR,
-		WALL_COLOR,
 		CEILING_COLOR,
-		CYBER_FLOOR_COLOR,
-		CYBER_WALL_COLOR,
+		CYBER_BG,
 		CYBER_CEILING_COLOR,
+		CYBER_FLOOR_COLOR,
+		CYBER_POINT_LIGHT_COLOR,
+		CYBER_WALL_COLOR,
+		FLOOR_COLOR,
+		NORMAL_BG,
 		NORMAL_POINT_LIGHT_COLOR,
-		CYBER_POINT_LIGHT_COLOR
-	} from '$lib/game/scene-colors';
+		WALL_COLOR,
+	} from '$lib/game/scene-colors'
 	import {
+		BOB_AMPLITUDE,
+		BOB_SPEED,
+		POINT_LIGHT_Y,
 		TITLE_FONT_SIZE,
 		TITLE_Y,
 		TITLE_Z,
-		BOB_SPEED,
-		BOB_AMPLITUDE,
-		POINT_LIGHT_Y
-	} from '$lib/game/scene-objects-config';
+	} from '$lib/game/scene-objects-config'
+	import type { SceneObjectsMessages } from '$lib/game/scene-objects-messages'
+	import type { ScoreData } from '$lib/game/score-display-types'
+	import { game_state } from '$lib/game/state.svelte'
+	import {
+		CYBER_SWITCH_COLORS,
+		FPS_SWITCH_COLORS,
+		FULLSCREEN_SWITCH_COLORS,
+	} from '$lib/game/switch-colors'
+	import { FPS_SWITCH_Y, FULLSCREEN_SWITCH_X, LEFT_SWITCH_X } from '$lib/game/switch-config'
+	import type { Snippet } from 'svelte'
+	import FloorCredits from './FloorCredits.svelte'
+	import FpsDisplay from './FpsDisplay.svelte'
+	import Player from './player/Player.svelte'
+	import Room from './Room.svelte'
+	import ScoreDisplay from './ScoreDisplay.svelte'
+	import Switch from './Switch.svelte'
 
 	interface Props {
-		game_board: Snippet;
-		score_data: ScoreData;
-		is_gameover: boolean;
-		credits_text: string;
-		credits_start_z: number;
-		credits_end_z: number;
-		messages: SceneObjectsMessages;
-		score_display_z: number;
+		game_board: Snippet
+		score_data: ScoreData
+		is_gameover: boolean
+		credits_text: string
+		credits_start_z: number
+		credits_end_z: number
+		messages: SceneObjectsMessages
+		score_display_z: number
 	}
 
 	let {
@@ -66,31 +66,31 @@
 		credits_start_z,
 		credits_end_z,
 		messages,
-		score_display_z
-	}: Props = $props();
+		score_display_z,
+	}: Props = $props()
 
-	const { camera } = useThrelte();
-	interactivity({ compute: make_pointer_compute(camera) });
+	const { camera } = useThrelte()
+	interactivity({ compute: make_pointer_compute(camera) })
 
-	let is_alt = $derived(game_state.is_alt);
-	let bg_color = $derived(is_alt ? CYBER_BG : NORMAL_BG);
-	let ambient_intensity = $derived(lighting.get_ambient_intensity(is_alt));
-	let ambient_color = $derived(lighting.get_ambient_color(is_alt));
-	let point_light_intensity = $derived(lighting.get_point_light_intensity(is_alt));
-	let point_light_color = $derived(is_alt ? CYBER_POINT_LIGHT_COLOR : NORMAL_POINT_LIGHT_COLOR);
-	let current_font = $derived(fonts.get_font(is_alt));
-	let current_font_size_multiplier = $derived(fonts.get_font_size_multiplier(is_alt));
-	let current_title_font_size = $derived(TITLE_FONT_SIZE * current_font_size_multiplier);
-	let floor_color = $derived(is_alt ? CYBER_FLOOR_COLOR : FLOOR_COLOR);
-	let wall_color = $derived(is_alt ? CYBER_WALL_COLOR : WALL_COLOR);
-	let ceiling_color = $derived(is_alt ? CYBER_CEILING_COLOR : CEILING_COLOR);
-	let title_y = $state(TITLE_Y);
+	let is_alt = $derived(game_state.is_alt)
+	let bg_color = $derived(is_alt ? CYBER_BG : NORMAL_BG)
+	let ambient_intensity = $derived(lighting.get_ambient_intensity(is_alt))
+	let ambient_color = $derived(lighting.get_ambient_color(is_alt))
+	let point_light_intensity = $derived(lighting.get_point_light_intensity(is_alt))
+	let point_light_color = $derived(is_alt ? CYBER_POINT_LIGHT_COLOR : NORMAL_POINT_LIGHT_COLOR)
+	let current_font = $derived(fonts.get_font(is_alt))
+	let current_font_size_multiplier = $derived(fonts.get_font_size_multiplier(is_alt))
+	let current_title_font_size = $derived(TITLE_FONT_SIZE * current_font_size_multiplier)
+	let floor_color = $derived(is_alt ? CYBER_FLOOR_COLOR : FLOOR_COLOR)
+	let wall_color = $derived(is_alt ? CYBER_WALL_COLOR : WALL_COLOR)
+	let ceiling_color = $derived(is_alt ? CYBER_CEILING_COLOR : CEILING_COLOR)
+	let title_y = $state(TITLE_Y)
 
 	function tick(): void {
-		title_y = TITLE_Y + Math.sin(Date.now() * BOB_SPEED) * BOB_AMPLITUDE;
+		title_y = TITLE_Y + Math.sin(Date.now() * BOB_SPEED) * BOB_AMPLITUDE
 	}
 
-	useTask(tick);
+	useTask(tick)
 </script>
 
 <T.Color attach="background" args={[bg_color]} />

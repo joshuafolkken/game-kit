@@ -14,7 +14,7 @@
 		stroke-width="2.5"
 		stroke-linecap="round"
 		stroke-linejoin="round"
-	/>
+	></polyline>
 	<polyline
 		class="chevron-top"
 		points="8,19 20,7 32,19"
@@ -23,7 +23,7 @@
 		stroke-linecap="round"
 		stroke-linejoin="round"
 		opacity="0.55"
-	/>
+	></polyline>
 </svg>
 
 <style>

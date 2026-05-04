@@ -1,48 +1,48 @@
 <script lang="ts">
 	interface Props {
-		label_move: string;
-		label_jump: string;
-		label_return: string;
+		label_move: string
+		label_jump: string
+		label_return: string
 	}
 
-	let { label_move, label_jump, label_return }: Props = $props();
+	let { label_move, label_jump, label_return }: Props = $props()
 
 	type LetterKey = {
-		class_name: string;
-		rect_x: number;
-		rect_y: number;
-		text_x: number;
-		text_y: number;
-		label: string;
-	};
+		class_name: string
+		rect_x: number
+		rect_y: number
+		text_x: number
+		text_y: number
+		label: string
+	}
 
-	const LETTER_KEY_WIDTH = 40;
-	const LETTER_KEY_HEIGHT = 32;
+	const LETTER_KEY_WIDTH = 40
+	const LETTER_KEY_HEIGHT = 32
 
 	const LETTER_KEYS: readonly LetterKey[] = [
 		{ class_name: 'key-w', rect_x: 54, rect_y: 2, text_x: 74, text_y: 18, label: 'W' },
 		{ class_name: 'key-a', rect_x: 2, rect_y: 46, text_x: 22, text_y: 62, label: 'A' },
 		{ class_name: 'key-s', rect_x: 54, rect_y: 46, text_x: 74, text_y: 62, label: 'S' },
-		{ class_name: 'key-d', rect_x: 106, rect_y: 46, text_x: 126, text_y: 62, label: 'D' }
-	] as const;
+		{ class_name: 'key-d', rect_x: 106, rect_y: 46, text_x: 126, text_y: 62, label: 'D' },
+	] as const
 
 	type ReturnKey = {
-		class_name: string;
-		rect_x: number;
-		text_x: number;
-		text_font_size: number;
-		label: string;
-	};
+		class_name: string
+		rect_x: number
+		text_x: number
+		text_font_size: number
+		label: string
+	}
 
-	const RETURN_KEY_RECT_Y = 150;
-	const RETURN_KEY_WIDTH = 56;
-	const RETURN_KEY_HEIGHT = 24;
-	const RETURN_KEY_TEXT_Y = 162;
+	const RETURN_KEY_RECT_Y = 150
+	const RETURN_KEY_WIDTH = 56
+	const RETURN_KEY_HEIGHT = 24
+	const RETURN_KEY_TEXT_Y = 162
 
 	const RETURN_KEYS: readonly ReturnKey[] = [
 		{ class_name: 'key-esc', rect_x: 2, text_x: 30, text_font_size: 9, label: 'ESC' },
-		{ class_name: 'key-z', rect_x: 90, text_x: 118, text_font_size: 13, label: 'Z' }
-	] as const;
+		{ class_name: 'key-z', rect_x: 90, text_x: 118, text_font_size: 13, label: 'Z' },
+	] as const
 </script>
 
 <svg
@@ -64,7 +64,7 @@
 				fill="rgba(120,80,255,0.15)"
 				stroke="rgba(160,120,255,0.8)"
 				stroke-width="1.5"
-			/>
+			></rect>
 			<text
 				x={key.text_x}
 				y={key.text_y}
@@ -88,7 +88,7 @@
 			fill="rgba(120,80,255,0.15)"
 			stroke="rgba(160,120,255,0.8)"
 			stroke-width="1.5"
-		/>
+		></rect>
 		<!-- Double chevron in space bar (matches Jump C, scaled 0.6 to text size) -->
 		<polyline
 			points="67,130 74,123 81,130"
@@ -97,7 +97,7 @@
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			fill="none"
-		/>
+		></polyline>
 		<polyline
 			class="space-chevron-top"
 			points="67,125 74,118 81,125"
@@ -107,7 +107,7 @@
 			stroke-linejoin="round"
 			fill="none"
 			opacity="0.55"
-		/>
+		></polyline>
 	</g>
 	{#each RETURN_KEYS as key (key.class_name)}
 		<g class="key {key.class_name}" aria-hidden="true">
@@ -120,7 +120,7 @@
 				fill="rgba(80,60,160,0.1)"
 				stroke="rgba(120,100,200,0.5)"
 				stroke-width="1.5"
-			/>
+			></rect>
 			<text
 				x={key.text_x}
 				y={RETURN_KEY_TEXT_Y}

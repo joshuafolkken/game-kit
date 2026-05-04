@@ -1,31 +1,31 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { Canvas } from '@threlte/core';
-	import { Suspense } from '@threlte/extras';
-	import { onMount } from 'svelte';
-	import VirtualJoystick from './VirtualJoystick.svelte';
-	import ControlsOverlay from './ControlsOverlay.svelte';
-	import { input } from '$lib/game/input.svelte';
-	import { audio } from '$lib/game/audio';
-	import { fullscreen } from '$lib/game/fullscreen.svelte';
-	import { fullscreen_switch_input } from '$lib/game/fullscreen-switch-input';
-	import { loading } from '$lib/game/loading.svelte';
-	import { device } from '$lib/game/device.svelte';
-	import { session } from '$lib/game/session.svelte';
-	import { game_state } from '$lib/game/state.svelte';
+	import { Canvas } from '@threlte/core'
+	import { Suspense } from '@threlte/extras'
+	import { audio } from '$lib/game/audio'
+	import { device } from '$lib/game/device.svelte'
+	import { fullscreen_switch_input } from '$lib/game/fullscreen-switch-input'
+	import { fullscreen } from '$lib/game/fullscreen.svelte'
+	import { input } from '$lib/game/input.svelte'
+	import { loading } from '$lib/game/loading.svelte'
+	import { session } from '$lib/game/session.svelte'
+	import { game_state } from '$lib/game/state.svelte'
+	import type { Snippet } from 'svelte'
+	import { onMount } from 'svelte'
+	import ControlsOverlay from './ControlsOverlay.svelte'
+	import VirtualJoystick from './VirtualJoystick.svelte'
 
 	interface Props {
-		children?: Snippet;
-		hint_text?: string;
-		on_start?: () => void;
-		label_jump: string;
-		label_move: string;
-		label_look: string;
-		label_action: string;
-		label_return: string;
-		label_game: string;
-		label_game_started: string;
-		label_pause: string;
+		children?: Snippet
+		hint_text?: string
+		on_start?: () => void
+		label_jump: string
+		label_move: string
+		label_look: string
+		label_action: string
+		label_return: string
+		label_game: string
+		label_game_started: string
+		label_pause: string
 	}
 
 	let {
@@ -39,64 +39,64 @@
 		label_return,
 		label_game,
 		label_game_started,
-		label_pause
-	}: Props = $props();
+		label_pause,
+	}: Props = $props()
 
-	let container: HTMLElement;
-	let is_dragging_look = $derived(input.is_dragging_look);
-	let drag_start_x = $derived(input.drag_start_x);
-	let drag_start_y = $derived(input.drag_start_y);
-	let is_pseudo_fullscreen = $derived(fullscreen.is_pseudo_fullscreen);
-	let is_started = $derived(session.is_session_started);
-	let is_touch = $derived(device.is_touch_primary);
-	let game_status = $derived(is_started ? label_game_started : '');
-	let is_alt = $derived(game_state.is_alt);
+	let container: HTMLElement
+	let is_dragging_look = $derived(input.is_dragging_look)
+	let drag_start_x = $derived(input.drag_start_x)
+	let drag_start_y = $derived(input.drag_start_y)
+	let is_pseudo_fullscreen = $derived(fullscreen.is_pseudo_fullscreen)
+	let is_started = $derived(session.is_session_started)
+	let is_touch = $derived(device.is_touch_primary)
+	let game_status = $derived(is_started ? label_game_started : '')
+	let is_alt = $derived(game_state.is_alt)
 
 	function start_game(): void {
-		if (session.is_session_started) return;
-		audio.init_audio();
-		if (container && device.is_touch_primary) void fullscreen.request(container);
-		session.start_session();
-		on_start?.();
+		if (session.is_session_started) return
+		audio.init_audio()
+		if (container && device.is_touch_primary) void fullscreen.request(container)
+		session.start_session()
+		on_start?.()
 	}
 
 	function on_pause_click(event: MouseEvent): void {
-		event.stopPropagation();
-		session.reset_session();
+		event.stopPropagation()
+		session.reset_session()
 	}
 
 	function on_key_down(event: KeyboardEvent): void {
 		if (event.key === 'Escape' || event.key === 'z' || event.key === 'Z') {
 			if (session.is_session_started) {
-				event.preventDefault();
-				session.reset_session();
+				event.preventDefault()
+				session.reset_session()
 			}
-			return;
+			return
 		}
-		if (event.key !== 'Enter') return;
-		event.preventDefault();
-		start_game();
+		if (event.key !== 'Enter') return
+		event.preventDefault()
+		start_game()
 	}
 
 	function on_scene_loaded(): void {
-		loading.set_step('ready');
-		loading.mark_ready();
+		loading.set_step('ready')
+		loading.mark_ready()
 	}
 
 	onMount(() => {
-		loading.set_step('loading_assets');
-		fullscreen_switch_input.set_container(container);
-		const canvas_el = container.querySelector<HTMLCanvasElement>('canvas');
+		loading.set_step('loading_assets')
+		fullscreen_switch_input.set_container(container)
+		const canvas_el = container.querySelector<HTMLCanvasElement>('canvas')
 		if (!canvas_el)
-			console.warn('[GameScene] No <canvas> found at mount — synthetic pointer events disabled');
-		const cleanup_input = input.setup_listeners(canvas_el);
-		const cleanup_fullscreen = fullscreen.setup_listeners();
+			console.warn('[GameScene] No <canvas> found at mount — synthetic pointer events disabled')
+		const cleanup_input = input.setup_listeners(canvas_el)
+		const cleanup_fullscreen = fullscreen.setup_listeners()
 		return function cleanup(): void {
-			cleanup_input();
-			cleanup_fullscreen();
-			fullscreen_switch_input.set_container(null);
-		};
-	});
+			cleanup_input()
+			cleanup_fullscreen()
+			fullscreen_switch_input.set_container(null)
+		}
+	})
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -140,8 +140,8 @@
 				fill="currentColor"
 				aria-hidden="true"
 			>
-				<rect x="5" y="4" width="4" height="16" rx="1" />
-				<rect x="15" y="4" width="4" height="16" rx="1" />
+				<rect x="5" y="4" width="4" height="16" rx="1"></rect>
+				<rect x="15" y="4" width="4" height="16" rx="1"></rect>
 			</svg>
 		</button>
 	{/if}
@@ -171,7 +171,7 @@
 				stroke="black"
 				stroke-width="1"
 				stroke-linejoin="round"
-			/>
+			></path>
 		</svg>
 	{/if}
 </div>
