@@ -1,70 +1,70 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
-	import { Text } from '@threlte/extras';
-	import { resolve_switch_colors } from '$lib/game/switch-colors';
-	import type { SwitchColors } from '$lib/game/switch-colors';
-	import type { SwitchIconType, SwitchGeometry } from '$lib/game/switch-config';
+	import { T } from '@threlte/core'
+	import { Text } from '@threlte/extras'
+	import { resolve_switch_colors } from '$lib/game/switch-colors'
+	import type { SwitchColors } from '$lib/game/switch-colors'
+	import type { SwitchGeometry, SwitchIconType } from '$lib/game/switch-config'
 	import {
 		DEFAULT_SWITCH_GEOMETRY,
 		FPS_BAR_1_H,
 		FPS_BAR_2_H,
 		FPS_BAR_3_H,
+		FPS_BAR_BASE_Y,
 		FPS_BAR_X_STEP,
-		FPS_BAR_BASE_Y
-	} from '$lib/game/switch-config';
+	} from '$lib/game/switch-config'
 
-	type CornerSign = -1 | 1;
-	type BarAxis = 'h' | 'v';
+	type CornerSign = -1 | 1
+	type BarAxis = 'h' | 'v'
 	interface CornerBar {
-		key: string;
-		px: number;
-		py: number;
-		w: number;
-		h: number;
+		key: string
+		px: number
+		py: number
+		w: number
+		h: number
 	}
 	interface CornerGeom {
-		arm: number;
-		thickness: number;
-		pos: number;
-		arm_center: number;
+		arm: number
+		thickness: number
+		pos: number
+		arm_center: number
 	}
 
 	function make_bar(sx: CornerSign, sy: CornerSign, axis: BarAxis, g: CornerGeom): CornerBar {
-		const is_h = axis === 'h';
+		const is_h = axis === 'h'
 		return {
 			key: `${axis}${sx}${sy}`,
 			px: sx * (is_h ? g.arm_center : g.pos),
 			py: sy * (is_h ? g.pos : g.arm_center),
 			w: is_h ? g.arm : g.thickness,
-			h: is_h ? g.thickness : g.arm
-		};
+			h: is_h ? g.thickness : g.arm,
+		}
 	}
 
 	interface FpsBar {
-		key: number;
-		x: number;
-		h: number;
+		key: number
+		x: number
+		h: number
 	}
 
-	const CORNER_SIGNS: readonly CornerSign[] = [-1, 1];
-	const HIT_AREA_PADDING = 0.12;
+	const CORNER_SIGNS: readonly CornerSign[] = [-1, 1]
+	const HIT_AREA_PADDING = 0.12
 	const FPS_BARS: readonly FpsBar[] = [
 		{ key: 0, x: -FPS_BAR_X_STEP, h: FPS_BAR_1_H },
 		{ key: 1, x: 0, h: FPS_BAR_2_H },
-		{ key: 2, x: FPS_BAR_X_STEP, h: FPS_BAR_3_H }
-	];
+		{ key: 2, x: FPS_BAR_X_STEP, h: FPS_BAR_3_H },
+	]
 
 	interface Props {
-		position_x: number;
-		is_active: boolean;
-		icon_type: SwitchIconType;
-		label: string;
-		font: string;
-		font_size_multiplier: number;
-		onclick: () => void;
-		colors: SwitchColors;
-		geometry?: SwitchGeometry;
-		panel_text?: string | undefined;
+		position_x: number
+		is_active: boolean
+		icon_type: SwitchIconType
+		label: string
+		font: string
+		font_size_multiplier: number
+		onclick: () => void
+		colors: SwitchColors
+		geometry?: SwitchGeometry
+		panel_text?: string | undefined
 	}
 
 	let {
@@ -77,31 +77,31 @@
 		onclick,
 		colors,
 		geometry = {},
-		panel_text = undefined
-	}: Props = $props();
+		panel_text = undefined,
+	}: Props = $props()
 
-	let geom: Required<SwitchGeometry> = $derived({ ...DEFAULT_SWITCH_GEOMETRY, ...geometry });
-	let border_pos = $derived(geom.panel_size / 2 - geom.border_thickness / 2);
+	let geom: Required<SwitchGeometry> = $derived({ ...DEFAULT_SWITCH_GEOMETRY, ...geometry })
+	let border_pos = $derived(geom.panel_size / 2 - geom.border_thickness / 2)
 	let corner_geom: CornerGeom = $derived({
 		arm: geom.corner_arm,
 		thickness: geom.corner_thickness,
 		pos: geom.corner_pos,
-		arm_center: geom.corner_pos - geom.corner_arm / 2
-	});
+		arm_center: geom.corner_pos - geom.corner_arm / 2,
+	})
 	let corner_bars = $derived(
 		CORNER_SIGNS.flatMap(function (sx) {
 			return CORNER_SIGNS.flatMap(function (sy) {
-				return [make_bar(sx, sy, 'h', corner_geom), make_bar(sx, sy, 'v', corner_geom)];
-			});
-		})
-	);
-	let hit_area_w = $derived(geom.panel_size + HIT_AREA_PADDING);
-	let hit_area_h = $derived(geom.panel_size + HIT_AREA_PADDING);
+				return [make_bar(sx, sy, 'h', corner_geom), make_bar(sx, sy, 'v', corner_geom)]
+			})
+		}),
+	)
+	let hit_area_w = $derived(geom.panel_size + HIT_AREA_PADDING)
+	let hit_area_h = $derived(geom.panel_size + HIT_AREA_PADDING)
 
-	let resolved = $derived(resolve_switch_colors(colors, is_active));
-	let panel_opacity = $derived(is_active ? geom.panel_opacity_active : geom.panel_opacity_inactive);
-	let current_font_size = $derived(geom.label_font_size * font_size_multiplier);
-	let current_panel_text_font_size = $derived(geom.panel_text_font_size * font_size_multiplier);
+	let resolved = $derived(resolve_switch_colors(colors, is_active))
+	let panel_opacity = $derived(is_active ? geom.panel_opacity_active : geom.panel_opacity_inactive)
+	let current_font_size = $derived(geom.label_font_size * font_size_multiplier)
+	let current_panel_text_font_size = $derived(geom.panel_text_font_size * font_size_multiplier)
 </script>
 
 <T.Group position={[position_x, geom.switch_y, geom.switch_z]}>
@@ -145,7 +145,7 @@
 					geom.cyber_outer_ring_r,
 					geom.cyber_outer_ring_tube,
 					geom.cyber_ring_radial,
-					geom.cyber_ring_tubular
+					geom.cyber_ring_tubular,
 				]}
 			/>
 			<T.MeshStandardMaterial
@@ -161,7 +161,7 @@
 					geom.cyber_inner_ring_r,
 					geom.cyber_inner_ring_tube,
 					geom.cyber_ring_radial,
-					geom.cyber_ring_tubular
+					geom.cyber_ring_tubular,
 				]}
 			/>
 			<T.MeshStandardMaterial

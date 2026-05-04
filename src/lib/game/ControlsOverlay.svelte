@@ -1,16 +1,16 @@
 <script lang="ts">
-	import KeyboardDiagram from './KeyboardDiagram.svelte';
-	import MouseDiagram from './MouseDiagram.svelte';
-	import TouchDiagram from './TouchDiagram.svelte';
+	import KeyboardDiagram from './KeyboardDiagram.svelte'
+	import MouseDiagram from './MouseDiagram.svelte'
+	import TouchDiagram from './TouchDiagram.svelte'
 
 	interface Props {
-		hint_text: string;
-		is_touch: boolean;
-		label_move: string;
-		label_look: string;
-		label_action: string;
-		label_jump: string;
-		label_return: string;
+		hint_text: string
+		is_touch: boolean
+		label_move: string
+		label_look: string
+		label_action: string
+		label_jump: string
+		label_return: string
 	}
 
 	let {
@@ -20,8 +20,8 @@
 		label_look,
 		label_action,
 		label_jump,
-		label_return
-	}: Props = $props();
+		label_return,
+	}: Props = $props()
 </script>
 
 <div class="controls-overlay" data-testid="controls-overlay">
