@@ -1,7 +1,6 @@
-import { defineConfig } from '@playwright/test'
+import { create_playwright_config } from '@joshuafolkken/kit/playwright/base'
 
-export default defineConfig({
-	webServer: { command: 'pnpm run build && pnpm run preview', port: 4173 },
-	testMatch: '**/*.e2e.{ts,js}',
-	workers: 1,
+export default create_playwright_config({
+	dev_port: 5173,
+	preview_port: 4173,
 })
