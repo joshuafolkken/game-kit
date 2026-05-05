@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.7.0",
+	"version": "0.8.0",
 	"keywords": [
 		"svelte"
 	],
@@ -24,29 +24,40 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"prepack": "svelte-kit sync && svelte-package && publint",
+		"gen:pre": "node -e \"const fs=require('node:fs');const d='.svelte-kit/cloudflare';if(fs.existsSync(d))fs.readdirSync(d).forEach(f=>f.startsWith('_worker.')&&fs.rmSync(d+'/'+f,{force:true}))\"",
+		"gen": "pnpm gen:pre && wrangler types",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"postinstall": "lefthook install",
 		"josh": "josh",
 		"size-limit": "size-limit"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.11.3",
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.128.0",
+		"@joshuafolkken/kit": "0.132.0",
+		"@playwright/test": "^1.59.1",
 		"@size-limit/file": "^12.1.0",
+		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@sveltejs/kit": "^2.59.0",
 		"@sveltejs/package": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
+		"@tailwindcss/forms": "^0.5.11",
+		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/vite": "^4.2.4",
 		"@threlte/core": "^8.5.11",
 		"@threlte/extras": "^9.15.1",
 		"@types/node": "^25.6.0",
 		"@types/three": "^0.184.0",
+		"@vite-pwa/sveltekit": "^1.1.0",
+		"@vitest/browser-playwright": "^4.1.5",
 		"cspell": "^10.0.0",
 		"eslint": "^10.3.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.1",
 		"globals": "^17.6.0",
+		"playwright": "^1.59.1",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
@@ -55,12 +66,15 @@
 		"size-limit": "^12.1.0",
 		"svelte": "^5.55.5",
 		"svelte-check": "^4.4.7",
+		"tailwindcss": "^4.2.4",
 		"three": "^0.184.0",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.59.1",
 		"vite": "^8.0.10",
+		"vite-plugin-pwa": "^1.2.0",
 		"vitest": "^4.1.5",
-		"vitest-browser-svelte": "^2.1.1"
+		"vitest-browser-svelte": "^2.1.1",
+		"wrangler": "^4.87.0"
 	},
 	"peerDependencies": {
 		"@threlte/core": ">=8.0.0",
@@ -83,7 +97,9 @@
 			"@joshuafolkken/kit",
 			"esbuild",
 			"lefthook",
-			"unrs-resolver"
+			"sharp",
+			"unrs-resolver",
+			"workerd"
 		]
 	},
 	"sideEffects": [
