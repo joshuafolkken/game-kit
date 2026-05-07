@@ -27,7 +27,7 @@ const web_server_config = IS_CI
 
 export default defineConfig({
 	webServer: web_server_config,
-	testDir: 'e2e',
+	testMatch: '**/*.e2e.ts',
 	fullyParallel: true,
 	...(IS_CI ? { workers: CI_WORKERS } : {}),
 	retries: IS_CI ? CI_RETRIES : 0,
