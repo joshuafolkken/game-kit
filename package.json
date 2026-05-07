@@ -27,7 +27,7 @@
 		"gen:pre": "node -e \"const fs=require('node:fs');const d='.svelte-kit/cloudflare';if(fs.existsSync(d))fs.readdirSync(d).forEach(f=>f.startsWith('_worker.')&&fs.rmSync(d+'/'+f,{force:true}))\"",
 		"gen": "pnpm gen:pre && wrangler types",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"postinstall": "lefthook install",
+		"postinstall": "lefthook install && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts",
 		"josh": "josh",
 		"size-limit": "size-limit"
 	},
@@ -36,7 +36,7 @@
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.132.0",
+		"@joshuafolkken/kit": "0.149.0",
 		"@playwright/test": "^1.59.1",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
@@ -82,7 +82,14 @@
 		"svelte": "^5.0.0",
 		"three": ">=0.180.0"
 	},
-	"packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
+	"packageManager": "pnpm@11.0.8+sha512.4c4097e1dd2d42372c4e7fa5a791ff28fc75a484c7ac192e64b1df0fdef17594ba982f9b4fed9adfb3c757846f565b799b2763fb3733d1de1bcb82cf46684912",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": ">=11.0.0-0",
+			"onFail": "error"
+		}
+	},
 	"size-limit": [
 		{
 			"path": "./dist/index.js",

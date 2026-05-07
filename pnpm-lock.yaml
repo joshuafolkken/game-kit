@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  cookie: ^0.7.0
-
 importers:
 
   .:
@@ -24,8 +21,8 @@ importers:
         specifier: ^4.7.1
         version: 4.7.1(prettier@3.8.3)
       '@joshuafolkken/kit':
-        specifier: 0.132.0
-        version: 0.132.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))
+        specifier: 0.149.0
+        version: 0.149.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.59.1
@@ -1509,8 +1506,8 @@ packages:
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
     engines: {node: '>=18'}
 
-  '@joshuafolkken/kit@0.132.0':
-    resolution: {integrity: sha512-5RVPADY1qfyfMk8XwGitrFUYUWhMmAUD7MMfTzSAGc1DrP2/M1OskVpZSgCvCwD977RU88yDsiUeizZfkaevFQ==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.132.0/92af7510b3e33710386fef47b16bb19313f48a95}
+  '@joshuafolkken/kit@0.149.0':
+    resolution: {integrity: sha512-UWv3JHVajDxUK1rygpGizmsyDIyC6oJVYRsmsvunv40AAPUpKUdEZ8jQ74SMPCKybN8L4DVjtieumPe/53swPA==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.149.0/74b86aa5aa5616b476124c13fcc4a23f7fdf89e3}
     engines: {node: '>=22.19.0'}
     hasBin: true
     peerDependencies:
@@ -2249,9 +2246,13 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  cookie@0.7.2:
-    resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
+  cookie@0.6.0:
+    resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
+
+  cookie@1.1.1:
+    resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
+    engines: {node: '>=18'}
 
   core-js-compat@3.49.0:
     resolution: {integrity: sha512-VQXt1jr9cBz03b331DFDCCP90b3fanciLkgiOoy8SBHy06gNf+vQ1A3WFLqG7I8TipYIKeYK9wxd0tUrvHcOZA==}
@@ -5393,7 +5394,7 @@ snapshots:
 
   '@isaacs/cliui@9.0.0': {}
 
-  '@joshuafolkken/kit@0.132.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))':
+  '@joshuafolkken/kit@0.149.0(@playwright/test@1.59.1)(svelte@5.55.5(@typescript-eslint/types@8.59.1))':
     dependencies:
       '@playwright/test': 1.59.1
       js-yaml: 4.1.1
@@ -5594,7 +5595,7 @@ snapshots:
       '@sveltejs/vite-plugin-svelte': 7.0.0(svelte@5.55.5(@typescript-eslint/types@8.59.1))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.2)(tsx@4.21.0)(yaml@2.8.4))
       '@types/cookie': 0.6.0
       acorn: 8.16.0
-      cookie: 0.7.2
+      cookie: 0.6.0
       devalue: 5.8.0
       esm-env: 1.2.2
       kleur: 4.1.5
@@ -6138,7 +6139,9 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  cookie@0.7.2: {}
+  cookie@0.6.0: {}
+
+  cookie@1.1.1: {}
 
   core-js-compat@3.49.0:
     dependencies:
@@ -8133,7 +8136,7 @@ snapshots:
       '@poppinss/colors': 4.1.6
       '@poppinss/dumper': 0.6.5
       '@speed-highlight/core': 1.2.15
-      cookie: 0.7.2
+      cookie: 1.1.1
       youch-core: 0.3.3
 
   zimmerframe@1.1.4: {}
