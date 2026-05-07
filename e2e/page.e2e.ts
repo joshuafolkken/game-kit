@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 
 const { version } = JSON.parse(
-	readFileSync(new URL('../../package.json', import.meta.url), 'utf-8'),
+	readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
 ) as { version: string }
 
 const LOADING_OVERLAY_TIMEOUT_MS = 8000
