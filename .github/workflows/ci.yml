@@ -18,13 +18,19 @@ jobs:
   checks:
     name: Checks
     runs-on: ubuntu-latest
+    # Playwright system dependencies and Chromium are pre-installed in this image,
+    # eliminating the slow `playwright install-deps` step. Keep the image tag in
+    # sync with @playwright/test in package.json whenever Playwright is upgraded.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      options: --user root
     timeout-minutes: 8
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
+        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -52,11 +58,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Run security audit
-        uses: google/osv-scanner-action/osv-scanner-action@c51854704019a247608d928f370c98740469d4b5 # v2.3.5
-        with:
-          scan-args: --lockfile=pnpm-lock.yaml
-
       - name: Run spell check
         run: pnpm exec cspell . --dot
 
@@ -80,6 +81,19 @@ jobs:
 
       - name: Check bundle size
         run: pnpm size-limit
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Run security audit
+        uses: google/osv-scanner-action/osv-scanner-action@c51854704019a247608d928f370c98740469d4b5 # v2.3.5
+        with:
+          scan-args: --lockfile=pnpm-lock.yaml
 
   e2e-detect:
     name: Detect E2E
@@ -105,6 +119,12 @@ jobs:
     needs: e2e-detect
     if: needs.e2e-detect.outputs.enabled == 'true'
     runs-on: ubuntu-latest
+    # Playwright system dependencies and Chromium are pre-installed in this image.
+    # Keep the image tag in sync with @playwright/test in package.json whenever
+    # Playwright is upgraded.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      options: --user root
     timeout-minutes: 10
     # Playwright preview は localhost:4173。ワークフロー共通の BETTER_AUTH_URL（本番）を
     # 引き継ぐと Better Auth が origin を拒否する（CI E2E では本番 URL は使わない）。
@@ -116,7 +136,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
+        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -136,16 +156,6 @@ jobs:
             ${{ runner.os }}-build-cache-e2e-${{ hashFiles('pnpm-lock.yaml') }}-
             ${{ runner.os }}-build-cache-e2e-
 
-      - name: Setup Playwright cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        id: playwright-cache
-        with:
-          path: |
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-cache-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-cache-
-
       - name: Setup safe-chain
         run: pnpm dlx @aikidosec/safe-chain@1.5.1 setup-ci
 
@@ -153,13 +163,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm install --frozen-lockfile --ignore-scripts
-
-      - name: Install Playwright system dependencies
-        run: pnpm exec playwright install-deps chromium # NOSONAR - installing browsers, not running lifecycle scripts
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install chromium # NOSONAR - installing browsers, not running lifecycle scripts
 
       - name: Build application
         env:
