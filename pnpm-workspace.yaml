@@ -1,4 +1,8 @@
+overrides:
+  cookie: ^0.7.0
+
 onlyBuiltDependencies:
+  - '@joshuafolkken/kit'
   - esbuild
   - lefthook
   - unrs-resolver
@@ -7,3 +11,7 @@ onlyBuiltDependencies:
 minimumReleaseAgeExclude:
   - vite
   - '@joshuafolkken/kit'
+
+allowBuilds:
+  '@joshuafolkken/kit': true
+  esbuild: true

@@ -2,6 +2,7 @@
 	import { useTask } from '@threlte/core'
 	import { Text } from '@threlte/extras'
 	import { fonts } from '$lib/game/fonts'
+	import { untrack } from 'svelte'
 	import {
 		CREDITS_CYBER_COLOR,
 		CREDITS_FONT_SIZE,
@@ -26,7 +27,7 @@
 
 	let current_font = $derived(fonts.get_font(is_alt))
 	let color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
-	let scroll_z = $state(scroll_start_z)
+	let scroll_z = $state(untrack(() => scroll_start_z))
 
 	function tick(delta: number): void {
 		scroll_z = credits_scroll.advance_scroll(
