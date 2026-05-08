@@ -12,4 +12,5 @@ words:
   - GAMEOVER
   - Raycaster
   - raycaster
+  - SAMEORIGIN
 ignorePaths: []
