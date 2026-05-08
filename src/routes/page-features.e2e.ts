@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
-import { stub_touch_primary } from './page.e2e'
+import { stub_touch_primary } from './e2e-helpers'
 
 const FULLSCREEN_NOT_CALLED_WAIT_MS = 200
 const HIGH_SCORE_STORAGE_KEY = 'simon_high_score'
