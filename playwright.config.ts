@@ -1,6 +1,6 @@
 import { defineConfig, devices, type ReporterDescription } from '@playwright/test'
 
-const IS_CI = Boolean(process.env['CI'])
+const IS_CI = Boolean(process.env['CI']) || process.env['PLAYWRIGHT_PREVIEW'] === '1'
 
 const DEV_PORT = 5173
 const PREVIEW_PORT = 4173
