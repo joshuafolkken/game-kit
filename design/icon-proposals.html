@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Simon Icon Proposals</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				background: #111;
+				color: #ccc;
+				font-family: monospace;
+				padding: 40px;
+			}
+			h1 {
+				color: #00ffff;
+				margin-bottom: 40px;
+				font-size: 20px;
+				letter-spacing: 2px;
+			}
+			.proposals {
+				display: flex;
+				flex-direction: column;
+				gap: 60px;
+			}
+			.proposal {
+				display: flex;
+				flex-direction: column;
+				gap: 20px;
+			}
+			.proposal h2 {
+				color: #00ffaa;
+				font-size: 14px;
+				letter-spacing: 1px;
+			}
+			.sizes {
+				display: flex;
+				align-items: flex-end;
+				gap: 32px;
+				flex-wrap: wrap;
+			}
+			.size-group {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 8px;
+			}
+			.size-group span {
+				font-size: 11px;
+				color: #555;
+			}
+			.bg-checker {
+				background-image:
+					linear-gradient(45deg, #333 25%, transparent 25%),
+					linear-gradient(-45deg, #333 25%, transparent 25%),
+					linear-gradient(45deg, transparent 75%, #333 75%),
+					linear-gradient(-45deg, transparent 75%, #333 75%);
+				background-size: 12px 12px;
+				background-position:
+					0 0,
+					0 6px,
+					6px -6px,
+					-6px 0px;
+				border-radius: 4px;
+				padding: 4px;
+			}
+			.bg-dark {
+				background: #000a1a;
+				border-radius: 4px;
+				padding: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>SIMON — ICON PROPOSALS</h1>
+		<div class="proposals">
+			<!-- Proposal A: 4-quadrant Simon disc -->
+			<div class="proposal">
+				<h2>A — Simon Disc（4色クアドラント）</h2>
+				<p style="font-size: 12px; color: #666; margin-bottom: 8px">
+					Simonゲームの定番レイアウト。サイバーカラーで4つのボタンを表現。
+				</p>
+				<div class="sizes">
+					<!-- 512px on dark bg -->
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg
+								id="icon-a"
+								width="512"
+								height="512"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<radialGradient id="ga-green" cx="35%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#00ffaa" />
+										<stop offset="100%" stop-color="#005533" />
+									</radialGradient>
+									<radialGradient id="ga-red" cx="65%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#ff0088" />
+										<stop offset="100%" stop-color="#550022" />
+									</radialGradient>
+									<radialGradient id="ga-yellow" cx="35%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#ffff00" />
+										<stop offset="100%" stop-color="#555500" />
+									</radialGradient>
+									<radialGradient id="ga-blue" cx="65%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#00ccff" />
+										<stop offset="100%" stop-color="#003355" />
+									</radialGradient>
+									<clipPath id="clip-circle-a">
+										<circle cx="50" cy="50" r="46" />
+									</clipPath>
+									<filter id="glow-a">
+										<feGaussianBlur stdDeviation="1.5" result="blur" />
+										<feMerge>
+											<feMergeNode in="blur" />
+											<feMergeNode in="SourceGraphic" />
+										</feMerge>
+									</filter>
+								</defs>
+								<!-- 4 quadrants clipped to circle -->
+								<g clip-path="url(#clip-circle-a)">
+									<rect x="4" y="4" width="44" height="44" fill="url(#ga-green)" />
+									<rect x="52" y="4" width="44" height="44" fill="url(#ga-red)" />
+									<rect x="4" y="52" width="44" height="44" fill="url(#ga-yellow)" />
+									<rect x="52" y="52" width="44" height="44" fill="url(#ga-blue)" />
+								</g>
+								<!-- divider cross -->
+								<rect x="48" y="4" width="4" height="92" fill="#000a1a" />
+								<rect x="4" y="48" width="92" height="4" fill="#000a1a" />
+								<!-- center circle -->
+								<circle cx="50" cy="50" r="8" fill="#000a1a" />
+								<circle cx="50" cy="50" r="6" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8" />
+								<!-- outer ring -->
+								<circle
+									cx="50"
+									cy="50"
+									r="46"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="1"
+									opacity="0.6"
+								/>
+							</svg>
+						</div>
+						<span>512px dark bg</span>
+					</div>
+					<!-- 512px transparent bg -->
+					<div class="size-group">
+						<div class="bg-checker">
+							<svg
+								width="512"
+								height="512"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<radialGradient id="ga2-green" cx="35%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#00ffaa" />
+										<stop offset="100%" stop-color="#005533" />
+									</radialGradient>
+									<radialGradient id="ga2-red" cx="65%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#ff0088" />
+										<stop offset="100%" stop-color="#550022" />
+									</radialGradient>
+									<radialGradient id="ga2-yellow" cx="35%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#ffff00" />
+										<stop offset="100%" stop-color="#555500" />
+									</radialGradient>
+									<radialGradient id="ga2-blue" cx="65%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#00ccff" />
+										<stop offset="100%" stop-color="#003355" />
+									</radialGradient>
+									<clipPath id="clip-circle-a2">
+										<circle cx="50" cy="50" r="46" />
+									</clipPath>
+								</defs>
+								<g clip-path="url(#clip-circle-a2)">
+									<rect x="4" y="4" width="44" height="44" fill="url(#ga2-green)" />
+									<rect x="52" y="4" width="44" height="44" fill="url(#ga2-red)" />
+									<rect x="4" y="52" width="44" height="44" fill="url(#ga2-yellow)" />
+									<rect x="52" y="52" width="44" height="44" fill="url(#ga2-blue)" />
+								</g>
+								<rect x="48" y="4" width="4" height="92" fill="#000a1a" />
+								<rect x="4" y="48" width="92" height="4" fill="#000a1a" />
+								<circle cx="50" cy="50" r="8" fill="#000a1a" />
+								<circle cx="50" cy="50" r="6" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8" />
+								<circle
+									cx="50"
+									cy="50"
+									r="46"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="1"
+									opacity="0.6"
+								/>
+							</svg>
+						</div>
+						<span>512px transparent</span>
+					</div>
+					<!-- 192px -->
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg
+								width="192"
+								height="192"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<radialGradient id="ga3-green" cx="35%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#00ffaa" />
+										<stop offset="100%" stop-color="#005533" />
+									</radialGradient>
+									<radialGradient id="ga3-red" cx="65%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#ff0088" />
+										<stop offset="100%" stop-color="#550022" />
+									</radialGradient>
+									<radialGradient id="ga3-yellow" cx="35%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#ffff00" />
+										<stop offset="100%" stop-color="#555500" />
+									</radialGradient>
+									<radialGradient id="ga3-blue" cx="65%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#00ccff" />
+										<stop offset="100%" stop-color="#003355" />
+									</radialGradient>
+									<clipPath id="clip-a3"><circle cx="50" cy="50" r="46" /></clipPath>
+								</defs>
+								<g clip-path="url(#clip-a3)">
+									<rect x="4" y="4" width="44" height="44" fill="url(#ga3-green)" />
+									<rect x="52" y="4" width="44" height="44" fill="url(#ga3-red)" />
+									<rect x="4" y="52" width="44" height="44" fill="url(#ga3-yellow)" />
+									<rect x="52" y="52" width="44" height="44" fill="url(#ga3-blue)" />
+								</g>
+								<rect x="48" y="4" width="4" height="92" fill="#000a1a" />
+								<rect x="4" y="48" width="92" height="4" fill="#000a1a" />
+								<circle cx="50" cy="50" r="8" fill="#000a1a" />
+								<circle cx="50" cy="50" r="6" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8" />
+								<circle
+									cx="50"
+									cy="50"
+									r="46"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="1"
+									opacity="0.6"
+								/>
+							</svg>
+						</div>
+						<span>192px</span>
+					</div>
+					<!-- 32px favicon -->
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+								<defs>
+									<radialGradient id="ga4-green" cx="35%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#00ffaa" />
+										<stop offset="100%" stop-color="#005533" />
+									</radialGradient>
+									<radialGradient id="ga4-red" cx="65%" cy="35%" r="65%">
+										<stop offset="0%" stop-color="#ff0088" />
+										<stop offset="100%" stop-color="#550022" />
+									</radialGradient>
+									<radialGradient id="ga4-yellow" cx="35%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#ffff00" />
+										<stop offset="100%" stop-color="#555500" />
+									</radialGradient>
+									<radialGradient id="ga4-blue" cx="65%" cy="65%" r="65%">
+										<stop offset="0%" stop-color="#00ccff" />
+										<stop offset="100%" stop-color="#003355" />
+									</radialGradient>
+									<clipPath id="clip-a4"><circle cx="50" cy="50" r="46" /></clipPath>
+								</defs>
+								<g clip-path="url(#clip-a4)">
+									<rect x="4" y="4" width="44" height="44" fill="url(#ga4-green)" />
+									<rect x="52" y="4" width="44" height="44" fill="url(#ga4-red)" />
+									<rect x="4" y="52" width="44" height="44" fill="url(#ga4-yellow)" />
+									<rect x="52" y="52" width="44" height="44" fill="url(#ga4-blue)" />
+								</g>
+								<rect x="48" y="4" width="4" height="92" fill="#000a1a" />
+								<rect x="4" y="48" width="92" height="4" fill="#000a1a" />
+								<circle cx="50" cy="50" r="8" fill="#000a1a" />
+								<circle cx="50" cy="50" r="6" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8" />
+								<circle
+									cx="50"
+									cy="50"
+									r="46"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="1"
+									opacity="0.6"
+								/>
+							</svg>
+						</div>
+						<span>32px</span>
+					</div>
+					<!-- 16px favicon -->
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg width="16" height="16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+								<defs>
+									<clipPath id="clip-a5"><circle cx="50" cy="50" r="46" /></clipPath>
+								</defs>
+								<g clip-path="url(#clip-a5)">
+									<rect x="4" y="4" width="44" height="44" fill="#00ffaa" />
+									<rect x="52" y="4" width="44" height="44" fill="#ff0088" />
+									<rect x="4" y="52" width="44" height="44" fill="#ffff00" />
+									<rect x="52" y="52" width="44" height="44" fill="#00ccff" />
+								</g>
+								<rect x="48" y="4" width="4" height="92" fill="#000a1a" />
+								<rect x="4" y="48" width="92" height="4" fill="#000a1a" />
+								<circle cx="50" cy="50" r="5" fill="#000a1a" />
+							</svg>
+						</div>
+						<span>16px</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Proposal B: Pulse rings -->
+			<div class="proposal">
+				<h2>B — Pulse（サイバー同心円）</h2>
+				<p style="font-size: 12px; color: #666; margin-bottom: 8px">
+					ゲームのシーケンス信号をイメージした放射状パターン。
+				</p>
+				<div class="sizes">
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg
+								width="512"
+								height="512"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<radialGradient id="gb-core" cx="50%" cy="50%" r="50%">
+										<stop offset="0%" stop-color="#00ffff" />
+										<stop offset="40%" stop-color="#ff0088" />
+										<stop offset="100%" stop-color="#000a1a" stop-opacity="0" />
+									</radialGradient>
+									<filter id="glow-b">
+										<feGaussianBlur stdDeviation="2" result="blur" />
+										<feMerge>
+											<feMergeNode in="blur" />
+											<feMergeNode in="SourceGraphic" />
+										</feMerge>
+									</filter>
+								</defs>
+								<!-- rings -->
+								<circle
+									cx="50"
+									cy="50"
+									r="44"
+									fill="none"
+									stroke="#00ccff"
+									stroke-width="1.5"
+									opacity="0.25"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="36"
+									fill="none"
+									stroke="#00ffaa"
+									stroke-width="1.5"
+									opacity="0.35"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="28"
+									fill="none"
+									stroke="#ff0088"
+									stroke-width="2"
+									opacity="0.5"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="20"
+									fill="none"
+									stroke="#ffff00"
+									stroke-width="2"
+									opacity="0.65"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="12"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="2.5"
+									opacity="0.85"
+								/>
+								<!-- 4 colored dots at cardinal positions -->
+								<circle cx="50" cy="6" r="4" fill="#00ffaa" filter="url(#glow-b)" />
+								<circle cx="94" cy="50" r="4" fill="#ff0088" filter="url(#glow-b)" />
+								<circle cx="50" cy="94" r="4" fill="#ffff00" filter="url(#glow-b)" />
+								<circle cx="6" cy="50" r="4" fill="#00ccff" filter="url(#glow-b)" />
+								<!-- center dot -->
+								<circle cx="50" cy="50" r="4" fill="#00ffff" filter="url(#glow-b)" />
+								<circle cx="50" cy="50" r="2" fill="#fff" />
+								<!-- crosshair lines -->
+								<line
+									x1="50"
+									y1="11"
+									x2="50"
+									y2="39"
+									stroke="#00ffaa"
+									stroke-width="0.5"
+									opacity="0.4"
+								/>
+								<line
+									x1="50"
+									y1="61"
+									x2="50"
+									y2="89"
+									stroke="#ffff00"
+									stroke-width="0.5"
+									opacity="0.4"
+								/>
+								<line
+									x1="11"
+									y1="50"
+									x2="39"
+									y2="50"
+									stroke="#00ccff"
+									stroke-width="0.5"
+									opacity="0.4"
+								/>
+								<line
+									x1="61"
+									y1="50"
+									x2="89"
+									y2="50"
+									stroke="#ff0088"
+									stroke-width="0.5"
+									opacity="0.4"
+								/>
+							</svg>
+						</div>
+						<span>512px dark bg</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-checker">
+							<svg
+								width="512"
+								height="512"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<filter id="glow-b2">
+										<feGaussianBlur stdDeviation="2" result="blur" />
+										<feMerge>
+											<feMergeNode in="blur" />
+											<feMergeNode in="SourceGraphic" />
+										</feMerge>
+									</filter>
+								</defs>
+								<circle
+									cx="50"
+									cy="50"
+									r="44"
+									fill="none"
+									stroke="#00ccff"
+									stroke-width="1.5"
+									opacity="0.4"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="36"
+									fill="none"
+									stroke="#00ffaa"
+									stroke-width="1.5"
+									opacity="0.5"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="28"
+									fill="none"
+									stroke="#ff0088"
+									stroke-width="2"
+									opacity="0.65"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="20"
+									fill="none"
+									stroke="#ffff00"
+									stroke-width="2"
+									opacity="0.8"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="12"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="2.5"
+									opacity="1"
+								/>
+								<circle cx="50" cy="6" r="4" fill="#00ffaa" filter="url(#glow-b2)" />
+								<circle cx="94" cy="50" r="4" fill="#ff0088" filter="url(#glow-b2)" />
+								<circle cx="50" cy="94" r="4" fill="#ffff00" filter="url(#glow-b2)" />
+								<circle cx="6" cy="50" r="4" fill="#00ccff" filter="url(#glow-b2)" />
+								<circle cx="50" cy="50" r="4" fill="#00ffff" filter="url(#glow-b2)" />
+								<circle cx="50" cy="50" r="2" fill="#fff" />
+								<line
+									x1="50"
+									y1="11"
+									x2="50"
+									y2="39"
+									stroke="#00ffaa"
+									stroke-width="0.5"
+									opacity="0.5"
+								/>
+								<line
+									x1="50"
+									y1="61"
+									x2="50"
+									y2="89"
+									stroke="#ffff00"
+									stroke-width="0.5"
+									opacity="0.5"
+								/>
+								<line
+									x1="11"
+									y1="50"
+									x2="39"
+									y2="50"
+									stroke="#00ccff"
+									stroke-width="0.5"
+									opacity="0.5"
+								/>
+								<line
+									x1="61"
+									y1="50"
+									x2="89"
+									y2="50"
+									stroke="#ff0088"
+									stroke-width="0.5"
+									opacity="0.5"
+								/>
+							</svg>
+						</div>
+						<span>512px transparent</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg
+								width="192"
+								height="192"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<filter id="glow-b3">
+										<feGaussianBlur stdDeviation="2" result="blur" />
+										<feMerge>
+											<feMergeNode in="blur" />
+											<feMergeNode in="SourceGraphic" />
+										</feMerge>
+									</filter>
+								</defs>
+								<circle
+									cx="50"
+									cy="50"
+									r="44"
+									fill="none"
+									stroke="#00ccff"
+									stroke-width="1.5"
+									opacity="0.25"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="36"
+									fill="none"
+									stroke="#00ffaa"
+									stroke-width="1.5"
+									opacity="0.35"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="28"
+									fill="none"
+									stroke="#ff0088"
+									stroke-width="2"
+									opacity="0.5"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="20"
+									fill="none"
+									stroke="#ffff00"
+									stroke-width="2"
+									opacity="0.65"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="12"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="2.5"
+									opacity="0.85"
+								/>
+								<circle cx="50" cy="6" r="4" fill="#00ffaa" filter="url(#glow-b3)" />
+								<circle cx="94" cy="50" r="4" fill="#ff0088" filter="url(#glow-b3)" />
+								<circle cx="50" cy="94" r="4" fill="#ffff00" filter="url(#glow-b3)" />
+								<circle cx="6" cy="50" r="4" fill="#00ccff" filter="url(#glow-b3)" />
+								<circle cx="50" cy="50" r="4" fill="#00ffff" filter="url(#glow-b3)" />
+								<circle cx="50" cy="50" r="2" fill="#fff" />
+							</svg>
+						</div>
+						<span>192px</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+								<circle
+									cx="50"
+									cy="50"
+									r="44"
+									fill="none"
+									stroke="#00ccff"
+									stroke-width="2"
+									opacity="0.3"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="32"
+									fill="none"
+									stroke="#ff0088"
+									stroke-width="3"
+									opacity="0.55"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="18"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="4"
+									opacity="0.9"
+								/>
+								<circle cx="50" cy="6" r="5" fill="#00ffaa" />
+								<circle cx="94" cy="50" r="5" fill="#ff0088" />
+								<circle cx="50" cy="94" r="5" fill="#ffff00" />
+								<circle cx="6" cy="50" r="5" fill="#00ccff" />
+								<circle cx="50" cy="50" r="5" fill="#00ffff" />
+							</svg>
+						</div>
+						<span>32px</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg width="16" height="16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+								<circle
+									cx="50"
+									cy="50"
+									r="44"
+									fill="none"
+									stroke="#00ccff"
+									stroke-width="3"
+									opacity="0.4"
+								/>
+								<circle
+									cx="50"
+									cy="50"
+									r="28"
+									fill="none"
+									stroke="#ff0088"
+									stroke-width="5"
+									opacity="0.7"
+								/>
+								<circle cx="50" cy="6" r="7" fill="#00ffaa" />
+								<circle cx="94" cy="50" r="7" fill="#ff0088" />
+								<circle cx="50" cy="94" r="7" fill="#ffff00" />
+								<circle cx="6" cy="50" r="7" fill="#00ccff" />
+								<circle cx="50" cy="50" r="6" fill="#00ffff" />
+							</svg>
+						</div>
+						<span>16px</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Proposal C: 4-arc segments (pie slices) -->
+			<div class="proposal">
+				<h2>C — Arc Segments（扇形4ボタン）</h2>
+				<p style="font-size: 12px; color: #666; margin-bottom: 8px">
+					実際のSimonボタン形状に忠実な扇形。ギャップとグローで立体感を演出。
+				</p>
+				<div class="sizes">
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg
+								width="512"
+								height="512"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<filter id="glow-c">
+										<feGaussianBlur stdDeviation="1.2" result="blur" />
+										<feMerge>
+											<feMergeNode in="blur" />
+											<feMergeNode in="SourceGraphic" />
+										</feMerge>
+									</filter>
+									<!-- green: top-left arc (225° to 315° from center perspective = top-left quarter) -->
+									<!-- Using path for each arc segment -->
+								</defs>
+								<!-- Green: top-left: 183° to 267° -->
+								<path
+									d="M 50,50
+                       L 46.84,6.09
+                       A 44,44 0 0 0 6.09,46.84
+                       L 17.18,48.69
+                       A 33,33 0 0 1 48.69,17.18
+                       Z"
+									fill="#00ffaa"
+									filter="url(#glow-c)"
+									opacity="0.9"
+								/>
+
+								<!-- Red: top-right: 273° to 357° -->
+								<path
+									d="M 50,50
+                       L 53.16,6.09
+                       A 44,44 0 0 1 93.91,46.84
+                       L 82.82,48.69
+                       A 33,33 0 0 0 51.31,17.18
+                       Z"
+									fill="#ff0088"
+									filter="url(#glow-c)"
+									opacity="0.9"
+								/>
+
+								<!-- Yellow: bottom-left: 93° to 177° -->
+								<path
+									d="M 50,50
+                       L 6.09,53.16
+                       A 44,44 0 0 0 46.84,93.91
+                       L 48.69,82.82
+                       A 33,33 0 0 1 17.18,51.31
+                       Z"
+									fill="#ffff00"
+									filter="url(#glow-c)"
+									opacity="0.9"
+								/>
+
+								<!-- Blue: bottom-right: 3° to 87° -->
+								<path
+									d="M 50,50
+                       L 93.91,53.16
+                       A 44,44 0 0 1 53.16,93.91
+                       L 51.31,82.82
+                       A 33,33 0 0 0 82.82,51.31
+                       Z"
+									fill="#00ccff"
+									filter="url(#glow-c)"
+									opacity="0.9"
+								/>
+
+								<!-- center cap -->
+								<circle cx="50" cy="50" r="14" fill="#000a1a" />
+								<circle cx="50" cy="50" r="10" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8" />
+								<circle cx="50" cy="50" r="3" fill="#00ffff" opacity="0.8" />
+
+								<!-- outer border -->
+								<circle
+									cx="50"
+									cy="50"
+									r="44"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="0.5"
+									opacity="0.4"
+								/>
+							</svg>
+						</div>
+						<span>512px dark bg</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-checker">
+							<svg
+								width="512"
+								height="512"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<filter id="glow-c2">
+										<feGaussianBlur stdDeviation="1.2" result="blur" />
+										<feMerge>
+											<feMergeNode in="blur" />
+											<feMergeNode in="SourceGraphic" />
+										</feMerge>
+									</filter>
+								</defs>
+								<path
+									d="M 50,50 L 46.84,6.09 A 44,44 0 0 0 6.09,46.84 L 17.18,48.69 A 33,33 0 0 1 48.69,17.18 Z"
+									fill="#00ffaa"
+									filter="url(#glow-c2)"
+									opacity="0.95"
+								/>
+								<path
+									d="M 50,50 L 53.16,6.09 A 44,44 0 0 1 93.91,46.84 L 82.82,48.69 A 33,33 0 0 0 51.31,17.18 Z"
+									fill="#ff0088"
+									filter="url(#glow-c2)"
+									opacity="0.95"
+								/>
+								<path
+									d="M 50,50 L 6.09,53.16 A 44,44 0 0 0 46.84,93.91 L 48.69,82.82 A 33,33 0 0 1 17.18,51.31 Z"
+									fill="#ffff00"
+									filter="url(#glow-c2)"
+									opacity="0.95"
+								/>
+								<path
+									d="M 50,50 L 93.91,53.16 A 44,44 0 0 1 53.16,93.91 L 51.31,82.82 A 33,33 0 0 0 82.82,51.31 Z"
+									fill="#00ccff"
+									filter="url(#glow-c2)"
+									opacity="0.95"
+								/>
+								<circle cx="50" cy="50" r="14" fill="#000a1a" />
+								<circle cx="50" cy="50" r="10" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8" />
+								<circle cx="50" cy="50" r="3" fill="#00ffff" opacity="0.8" />
+								<circle
+									cx="50"
+									cy="50"
+									r="44"
+									fill="none"
+									stroke="#00ffff"
+									stroke-width="0.5"
+									opacity="0.4"
+								/>
+							</svg>
+						</div>
+						<span>512px transparent</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg
+								width="192"
+								height="192"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<filter id="glow-c3">
+										<feGaussianBlur stdDeviation="1.2" result="blur" />
+										<feMerge>
+											<feMergeNode in="blur" />
+											<feMergeNode in="SourceGraphic" />
+										</feMerge>
+									</filter>
+								</defs>
+								<path
+									d="M 50,50 L 46.84,6.09 A 44,44 0 0 0 6.09,46.84 L 17.18,48.69 A 33,33 0 0 1 48.69,17.18 Z"
+									fill="#00ffaa"
+									filter="url(#glow-c3)"
+								/>
+								<path
+									d="M 50,50 L 53.16,6.09 A 44,44 0 0 1 93.91,46.84 L 82.82,48.69 A 33,33 0 0 0 51.31,17.18 Z"
+									fill="#ff0088"
+									filter="url(#glow-c3)"
+								/>
+								<path
+									d="M 50,50 L 6.09,53.16 A 44,44 0 0 0 46.84,93.91 L 48.69,82.82 A 33,33 0 0 1 17.18,51.31 Z"
+									fill="#ffff00"
+									filter="url(#glow-c3)"
+								/>
+								<path
+									d="M 50,50 L 93.91,53.16 A 44,44 0 0 1 53.16,93.91 L 51.31,82.82 A 33,33 0 0 0 82.82,51.31 Z"
+									fill="#00ccff"
+									filter="url(#glow-c3)"
+								/>
+								<circle cx="50" cy="50" r="14" fill="#000a1a" />
+								<circle cx="50" cy="50" r="10" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8" />
+								<circle cx="50" cy="50" r="3" fill="#00ffff" />
+							</svg>
+						</div>
+						<span>192px</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+								<path
+									d="M 50,50 L 46.84,6.09 A 44,44 0 0 0 6.09,46.84 L 17.18,48.69 A 33,33 0 0 1 48.69,17.18 Z"
+									fill="#00ffaa"
+								/>
+								<path
+									d="M 50,50 L 53.16,6.09 A 44,44 0 0 1 93.91,46.84 L 82.82,48.69 A 33,33 0 0 0 51.31,17.18 Z"
+									fill="#ff0088"
+								/>
+								<path
+									d="M 50,50 L 6.09,53.16 A 44,44 0 0 0 46.84,93.91 L 48.69,82.82 A 33,33 0 0 1 17.18,51.31 Z"
+									fill="#ffff00"
+								/>
+								<path
+									d="M 50,50 L 93.91,53.16 A 44,44 0 0 1 53.16,93.91 L 51.31,82.82 A 33,33 0 0 0 82.82,51.31 Z"
+									fill="#00ccff"
+								/>
+								<circle cx="50" cy="50" r="13" fill="#000a1a" />
+								<circle cx="50" cy="50" r="4" fill="#00ffff" />
+							</svg>
+						</div>
+						<span>32px</span>
+					</div>
+					<div class="size-group">
+						<div class="bg-dark">
+							<svg width="16" height="16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+								<path
+									d="M 50,50 L 46.84,6.09 A 44,44 0 0 0 6.09,46.84 L 22,48.69 A 28,28 0 0 1 48.69,22 Z"
+									fill="#00ffaa"
+								/>
+								<path
+									d="M 50,50 L 53.16,6.09 A 44,44 0 0 1 93.91,46.84 L 78,48.69 A 28,28 0 0 0 51.31,22 Z"
+									fill="#ff0088"
+								/>
+								<path
+									d="M 50,50 L 6.09,53.16 A 44,44 0 0 0 46.84,93.91 L 48.69,78 A 28,28 0 0 1 22,51.31 Z"
+									fill="#ffff00"
+								/>
+								<path
+									d="M 50,50 L 93.91,53.16 A 44,44 0 0 1 53.16,93.91 L 51.31,78 A 28,28 0 0 0 78,51.31 Z"
+									fill="#00ccff"
+								/>
+								<circle cx="50" cy="50" r="18" fill="#000a1a" />
+							</svg>
+						</div>
+						<span>16px</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Summary -->
+			<div
+				style="
+					border-top: 1px solid #333;
+					padding-top: 30px;
+					font-size: 12px;
+					color: #555;
+					line-height: 1.8;
+				"
+			>
+				<p style="color: #00ffff; margin-bottom: 8px">採点ポイント</p>
+				<p>
+					<span style="color: #00ffaa">A</span> —
+					一番わかりやすい。4色ブロックが即座にSimonと認識できる。ファビコン（16px）でも機能する。
+				</p>
+				<p>
+					<span style="color: #00ffaa">B</span> —
+					最もアーティスティック。透過背景では小サイズで視認性が下がる。
+				</p>
+				<p>
+					<span style="color: #00ffaa">C</span> —
+					実際のボードに最も忠実。扇形がゲームを想起させる。小サイズでも読める。
+				</p>
+			</div>
+		</div>
+	</body>
+</html>

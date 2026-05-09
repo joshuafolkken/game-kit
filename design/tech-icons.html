@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Tech Stack</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				background: #0d1117;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			}
+
+			.card {
+				background: #161b22;
+				border: 1px solid #30363d;
+				border-radius: 16px;
+				padding: 40px 48px;
+				width: 640px;
+			}
+
+			.title {
+				color: #e6edf3;
+				font-size: 13px;
+				font-weight: 600;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				margin-bottom: 28px;
+				opacity: 0.5;
+			}
+
+			.project-name {
+				color: #e6edf3;
+				font-size: 28px;
+				font-weight: 700;
+				margin-bottom: 8px;
+			}
+
+			.description {
+				color: #8b949e;
+				font-size: 14px;
+				margin-bottom: 32px;
+				line-height: 1.6;
+			}
+
+			.divider {
+				height: 1px;
+				background: #30363d;
+				margin-bottom: 28px;
+			}
+
+			.section-label {
+				color: #8b949e;
+				font-size: 11px;
+				font-weight: 600;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				margin-bottom: 14px;
+			}
+
+			.icons-row {
+				display: flex;
+				gap: 12px;
+				flex-wrap: wrap;
+				margin-bottom: 24px;
+			}
+
+			.icon-item {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 6px;
+			}
+
+			.icon-item img {
+				width: 44px;
+				height: 44px;
+				border-radius: 8px;
+			}
+
+			.icon-label {
+				color: #6e7681;
+				font-size: 10px;
+				font-weight: 500;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="card">
+			<p class="title">Built with</p>
+			<p class="project-name">Simon</p>
+			<p class="description">A Simon memory game built with a modern full-stack web toolchain.</p>
+			<div class="divider"></div>
+
+			<p class="section-label">Frontend</p>
+			<div class="icons-row">
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=svelte" alt="Svelte" />
+					<span class="icon-label">Svelte 5</span>
+				</div>
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=ts" alt="TypeScript" />
+					<span class="icon-label">TypeScript</span>
+				</div>
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=vite" alt="Vite" />
+					<span class="icon-label">Vite</span>
+				</div>
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=tailwind" alt="Tailwind" />
+					<span class="icon-label">Tailwind</span>
+				</div>
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=threejs" alt="Three.js" />
+					<span class="icon-label">Three.js</span>
+				</div>
+			</div>
+
+			<p class="section-label">Testing &amp; Quality</p>
+			<div class="icons-row">
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=vitest" alt="Vitest" />
+					<span class="icon-label">Vitest</span>
+				</div>
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=playwright" alt="Playwright" />
+					<span class="icon-label">Playwright</span>
+				</div>
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=eslint" alt="ESLint" />
+					<span class="icon-label">ESLint</span>
+				</div>
+			</div>
+
+			<p class="section-label">Infrastructure</p>
+			<div class="icons-row">
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=cloudflare" alt="Cloudflare" />
+					<span class="icon-label">Cloudflare</span>
+				</div>
+				<div class="icon-item">
+					<img src="https://skillicons.dev/icons?i=pnpm" alt="pnpm" />
+					<span class="icon-label">pnpm</span>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

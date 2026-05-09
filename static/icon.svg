@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- green: top-left -->
+  <path d="M 50,50 L 46.84,6.09 A 44,44 0 0 0 6.09,46.84 L 17.18,48.69 A 33,33 0 0 1 48.69,17.18 Z"
+        fill="#00ffaa" filter="url(#glow)"/>
+  <!-- red: top-right -->
+  <path d="M 50,50 L 53.16,6.09 A 44,44 0 0 1 93.91,46.84 L 82.82,48.69 A 33,33 0 0 0 51.31,17.18 Z"
+        fill="#ff0088" filter="url(#glow)"/>
+  <!-- yellow: bottom-left -->
+  <path d="M 50,50 L 6.09,53.16 A 44,44 0 0 0 46.84,93.91 L 48.69,82.82 A 33,33 0 0 1 17.18,51.31 Z"
+        fill="#ffff00" filter="url(#glow)"/>
+  <!-- blue: bottom-right -->
+  <path d="M 50,50 L 93.91,53.16 A 44,44 0 0 1 53.16,93.91 L 51.31,82.82 A 33,33 0 0 0 82.82,51.31 Z"
+        fill="#00ccff" filter="url(#glow)"/>
+  <!-- center cap -->
+  <circle cx="50" cy="50" r="14" fill="#000a1a"/>
+  <circle cx="50" cy="50" r="10" fill="#0d0d12" stroke="#00ffff" stroke-width="0.8"/>
+  <circle cx="50" cy="50" r="3" fill="#00ffff" opacity="0.8"/>
+  <!-- outer ring -->
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#00ffff" stroke-width="0.5" opacity="0.4"/>
+</svg>

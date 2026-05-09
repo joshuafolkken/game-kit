@@ -10,7 +10,7 @@ export const FLOOR_TEXT_ROTATION_X = -Math.PI / 2
 
 const HALF_DIVISOR = 2
 
-function make_credits_scroll_bounds(
+export function make_credits_scroll_bounds(
 	line_count: number,
 	half_depth: number,
 ): { start_z: number; end_z: number } {
@@ -19,7 +19,7 @@ function make_credits_scroll_bounds(
 	return { start_z: offset, end_z: -offset }
 }
 
-function advance_scroll(
+export function advance_scroll(
 	current_z: number,
 	delta: number,
 	start_z: number,
