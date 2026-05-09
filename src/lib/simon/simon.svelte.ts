@@ -190,10 +190,18 @@ function make_simon_api(
 		get flash_intensity() {
 			return s.flash_intensity
 		},
-		start: (): void => start_simon(s, t, score, colors),
-		press: (color: ButtonColor): void => press_simon(s, color),
-		release: (): void => release_simon(s, t, score, colors),
-		reset: (): void => reset_simon(s, t, score),
+		start(): void {
+			start_simon(s, t, score, colors)
+		},
+		press(color: ButtonColor): void {
+			press_simon(s, color)
+		},
+		release(): void {
+			release_simon(s, t, score, colors)
+		},
+		reset(): void {
+			reset_simon(s, t, score)
+		},
 	}
 }
 

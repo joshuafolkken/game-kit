@@ -100,9 +100,12 @@ function make_score_api(s: ScoreState, keys: StorageKeys) {
 		get last_cleared_round(): number {
 			return s.last_cleared_round
 		},
-		add_round_score: (elapsed_ms: number, sequence_length: number, round: number): void =>
-			add_round_score_impl(s, { elapsed_ms, sequence_length, round }, keys),
-		reset: (): void => reset_score_impl(s),
+		add_round_score(elapsed_ms: number, sequence_length: number, round: number): void {
+			add_round_score_impl(s, { elapsed_ms, sequence_length, round }, keys)
+		},
+		reset(): void {
+			reset_score_impl(s)
+		},
 		format_score,
 		calculate_time_coefficient,
 		calculate_round_score,
