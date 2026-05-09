@@ -8,4 +8,4 @@ pre-push:
       env:
         PLAYWRIGHT_PREVIEW: '1'
         PLAYWRIGHT_HTML_OPEN: never
-      run: rm -rf .wrangler/state && pnpm build && pnpm exec playwright test
+      run: rm -rf .wrangler/state && pnpm build && pnpm exec playwright test --workers=1
