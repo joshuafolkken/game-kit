@@ -1,2 +1,8 @@
 extends:
   - node_modules/@joshuafolkken/kit/lefthook/sveltekit.yml
+
+pre-push:
+  commands:
+    test-e2e:
+      glob: '{*.{svelte,ts,js,mjs,cjs},package.json}'
+      run: pnpm build && CI=1 PLAYWRIGHT_HTML_OPEN=never pnpm exec playwright test
