@@ -6,6 +6,6 @@ pre-push:
     test-e2e:
       glob: '{*.{svelte,ts,js,mjs,cjs},package.json}'
       env:
-        PLAYWRIGHT_PREVIEW: '1'
+        CI: '1'
         PLAYWRIGHT_HTML_OPEN: never
-      run: rm -rf .wrangler/state && pnpm build && pnpm exec playwright test
+      run: pnpm exec playwright test
