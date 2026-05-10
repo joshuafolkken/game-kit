@@ -1,18 +1,16 @@
 import { defineConfig, devices, type ReporterDescription } from '@playwright/test'
 
-const IS_CI = Boolean(process.env['CI']) || process.env['PLAYWRIGHT_PREVIEW'] === '1'
-const IS_PREVIEW = process.env['PLAYWRIGHT_PREVIEW'] === '1'
+const IS_CI = Boolean(process.env['CI'])
 
 const DEV_PORT = 5173
 const PREVIEW_PORT = 4173
 
-const CI_TIMEOUT = 15_000
+const CI_TIMEOUT = 120_000
 const LOCAL_TIMEOUT = 30_000
 const CI_TEST_TIMEOUT = 30_000
 const ACTION_TIMEOUT = 10_000
 const NAV_TIMEOUT = 30_000
-const CI_WORKERS = 2
-const PREVIEW_WORKERS = 1
+const CI_WORKERS = 1
 const CI_RETRIES = 2
 
 type EnvConfig = {
@@ -27,7 +25,7 @@ type EnvConfig = {
 
 const web_server_config = IS_CI
 	? {
-			command: 'pnpm run preview',
+			command: 'pnpm run build && pnpm run preview',
 			port: PREVIEW_PORT,
 			timeout: CI_TIMEOUT,
 			reuseExistingServer: false,
@@ -58,7 +56,7 @@ export default defineConfig({
 	webServer: web_server_config,
 	testMatch: '**/*.e2e.{ts,js}',
 	fullyParallel: true,
-	...(IS_CI ? { workers: IS_PREVIEW ? PREVIEW_WORKERS : CI_WORKERS } : {}),
+	...(IS_CI ? { workers: CI_WORKERS } : {}),
 	retries: env_config.retries,
 	timeout: env_config.timeout,
 	projects: [

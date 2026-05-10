@@ -164,11 +164,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Build application
-        env:
-          E2E_CLEANUP_ENABLED: '1'
-        run: pnpm build
-
       - name: Run E2E tests
         run: pnpm exec playwright test
 
