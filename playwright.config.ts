@@ -10,7 +10,7 @@ const LOCAL_TIMEOUT = 30_000
 const CI_TEST_TIMEOUT = 30_000
 const ACTION_TIMEOUT = 10_000
 const NAV_TIMEOUT = 30_000
-const CI_WORKERS = 1
+const CI_WORKERS = 2
 const CI_RETRIES = 2
 
 type EnvConfig = {
