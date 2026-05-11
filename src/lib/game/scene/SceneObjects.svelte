@@ -7,8 +7,8 @@
 	import ScoreDisplay from '$lib/game/display/ScoreDisplay.svelte'
 	import { fonts } from '$lib/game/fonts'
 	import { fullscreen } from '$lib/game/fullscreen.svelte'
+	import { make_pointer_compute } from '$lib/game/input/pointer-compute.js'
 	import Player from '$lib/game/player/Player.svelte'
-	import { make_pointer_compute } from '$lib/game/pointer-compute.js'
 	import { lighting } from '$lib/game/scene/lighting'
 	import { ROOM_D, ROOM_H, ROOM_W } from '$lib/game/scene/room-config'
 	import {

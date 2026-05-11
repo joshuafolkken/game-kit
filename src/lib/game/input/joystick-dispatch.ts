@@ -1,4 +1,4 @@
-import { override_event_offset } from '$lib/game/override-event-offset'
+import { override_event_offset } from '$lib/game/input/override-event-offset'
 
 type DispatchCtx = { dom: HTMLElement; offset_x: number; offset_y: number }
 
