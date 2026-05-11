@@ -127,7 +127,7 @@ describe('credits-config', () => {
 		it('uses the provided speed parameter', () => {
 			const initial_z = 5
 			const slow = credits_scroll.advance_scroll(initial_z, FRAME_DELTA, START_Z, END_Z, 0.1)
-			const fast = credits_scroll.advance_scroll(initial_z, FRAME_DELTA, START_Z, END_Z, 1.0)
+			const fast = credits_scroll.advance_scroll(initial_z, FRAME_DELTA, START_Z, END_Z, 1)
 			expect(fast).toBeLessThan(slow)
 		})
 	})

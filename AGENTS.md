@@ -189,6 +189,17 @@ Before every `git commit` — including follow-up commits on the same branch —
 - If blockers exist and **no** ignore reason is supplied: `pnpm josh followup` sends a `confirmation` Telegram and exits non-zero. Fix the findings (or provide an ignore reason) and re-run.
 - If blockers exist and `--ai-review-ignore-reason "<reason>"` is supplied: the workflow posts an ignore-reason comment to the PR and proceeds to completion.
 
+#### Config file update check (during `pnpm josh followup`)
+
+After CI status checks complete during `pnpm josh followup`, inspect `git diff main...HEAD` to determine whether the PR contains changes to files managed and distributed by `josh sync` (e.g., `playwright.config.ts`, `.github/workflows/ci.yml`). If any managed config file was updated, stop before making any subsequent commit and send a `confirmation` Telegram notification:
+
+```bash
+pnpm josh notify --task-type confirmation --issue-url "<issue-url>" --body=$'CI status check indicates a managed config file was updated\nPlease review the changes before proceeding'
+```
+
+- Do not make any follow-up commit, fix, or proceed to merge until the user explicitly confirms
+- This check runs independently of AI reviewer comment scanning — both may trigger in the same workflow run
+
 #### `auto-merge` — Default `fullrun` behavior
 
 Every `fullrun` / `fullrun new` invocation uses `pnpm josh followup --merge`, which handles the full sequence internally: wait for CI → verify AI review findings → send completion notification → merge. Invoking `fullrun` is itself the explicit authorization to merge.

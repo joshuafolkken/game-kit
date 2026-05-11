@@ -125,11 +125,9 @@ describe('run_victory_flash', () => {
 		void run_victory_flash(s, t, COLORS, 0)
 		await vi.advanceTimersByTimeAsync(0)
 		cancel_flash(s, t)
-		const calls_before = (vi.mocked(simon_audio.play_tone) as ReturnType<typeof vi.fn>).mock.calls
-			.length
+		const calls_before = vi.mocked(simon_audio.play_tone).mock.calls.length
 		await vi.runAllTimersAsync()
-		const calls_after = (vi.mocked(simon_audio.play_tone) as ReturnType<typeof vi.fn>).mock.calls
-			.length
+		const calls_after = vi.mocked(simon_audio.play_tone).mock.calls.length
 		expect(calls_after).toBe(calls_before)
 	})
 

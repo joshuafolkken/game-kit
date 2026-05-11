@@ -80,8 +80,8 @@ describe('Switch', () => {
 			label_y_offset: 0.5,
 			label_z: 0.06,
 			active_light_z: 0.6,
-			active_light_distance: 3.0,
-			active_light_intensity: 3.0,
+			active_light_distance: 3,
+			active_light_intensity: 3,
 		}
 		const { container } = render(Switch, { props: { ...BASE_PROPS, geometry } })
 		expect(container).toBeTruthy()

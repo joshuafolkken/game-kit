@@ -1,7 +1,4 @@
 name: CI
-permissions:
-  contents: read
-  packages: read
 
 on:
   push:
@@ -18,6 +15,9 @@ jobs:
   checks:
     name: Checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     # Playwright system dependencies and Chromium are pre-installed in this image,
     # eliminating the slow `playwright install-deps` step. Keep the image tag in
     # sync with @playwright/test in package.json whenever Playwright is upgraded.
@@ -86,6 +86,8 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -99,6 +101,8 @@ jobs:
     name: Detect E2E
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    permissions:
+      contents: read
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -108,7 +112,7 @@ jobs:
       - name: Check for Playwright config
         id: check
         run: |
-          if [ -f playwright.config.ts ] && [ -d e2e ]; then
+          if [ -f playwright.config.ts ] && find src/routes -name "*.e2e.ts" | grep -q .; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
@@ -119,6 +123,9 @@ jobs:
     needs: e2e-detect
     if: needs.e2e-detect.outputs.enabled == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     # Playwright system dependencies and Chromium are pre-installed in this image.
     # Keep the image tag in sync with @playwright/test in package.json whenever
     # Playwright is upgraded.
@@ -128,7 +135,7 @@ jobs:
     timeout-minutes: 10
     # Playwright preview は localhost:4173。ワークフロー共通の BETTER_AUTH_URL（本番）を
     # 引き継ぐと Better Auth が origin を拒否する（CI E2E では本番 URL は使わない）。
-    # ホスト/ポートは e2e/e2e-constants.ts の E2E_PREVIEW_PORT（4173）と一致させること。
+    # ホスト/ポートは playwright.config.ts の PREVIEW_PORT（4173）と一致させること。
     env:
       BETTER_AUTH_URL: http://localhost:4173
     steps:
