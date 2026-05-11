@@ -15,6 +15,8 @@ import {
 	FULLSCREEN_SWITCH_COLORS,
 	fullscreen_switch_input,
 	game_state,
+	HALF_D,
+	HALF_W,
 	input,
 	lighting,
 	loading,
@@ -26,6 +28,10 @@ import {
 	player_speed,
 	player_step,
 	player_velocity,
+	pointer_button,
+	ROOM_D,
+	ROOM_H,
+	ROOM_W,
 	session,
 	switch_audio,
 	SWITCH_ICON_TYPES,
@@ -88,5 +94,19 @@ describe('library index exports', () => {
 		expect(typeof MIN_DISPLAY_MS).toBe('number')
 		expect(typeof OVERLAY_ELEMENT_ID).toBe('string')
 		expect(typeof OBSERVER_GLOBAL_KEY).toBe('string')
+	})
+
+	it('exports room config constants with correct values', () => {
+		expect(ROOM_W).toBe(10)
+		expect(ROOM_D).toBe(10)
+		expect(ROOM_H).toBe(3)
+		expect(HALF_W).toBe(ROOM_W / 2)
+		expect(HALF_D).toBe(ROOM_D / 2)
+	})
+
+	it('exports pointer_button with is_left_click', () => {
+		expect(typeof pointer_button.is_left_click).toBe('function')
+		expect(pointer_button.is_left_click({ nativeEvent: { button: 0 } })).toBe(true)
+		expect(pointer_button.is_left_click({ nativeEvent: { button: 2 } })).toBe(false)
 	})
 })

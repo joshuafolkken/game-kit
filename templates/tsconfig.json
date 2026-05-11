@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"moduleResolution": "bundler",
+		"module": "esnext",
+		"target": "esnext",
+		"skipLibCheck": true,
+		"allowJs": true,
+		"checkJs": true,
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"]
+		}
+	},
+	"include": ["src/**/*.ts", "src/**/*.svelte", "src/**/*.js", "vite.config.ts", "svelte.config.js"]
+}

@@ -47,6 +47,8 @@ export { fonts } from './game/fonts'
 export { lighting } from './game/scene/lighting'
 
 export { credits_scroll } from './game/scene/credits-config'
+export { HALF_D, HALF_W, ROOM_D, ROOM_H, ROOM_W } from './game/scene/room-config'
+export { pointer_button } from './game/input/pointer-button'
 
 export { type ScoreData } from './game/display/score-display-types'
 export { type SceneObjectsMessages } from './game/scene/scene-objects-messages'

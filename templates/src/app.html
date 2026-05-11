@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Game Kit</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="text-scale" content="scale" />
+		<meta name="theme-color" content="#0d0d12" />
+		<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<script>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', function () {
+					navigator.serviceWorker.register('/sw.js')
+				})
+			}
+		</script>
+		<style>
+			#static-loading-overlay {
+				position: fixed;
+				inset: 0;
+				background: #0d0d12;
+				z-index: 9999;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 1.5rem;
+			}
+			#static-loading-overlay.is-hidden {
+				display: none;
+			}
+			#static-loading-overlay .logo {
+				width: 96px;
+				color: white;
+				display: block;
+			}
+			#static-loading-overlay .brand {
+				margin: 0;
+				color: rgba(255, 255, 255, 0.75);
+				font-family: monospace;
+				font-size: 1rem;
+				letter-spacing: 1px;
+				line-height: 1.4;
+			}
+			#static-loading-overlay .game-block {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 5px;
+				margin: 12px 0;
+			}
+			#static-loading-overlay .game-title {
+				margin: 0;
+				color: rgba(255, 255, 255, 0.6);
+				font-family: monospace;
+				font-size: 1.1rem;
+				line-height: 1.2;
+				letter-spacing: 3px;
+			}
+			#static-loading-overlay .game-version {
+				margin: 0;
+				color: rgba(255, 255, 255, 0.55);
+				font-family: monospace;
+				font-size: 0.8rem;
+				line-height: 1.2;
+				letter-spacing: 2px;
+			}
+			#static-loading-overlay .label {
+				margin: 0;
+				color: rgba(255, 255, 255, 0.85);
+				font-family: monospace;
+				font-size: 1rem;
+				letter-spacing: 0.2em;
+				display: flex;
+				gap: 0.75em;
+				align-items: center;
+				line-height: 1.5;
+				min-height: 1.5em;
+			}
+			#static-loading-overlay .status {
+				color: rgba(255, 255, 255, 0.6);
+			}
+			#static-loading-overlay .progress {
+				color: rgba(255, 255, 255, 0.6);
+				min-width: 3.5em;
+				text-align: right;
+			}
+			#static-loading-overlay .bar {
+				width: 240px;
+				height: 4px;
+				border: none;
+				border-radius: 2px;
+				display: block;
+				appearance: none;
+				background: rgba(255, 255, 255, 0.1);
+			}
+			#static-loading-overlay .bar::-webkit-progress-bar {
+				background: rgba(255, 255, 255, 0.1);
+				border-radius: 2px;
+			}
+			#static-loading-overlay .bar::-webkit-progress-value {
+				background: rgba(255, 255, 255, 0.6);
+				border-radius: 2px;
+				transition: width 0.4s ease-out;
+			}
+			#static-loading-overlay .bar::-moz-progress-bar {
+				background: rgba(255, 255, 255, 0.6);
+				border-radius: 2px;
+			}
+		</style>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<!--
+			HTML shell renders before any JS runs, so the label cannot use Svelte i18n keys.
+			The literal below MUST stay in sync with messages.loading_downloading in src/lib/messages/en.ts.
+			The inline SVG MUST stay in sync with src/lib/components/Logo.svelte.
+		-->
+		<output id="static-loading-overlay" data-testid="loading-overlay" aria-live="polite">
+			<svg
+				class="logo"
+				xmlns="http://www.w3.org/2000/svg"
+				viewBox="20 18 45 59"
+				aria-label="Geometric JF Fusion Logo"
+				role="img"
+			>
+				<defs>
+					<filter id="logo-glow" x="-50%" y="-50%" width="200%" height="200%">
+						<feGaussianBlur stdDeviation="1.2" result="blur" />
+						<feFlood flood-color="white" flood-opacity="0.3" result="glowColor" />
+						<feComposite in="glowColor" in2="blur" operator="in" result="softGlow" />
+						<feMerge>
+							<feMergeNode in="softGlow" />
+							<feMergeNode in="SourceGraphic" />
+						</feMerge>
+					</filter>
+				</defs>
+				<g filter="url(#logo-glow)">
+					<rect x="20" y="20" width="8" height="50" fill="currentColor" />
+					<rect x="20" y="20" width="20" height="8" fill="currentColor" />
+					<rect x="20" y="62" width="12" height="8" fill="currentColor" />
+					<rect x="40" y="20" width="8" height="55" fill="currentColor" />
+					<rect x="40" y="20" width="25" height="8" fill="currentColor" />
+					<rect x="40" y="45" width="20" height="8" fill="currentColor" />
+				</g>
+			</svg>
+			<p class="brand">Joshua Folkken</p>
+			<!-- game-block MUST stay in sync with messages.game_title and package.json#version -->
+			<div class="game-block">
+				<p class="game-title">SIMON</p>
+				<p class="game-version">v__APP_VERSION__</p>
+			</div>
+			<p class="label">
+				<span id="loading-status" class="status">DOWNLOADING...</span>
+				<span class="progress">0%</span>
+			</p>
+			<progress
+				class="bar"
+				value="0"
+				max="100"
+				tabindex="-1"
+				aria-labelledby="loading-status"
+			></progress>
+		</output>
+		<script>
+			/*
+				Pseudo download-progress tracker. Watches resource entries via PerformanceObserver,
+				accumulates bytes and file count, and updates the <progress> bar value
+				and .progress text. The Svelte loading module disconnects this observer on mark_ready
+				and snaps the value to 100% — see src/lib/game/loading.svelte.ts.
+			*/
+			;(function () {
+				var EXPECTED_TOTAL_BYTES = 8500000
+				var EXPECTED_FILE_COUNT = 115
+				var MAX_PRE_READY_PCT = 95
+				var loaded_bytes = 0
+				var loaded_files = 0
+				var seen_names = Object.create(null)
+
+				function process_entry(entry) {
+					if (!entry || seen_names[entry.name]) return
+					seen_names[entry.name] = true
+					var size = entry.transferSize || entry.encodedBodySize || 0
+					loaded_bytes += size
+					loaded_files += 1
+				}
+
+				function compute_pct() {
+					var byte_pct = (loaded_bytes / EXPECTED_TOTAL_BYTES) * 100
+					var file_pct = (loaded_files / EXPECTED_FILE_COUNT) * 100
+					var raw = Math.max(byte_pct, file_pct)
+					return Math.floor(Math.min(MAX_PRE_READY_PCT, raw))
+				}
+
+				function update_overlay() {
+					var overlay = document.getElementById('static-loading-overlay')
+					if (!overlay) return
+					var pct = compute_pct()
+					var value = pct + '%'
+					var progress_el = overlay.querySelector('.progress')
+					if (progress_el) progress_el.textContent = value
+					var bar_el = overlay.querySelector('.bar')
+					if (bar_el) bar_el.value = pct
+				}
+
+				if (globalThis.performance && performance.getEntriesByType) {
+					performance.getEntriesByType('resource').forEach(process_entry)
+				}
+
+				if (typeof PerformanceObserver === 'undefined') {
+					update_overlay()
+					return
+				}
+
+				try {
+					var observer = new PerformanceObserver(function (list) {
+						list.getEntries().forEach(process_entry)
+						update_overlay()
+					})
+					observer.observe({ type: 'resource' })
+					// Key must match OBSERVER_GLOBAL_KEY in src/lib/game/loading.svelte.ts
+					globalThis.__loading_observer = observer
+				} catch (error) {
+					console.warn('Loading progress observer unavailable:', error)
+				}
+				update_overlay()
+			})()
+		</script>
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
