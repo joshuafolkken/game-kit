@@ -1,8 +1,8 @@
-import { switch_audio } from '$lib/game/switch-audio'
+import { session } from '$lib/game/session.svelte'
+import { game_state } from '$lib/game/state.svelte'
+import { switch_audio } from '$lib/game/switch/switch-audio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { alt_switch_input } from './alt-switch-input'
-import { session } from './session.svelte'
-import { game_state } from './state.svelte'
 
 describe('alt_switch_input', () => {
 	beforeEach(() => {

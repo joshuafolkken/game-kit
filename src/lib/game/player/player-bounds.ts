@@ -1,4 +1,4 @@
-import { HALF_D, HALF_W } from '$lib/game/room-config'
+import { HALF_D, HALF_W } from '$lib/game/scene/room-config'
 
 export const PLAYER_RADIUS = 0.4
 const X_MAX = HALF_W - PLAYER_RADIUS

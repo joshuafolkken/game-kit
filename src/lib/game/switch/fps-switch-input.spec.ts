@@ -1,8 +1,8 @@
-import { switch_audio } from '$lib/game/switch-audio'
+import { fps } from '$lib/game/display/fps.svelte.js'
+import { session } from '$lib/game/session.svelte.js'
+import { switch_audio } from '$lib/game/switch/switch-audio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fps_switch_input } from './fps-switch-input.js'
-import { fps } from './fps.svelte.js'
-import { session } from './session.svelte.js'
 
 describe('fps_switch_input', () => {
 	beforeEach(() => {

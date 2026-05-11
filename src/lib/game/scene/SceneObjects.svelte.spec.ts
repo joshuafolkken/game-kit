@@ -1,4 +1,4 @@
-import type { ScoreData } from '$lib/game/score-display-types'
+import type { ScoreData } from '$lib/game/display/score-display-types'
 import { createRawSnippet } from 'svelte'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
@@ -14,16 +14,16 @@ vi.mock('@threlte/extras', () => ({
 	Text: function Text() {},
 }))
 vi.mock('./Room.svelte', () => ({ default: function Room() {} }))
-vi.mock('./player/Player.svelte', () => ({ default: function Player() {} }))
-vi.mock('./ScoreDisplay.svelte', () => ({ default: function ScoreDisplay() {} }))
-vi.mock('./Switch.svelte', () => ({ default: function Switch() {} }))
+vi.mock('$lib/game/player/Player.svelte', () => ({ default: function Player() {} }))
+vi.mock('$lib/game/display/ScoreDisplay.svelte', () => ({ default: function ScoreDisplay() {} }))
+vi.mock('$lib/game/switch/Switch.svelte', () => ({ default: function Switch() {} }))
 vi.mock('./FloorCredits.svelte', () => ({ default: function FloorCredits() {} }))
 vi.mock('$lib/game/fullscreen.svelte', () => ({ fullscreen: { is_active: false } }))
 vi.mock('$lib/game/state.svelte', () => ({ game_state: { is_alt: false } }))
 vi.mock('$lib/game/pointer-compute.js', () => ({
 	make_pointer_compute: vi.fn(() => vi.fn()),
 }))
-vi.mock('$lib/game/lighting', () => ({
+vi.mock('$lib/game/scene/lighting', () => ({
 	lighting: {
 		get_ambient_intensity: vi.fn(() => 1),
 		get_ambient_color: vi.fn(() => '#fff'),
@@ -36,25 +36,25 @@ vi.mock('$lib/game/fonts', () => ({
 		get_font_size_multiplier: vi.fn(() => 1),
 	},
 }))
-vi.mock('$lib/game/room-config', () => ({ ROOM_W: 10, ROOM_D: 10, ROOM_H: 5 }))
-vi.mock('$lib/game/switch-colors', () => ({
+vi.mock('$lib/game/scene/room-config', () => ({ ROOM_W: 10, ROOM_D: 10, ROOM_H: 5 }))
+vi.mock('$lib/game/switch/switch-colors', () => ({
 	CYBER_SWITCH_COLORS: {},
 	FULLSCREEN_SWITCH_COLORS: {},
 	FPS_SWITCH_COLORS: {},
 }))
-vi.mock('$lib/game/alt-switch-input', () => ({
+vi.mock('$lib/game/switch/alt-switch-input', () => ({
 	alt_switch_input: { on_click: vi.fn() },
 }))
-vi.mock('$lib/game/fullscreen-switch-input', () => ({
+vi.mock('$lib/game/switch/fullscreen-switch-input', () => ({
 	fullscreen_switch_input: { on_click: vi.fn() },
 }))
-vi.mock('$lib/game/fps-switch-input', () => ({
+vi.mock('$lib/game/switch/fps-switch-input', () => ({
 	fps_switch_input: { on_click: vi.fn() },
 }))
-vi.mock('$lib/game/fps.svelte', () => ({
+vi.mock('$lib/game/display/fps.svelte', () => ({
 	fps: { is_fps_enabled: true, current_fps_text: '---', toggle: vi.fn() },
 }))
-vi.mock('./FpsDisplay.svelte', () => ({ default: function FpsDisplay() {} }))
+vi.mock('$lib/game/display/FpsDisplay.svelte', () => ({ default: function FpsDisplay() {} }))
 
 const MOCK_CREDITS_START_Z = 10
 const MOCK_CREDITS_END_Z = -10

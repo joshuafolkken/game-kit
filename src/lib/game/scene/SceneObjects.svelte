@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from '@threlte/core'
 	import { interactivity, Text } from '@threlte/extras'
-	import { alt_switch_input } from '$lib/game/alt-switch-input'
+	import { fps } from '$lib/game/display/fps.svelte'
+	import FpsDisplay from '$lib/game/display/FpsDisplay.svelte'
+	import type { ScoreData } from '$lib/game/display/score-display-types'
+	import ScoreDisplay from '$lib/game/display/ScoreDisplay.svelte'
 	import { fonts } from '$lib/game/fonts'
-	import { fps_switch_input } from '$lib/game/fps-switch-input'
-	import { fps } from '$lib/game/fps.svelte'
-	import { fullscreen_switch_input } from '$lib/game/fullscreen-switch-input'
 	import { fullscreen } from '$lib/game/fullscreen.svelte'
-	import { lighting } from '$lib/game/lighting'
+	import Player from '$lib/game/player/Player.svelte'
 	import { make_pointer_compute } from '$lib/game/pointer-compute.js'
-	import { ROOM_D, ROOM_H, ROOM_W } from '$lib/game/room-config'
+	import { lighting } from '$lib/game/scene/lighting'
+	import { ROOM_D, ROOM_H, ROOM_W } from '$lib/game/scene/room-config'
 	import {
 		CEILING_COLOR,
 		CYBER_BG,
@@ -21,7 +22,7 @@
 		NORMAL_BG,
 		NORMAL_POINT_LIGHT_COLOR,
 		WALL_COLOR,
-	} from '$lib/game/scene-colors'
+	} from '$lib/game/scene/scene-colors'
 	import {
 		BOB_AMPLITUDE,
 		BOB_SPEED,
@@ -29,23 +30,22 @@
 		TITLE_FONT_SIZE,
 		TITLE_Y,
 		TITLE_Z,
-	} from '$lib/game/scene-objects-config'
-	import type { SceneObjectsMessages } from '$lib/game/scene-objects-messages'
-	import type { ScoreData } from '$lib/game/score-display-types'
+	} from '$lib/game/scene/scene-objects-config'
+	import type { SceneObjectsMessages } from '$lib/game/scene/scene-objects-messages'
 	import { game_state } from '$lib/game/state.svelte'
+	import { alt_switch_input } from '$lib/game/switch/alt-switch-input'
+	import { fps_switch_input } from '$lib/game/switch/fps-switch-input'
+	import { fullscreen_switch_input } from '$lib/game/switch/fullscreen-switch-input'
 	import {
 		CYBER_SWITCH_COLORS,
 		FPS_SWITCH_COLORS,
 		FULLSCREEN_SWITCH_COLORS,
-	} from '$lib/game/switch-colors'
-	import { FPS_SWITCH_Y, FULLSCREEN_SWITCH_X, LEFT_SWITCH_X } from '$lib/game/switch-config'
+	} from '$lib/game/switch/switch-colors'
+	import { FPS_SWITCH_Y, FULLSCREEN_SWITCH_X, LEFT_SWITCH_X } from '$lib/game/switch/switch-config'
+	import Switch from '$lib/game/switch/Switch.svelte'
 	import type { Snippet } from 'svelte'
 	import FloorCredits from './FloorCredits.svelte'
-	import FpsDisplay from './FpsDisplay.svelte'
-	import Player from './player/Player.svelte'
 	import Room from './Room.svelte'
-	import ScoreDisplay from './ScoreDisplay.svelte'
-	import Switch from './Switch.svelte'
 
 	interface Props {
 		game_board: Snippet

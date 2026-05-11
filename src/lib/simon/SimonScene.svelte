@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { make_credits_scroll_bounds } from '$lib/game/credits-config'
-	import { HALF_D } from '$lib/game/room-config'
-	import type { SceneObjectsMessages } from '$lib/game/scene-objects-messages'
-	import SceneObjects from '$lib/game/SceneObjects.svelte'
+	import { make_credits_scroll_bounds } from '$lib/game/scene/credits-config'
+	import { HALF_D } from '$lib/game/scene/room-config'
+	import type { SceneObjectsMessages } from '$lib/game/scene/scene-objects-messages'
+	import SceneObjects from '$lib/game/scene/SceneObjects.svelte'
 	import { game_state } from '$lib/game/state.svelte'
 	import { messages } from '$lib/messages/en'
 	import { SCORE_DISPLAY_Z } from '$lib/simon/board-config'

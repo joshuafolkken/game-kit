@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
 	import { Text } from '@threlte/extras'
-	import { resolve_switch_colors } from '$lib/game/switch-colors'
-	import type { SwitchColors } from '$lib/game/switch-colors'
-	import type { SwitchGeometry, SwitchIconType } from '$lib/game/switch-config'
+	import { resolve_switch_colors } from '$lib/game/switch/switch-colors'
+	import type { SwitchColors } from '$lib/game/switch/switch-colors'
+	import type { SwitchGeometry, SwitchIconType } from '$lib/game/switch/switch-config'
 	import {
 		DEFAULT_SWITCH_GEOMETRY,
 		FPS_BAR_1_H,
@@ -11,7 +11,7 @@
 		FPS_BAR_3_H,
 		FPS_BAR_BASE_Y,
 		FPS_BAR_X_STEP,
-	} from '$lib/game/switch-config'
+	} from '$lib/game/switch/switch-config'
 
 	type CornerSign = -1 | 1
 	type BarAxis = 'h' | 'v'
