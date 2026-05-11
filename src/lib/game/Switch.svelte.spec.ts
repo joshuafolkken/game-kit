@@ -10,6 +10,9 @@ vi.mock('$lib/game/fonts', () => ({
 	fonts: { get_font: vi.fn(() => ''), get_font_size_multiplier: vi.fn(() => 1) },
 }))
 
+const ACTIVE_LIGHT_DISTANCE = 3
+const ACTIVE_LIGHT_INTENSITY = 3
+
 const BASE_PROPS = {
 	position_x: 1.6,
 	is_active: false,
@@ -80,8 +83,8 @@ describe('Switch', () => {
 			label_y_offset: 0.5,
 			label_z: 0.06,
 			active_light_z: 0.6,
-			active_light_distance: 3,
-			active_light_intensity: 3,
+			active_light_distance: ACTIVE_LIGHT_DISTANCE,
+			active_light_intensity: ACTIVE_LIGHT_INTENSITY,
 		}
 		const { container } = render(Switch, { props: { ...BASE_PROPS, geometry } })
 		expect(container).toBeTruthy()
