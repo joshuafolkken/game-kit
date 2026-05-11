@@ -6,7 +6,7 @@ import {
 } from '$lib/game/player/camera-shake.svelte'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-const STRONG = 1.0
+const STRONG = 1
 const DELTA = 1 / 60
 
 describe('camera_shake', () => {

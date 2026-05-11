@@ -134,10 +134,10 @@ function on_key_impl(s: InputState, e: KeyboardEvent, is_down: boolean): void {
 function make_drag_override_specs(s: InputState): ListenerSpec[] {
 	const handler = (e: Event): void => override_offset_during_drag_impl(s, e)
 	return [
-		{ target: document, type: 'pointerdown', handler: handler as EventListener, options: CAPTURE },
-		{ target: document, type: 'pointerup', handler: handler as EventListener, options: CAPTURE },
-		{ target: document, type: 'pointermove', handler: handler as EventListener, options: CAPTURE },
-		{ target: document, type: 'click', handler: handler as EventListener, options: CAPTURE },
+		{ target: document, type: 'pointerdown', handler, options: CAPTURE },
+		{ target: document, type: 'pointerup', handler, options: CAPTURE },
+		{ target: document, type: 'pointermove', handler, options: CAPTURE },
+		{ target: document, type: 'click', handler, options: CAPTURE },
 	]
 }
 
