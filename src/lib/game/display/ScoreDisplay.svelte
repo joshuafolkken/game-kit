@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core'
 	import { Text } from '@threlte/extras'
-	import { fonts } from '$lib/game/fonts'
 	import {
 		ANIM_DURATION_MS,
 		CYBER_LABEL_COLOR,
@@ -29,8 +28,9 @@
 		SCORE_TEXT_Z,
 		SCORE_VALUE_Y,
 		VALUE_FONT_SIZE,
-	} from '$lib/game/score-display-config'
-	import type { ScoreData } from '$lib/game/score-display-types'
+	} from '$lib/game/display/score-display-config'
+	import type { ScoreData } from '$lib/game/display/score-display-types'
+	import { fonts } from '$lib/game/fonts'
 
 	interface Props {
 		score_data: ScoreData

@@ -1,5 +1,5 @@
 import { session } from '$lib/game/session.svelte'
-import { switch_audio } from '$lib/game/switch-audio'
+import { switch_audio } from '$lib/game/switch/switch-audio'
 
 type SwitchInputConfig = { action: () => void; guard?: () => boolean }
 

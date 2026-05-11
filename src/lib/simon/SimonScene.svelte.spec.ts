@@ -1,11 +1,11 @@
-import { make_credits_scroll_bounds } from '$lib/game/credits-config'
+import { make_credits_scroll_bounds } from '$lib/game/scene/credits-config'
 import { messages } from '$lib/messages/en'
 import { score } from '$lib/simon/score.svelte'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import SimonScene from './SimonScene.svelte'
 
-vi.mock('$lib/game/SceneObjects.svelte', () => ({ default: function SceneObjects() {} }))
+vi.mock('$lib/game/scene/SceneObjects.svelte', () => ({ default: function SceneObjects() {} }))
 vi.mock('$lib/simon/SimonBoard.svelte', () => ({ default: function SimonBoard() {} }))
 vi.mock('$lib/simon/board-config', () => ({
 	SCORE_DISPLAY_Z: -4.65,
@@ -49,10 +49,10 @@ vi.mock('$lib/simon/credits', () => ({
 	CREDITS_TEXT: 'Credits',
 	CREDITS_LINE_COUNT: 1,
 }))
-vi.mock('$lib/game/credits-config', () => ({
+vi.mock('$lib/game/scene/credits-config', () => ({
 	make_credits_scroll_bounds: vi.fn(() => ({ start_z: 10, end_z: -10 })),
 }))
-vi.mock('$lib/game/room-config', () => ({ ROOM_W: 10, ROOM_D: 10, ROOM_H: 5, HALF_D: 5 }))
+vi.mock('$lib/game/scene/room-config', () => ({ ROOM_W: 10, ROOM_D: 10, ROOM_H: 5, HALF_D: 5 }))
 
 describe('SimonScene', () => {
 	it('renders without error', () => {

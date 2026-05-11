@@ -2,17 +2,17 @@
 	import { Canvas } from '@threlte/core'
 	import { Suspense } from '@threlte/extras'
 	import { audio } from '$lib/game/audio'
+	import ControlsOverlay from '$lib/game/controls/ControlsOverlay.svelte'
+	import VirtualJoystick from '$lib/game/controls/VirtualJoystick.svelte'
 	import { device } from '$lib/game/device.svelte'
-	import { fullscreen_switch_input } from '$lib/game/fullscreen-switch-input'
 	import { fullscreen } from '$lib/game/fullscreen.svelte'
 	import { input } from '$lib/game/input.svelte'
 	import { loading } from '$lib/game/loading.svelte'
 	import { session } from '$lib/game/session.svelte'
 	import { game_state } from '$lib/game/state.svelte'
+	import { fullscreen_switch_input } from '$lib/game/switch/fullscreen-switch-input'
 	import type { Snippet } from 'svelte'
 	import { onMount } from 'svelte'
-	import ControlsOverlay from './ControlsOverlay.svelte'
-	import VirtualJoystick from './VirtualJoystick.svelte'
 
 	interface Props {
 		children?: Snippet

@@ -1,5 +1,5 @@
 import { useTask } from '@threlte/core'
-import type { ScoreData } from '$lib/game/score-display-types'
+import type { ScoreData } from '$lib/game/display/score-display-types'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import ScoreDisplay from './ScoreDisplay.svelte'
