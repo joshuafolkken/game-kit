@@ -1,13 +1,18 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.14.0",
+	"version": "0.15.0",
 	"keywords": [
 		"svelte"
 	],
+	"bin": {
+		"gk": "dist/scripts/gk.js"
+	},
 	"files": [
 		"dist",
+		"templates",
 		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
+		"!dist/**/*.spec.*",
+		"!templates/tsconfig.json"
 	],
 	"exports": {
 		".": {
@@ -23,7 +28,8 @@
 		"build": "vite build && pnpm run prepack",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
 		"prepare": "svelte-kit sync || echo ''",
-		"prepack": "svelte-kit sync && svelte-package && publint",
+		"build:scripts": "pnpm exec esbuild scripts/gk.ts --bundle --platform=node --packages=external --outdir=dist/scripts/ --format=esm --banner:js='#!/usr/bin/env node'",
+		"prepack": "svelte-kit sync && svelte-package && pnpm run build:scripts && publint",
 		"gen:pre": "node -e \"const fs=require('node:fs');const d='.svelte-kit/cloudflare';if(fs.existsSync(d))fs.readdirSync(d).forEach(f=>f.startsWith('_worker.')&&fs.rmSync(d+'/'+f,{force:true}))\"",
 		"gen": "pnpm gen:pre && wrangler types",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -54,6 +60,7 @@
 		"@vitest/browser-playwright": "^4.1.5",
 		"cookie": "^1.1.1",
 		"cspell": "^10.0.0",
+		"esbuild": "^0.27.7",
 		"eslint": "^10.3.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.1",
@@ -85,7 +92,6 @@
 		"svelte": "^5.0.0",
 		"three": ">=0.180.0"
 	},
-	"packageManager": "pnpm@11.0.9+sha512.34ce82e6780233cf9cad8685029a8f81d2e06196c5a9bad98879f7424940c6817c4e4524fb7d38b8553ceed48b9758b8ebaf1abd3600c232c4c8cf7366086f38",
 	"devEngines": {
 		"packageManager": {
 			"name": "pnpm",
@@ -116,5 +122,6 @@
 	"sideEffects": [
 		"**/*.css"
 	],
-	"svelte": "./dist/index.js"
+	"svelte": "./dist/index.js",
+	"packageManager": "pnpm@11.0.9+sha512.34ce82e6780233cf9cad8685029a8f81d2e06196c5a9bad98879f7424940c6817c4e4524fb7d38b8553ceed48b9758b8ebaf1abd3600c232c4c8cf7366086f38"
 }

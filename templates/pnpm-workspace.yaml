@@ -1,0 +1,13 @@
+onlyBuiltDependencies:
+  - '@joshuafolkken/game-kit'
+  - '@joshuafolkken/kit'
+  - esbuild
+  - lefthook
+  - workerd
+
+allowBuilds:
+  '@joshuafolkken/game-kit': true
+  '@joshuafolkken/kit': true
+  esbuild: true
+  lefthook: true
+  workerd: true
