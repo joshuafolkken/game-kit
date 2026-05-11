@@ -42,7 +42,7 @@ describe('ControlsOverlay', () => {
 		expect(container.querySelector('[data-testid="controls-overlay"]')).toBeTruthy()
 	})
 
-	it('renders the dark backdrop overlay', () => {
+	it('renders the backdrop overlay', () => {
 		const { container } = render(ControlsOverlay, {
 			props: { hint_text: HINT, is_touch: false, ...LABEL_PROPS },
 		})
