@@ -1,4 +1,4 @@
-import { pointer_button } from '$lib/game/pointer-button'
+import { pointer_button } from '$lib/game/input/pointer-button'
 import { session } from '$lib/game/session.svelte'
 import type { ButtonColor } from './types'
 

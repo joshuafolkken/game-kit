@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-svelte'
 import Player from './Player.svelte'
 
 vi.mock('@threlte/core', () => ({ T: {}, useTask: vi.fn() }))
-vi.mock('$lib/game/input.svelte', () => ({
+vi.mock('$lib/game/input/input.svelte', () => ({
 	input: {
 		keys: { w: false, s: false, a: false, d: false },
 		joystick_move: { x: 0, y: 0 },

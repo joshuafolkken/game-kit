@@ -1,9 +1,9 @@
+import { override_event_offset } from '$lib/game/input/override-event-offset'
 import {
 	create_listener_manager,
 	type ListenerManager,
 	type ListenerSpec,
 } from '$lib/game/listener-manager'
-import { override_event_offset } from '$lib/game/override-event-offset'
 
 const MOUSE_SENSITIVITY = 0.004
 const WHEEL_SENSITIVITY = 0.004

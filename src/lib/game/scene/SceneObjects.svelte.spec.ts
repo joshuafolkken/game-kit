@@ -20,7 +20,7 @@ vi.mock('$lib/game/switch/Switch.svelte', () => ({ default: function Switch() {}
 vi.mock('./FloorCredits.svelte', () => ({ default: function FloorCredits() {} }))
 vi.mock('$lib/game/fullscreen.svelte', () => ({ fullscreen: { is_active: false } }))
 vi.mock('$lib/game/state.svelte', () => ({ game_state: { is_alt: false } }))
-vi.mock('$lib/game/pointer-compute.js', () => ({
+vi.mock('$lib/game/input/pointer-compute.js', () => ({
 	make_pointer_compute: vi.fn(() => vi.fn()),
 }))
 vi.mock('$lib/game/scene/lighting', () => ({

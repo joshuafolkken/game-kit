@@ -6,7 +6,7 @@
 	import VirtualJoystick from '$lib/game/controls/VirtualJoystick.svelte'
 	import { device } from '$lib/game/device.svelte'
 	import { fullscreen } from '$lib/game/fullscreen.svelte'
-	import { input } from '$lib/game/input.svelte'
+	import { input } from '$lib/game/input/input.svelte'
 	import { loading } from '$lib/game/loading.svelte'
 	import { session } from '$lib/game/session.svelte'
 	import { game_state } from '$lib/game/state.svelte'

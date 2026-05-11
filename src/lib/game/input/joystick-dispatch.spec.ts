@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { joystick_dispatch } from './joystick-dispatch'
 
-vi.mock('$lib/game/override-event-offset', () => ({ override_event_offset: vi.fn() }))
+vi.mock('$lib/game/input/override-event-offset', () => ({ override_event_offset: vi.fn() }))
 
 const POINTER_ID = 3
 const IS_PRIMARY = true

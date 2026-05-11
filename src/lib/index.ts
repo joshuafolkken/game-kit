@@ -15,7 +15,7 @@ export { default as Player } from './game/player/Player.svelte'
 
 export { session, create_session, type SessionInstance } from './game/session.svelte'
 export { game_state, create_game_state, type GameStateInstance } from './game/state.svelte'
-export { input, create_input, type InputInstance } from './game/input.svelte'
+export { input, create_input, type InputInstance } from './game/input/input.svelte'
 export {
 	loading,
 	create_loading,
