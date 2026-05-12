@@ -21,14 +21,23 @@ const CSP_POLICY = [
 ].join('; ')
 const PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), payment=()'
 
+function html_escape(str: string): string {
+	return str
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#039;')
+}
+
 export function inject_version(html: string): string {
 	return html.replaceAll(APP_VERSION_PLACEHOLDER, version)
 }
 
 export function inject_game_name(html: string): string {
 	return html
-		.replaceAll(GAME_NAME_DISPLAY_PLACEHOLDER, game_config.GAME_NAME_DISPLAY)
-		.replaceAll(GAME_NAME_UPPER_PLACEHOLDER, game_config.GAME_NAME_UPPER)
+		.replaceAll(GAME_NAME_DISPLAY_PLACEHOLDER, html_escape(game_config.GAME_NAME_DISPLAY))
+		.replaceAll(GAME_NAME_UPPER_PLACEHOLDER, html_escape(game_config.GAME_NAME_UPPER))
 }
 
 function inject_security_headers(response: Response): void {
