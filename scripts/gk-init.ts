@@ -6,6 +6,7 @@ import { gk_paths } from './gk-paths.ts'
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 const INIT_DONE_MSG = '\n✅ Done. Edit src/routes/+page.svelte to start building your game.\n'
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
+const DEFAULT_GAME_NAME = 'game-kit'
 
 const USER_TSCONFIG = {
 	extends: ['./.svelte-kit/tsconfig.json'],
@@ -55,6 +56,39 @@ type GameKitPkg = {
 	pnpm: { overrides: Record<string, string> }
 }
 
+type GameNames = {
+	kebab: string
+	display: string
+	upper: string
+	description: string
+	app_label: string
+}
+
+function to_kebab(raw: string): string {
+	return (
+		raw
+			.toLowerCase()
+			.trim()
+			.replace(/\s+/g, '-')
+			.replace(/[^a-z0-9-]/g, '')
+			.replace(/^-+|-+$/g, '') || DEFAULT_GAME_NAME
+	)
+}
+
+function to_display(kebab: string): string {
+	return kebab
+		.split('-')
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ')
+}
+
+function derive_names(raw: string): GameNames {
+	const kebab = to_kebab(raw)
+	const display = to_display(kebab)
+	const upper = display.toUpperCase()
+	return { kebab, display, upper, description: `A ${display} game`, app_label: `${display} game` }
+}
+
 function read_game_kit_pkg(): GameKitPkg {
 	const raw = readFileSync(path.join(gk_paths.PACKAGE_DIR, 'package.json'), 'utf8')
 	return JSON.parse(raw) as GameKitPkg
@@ -77,9 +111,9 @@ function build_scripts(): Record<string, string> {
 	}
 }
 
-function build_package_json(pkg: GameKitPkg): object {
+function build_package_json(pkg: GameKitPkg, game_name: string): object {
 	return {
-		name: 'my-game',
+		name: game_name,
 		version: '0.1.0',
 		private: true,
 		type: 'module',
@@ -91,22 +125,42 @@ function build_package_json(pkg: GameKitPkg): object {
 	}
 }
 
-function generate_package_json(): string {
-	return JSON.stringify(build_package_json(read_game_kit_pkg()), null, '\t')
+function generate_package_json(game_name: string): string {
+	return JSON.stringify(build_package_json(read_game_kit_pkg(), game_name), null, '\t')
 }
 
 function generate_tsconfig(): string {
 	return JSON.stringify(USER_TSCONFIG, null, '\t')
 }
 
-function write_package_json(): void {
-	writeFileSync(path.join(gk_paths.PROJECT_ROOT, 'package.json'), generate_package_json())
+function generate_game_config(names: GameNames): string {
+	return [
+		`const GAME_NAME = '${names.kebab}'`,
+		`const GAME_NAME_DISPLAY = '${names.display}'`,
+		`const GAME_NAME_UPPER = '${names.upper}'`,
+		`const GAME_DESCRIPTION = '${names.description}'`,
+		`const GAME_APP_LABEL = '${names.app_label}'`,
+		'',
+		'const game_config = { GAME_NAME, GAME_NAME_DISPLAY, GAME_NAME_UPPER, GAME_DESCRIPTION, GAME_APP_LABEL }',
+		'export { game_config }',
+		'',
+	].join('\n')
+}
+
+function write_package_json(game_name: string): void {
+	writeFileSync(path.join(gk_paths.PROJECT_ROOT, 'package.json'), generate_package_json(game_name))
 	console.info('  ✔ wrote    package.json')
 }
 
 function write_tsconfig(): void {
 	writeFileSync(path.join(gk_paths.PROJECT_ROOT, TSCONFIG_FILE_NAME), generate_tsconfig())
 	console.info('  ✔ wrote    tsconfig.json')
+}
+
+function write_game_config(names: GameNames): void {
+	const dest = path.join(gk_paths.PROJECT_ROOT, 'src', 'lib', 'game-config.ts')
+	writeFileSync(dest, generate_game_config(names))
+	console.info('  ✔ wrote    src/lib/game-config.ts')
 }
 
 function copy_templates(): void {
@@ -117,10 +171,12 @@ function copy_templates(): void {
 	console.info('  ✔ copied   templates')
 }
 
-function run(): void {
+function run(game_name_raw?: string): void {
 	console.info('\n🎮 gk init — Scaffolding new game project\n')
-	write_package_json()
+	const names = derive_names(game_name_raw ?? DEFAULT_GAME_NAME)
+	write_package_json(names.kebab)
 	copy_templates()
+	write_game_config(names)
 	write_tsconfig()
 	execSync('git init', SPAWN_OPTIONS)
 	execSync('pnpm install', SPAWN_OPTIONS)
@@ -128,5 +184,11 @@ function run(): void {
 	console.info(INIT_DONE_MSG)
 }
 
-const gk_init = { run, generate_package_json, generate_tsconfig }
+const gk_init = {
+	run,
+	generate_package_json,
+	generate_tsconfig,
+	derive_names,
+	generate_game_config,
+}
 export { gk_init }
