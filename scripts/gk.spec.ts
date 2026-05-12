@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { route_command } from './gk.ts'
 
-vi.mock('./gk-init.ts', () => ({ gk_init: { run: vi.fn(), generate_package_json: vi.fn() } }))
+vi.mock('./gk-init.ts', () => ({
+	gk_init: {
+		run: vi.fn(),
+		generate_package_json: vi.fn(),
+		derive_names: vi.fn(),
+		generate_game_config: vi.fn(),
+	},
+}))
 vi.mock('./gk-sync.ts', () => ({ gk_sync: { run: vi.fn() } }))
 
 describe('route_command', () => {
@@ -12,10 +19,16 @@ describe('route_command', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {})
 	})
 
-	it('routes init to gk_init.run', async () => {
+	it('routes init to gk_init.run without name', async () => {
 		const { gk_init } = await import('./gk-init.ts')
 		route_command('init')
-		expect(gk_init.run).toHaveBeenCalledOnce()
+		expect(gk_init.run).toHaveBeenCalledWith(undefined)
+	})
+
+	it('routes init to gk_init.run with game name', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		route_command('init', 'tic-tac-toe')
+		expect(gk_init.run).toHaveBeenCalledWith('tic-tac-toe')
 	})
 
 	it('routes sync to gk_sync.run', async () => {

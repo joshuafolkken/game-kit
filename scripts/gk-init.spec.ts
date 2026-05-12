@@ -34,25 +34,31 @@ describe('gk_init.generate_package_json', () => {
 
 	it('includes game-kit as dependency with current version', async () => {
 		const { gk_init } = await import('./gk-init.ts')
-		const result = JSON.parse(gk_init.generate_package_json())
+		const result = JSON.parse(gk_init.generate_package_json('my-game'))
 		expect(result.dependencies['@joshuafolkken/game-kit']).toBe('^1.0.0')
+	})
+
+	it('uses supplied game name as package name', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const result = JSON.parse(gk_init.generate_package_json('tic-tac-toe'))
+		expect(result.name).toBe('tic-tac-toe')
 	})
 
 	it('includes kit in devDependencies', async () => {
 		const { gk_init } = await import('./gk-init.ts')
-		const result = JSON.parse(gk_init.generate_package_json())
+		const result = JSON.parse(gk_init.generate_package_json('my-game'))
 		expect(result.devDependencies['@joshuafolkken/kit']).toBe('0.162.0')
 	})
 
 	it('preserves pnpm overrides', async () => {
 		const { gk_init } = await import('./gk-init.ts')
-		const result = JSON.parse(gk_init.generate_package_json())
+		const result = JSON.parse(gk_init.generate_package_json('my-game'))
 		expect(result.pnpm.overrides['cookie']).toBe('^0.7.0')
 	})
 
 	it('includes required scripts', async () => {
 		const { gk_init } = await import('./gk-init.ts')
-		const result = JSON.parse(gk_init.generate_package_json())
+		const result = JSON.parse(gk_init.generate_package_json('my-game'))
 		expect(result.scripts.dev).toBe('vite dev')
 		expect(result.scripts.gk).toBe('gk')
 		expect(result.scripts.josh).toBe('josh')
@@ -73,6 +79,74 @@ describe('gk_init.generate_tsconfig', () => {
 	})
 })
 
+describe('gk_init.derive_names', () => {
+	it('derives all name forms from kebab input', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const result = gk_init.derive_names('tic-tac-toe')
+		expect(result.kebab).toBe('tic-tac-toe')
+		expect(result.display).toBe('Tic Tac Toe')
+		expect(result.upper).toBe('TIC TAC TOE')
+		expect(result.description).toBe('A Tic Tac Toe game')
+		expect(result.app_label).toBe('Tic Tac Toe game')
+	})
+
+	it('normalizes space-separated input to kebab', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const result = gk_init.derive_names('my game')
+		expect(result.kebab).toBe('my-game')
+		expect(result.display).toBe('My Game')
+	})
+
+	it('normalizes uppercase input', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const result = gk_init.derive_names('MyGame')
+		expect(result.kebab).toBe('mygame')
+		expect(result.display).toBe('Mygame')
+	})
+
+	it('falls back to game-kit for empty input', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const result = gk_init.derive_names('')
+		expect(result.kebab).toBe('game-kit')
+		expect(result.display).toBe('Game Kit')
+	})
+
+	it('strips invalid characters', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const result = gk_init.derive_names('my_game!')
+		expect(result.kebab).toBe('mygame')
+	})
+})
+
+describe('gk_init.generate_game_config', () => {
+	it('produces valid TypeScript with correct values', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const names = {
+			kebab: 'tic-tac-toe',
+			display: 'Tic Tac Toe',
+			upper: 'TIC TAC TOE',
+			description: 'A Tic Tac Toe game',
+			app_label: 'Tic Tac Toe game',
+		}
+		const result = gk_init.generate_game_config(names)
+		expect(result).toContain("const GAME_NAME = 'tic-tac-toe'")
+		expect(result).toContain("const GAME_NAME_DISPLAY = 'Tic Tac Toe'")
+		expect(result).toContain("const GAME_NAME_UPPER = 'TIC TAC TOE'")
+		expect(result).toContain("const GAME_DESCRIPTION = 'A Tic Tac Toe game'")
+		expect(result).toContain("const GAME_APP_LABEL = 'Tic Tac Toe game'")
+		expect(result).toContain('export { game_config }')
+	})
+
+	it('produces Game Kit defaults for game-kit name', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		const names = gk_init.derive_names('game-kit')
+		const result = gk_init.generate_game_config(names)
+		expect(result).toContain("const GAME_NAME = 'game-kit'")
+		expect(result).toContain("const GAME_NAME_DISPLAY = 'Game Kit'")
+		expect(result).toContain("const GAME_NAME_UPPER = 'GAME KIT'")
+	})
+})
+
 describe('gk_init.run', () => {
 	beforeEach(async () => {
 		const { readFileSync } = await import('node:fs')
@@ -80,13 +154,33 @@ describe('gk_init.run', () => {
 		vi.spyOn(console, 'info').mockImplementation(() => {})
 	})
 
-	it('writes package.json to PROJECT_ROOT', async () => {
+	it('uses game name in package.json when provided', async () => {
+		const { writeFileSync } = await import('node:fs')
+		const { gk_init } = await import('./gk-init.ts')
+		gk_init.run('tic-tac-toe')
+		expect(writeFileSync).toHaveBeenCalledWith(
+			'/project/package.json',
+			expect.stringContaining('"name": "tic-tac-toe"'),
+		)
+	})
+
+	it('uses game-kit as default name when no argument given', async () => {
 		const { writeFileSync } = await import('node:fs')
 		const { gk_init } = await import('./gk-init.ts')
 		gk_init.run()
 		expect(writeFileSync).toHaveBeenCalledWith(
 			'/project/package.json',
-			expect.stringContaining('"name": "my-game"'),
+			expect.stringContaining('"name": "game-kit"'),
+		)
+	})
+
+	it('writes game-config.ts to src/lib/', async () => {
+		const { writeFileSync } = await import('node:fs')
+		const { gk_init } = await import('./gk-init.ts')
+		gk_init.run('tic-tac-toe')
+		expect(writeFileSync).toHaveBeenCalledWith(
+			'/project/src/lib/game-config.ts',
+			expect.stringContaining("const GAME_NAME = 'tic-tac-toe'"),
 		)
 	})
 
