@@ -1,13 +1,16 @@
-onlyBuiltDependencies:
-  - '@joshuafolkken/game-kit'
-  - '@joshuafolkken/kit'
-  - esbuild
-  - lefthook
-  - workerd
-
 allowBuilds:
   '@joshuafolkken/game-kit': true
   '@joshuafolkken/kit': true
   esbuild: true
   lefthook: true
+  unrs-resolver: true
+  sharp: true
   workerd: true
+
+# Security fixes often require same-day vite releases; minimum-release-age in .npmrc would block them.
+minimumReleaseAgeExclude:
+  - vite
+  - '@joshuafolkken/kit'
+
+overrides:
+  cookie: ^0.7.0
