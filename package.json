@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.17.0",
+	"version": "0.18.0",
 	"keywords": [
 		"svelte"
 	],
@@ -11,7 +11,6 @@
 		"dist",
 		"templates",
 		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*",
 		"!templates/tsconfig.json"
 	],
 	"exports": {
@@ -42,7 +41,7 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.165.0",
+		"@joshuafolkken/kit": "0.166.0",
 		"@playwright/test": "1.59.1",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
@@ -53,11 +52,11 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",
 		"@threlte/core": "^8.5.14",
-		"@threlte/extras": "^9.16.0",
+		"@threlte/extras": "^9.17.0",
 		"@types/node": "^25.6.2",
 		"@types/three": "^0.184.1",
 		"@vite-pwa/sveltekit": "^1.1.0",
-		"@vitest/browser-playwright": "^4.1.5",
+		"@vitest/browser-playwright": "^4.1.6",
 		"cookie": "^1.1.1",
 		"cspell": "^10.0.0",
 		"esbuild": "^0.28.0",
@@ -67,7 +66,7 @@
 		"globals": "^17.6.0",
 		"playwright": "^1.59.1",
 		"prettier": "^3.8.3",
-		"prettier-plugin-svelte": "^3.5.1",
+		"prettier-plugin-svelte": "^3.5.2",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"publint": "^0.3.20",
 		"rollup-plugin-visualizer": "^7.0.1",
@@ -80,7 +79,7 @@
 		"typescript-eslint": "^8.59.2",
 		"vite": "^8.0.12",
 		"vite-plugin-pwa": "^1.3.0",
-		"vitest": "^4.1.5",
+		"vitest": "^4.1.6",
 		"vitest-browser-svelte": "^2.1.1",
 		"workbox-build": "^7.4.1",
 		"workbox-window": "^7.4.1",
@@ -108,7 +107,6 @@
 	],
 	"pnpm": {
 		"overrides": {
-			"cookie": "^0.7.0",
 			"serialize-javascript": ">=7.0.5"
 		},
 		"onlyBuiltDependencies": [
