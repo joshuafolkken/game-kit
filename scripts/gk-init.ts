@@ -1,12 +1,10 @@
 import { execSync } from 'node:child_process'
-import { cpSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { gk_paths } from './gk-paths.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
-const INIT_DONE_MSG = '\n✅ Done. Edit src/routes/+page.svelte to start building your game.\n'
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
-const DEFAULT_GAME_NAME = 'game-kit'
 
 const USER_TSCONFIG = {
 	extends: ['./.svelte-kit/tsconfig.json'],
@@ -65,14 +63,24 @@ type GameNames = {
 }
 
 function to_kebab(raw: string): string {
-	return (
-		raw
-			.toLowerCase()
-			.trim()
-			.replace(/\s+/g, '-')
-			.replace(/[^a-z0-9-]/g, '')
-			.replace(/^-+|-+$/g, '') || DEFAULT_GAME_NAME
-	)
+	return raw
+		.toLowerCase()
+		.trim()
+		.replace(/\s+/g, '-')
+		.replace(/[^a-z0-9-]/g, '')
+		.replace(/^-+|-+$/g, '')
+}
+
+function build_done_msg(kebab: string): string {
+	return [
+		'\n✅ Done.',
+		'',
+		'Next steps:',
+		`  cd ${kebab}`,
+		`  gh repo create ${kebab} --private --source=. --push`,
+		'  pnpm dev',
+		'',
+	].join('\n')
 }
 
 function to_display(kebab: string): string {
@@ -147,24 +155,24 @@ function generate_game_config(names: GameNames): string {
 	].join('\n')
 }
 
-function write_package_json(game_name: string): void {
-	writeFileSync(path.join(gk_paths.PROJECT_ROOT, 'package.json'), generate_package_json(game_name))
+function write_package_json(game_name: string, project_dir: string): void {
+	writeFileSync(path.join(project_dir, 'package.json'), generate_package_json(game_name))
 	console.info('  ✔ wrote    package.json')
 }
 
-function write_tsconfig(): void {
-	writeFileSync(path.join(gk_paths.PROJECT_ROOT, TSCONFIG_FILE_NAME), generate_tsconfig())
+function write_tsconfig(project_dir: string): void {
+	writeFileSync(path.join(project_dir, TSCONFIG_FILE_NAME), generate_tsconfig())
 	console.info('  ✔ wrote    tsconfig.json')
 }
 
-function write_game_config(names: GameNames): void {
-	const dest = path.join(gk_paths.PROJECT_ROOT, 'src', 'lib', 'game-config.ts')
+function write_game_config(names: GameNames, project_dir: string): void {
+	const dest = path.join(project_dir, 'src', 'lib', 'game-config.ts')
 	writeFileSync(dest, generate_game_config(names))
 	console.info('  ✔ wrote    src/lib/game-config.ts')
 }
 
-function copy_templates(): void {
-	cpSync(gk_paths.TEMPLATES_DIR, gk_paths.PROJECT_ROOT, {
+function copy_templates(project_dir: string): void {
+	cpSync(gk_paths.TEMPLATES_DIR, project_dir, {
 		recursive: true,
 		filter: (src: string) => !src.endsWith(TSCONFIG_FILE_NAME),
 	})
@@ -172,16 +180,29 @@ function copy_templates(): void {
 }
 
 function run(game_name_raw?: string): void {
+	if (!game_name_raw) {
+		console.error('Error: game name is required.\nUsage: gk init <name>')
+		process.exit(1)
+	}
+	const names = derive_names(game_name_raw)
+	if (!names.kebab) {
+		console.error(
+			`Error: "${game_name_raw}" is not a valid game name. Use letters, numbers, and hyphens only (e.g. tic-tac-toe).`,
+		)
+		process.exit(1)
+	}
+	const project_dir = path.join(gk_paths.PROJECT_ROOT, names.kebab)
+	const opts = { ...SPAWN_OPTIONS, cwd: project_dir }
 	console.info('\n🎮 gk init — Scaffolding new game project\n')
-	const names = derive_names(game_name_raw ?? DEFAULT_GAME_NAME)
-	write_package_json(names.kebab)
-	copy_templates()
-	write_game_config(names)
-	write_tsconfig()
-	execSync('git init', SPAWN_OPTIONS)
-	execSync('pnpm install', SPAWN_OPTIONS)
-	execSync('pnpm josh sync', SPAWN_OPTIONS)
-	console.info(INIT_DONE_MSG)
+	mkdirSync(project_dir, { recursive: true })
+	write_package_json(names.kebab, project_dir)
+	copy_templates(project_dir)
+	write_game_config(names, project_dir)
+	write_tsconfig(project_dir)
+	execSync('git init', opts)
+	execSync('pnpm install', opts)
+	execSync('pnpm josh sync', opts)
+	console.info(build_done_msg(names.kebab))
 }
 
 const gk_init = {
