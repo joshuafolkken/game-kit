@@ -1,12 +1,9 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.20.0",
+	"version": "0.21.0",
 	"keywords": [
 		"svelte"
 	],
-	"bin": {
-		"gk": "dist/scripts/gk.js"
-	},
 	"files": [
 		"dist",
 		"templates",
@@ -19,8 +16,15 @@
 			"svelte": "./dist/index.js"
 		}
 	},
+	"bin": {
+		"gk": "dist/scripts/gk.js"
+	},
 	"type": "module",
 	"types": "./dist/index.d.ts",
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com",
+		"access": "public"
+	},
 	"scripts": {
 		"preinstall": "pnpm dlx @aikidosec/safe-chain setup-ci",
 		"dev": "vite dev",
@@ -41,7 +45,7 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.166.0",
+		"@joshuafolkken/kit": "0.167.0",
 		"@playwright/test": "1.60.0",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
@@ -117,10 +121,6 @@
 			"unrs-resolver",
 			"workerd"
 		]
-	},
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com",
-		"access": "public"
 	},
 	"sideEffects": [
 		"**/*.css"
