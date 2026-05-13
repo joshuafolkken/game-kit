@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs', () => ({
 	cpSync: vi.fn(),
+	mkdirSync: vi.fn(),
 	readFileSync: vi.fn(),
 	writeFileSync: vi.fn(),
 }))
@@ -104,11 +105,10 @@ describe('gk_init.derive_names', () => {
 		expect(result.display).toBe('Mygame')
 	})
 
-	it('falls back to game-kit for empty input', async () => {
+	it('returns empty kebab for empty input', async () => {
 		const { gk_init } = await import('./gk-init.ts')
 		const result = gk_init.derive_names('')
-		expect(result.kebab).toBe('game-kit')
-		expect(result.display).toBe('Game Kit')
+		expect(result.kebab).toBe('')
 	})
 
 	it('strips invalid characters', async () => {
@@ -152,64 +152,90 @@ describe('gk_init.run', () => {
 		const { readFileSync } = await import('node:fs')
 		vi.mocked(readFileSync).mockReturnValue(JSON.stringify(MOCK_PKG))
 		vi.spyOn(console, 'info').mockImplementation(() => {})
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		vi.spyOn(process, 'exit').mockImplementation(() => {
+			throw new Error('process.exit called')
+		})
 	})
 
-	it('uses game name in package.json when provided', async () => {
+	it('exits with code 1 when no name is given', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		expect(() => gk_init.run()).toThrow('process.exit called')
+		expect(process.exit).toHaveBeenCalledWith(1)
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('game name is required'))
+	})
+
+	it('exits with code 1 when name normalizes to empty', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		expect(() => gk_init.run('!@#')).toThrow('process.exit called')
+		expect(process.exit).toHaveBeenCalledWith(1)
+		expect(console.error).toHaveBeenCalledWith(
+			expect.stringContaining('"!@#" is not a valid game name'),
+		)
+	})
+
+	it('creates project subdirectory', async () => {
+		const { mkdirSync } = await import('node:fs')
+		const { gk_init } = await import('./gk-init.ts')
+		gk_init.run('tic-tac-toe')
+		expect(mkdirSync).toHaveBeenCalledWith('/project/tic-tac-toe', { recursive: true })
+	})
+
+	it('writes package.json into project subdirectory', async () => {
 		const { writeFileSync } = await import('node:fs')
 		const { gk_init } = await import('./gk-init.ts')
 		gk_init.run('tic-tac-toe')
 		expect(writeFileSync).toHaveBeenCalledWith(
-			'/project/package.json',
+			'/project/tic-tac-toe/package.json',
 			expect.stringContaining('"name": "tic-tac-toe"'),
 		)
 	})
 
-	it('uses game-kit as default name when no argument given', async () => {
-		const { writeFileSync } = await import('node:fs')
-		const { gk_init } = await import('./gk-init.ts')
-		gk_init.run()
-		expect(writeFileSync).toHaveBeenCalledWith(
-			'/project/package.json',
-			expect.stringContaining('"name": "game-kit"'),
-		)
-	})
-
-	it('writes game-config.ts to src/lib/', async () => {
+	it('writes game-config.ts into project subdirectory', async () => {
 		const { writeFileSync } = await import('node:fs')
 		const { gk_init } = await import('./gk-init.ts')
 		gk_init.run('tic-tac-toe')
 		expect(writeFileSync).toHaveBeenCalledWith(
-			'/project/src/lib/game-config.ts',
+			'/project/tic-tac-toe/src/lib/game-config.ts',
 			expect.stringContaining("const GAME_NAME = 'tic-tac-toe'"),
 		)
 	})
 
-	it('copies templates to PROJECT_ROOT excluding tsconfig.json', async () => {
+	it('writes tsconfig.json into project subdirectory', async () => {
+		const { writeFileSync } = await import('node:fs')
+		const { gk_init } = await import('./gk-init.ts')
+		gk_init.run('tic-tac-toe')
+		expect(writeFileSync).toHaveBeenCalledWith(
+			'/project/tic-tac-toe/tsconfig.json',
+			expect.stringContaining('.svelte-kit/tsconfig.json'),
+		)
+	})
+
+	it('copies templates into project subdirectory', async () => {
 		const { cpSync } = await import('node:fs')
 		const { gk_init } = await import('./gk-init.ts')
-		gk_init.run()
-		expect(cpSync).toHaveBeenCalledWith('/pkg/templates', '/project', {
+		gk_init.run('tic-tac-toe')
+		expect(cpSync).toHaveBeenCalledWith('/pkg/templates', '/project/tic-tac-toe', {
 			recursive: true,
 			filter: expect.any(Function),
 		})
 	})
 
-	it('writes tsconfig.json to PROJECT_ROOT', async () => {
-		const { writeFileSync } = await import('node:fs')
-		const { gk_init } = await import('./gk-init.ts')
-		gk_init.run()
-		expect(writeFileSync).toHaveBeenCalledWith(
-			'/project/tsconfig.json',
-			expect.stringContaining('.svelte-kit/tsconfig.json'),
-		)
-	})
-
-	it('runs git init, pnpm install, and pnpm josh sync', async () => {
+	it('runs git init, pnpm install, and pnpm josh sync with project cwd', async () => {
 		const { execSync } = await import('node:child_process')
 		const { gk_init } = await import('./gk-init.ts')
-		gk_init.run()
-		expect(execSync).toHaveBeenCalledWith('git init', expect.any(Object))
-		expect(execSync).toHaveBeenCalledWith('pnpm install', expect.any(Object))
-		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', expect.any(Object))
+		gk_init.run('tic-tac-toe')
+		const opts = expect.objectContaining({ cwd: '/project/tic-tac-toe' })
+		expect(execSync).toHaveBeenCalledWith('git init', opts)
+		expect(execSync).toHaveBeenCalledWith('pnpm install', opts)
+		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', opts)
+	})
+
+	it('prints next-steps message with cd and pnpm dev', async () => {
+		const { gk_init } = await import('./gk-init.ts')
+		gk_init.run('tic-tac-toe')
+		const calls = vi.mocked(console.info).mock.calls.flat().join('\n')
+		expect(calls).toContain('cd tic-tac-toe')
+		expect(calls).toContain('pnpm dev')
 	})
 })
