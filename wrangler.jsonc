@@ -1,0 +1,50 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "game-kit",
+	"compatibility_date": "2026-05-05",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"workers_dev": true,
+	"preview_urls": true,
+
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 0.1,
+			"invocation_logs": true
+		},
+		"traces": {
+			"enabled": true,
+			"head_sampling_rate": 0.1
+		}
+	},
+
+	"routes": [
+		{
+			"pattern": "game-kit.joshuafolkken.com",
+			"custom_domain": true
+		}
+	]
+
+	// "kv_namespaces": [
+	// 	{
+	// 		"binding": "CACHE",
+	// 		"id": "",
+	// 		"preview_id": ""
+	// 	}
+	// ],
+
+	// "d1_databases": [
+	// 	{
+	// 		"binding": "DB",
+	// 		"database_name": "your-db-name",
+	// 		"database_id": "",
+	// 		"migrations_dir": "drizzle/migrations"
+	// 		// "remote": true
+	// 	}
+	// ]
+}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core'
-	import { input } from '$lib/game/input.svelte'
+	import { input } from '$lib/game/input/input.svelte'
 	import { camera_shake } from '$lib/game/player/camera-shake.svelte'
 	import { player_bounds } from '$lib/game/player/player-bounds'
 	import { player_jump } from '$lib/game/player/player-jump'

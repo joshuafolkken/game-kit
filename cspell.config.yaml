@@ -1,16 +1,24 @@
 version: "0.2"
 import:
   - "@joshuafolkken/kit/cspell/sveltekit"
+ignorePaths:
+  - "**/credits-config.ts"
+  - "**/simon/credits.ts"
 words:
-  - threlte
-  - Orbitron
-  - orbitron
-  - unstub
-  - spacebar
-  - WASD
+  - Baer
+  - Boisclair
+  - COEFF
   - gameover
-  - GAMEOVER
+  - Inerney
+  - mrdoob
+  - mygame
+  - Orbitron
+  - Pixabay
   - Raycaster
   - raycaster
   - SAMEORIGIN
-ignorePaths: []
+  - spacebar
+  - threlte
+  - trycloudflare
+  - unstub
+  - WASD

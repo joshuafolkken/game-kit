@@ -61,6 +61,7 @@ GitHub operations use the `gh` CLI. Authenticate once with `gh auth login`; no a
 
 - **NEVER** remove or modify entries in `pnpm.overrides` without explicit user approval.
 - After running `pnpm update`, `josh latest`, or any dependency-update command, verify that `pnpm.overrides` is unchanged **and** that `devDependencies` versions still respect the overrides. If any entry was removed, modified, or bumped past an override, restore it immediately.
+- **NEVER** modify the `devEngines` field in `package.json` without explicit user confirmation. `devEngines` pins the required development toolchain (e.g. pnpm version); silently changing it can break CI or other contributors' environments. After any dependency-update command, verify `devEngines` is unchanged. If it was modified, restore it immediately and ask the user before making any change.
 
 ## Code Change Rules
 
@@ -140,6 +141,7 @@ Before every `git commit` — including follow-up commits on the same branch —
 - **No commits** unless explicitly requested by the user
 - **No PR merges, branch deletions, force pushes, or other shared-state mutations** unless explicitly requested in the current turn. The default end state is PR still OPEN — do not run `gh pr merge` on your own. **Exception**: invoking `fullrun` or `fullrun new` is explicit authorization to merge; use `pnpm josh followup --merge` in that flow.
 - For git operations: use `pnpm josh git`
+- **Recovery after failed push**: If `pnpm josh git -y` fails at the push step (e.g. pre-push hook blocked), fix the issue, push manually, then run `pnpm josh pr` (or `pnpm josh git -y --skip-commit --skip-push`) to create the PR. **Never** use `gh pr create` directly — it bypasses `closes #N` generation and the Issue will not auto-close.
 - **Start-of-conversation git status is a stale snapshot.** The `gitStatus` block in the environment preamble is captured once at session start and never refreshes. Before acting on any assumption about working-tree / index / stash / branch state, run `git status` live first. Never report state or propose a plan based on the snapshot alone.
 
 ## Collaboration Workflow
@@ -155,8 +157,8 @@ Before every `git commit` — including follow-up commits on the same branch —
 
 #### `fullrun` — Full execution (plan → implement → PR → completion notify)
 
-- `fullrun #<N>`: Read Issue #N → **normalize the title**: if the title is not in English or can be phrased more clearly/conventionally, derive a better English title and run `gh issue edit <N> --title "<title>"` → **add `in-progress` label** (create if missing: `gh label create "in-progress" --color "#0075ca" --description "Work is actively in progress" 2>/dev/null || true`, then `gh issue edit <N> --add-label "in-progress"`) → post the agreed plan only if the Issue body is blank (use `gh issue edit <N> --body "<plan>"`); if the body already has content, skip the plan-posting step → implement → `pnpm josh bump minor` → `pnpm josh git -y` → run `/review` skill → `pnpm josh followup --merge`. Issue plan comments MUST be written in English. Before implementing, run `git switch main && git pull`, then `josh latest` (includes `pnpm audit`; fix with `overrides` in `package.json` if vulnerabilities found). **After `josh latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, investigate why it existed and restore it before proceeding (do NOT remove intentional overrides without user approval).** After committing, run the `/review` skill on the completed PR diff; fix all high/medium-priority findings and re-run until clean before proceeding to `followup`. When running `pnpm josh followup --merge`, compose an implementation summary in English and pass it via `--notify-message`. Format: `"Implemented <title>:\n- <change1>\n- <change2>\n..."`. **`pnpm josh followup --merge` waits for CI, verifies AI review findings, sends the completion notification, then merges — all in one step. If AI review blockers are found, followup exits non-zero; fix the findings and re-run `pnpm josh followup --merge`.**
-- `fullrun new` or `fullrun new "<title>"`: Shortcut that combines `kickoff new` + `fullrun #<N>` into a single run. Steps: (1) Derive an English title from the conversation, or use the provided title. (2) Create Issue: `gh issue create --title "<title>" --body "<body>"`. Capture the new Issue number `<N>`. (3) Add `in-progress` label: `gh label create "in-progress" --color "#0075ca" --description "Work is actively in progress" 2>/dev/null || true`, then `gh issue edit <N> --add-label "in-progress"`. (4) Post the agreed plan in English. (5) Run `git switch main && git pull`. (6) Run `josh latest`. **After `josh latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, restore it before proceeding.** (7) Implement. (8) `pnpm josh bump minor`. (9) `pnpm josh git -y "<title> #<N>"`. (10) Run `/review` skill on the completed PR diff; fix all high/medium-priority findings and re-run until clean. (11) `pnpm josh followup "<title> #<N>" --merge --notify-message "Implemented <title>:\n- <change1>\n- <change2>\n..."`.
+- `fullrun #<N>`: Read Issue #N → **normalize the title**: if the title is not in English or can be phrased more clearly/conventionally, derive a better English title and run `gh issue edit <N> --title "<title>"` → **add `in-progress` label** (create if missing: `gh label create "in-progress" --color "#0075ca" --description "Work is actively in progress" 2>/dev/null || true`, then `gh issue edit <N> --add-label "in-progress"`) → post the agreed plan only if the Issue body is blank (use `gh issue edit <N> --body "<plan>"`); if the body already has content, skip the plan-posting step → implement → `pnpm josh bump minor` → `pnpm josh git -y` → run `/review` skill → `pnpm josh followup --merge`. Issue plan comments MUST be written in English. Before implementing, run `git switch main && git pull`, then `josh latest` (includes `pnpm audit`; fix with `overrides` in `package.json` if vulnerabilities found). **After `josh latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, investigate why it existed and restore it before proceeding (do NOT remove intentional overrides without user approval). Also verify `devEngines` is unchanged — restore it and ask the user before making any change if it was modified.** After committing, run the `/review` skill on the completed PR diff; fix all high/medium-priority findings and re-run until clean before proceeding to `followup`. When running `pnpm josh followup --merge`, compose an implementation summary in English and pass it via `--notify-message`. Format: `"Implemented <title>:\n- <change1>\n- <change2>\n..."`. **`pnpm josh followup --merge` waits for CI, verifies AI review findings, sends the completion notification, then merges — all in one step. If AI review blockers are found, followup exits non-zero; fix the findings and re-run `pnpm josh followup --merge`.**
+- `fullrun new` or `fullrun new "<title>"`: Shortcut that combines `kickoff new` + `fullrun #<N>` into a single run. Steps: (1) Derive an English title from the conversation, or use the provided title. (2) Create Issue: `gh issue create --title "<title>" --body "<body>"`. Capture the new Issue number `<N>`. (3) Add `in-progress` label: `gh label create "in-progress" --color "#0075ca" --description "Work is actively in progress" 2>/dev/null || true`, then `gh issue edit <N> --add-label "in-progress"`. (4) Post the agreed plan in English. (5) If the working tree already has staged or modified files (e.g., user pre-staged kit/config changes), stash them first: `git stash`. (6) Run `git switch main && git pull`. (7) Run `josh latest` — **mandatory, never skip even if the working tree had modifications**. **After `josh latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, restore it before proceeding. Also verify `devEngines` is unchanged — restore it and ask the user before making any change if it was modified. If you stashed changes in step 5, restore them now: `git stash pop`.** (8) Implement. (9) `pnpm josh bump minor`. (10) `pnpm josh git -y "<title> #<N>"`. (11) Run `/review` skill on the completed PR diff; fix all high/medium-priority findings and re-run until clean. (12) `pnpm josh followup "<title> #<N>" --merge --notify-message "Implemented <title>:\n- <change1>\n- <change2>\n..."`.
 
 #### `queue` — Sequential multi-issue fullrun
 
@@ -164,7 +166,7 @@ Before every `git commit` — including follow-up commits on the same branch —
 
 **Steps:**
 
-1. Run `git switch main && git pull`, then `josh latest` once (before the first issue). Verify `pnpm.overrides` is unchanged after `josh latest`.
+1. If the working tree already has staged or modified files, stash them first: `git stash`. Run `git switch main && git pull`, then `josh latest` once (before the first issue) — **mandatory, never skip**. Verify `pnpm.overrides` and `devEngines` are unchanged after `josh latest`. If you stashed changes, restore them: `git stash pop`.
 2. For each issue `#<N>` in the supplied order:
    a. From the 2nd issue onward: run `git switch main && git pull` to incorporate the previous PR's merge.
    b. Execute the full `fullrun #<N>` flow: normalize title → add `in-progress` label → post plan if body is blank → implement → `pnpm josh bump minor` → `pnpm josh git -y "<title> #<N>"` → run `/review` skill → `pnpm josh followup "<title> #<N>" --merge --notify-message "Implemented <title>:\n- ..."` (sends per-issue completion notification and merges, exactly as `fullrun` does).
@@ -174,7 +176,7 @@ Before every `git commit` — including follow-up commits on the same branch —
 **Key rules:**
 
 - Invoking `queue` is explicit authorization to merge each PR (same as `fullrun`).
-- `josh latest` runs only once, before the first issue.
+- `josh latest` runs only once, before the first issue. If files were pre-staged when `queue` was invoked, they must be stashed before `josh latest` and restored after.
 - All `kickoff`/`fullrun` mid-workflow stop rules (confirmation notification, AI review blocker handling, etc.) apply within each issue's execution.
 
 #### AI reviewer comment scan (automatic in `pnpm josh followup`)
@@ -186,6 +188,17 @@ Before every `git commit` — including follow-up commits on the same branch —
   - **CodeRabbit** (`author.login = coderabbitai` / `coderabbitai[bot]`): body contains `Actionable comments posted: N` with N > 0. Rate-limit notices and "No actionable comments" summaries are ignored.
 - If blockers exist and **no** ignore reason is supplied: `pnpm josh followup` sends a `confirmation` Telegram and exits non-zero. Fix the findings (or provide an ignore reason) and re-run.
 - If blockers exist and `--ai-review-ignore-reason "<reason>"` is supplied: the workflow posts an ignore-reason comment to the PR and proceeds to completion.
+
+#### Config file update check (during `pnpm josh followup`)
+
+After CI status checks complete during `pnpm josh followup`, inspect `git diff main...HEAD` to determine whether the PR contains changes to files managed and distributed by `josh sync` (e.g., `playwright.config.ts`, `.github/workflows/ci.yml`). If any managed config file was updated, stop before making any subsequent commit and send a `confirmation` Telegram notification:
+
+```bash
+pnpm josh notify --task-type confirmation --issue-url "<issue-url>" --body=$'CI status check indicates a managed config file was updated\nPlease review the changes before proceeding'
+```
+
+- Do not make any follow-up commit, fix, or proceed to merge until the user explicitly confirms
+- This check runs independently of AI reviewer comment scanning — both may trigger in the same workflow run
 
 #### `auto-merge` — Default `fullrun` behavior
 

@@ -5,7 +5,7 @@ const IS_CI = Boolean(process.env['CI'])
 const DEV_PORT = 5173
 const PREVIEW_PORT = 4173
 
-const CI_TIMEOUT = 15_000
+const CI_TIMEOUT = 120_000
 const LOCAL_TIMEOUT = 30_000
 const CI_TEST_TIMEOUT = 30_000
 const ACTION_TIMEOUT = 10_000
@@ -25,7 +25,7 @@ type EnvConfig = {
 
 const web_server_config = IS_CI
 	? {
-			command: 'pnpm run preview',
+			command: 'pnpm run build && pnpm run preview',
 			port: PREVIEW_PORT,
 			timeout: CI_TIMEOUT,
 			reuseExistingServer: false,
