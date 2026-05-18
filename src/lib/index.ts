@@ -1,4 +1,4 @@
-export { default as ControlsOverlay } from './game/controls/ControlsOverlay.svelte'
+export { default as ControlsScene } from './game/controls/ControlsScene.svelte'
 export { default as FloorCredits } from './game/scene/FloorCredits.svelte'
 export { default as FpsDisplay } from './game/display/FpsDisplay.svelte'
 export { default as GameScene } from './game/GameScene.svelte'

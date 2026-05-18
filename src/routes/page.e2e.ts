@@ -73,28 +73,23 @@ test('loading overlay disappears once the scene is ready', async ({ page }) => {
 	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
 })
 
-test('controls overlay is visible before the user clicks', async ({ page }) => {
+test('game scene is ready before the user clicks (no jump button shown yet)', async ({ page }) => {
 	await page.goto('/')
-	await expect(page.locator('[data-testid="controls-overlay"]')).toBeVisible()
-	await expect(page.locator('[data-testid="start-hint"]')).toBeVisible()
+	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
+	// Jump button only appears after session starts; its absence proves the
+	// pre-start state. The keyboard / mouse / touch hints themselves live in
+	// the 3D scene now and cannot be queried via data-testid.
+	await expect(page.locator('[data-testid="jump-btn"]')).toHaveCount(0)
 })
 
-test('controls overlay disappears after the game scene is clicked', async ({ page }) => {
-	await page.goto('/')
-	await page.locator('[data-testid="game-scene"]').click()
-	await expect(page.locator('[data-testid="controls-overlay"]')).toHaveCount(0)
-})
-
-test('first click on the game scene does not toggle cyber mode while controls overlay is shown', async ({
+test('first click on the game scene does not toggle cyber mode (cyber-glow stays absent)', async ({
 	page,
 }) => {
 	await page.goto('/')
 	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
-	await expect(page.locator('[data-testid="controls-overlay"]')).toBeVisible()
 	const glow_locator = page.locator('[data-testid="cyber-glow"]')
 	const initial_glow_count = await glow_locator.count()
 	await page.locator('[data-testid="game-scene"]').click()
-	await expect(page.locator('[data-testid="controls-overlay"]')).toHaveCount(0)
 	const after_glow_count = await glow_locator.count()
 	expect(after_glow_count).toBe(initial_glow_count)
 })
