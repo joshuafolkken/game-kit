@@ -62,6 +62,42 @@ describe('ScoreDisplay', () => {
 		expect(container).toBeTruthy()
 	})
 
+	it('renders new-high state in retro mode (is_alt false)', () => {
+		const { container } = render(ScoreDisplay, {
+			props: {
+				score_data: make_score_data({ is_new_high_score: true }),
+				is_alt: false,
+				position_z: -4.65,
+				...LABEL_PROPS,
+			},
+		})
+		expect(container).toBeTruthy()
+	})
+
+	it('renders new-high state in cyber mode (is_alt true)', () => {
+		const { container } = render(ScoreDisplay, {
+			props: {
+				score_data: make_score_data({ is_new_high_score: true }),
+				is_alt: true,
+				position_z: -4.65,
+				...LABEL_PROPS,
+			},
+		})
+		expect(container).toBeTruthy()
+	})
+
+	it('renders HI_BASE fallback when is_new_high_score is false', () => {
+		const { container } = render(ScoreDisplay, {
+			props: {
+				score_data: make_score_data({ is_new_high_score: false }),
+				is_alt: false,
+				position_z: -4.65,
+				...LABEL_PROPS,
+			},
+		})
+		expect(container).toBeTruthy()
+	})
+
 	it('accepts custom format_score function via score_data', () => {
 		const format_score = vi.fn((v: number) => `${v} pts`)
 		const { container } = render(ScoreDisplay, {
