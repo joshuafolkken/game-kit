@@ -4,6 +4,7 @@
 	import { audio } from '$lib/game/audio'
 	import ControlsScene from '$lib/game/controls/ControlsScene.svelte'
 	import VirtualJoystick from '$lib/game/controls/VirtualJoystick.svelte'
+	import CrtDitherPass from '$lib/game/CrtDitherPass.svelte'
 	import { device } from '$lib/game/device.svelte'
 	import { fullscreen } from '$lib/game/fullscreen.svelte'
 	import { input } from '$lib/game/input/input.svelte'
@@ -200,6 +201,7 @@
 				<ControlsScene {hint_text} {is_touch} />
 			{/if}
 		</Suspense>
+		<CrtDitherPass />
 	</Canvas>
 	<VirtualJoystick {label_jump} show_jump={is_started} />
 	{#if is_dragging_look}
@@ -235,7 +237,10 @@
 
 	.game-container :global(canvas) {
 		image-rendering: pixelated;
+		/* Color quantization + 4×4 Bayer ordered dithering is done GPU-side in <CrtDitherPass />
+		   (see crt-dither.ts). CSS only handles the subtle vibrance boost. */
 		filter: contrast(1.08) saturate(1.1);
+		border-radius: clamp(12px, 3vmin, 28px);
 	}
 
 	.game-container.pseudo-fullscreen {
@@ -297,7 +302,17 @@
 		inset: 0;
 		pointer-events: none;
 		z-index: 6;
+		/* Match the canvas border-radius so scanlines and corner-darkening clip on the same curve. */
+		border-radius: clamp(12px, 3vmin, 28px);
+		/* Stack (top to bottom): glass-dome highlight → 4 corner darkening (curvature illusion) →
+		   scanlines → center vignette. The 4 corners + center vignette together fake the
+		   bulge of a CRT face without distorting actual canvas pixels. */
 		background:
+			radial-gradient(ellipse 65% 45% at 28% 22%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
+			radial-gradient(circle at top left, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
+			radial-gradient(circle at top right, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
+			radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
+			radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
 			repeating-linear-gradient(
 				0deg,
 				rgba(0, 0, 0, 0.25),
