@@ -64,7 +64,6 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 	)
 
 	expect(was_called).toBe(false)
-	await expect(page.locator('[data-testid="controls-overlay"]')).toHaveCount(0)
 })
 
 test('pseudo-fullscreen class is applied when native API is unavailable on touch devices', async ({

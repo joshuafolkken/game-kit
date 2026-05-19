@@ -9,7 +9,9 @@ words:
   - Boisclair
   - COEFF
   - gameover
+  - GHSA
   - Inerney
+  - moiré
   - mrdoob
   - mygame
   - Orbitron
@@ -17,8 +19,13 @@ words:
   - Raycaster
   - raycaster
   - SAMEORIGIN
+  - scanline
+  - scanlines
   - spacebar
   - threlte
   - trycloudflare
   - unstub
+  - viewbox
+  - viewports
+  - vsize
   - WASD
