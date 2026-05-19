@@ -60,10 +60,29 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(output_idx).toBeLessThan(dither_idx)
 	})
 
-	it('reacts to size and dpr changes via $effect', () => {
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/\$effect\([\s\S]*ctx\.size\.current/)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/composer\.setSize/)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/dither_uniforms\.u_resolution/)
+	it('syncs composer size, pixel ratio, and u_resolution inside the render task (not $effect)', () => {
+		// Reason: Threlte runs resizeStage (renderer.setSize + invalidate) → renderStage
+		// (our task) inside one rAF. $effect fires in a microtask AFTER the rAF, so an
+		// $effect-driven composer.setSize lags one frame behind the renderer during resize.
+		// Once the resize stops and frameInvalidated drops back to false, renderStage stops
+		// running too — the canvas freezes on the mismatched frame. Doing the sync inside
+		// the render task reads ctx.size / ctx.dpr AFTER resizeStage updated them, and
+		// u_resolution is sourced from renderer.getDrawingBufferSize so Three.js's
+		// Math.floor() rounding is honored too.
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector2[^}]*\}\s*from\s*'three'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/useTask\(\s*\([^)]*\)\s*=>\s*\{[\s\S]*?composer\.setSize\(\s*ctx\.size\.current\.width[\s\S]*?composer\.setPixelRatio\(\s*ctx\.dpr\.current[\s\S]*?ctx\.renderer\.getDrawingBufferSize\([\s\S]*?dither_uniforms\.u_resolution\.value\.copy\([\s\S]*?composer\.render\(/,
+		)
+		// Negative: composer.setSize / setPixelRatio must appear exactly once each (inside
+		// useTask). Two occurrences would mean a stale $effect copy still drives the
+		// composer — the lag-by-one-frame bug pattern.
+		const set_size_count = (CRT_DITHER_PASS_SOURCE.match(/composer\.setSize\(/g) ?? []).length
+		const set_pixel_ratio_count = (CRT_DITHER_PASS_SOURCE.match(/composer\.setPixelRatio\(/g) ?? [])
+			.length
+		expect(set_size_count).toBe(1)
+		expect(set_pixel_ratio_count).toBe(1)
+		// Negative: must NOT compute u_resolution from CSS × DPR (old bug).
+		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/u_resolution\.value\.set\(\s*width\s*\*\s*dpr/)
 	})
 
 	it('initializes the u_color_levels uniform as a Vector3 (per-channel quantization)', () => {
@@ -71,6 +90,44 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 			/u_color_levels:\s*\{\s*value:\s*new Vector3\(\s*COLOR_LEVELS\.r,\s*COLOR_LEVELS\.g,\s*COLOR_LEVELS\.b\s*\)\s*\}/,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector3[^}]*\}\s*from\s*'three'/)
+	})
+
+	it('wraps the uniforms in a ShaderMaterial before passing to ShaderPass', () => {
+		// Reason: passing a plain { uniforms, vertexShader, fragmentShader } object to
+		// ShaderPass triggers UniformsUtils.clone, which deep-clones Vector2/Vector3/Texture
+		// values — that decouples `dither_uniforms.u_resolution` from the uniform the shader
+		// actually reads, leaving u_resolution stuck at (1,1) and the bayer texture sampling
+		// a single cell (no visible dither, dark pixels crushed). Passing a ShaderMaterial
+		// avoids the clone (ShaderPass uses material.uniforms directly).
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*ShaderMaterial[^}]*\}\s*from\s*'three'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/new ShaderMaterial\(\s*\{\s*uniforms:\s*dither_uniforms[\s\S]*?\}\s*\)/,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/new ShaderPass\(\s*dither_material\s*\)/)
+		// Negative: must NOT pass a plain object literal to ShaderPass (the bug pattern).
+		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/new ShaderPass\(\s*\{\s*uniforms:/)
+	})
+
+	it('forces NearestFilter on the composer render targets to avoid bilinear blur on resize', () => {
+		// Reason: composer.setSize allocates RTs at `width * _pixelRatio` (unrounded) but
+		// WebGLRenderer floors the canvas to `Math.floor(width * _pixelRatio)`. After any
+		// resize where width × dpr is non-integer the RT and canvas differ by up to 1
+		// device pixel, and the dither pass's texture2D(tDiffuse, v_uv) sampling
+		// bilinearly interpolates the RT under the default LinearFilter — softening the
+		// whole image until reload. NearestFilter eliminates the interpolation.
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*NearestFilter[^}]*\}\s*from\s*'three'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/composer\.renderTarget1\.texture\.minFilter\s*=\s*NearestFilter/,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/composer\.renderTarget1\.texture\.magFilter\s*=\s*NearestFilter/,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/composer\.renderTarget2\.texture\.minFilter\s*=\s*NearestFilter/,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/composer\.renderTarget2\.texture\.magFilter\s*=\s*NearestFilter/,
+		)
 	})
 
 	it('disposes the composer, bayer texture, and restores autoRender on unmount', () => {

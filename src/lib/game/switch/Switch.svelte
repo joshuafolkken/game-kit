@@ -12,6 +12,8 @@
 		FPS_BAR_BASE_Y,
 		FPS_BAR_X_STEP,
 	} from '$lib/game/switch/switch-config'
+	import { onDestroy } from 'svelte'
+	import { MeshStandardMaterial } from 'three'
 
 	type CornerSign = -1 | 1
 	type BarAxis = 'h' | 'v'
@@ -102,6 +104,21 @@
 	let panel_opacity = $derived(is_active ? geom.panel_opacity_active : geom.panel_opacity_inactive)
 	let current_font_size = $derived(geom.label_font_size * font_size_multiplier)
 	let current_panel_text_font_size = $derived(geom.panel_text_font_size * font_size_multiplier)
+
+	// MeshStandardMaterial for panel_text so the digits emit light at the same color and
+	// intensity as the border frame ("枠"). Troika Text's default MeshBasicMaterial has
+	// no emissive, leaving the value digits visually flat against the slightly-emissive
+	// translucent panel face — hard to read. Matching the border's ring_emissive (=4 when
+	// active) makes the text glow like the frame and pop off the background.
+	const panel_text_material = new MeshStandardMaterial()
+	$effect(() => {
+		panel_text_material.color.set(resolved.current_color)
+		panel_text_material.emissive.set(resolved.current_color)
+		panel_text_material.emissiveIntensity = resolved.ring_emissive
+	})
+	onDestroy(() => {
+		panel_text_material.dispose()
+	})
 </script>
 
 <T.Group position={[position_x, geom.switch_y, geom.switch_z]}>
@@ -214,7 +231,7 @@
 				text={panel_text}
 				{font}
 				fontSize={current_panel_text_font_size}
-				color={resolved.current_color}
+				material={panel_text_material}
 				anchorX="center"
 				anchorY="middle"
 			/>

@@ -95,6 +95,13 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 		expect(blocks[0]).toContain('position={[BACKDROP_X, BACKDROP_Y, BACKDROP_Z]}')
 	})
 
+	it('BACKDROP_OPACITY is pinned to 0.6 — lets the background scene show through faintly', () => {
+		// Reason: the other tests only check that opacity={BACKDROP_OPACITY} is wired up,
+		// so silent value drift (e.g. 0.6 → 0.8) wouldn't be caught. Pin the literal value
+		// here so visual regressions on the CLICK TO START backdrop are surfaced.
+		expect(SOURCE).toMatch(/const\s+BACKDROP_OPACITY\s*=\s*0\.6/)
+	})
+
 	it('icon materials are DoubleSide so they remain visible when viewed from behind', () => {
 		const touch_block = find_mesh_full_block(SOURCE, '[0, TOUCH_Y, TOUCH_Z]')
 		const keyboard_block = find_mesh_full_block(SOURCE, '[KEYBOARD_X, 0, 0]')

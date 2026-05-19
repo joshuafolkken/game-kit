@@ -6,10 +6,11 @@ const BLACK_FLOOR_VALUE = 0.06
 export const BAYER_SIZE = BAYER_SIZE_VALUE
 export const BLACK_FLOOR = BLACK_FLOOR_VALUE
 
-// 8 × 8 × 4 = 256 unique colors. R/G get more levels than B to match the human eye's
-// stronger sensitivity to red/green luminance. Ordered Bayer dithering (below) hides
-// the blue-channel banding that bare quantization would expose.
-export const COLOR_LEVELS = { r: 8, g: 8, b: 4 } as const
+// 16 × 16 × 16 = 4096 unique colors (12-bit RGB — PC-9821 / Amiga HAM / Atari STE /
+// X68000 12-bit-mode class). Uniform per-channel quantization paired with 4×4 Bayer
+// ordered dithering (below) keeps the retro halftone texture while leaving enough
+// headroom that gradients remain mostly band-free.
+export const COLOR_LEVELS = { r: 16, g: 16, b: 16 } as const
 
 // 4×4 ordered (Bayer) dither matrix. Values 0..15 — every cell unique. The coarser
 // 4×4 pattern (vs 8×8) gives a chunkier, more visible cross-hatch — closer to the

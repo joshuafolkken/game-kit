@@ -6,6 +6,7 @@ ignorePaths:
   - "**/simon/credits.ts"
 words:
   - Baer
+  - bilinearly
   - Boisclair
   - COEFF
   - gameover
@@ -14,6 +15,7 @@ words:
   - moiré
   - mrdoob
   - mygame
+  - NTSC
   - Orbitron
   - Pixabay
   - Raycaster

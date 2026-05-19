@@ -3,6 +3,7 @@ import { render } from 'vitest-browser-svelte'
 import { CYBER_SWITCH_COLORS } from './switch-colors'
 import type { SwitchGeometry } from './switch-config'
 import Switch from './Switch.svelte'
+import SWITCH_SOURCE from './Switch.svelte?raw'
 
 vi.mock('@threlte/core', () => ({ T: {} }))
 vi.mock('@threlte/extras', () => ({ Text: function Text() {} }))
@@ -88,5 +89,49 @@ describe('Switch', () => {
 		}
 		const { container } = render(Switch, { props: { ...BASE_PROPS, geometry } })
 		expect(container).toBeTruthy()
+	})
+})
+
+describe('Switch — panel_text material (matches the border frame glow)', () => {
+	// Reason: troika Text defaults to MeshBasicMaterial with no emissive, so even when
+	// `color={resolved.current_color}` matches the border the digits look flat against
+	// the slightly-emissive panel face — the FPS value becomes hard to read. We provide
+	// a MeshStandardMaterial wired to the same color/emissive/intensity as the border
+	// frame ("枠") so the digits glow at matching brightness.
+
+	it('imports MeshStandardMaterial from three', () => {
+		expect(SWITCH_SOURCE).toMatch(/import\s*\{[^}]*MeshStandardMaterial[^}]*\}\s*from\s*'three'/)
+	})
+
+	it('constructs a MeshStandardMaterial for panel_text', () => {
+		expect(SWITCH_SOURCE).toMatch(/new\s+MeshStandardMaterial\(/)
+		// The result must be stored in a binding referenced by the Text tag (see below).
+		expect(SWITCH_SOURCE).toMatch(/panel_text_material/)
+	})
+
+	it('syncs the material color and emissive to the resolved border-frame values', () => {
+		// Color = border color, emissive = border color, intensity = ring_emissive
+		// (= same emissive intensity as the border frame).
+		expect(SWITCH_SOURCE).toMatch(
+			/panel_text_material\.color\.set\(\s*resolved\.current_color\s*\)/,
+		)
+		expect(SWITCH_SOURCE).toMatch(
+			/panel_text_material\.emissive\.set\(\s*resolved\.current_color\s*\)/,
+		)
+		expect(SWITCH_SOURCE).toMatch(
+			/panel_text_material\.emissiveIntensity\s*=\s*resolved\.ring_emissive/,
+		)
+	})
+
+	it('passes the custom material to the panel_text <Text> (no flat color prop)', () => {
+		// panel_text Text must receive material={...}; the prior `color=` prop must be gone
+		// so the material's color/emissive own the appearance.
+		expect(SWITCH_SOURCE).toMatch(
+			/text=\{\s*panel_text\s*\}[\s\S]*?material=\{\s*panel_text_material\s*\}/,
+		)
+	})
+
+	it('disposes the material on unmount', () => {
+		expect(SWITCH_SOURCE).toMatch(/onDestroy\([\s\S]*panel_text_material\.dispose\(\)/)
 	})
 })
