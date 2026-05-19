@@ -2,27 +2,46 @@
 	import { Canvas } from '@threlte/core'
 	import { Suspense } from '@threlte/extras'
 	import { audio } from '$lib/game/audio'
-	import ControlsOverlay from '$lib/game/controls/ControlsOverlay.svelte'
+	import ControlsScene from '$lib/game/controls/ControlsScene.svelte'
 	import VirtualJoystick from '$lib/game/controls/VirtualJoystick.svelte'
 	import { device } from '$lib/game/device.svelte'
 	import { fullscreen } from '$lib/game/fullscreen.svelte'
 	import { input } from '$lib/game/input/input.svelte'
 	import { loading } from '$lib/game/loading.svelte'
+	import { compute_pixel_dpr } from '$lib/game/pixel-dpr'
 	import { session } from '$lib/game/session.svelte'
 	import { game_state } from '$lib/game/state.svelte'
 	import { fullscreen_switch_input } from '$lib/game/switch/fullscreen-switch-input'
 	import type { Snippet } from 'svelte'
 	import { onMount } from 'svelte'
+	import { WebGLRenderer } from 'three'
+
+	// DPR is calibrated so the shorter buffer edge targets TARGET_SHORT_EDGE_PIXELS for
+	// consistent dot density across landscape / portrait / narrow viewports.
+	// MIN_SHORT_EDGE_PIXELS acts as a hard floor that can override MAX_DPR when the viewport
+	// is extremely small, ensuring the buffer never drops below a usable resolution.
+	const TARGET_SHORT_EDGE_PIXELS = 240
+	const MIN_SHORT_EDGE_PIXELS = 120
+	const MAX_DPR = 1
+	const FALLBACK_DPR = 1 / 3
+
+	// CRT scanlines: one scanline every N rendered dots (raise to thin them out).
+	const DOTS_PER_SCANLINE = 1
+
+	function create_renderer_no_aa(canvas: HTMLCanvasElement): WebGLRenderer {
+		return new WebGLRenderer({
+			canvas,
+			powerPreference: 'high-performance',
+			antialias: false,
+			alpha: true,
+		})
+	}
 
 	interface Props {
 		children?: Snippet
 		hint_text?: string
 		on_start?: () => void
 		label_jump: string
-		label_move: string
-		label_look: string
-		label_action: string
-		label_return: string
 		label_game: string
 		label_game_started: string
 		label_pause: string
@@ -33,16 +52,34 @@
 		hint_text = '',
 		on_start,
 		label_jump,
-		label_move,
-		label_look,
-		label_action,
-		label_return,
 		label_game,
 		label_game_started,
 		label_pause,
 	}: Props = $props()
 
 	let container: HTMLElement
+	let container_width = $state(0)
+	let container_height = $state(0)
+	let pixel_dpr = $derived(
+		compute_pixel_dpr(
+			container_width,
+			container_height,
+			TARGET_SHORT_EDGE_PIXELS,
+			MIN_SHORT_EDGE_PIXELS,
+			MAX_DPR,
+			FALLBACK_DPR,
+		),
+	)
+	let device_pixel_ratio = $state(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
+	// Snap scanline period to an integer number of device pixels so every cycle samples the
+	// same fractional offset of the gradient — eliminates the moiré that fractional CSS-pixel
+	// periods cause when adjacent cycles land on different device-pixel phases.
+	let scanline_period_css = $derived.by(() => {
+		const raw_css = DOTS_PER_SCANLINE / pixel_dpr
+		const dpr = device_pixel_ratio || 1
+		const snapped_device_px = Math.max(1, Math.round(raw_css * dpr))
+		return snapped_device_px / dpr
+	})
 	let is_dragging_look = $derived(input.is_dragging_look)
 	let drag_start_x = $derived(input.drag_start_x)
 	let drag_start_y = $derived(input.drag_start_y)
@@ -83,6 +120,17 @@
 		loading.mark_ready()
 	}
 
+	$effect(() => {
+		function update_dpr(): void {
+			device_pixel_ratio = window.devicePixelRatio || 1
+		}
+		update_dpr()
+		window.addEventListener('resize', update_dpr)
+		return function cleanup(): void {
+			window.removeEventListener('resize', update_dpr)
+		}
+	})
+
 	onMount(() => {
 		loading.set_step('loading_assets')
 		fullscreen_switch_input.set_container(container)
@@ -106,6 +154,8 @@
 	class:pseudo-fullscreen={is_pseudo_fullscreen}
 	class:is-dragging-look={is_dragging_look}
 	bind:this={container}
+	bind:clientWidth={container_width}
+	bind:clientHeight={container_height}
 	role="application"
 	tabindex="0"
 	aria-label={label_game}
@@ -114,17 +164,6 @@
 	data-testid="game-scene"
 >
 	<div role="status" class="sr-only">{game_status}</div>
-	{#if !is_started}
-		<ControlsOverlay
-			{hint_text}
-			{is_touch}
-			{label_move}
-			{label_look}
-			{label_action}
-			{label_jump}
-			{label_return}
-		/>
-	{/if}
 	{#if is_started && is_touch}
 		<button
 			class="pause-btn"
@@ -148,9 +187,18 @@
 	{#if is_alt}
 		<div class="cyber-glow" data-testid="cyber-glow" aria-hidden="true"></div>
 	{/if}
-	<Canvas>
+	<div
+		class="crt-overlay"
+		data-testid="crt-overlay"
+		aria-hidden="true"
+		style:--scanline-period="{scanline_period_css}px"
+	></div>
+	<Canvas dpr={pixel_dpr} createRenderer={create_renderer_no_aa}>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
+			{#if !is_started}
+				<ControlsScene {hint_text} {is_touch} />
+			{/if}
 		</Suspense>
 	</Canvas>
 	<VirtualJoystick {label_jump} show_jump={is_started} />
@@ -183,6 +231,11 @@
 		height: 100vh;
 		height: 100dvh;
 		background: #0d0d12;
+	}
+
+	.game-container :global(canvas) {
+		image-rendering: pixelated;
+		filter: contrast(1.08) saturate(1.1);
 	}
 
 	.game-container.pseudo-fullscreen {
@@ -237,6 +290,22 @@
 		);
 		mix-blend-mode: screen;
 		animation: cyber-pulse 2s ease-in-out infinite;
+	}
+
+	.crt-overlay {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 6;
+		background:
+			repeating-linear-gradient(
+				0deg,
+				rgba(0, 0, 0, 0.25),
+				rgba(0, 0, 0, 0.25) calc(var(--scanline-period, 3px) / 3),
+				transparent calc(var(--scanline-period, 3px) / 3),
+				transparent var(--scanline-period, 3px)
+			),
+			radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.45) 100%);
 	}
 
 	@keyframes cyber-pulse {
