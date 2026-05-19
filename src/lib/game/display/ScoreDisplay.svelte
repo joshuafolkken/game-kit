@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core'
 	import { Text } from '@threlte/extras'
+	import { get_hi_value_color } from '$lib/game/display/score-display-color'
 	import {
 		ANIM_DURATION_MS,
 		CYBER_LABEL_COLOR,
-		CYBER_NEW_HIGH_COLOR,
 		CYBER_PANEL_COLOR,
 		CYBER_PANEL_EMISSIVE,
 		CYBER_PANEL_EMISSIVE_INTENSITY,
 		CYBER_VALUE_COLOR,
 		DISPLAY_Y,
-		HI_BASE_COLOR,
 		HI_LABEL_Y,
 		HI_VALUE_Y,
 		LABEL_FONT_SIZE,
@@ -19,7 +18,6 @@
 		PANEL_W,
 		PANEL_Z_OFFSET,
 		RETRO_LABEL_COLOR,
-		RETRO_NEW_HIGH_COLOR,
 		RETRO_PANEL_COLOR,
 		RETRO_PANEL_EMISSIVE,
 		RETRO_PANEL_EMISSIVE_INTENSITY,
@@ -101,8 +99,7 @@
 	let value_font_size = $derived(VALUE_FONT_SIZE * font_size_multiplier)
 	let round_font_size = $derived(ROUND_VALUE_FONT_SIZE * font_size_multiplier)
 
-	let new_high_color = $derived(is_alt ? CYBER_NEW_HIGH_COLOR : RETRO_NEW_HIGH_COLOR)
-	let hi_value_color = $derived(score_data.is_new_high_score ? new_high_color : HI_BASE_COLOR)
+	let hi_value_color = $derived(get_hi_value_color(is_alt, score_data.is_new_high_score))
 	let hi_score_text = $derived(score_data.format_score(displayed_hi))
 	let current_score_text = $derived(score_data.format_score(displayed_score))
 	let hi_round_text = $derived(String(score_data.high_score_round))
