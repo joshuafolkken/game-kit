@@ -19,8 +19,12 @@ words:
   - Raycaster
   - raycaster
   - SAMEORIGIN
+  - GLSL
+  - glsl
   - scanline
   - scanlines
+  - SNES
+  - tonemap
   - spacebar
   - threlte
   - trycloudflare
