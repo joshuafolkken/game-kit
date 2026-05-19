@@ -111,7 +111,8 @@
 	],
 	"pnpm": {
 		"overrides": {
-			"serialize-javascript": ">=7.0.5"
+			"serialize-javascript": ">=7.0.5",
+			"ws": ">=8.20.1"
 		},
 		"onlyBuiltDependencies": [
 			"@joshuafolkken/kit",
