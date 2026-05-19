@@ -80,8 +80,8 @@
 	// completes, so an $effect-driven composer.setSize would always lag one frame behind
 	// the renderer during resize. Worse, once the resize stops and frameInvalidated drops
 	// back to false, renderStage stops running entirely — the canvas freezes on the last
-	// (mismatched) frame, which is why the dither used to look "汚い" until reload. Doing
-	// it here reads ctx.size / ctx.dpr after resizeStage has already updated them, so
+	// (mismatched) frame, which is why the dither used to look dirty / grainy until reload.
+	// Doing it here reads ctx.size / ctx.dpr after resizeStage has already updated them, so
 	// composer RT exactly matches the canvas every render. u_resolution is sourced from
 	// renderer.getDrawingBufferSize() so it picks up Three.js's Math.floor() rounding too.
 	const drawing_buffer_size = new Vector2()
