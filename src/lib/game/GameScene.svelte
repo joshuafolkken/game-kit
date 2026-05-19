@@ -21,12 +21,14 @@
 	// consistent dot density across landscape / portrait / narrow viewports.
 	// MIN_SHORT_EDGE_PIXELS acts as a hard floor that can override MAX_DPR when the viewport
 	// is extremely small, ensuring the buffer never drops below a usable resolution.
-	const TARGET_SHORT_EDGE_PIXELS = 240
-	const MIN_SHORT_EDGE_PIXELS = 120
+	const TARGET_SHORT_EDGE_PIXELS = 256
+	const MIN_SHORT_EDGE_PIXELS = 128
 	const MAX_DPR = 1
 	const FALLBACK_DPR = 1 / 3
 
-	// CRT scanlines: one scanline every N rendered dots (raise to thin them out).
+	// CRT scanlines: one scanline every N rendered dots. 1 pairs with a 256-pixel short
+	// edge to produce ~256 visible scanlines — same density as the X68000's 256-line CRT
+	// modes and close to NTSC 240p (240 visible) for that "real CRT" look.
 	const DOTS_PER_SCANLINE = 1
 
 	function create_renderer_no_aa(canvas: HTMLCanvasElement): WebGLRenderer {
@@ -315,9 +317,9 @@
 			radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
 			repeating-linear-gradient(
 				0deg,
-				rgba(0, 0, 0, 0.25),
-				rgba(0, 0, 0, 0.25) calc(var(--scanline-period, 3px) / 3),
-				transparent calc(var(--scanline-period, 3px) / 3),
+				rgba(0, 0, 0, 0.45),
+				rgba(0, 0, 0, 0.45) calc(var(--scanline-period, 3px) / 2),
+				transparent calc(var(--scanline-period, 3px) / 2),
 				transparent var(--scanline-period, 3px)
 			),
 			radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.45) 100%);

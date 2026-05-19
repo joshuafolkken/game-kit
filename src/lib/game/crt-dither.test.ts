@@ -1,3 +1,5 @@
+import { ShaderMaterial, Vector2 } from 'three'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { describe, expect, it } from 'vitest'
 import {
 	BAYER_MATRIX,
@@ -17,8 +19,8 @@ describe('crt-dither constants', () => {
 		expect(BAYER_SIZE).toBe(4)
 	})
 
-	it('exposes COLOR_LEVELS = { r: 8, g: 8, b: 4 } (8×8×4 = 256 unique colors)', () => {
-		expect(COLOR_LEVELS).toEqual({ r: 8, g: 8, b: 4 })
+	it('exposes COLOR_LEVELS = { r: 16, g: 16, b: 16 } (16×16×16 = 4096 unique colors, 12-bit RGB)', () => {
+		expect(COLOR_LEVELS).toEqual({ r: 16, g: 16, b: 16 })
 	})
 
 	it('exposes BLACK_FLOOR = 0.06 so dark pixels never collapse to pure black', () => {
@@ -96,8 +98,10 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 		}
 	})
 
-	it('blue channel (4 levels) produces fewer distinct outputs than red/green (8 levels)', () => {
-		// Sanity: prove the per-channel asymmetry actually flows through the math.
+	it('all three channels produce the same number of distinct outputs (uniform quantization)', () => {
+		// COLOR_LEVELS is now uniform across R/G/B (was asymmetric 8/8/4). Sanity-check
+		// that the dither math actually flows through with matching cardinality on every
+		// channel — if we ever revert to asymmetric levels, this guards the change point.
 		function distinct_outputs(levels: number): number {
 			const seen = new Set<number>()
 			for (let v = 0; v <= 100; v++) {
@@ -107,7 +111,9 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 			}
 			return seen.size
 		}
-		expect(distinct_outputs(COLOR_LEVELS.b)).toBeLessThan(distinct_outputs(COLOR_LEVELS.r))
+		const red = distinct_outputs(COLOR_LEVELS.r)
+		expect(distinct_outputs(COLOR_LEVELS.g)).toBe(red)
+		expect(distinct_outputs(COLOR_LEVELS.b)).toBe(red)
 	})
 })
 
@@ -169,5 +175,57 @@ describe('DITHER shader sources', () => {
 
 	it('fragment shader declares u_color_levels as vec3 (per-channel quantization)', () => {
 		expect(DITHER_FRAGMENT_SHADER).toMatch(/uniform\s+vec3\s+u_color_levels/)
+	})
+})
+
+// Regression: locks in the ShaderPass uniform-binding behavior that
+// <CrtDitherPass /> relies on. Passing a plain shader object to ShaderPass deep-clones
+// the uniforms (Vector2/Vector3/Texture .clone()), which previously stranded
+// u_resolution at its (1,1) seed — the bayer texture only ever sampled cell (0,0),
+// hiding the dither pattern AND crushing dark pixels toward BLACK_FLOOR. Wrapping the
+// uniforms in a ShaderMaterial keeps the reference live.
+describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
+	const TRIVIAL_VERTEX_SHADER = 'void main(){ gl_Position = vec4(position, 1.0); }'
+	const TRIVIAL_FRAGMENT_SHADER = 'void main(){ gl_FragColor = vec4(1.0); }'
+
+	function get_uniform_vec2(pass: ShaderPass): Vector2 {
+		const slot = pass.uniforms['u_res']
+		if (!slot) throw new Error('u_res uniform missing on pass')
+		return slot.value as Vector2
+	}
+
+	it('plain-object form deep-clones uniforms — the bug pattern', () => {
+		const local = { u_res: { value: new Vector2(1, 1) } }
+		const pass = new ShaderPass({
+			uniforms: local,
+			vertexShader: TRIVIAL_VERTEX_SHADER,
+			fragmentShader: TRIVIAL_FRAGMENT_SHADER,
+		})
+		expect(pass.uniforms['u_res']).not.toBe(local.u_res)
+		expect(get_uniform_vec2(pass)).not.toBe(local.u_res.value)
+		const NEW_WIDTH = 320
+		const NEW_HEIGHT = 240
+		local.u_res.value.set(NEW_WIDTH, NEW_HEIGHT)
+		const cloned = get_uniform_vec2(pass)
+		expect(cloned.x).toBe(1)
+		expect(cloned.y).toBe(1)
+	})
+
+	it('ShaderMaterial form keeps uniform references live — the fix pattern', () => {
+		const local = { u_res: { value: new Vector2(1, 1) } }
+		const material = new ShaderMaterial({
+			uniforms: local,
+			vertexShader: TRIVIAL_VERTEX_SHADER,
+			fragmentShader: TRIVIAL_FRAGMENT_SHADER,
+		})
+		const pass = new ShaderPass(material)
+		expect(pass.uniforms['u_res']).toBe(local.u_res)
+		expect(get_uniform_vec2(pass)).toBe(local.u_res.value)
+		const NEW_WIDTH = 320
+		const NEW_HEIGHT = 240
+		local.u_res.value.set(NEW_WIDTH, NEW_HEIGHT)
+		const live = get_uniform_vec2(pass)
+		expect(live.x).toBe(NEW_WIDTH)
+		expect(live.y).toBe(NEW_HEIGHT)
 	})
 })
