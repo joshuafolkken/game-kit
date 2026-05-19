@@ -238,6 +238,30 @@ describe('ControlsScene viewport reactivity — sizes update on window resize', 
 	})
 })
 
+describe('ControlsScene texture loading — leak-safe blob URLs and unhandled rejections', () => {
+	it('svg_to_texture revokes the object URL in a finally block (no leak on failure)', () => {
+		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/)
+		expect(fn_match).not.toBeNull()
+		const body = fn_match?.[0] ?? ''
+		expect(body).toMatch(/\}\s*finally\s*\{[\s\S]*URL\.revokeObjectURL\(url\)[\s\S]*\}/)
+	})
+
+	it('svg_to_texture does not call URL.revokeObjectURL outside the finally block', () => {
+		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/)
+		const body = fn_match?.[0] ?? ''
+		const revoke_count = (body.match(/URL\.revokeObjectURL\(/g) ?? []).length
+		expect(revoke_count).toBe(1)
+	})
+
+	it('load_textures catches Promise.all rejection to avoid unhandled rejection', () => {
+		const fn_match = SOURCE.match(/async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/)
+		expect(fn_match).not.toBeNull()
+		const body = fn_match?.[0] ?? ''
+		expect(body).toMatch(/try\s*\{[\s\S]*await Promise\.all/)
+		expect(body).toMatch(/\}\s*catch\s*\([^)]*\)\s*\{/)
+	})
+})
+
 function extract_const_number(source: string, name: string): number {
 	const re = new RegExp(`const\\s+${name}\\s*=\\s*(-?\\d+(?:\\.\\d+)?)`)
 	const match = source.match(re)

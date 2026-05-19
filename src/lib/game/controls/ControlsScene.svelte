@@ -162,43 +162,50 @@
 	async function svg_to_texture(svg: string, tex_w: number, tex_h: number): Promise<CanvasTexture> {
 		const blob = new Blob([svg], { type: 'image/svg+xml' })
 		const url = URL.createObjectURL(blob)
-		const img = new Image()
-		img.src = url
-		await new Promise<void>(function wait(resolve, reject): void {
-			img.onload = (): void => resolve()
-			img.onerror = (): void => reject(new Error('svg load failed'))
-		})
-		const canvas = document.createElement('canvas')
-		canvas.width = tex_w
-		canvas.height = tex_h
-		const ctx_2d = canvas.getContext('2d')
-		if (!ctx_2d) throw new Error('canvas 2d context unavailable')
-		ctx_2d.clearRect(0, 0, tex_w, tex_h)
-		ctx_2d.drawImage(img, 0, 0, tex_w, tex_h)
-		URL.revokeObjectURL(url)
-		const tex = new CanvasTexture(canvas)
-		tex.minFilter = NearestFilter
-		tex.magFilter = NearestFilter
-		return tex
+		try {
+			const img = new Image()
+			img.src = url
+			await new Promise<void>(function wait(resolve, reject): void {
+				img.onload = (): void => resolve()
+				img.onerror = (): void => reject(new Error('svg load failed'))
+			})
+			const canvas = document.createElement('canvas')
+			canvas.width = tex_w
+			canvas.height = tex_h
+			const ctx_2d = canvas.getContext('2d')
+			if (!ctx_2d) throw new Error('canvas 2d context unavailable')
+			ctx_2d.clearRect(0, 0, tex_w, tex_h)
+			ctx_2d.drawImage(img, 0, 0, tex_w, tex_h)
+			const tex = new CanvasTexture(canvas)
+			tex.minFilter = NearestFilter
+			tex.magFilter = NearestFilter
+			return tex
+		} finally {
+			URL.revokeObjectURL(url)
+		}
 	}
 
 	onMount(function setup(): () => void {
 		let alive = true
 		void (async function load_textures(): Promise<void> {
-			const [kb, ms, tc] = await Promise.all([
-				svg_to_texture(KEYBOARD_SVG, KEYBOARD_TEX_W, KEYBOARD_TEX_H),
-				svg_to_texture(MOUSE_SVG, MOUSE_TEX_W, MOUSE_TEX_H),
-				svg_to_texture(TOUCH_SVG, TOUCH_TEX_W, TOUCH_TEX_H),
-			])
-			if (!alive) {
-				kb.dispose()
-				ms.dispose()
-				tc.dispose()
-				return
+			try {
+				const [kb, ms, tc] = await Promise.all([
+					svg_to_texture(KEYBOARD_SVG, KEYBOARD_TEX_W, KEYBOARD_TEX_H),
+					svg_to_texture(MOUSE_SVG, MOUSE_TEX_W, MOUSE_TEX_H),
+					svg_to_texture(TOUCH_SVG, TOUCH_TEX_W, TOUCH_TEX_H),
+				])
+				if (!alive) {
+					kb.dispose()
+					ms.dispose()
+					tc.dispose()
+					return
+				}
+				keyboard_tex = kb
+				mouse_tex = ms
+				touch_tex = tc
+			} catch (error) {
+				console.warn('[ControlsScene] failed to load control hint textures', error)
 			}
-			keyboard_tex = kb
-			mouse_tex = ms
-			touch_tex = tc
 		})()
 		return function cleanup(): void {
 			alive = false
