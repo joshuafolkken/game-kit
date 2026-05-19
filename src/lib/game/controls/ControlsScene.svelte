@@ -13,7 +13,7 @@
 	const BACKDROP_W = 6
 	const BACKDROP_H = 3.6
 	const BACKDROP_COLOR = '#000000'
-	const BACKDROP_OPACITY = 0.8
+	const BACKDROP_OPACITY = 0.6
 
 	const HINT_X = 0
 	const HINT_Y = 2.3

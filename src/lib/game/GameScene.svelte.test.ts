@@ -321,9 +321,9 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).not.toMatch(/const\s+PIXEL_DPR\s*=/)
 		})
 
-		it('defines shorter-edge-based DPR constants: TARGET_SHORT_EDGE_PIXELS=240 and MIN_SHORT_EDGE_PIXELS=120', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/const\s+TARGET_SHORT_EDGE_PIXELS\s*=\s*240/)
-			expect(GAME_SCENE_SOURCE).toMatch(/const\s+MIN_SHORT_EDGE_PIXELS\s*=\s*120/)
+		it('defines shorter-edge-based DPR constants: TARGET_SHORT_EDGE_PIXELS=256 and MIN_SHORT_EDGE_PIXELS=128', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/const\s+TARGET_SHORT_EDGE_PIXELS\s*=\s*256/)
+			expect(GAME_SCENE_SOURCE).toMatch(/const\s+MIN_SHORT_EDGE_PIXELS\s*=\s*128/)
 			expect(GAME_SCENE_SOURCE).not.toMatch(/TARGET_LONG_EDGE_PIXELS/)
 		})
 	})
@@ -358,8 +358,18 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*ellipse\s+at\s+center/)
 		})
 
-		it('defines DOTS_PER_SCANLINE = 1 so scanline count equals dot count exactly', () => {
+		it('defines DOTS_PER_SCANLINE = 1 (one scanline per dot — ~256 scanlines, X68000-class CRT)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(/const\s+DOTS_PER_SCANLINE\s*=\s*1/)
+		})
+
+		it('scanline gradient uses alpha 0.45 (heavy CRT look) on both gradient stops', () => {
+			// Reason: value-pin so silent drift back to 0.25 (too faint) is caught.
+			const alpha_matches = GAME_SCENE_SOURCE.match(/rgba\(\s*0,\s*0,\s*0,\s*0\.45\s*\)/g) ?? []
+			expect(alpha_matches.length).toBeGreaterThanOrEqual(2)
+			// Negative: the previous 0.25 alpha must be gone from the scanline stops.
+			expect(GAME_SCENE_SOURCE).not.toMatch(
+				/rgba\(\s*0,\s*0,\s*0,\s*0\.25\s*\)\s+calc\(var\(--scanline-period/,
+			)
 		})
 
 		it('derives scanline_period_css with device-pixel snapping (Math.round on device px) to avoid moiré', () => {
@@ -379,7 +389,8 @@ describe('GameScene', () => {
 		it('binds the scanline period to the CRT overlay via the --scanline-period CSS variable', () => {
 			expect(GAME_SCENE_SOURCE).toContain('style:--scanline-period="{scanline_period_css}px"')
 			expect(GAME_SCENE_SOURCE).toMatch(/var\(--scanline-period,\s*3px\)/)
-			expect(GAME_SCENE_SOURCE).toMatch(/calc\(\s*var\(--scanline-period,\s*3px\)\s*\/\s*3\s*\)/)
+			// Duty cycle: dark : transparent = 1 : 1 (period / 2). CRT phosphor stripe look.
+			expect(GAME_SCENE_SOURCE).toMatch(/calc\(\s*var\(--scanline-period,\s*3px\)\s*\/\s*2\s*\)/)
 		})
 
 		it('does not overlay a phosphor mask (RGB sub-pixel stripes) — kept off intentionally', () => {
