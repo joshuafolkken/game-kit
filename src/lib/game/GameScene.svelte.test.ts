@@ -398,4 +398,52 @@ describe('GameScene', () => {
 			)
 		})
 	})
+
+	describe('CRT curvature — rounded corners + corner darkening + glass-dome highlight', () => {
+		it('applies a border-radius to the canvas to simulate the CRT screen shape', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.game-container\s+:global\(canvas\)\s*\{[\s\S]*?border-radius:\s*clamp\(/,
+			)
+		})
+
+		it('applies the same border-radius to .crt-overlay so scanlines clip on the same curve', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{[\s\S]*?border-radius:\s*clamp\(/)
+		})
+
+		it('adds four corner darkening radial-gradients to fake CRT curvature', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+left/)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+right/)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+left/)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+right/)
+		})
+
+		it('adds a glass-dome highlight (light radial gradient in the upper-left quadrant)', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/radial-gradient\(\s*ellipse\s+\d+%\s+\d+%\s+at\s+\d+%\s+\d+%,[\s\S]*?rgba\(\s*255,\s*255,\s*255/,
+			)
+		})
+
+		it('keeps the existing center vignette and scanlines untouched alongside the new curvature layers', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/repeating-linear-gradient\(\s*0deg/)
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%/,
+			)
+		})
+	})
+
+	describe('CRT color quantization + Bayer dithering (WebGL post-process)', () => {
+		it('imports CrtDitherPass and renders it inside <Canvas>', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/import\s+CrtDitherPass\s+from\s+'\$lib\/game\/CrtDitherPass\.svelte'/,
+			)
+			expect(GAME_SCENE_SOURCE).toMatch(/<Canvas[\s\S]*<CrtDitherPass\s*\/>[\s\S]*<\/Canvas>/)
+		})
+
+		it('no longer references the legacy SVG palette filter (replaced by GPU post-process)', () => {
+			expect(GAME_SCENE_SOURCE).not.toMatch(/<filter\s+id="crt-palette"/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/feComponentTransfer/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/url\(#crt-palette\)/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/\.crt-filter-defs\s*\{/)
+		})
+	})
 })
