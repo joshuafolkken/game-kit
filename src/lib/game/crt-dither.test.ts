@@ -112,7 +112,7 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 })
 
 describe('crt_dither.create_bayer_texture', () => {
-	it('returns a DataTexture sized 8×8 with non-zero data', () => {
+	it(`returns a DataTexture sized ${BAYER_SIZE}×${BAYER_SIZE} with non-zero data`, () => {
 		const tex = crt_dither.create_bayer_texture()
 		expect(tex.image.width).toBe(BAYER_SIZE)
 		expect(tex.image.height).toBe(BAYER_SIZE)
@@ -122,7 +122,7 @@ describe('crt_dither.create_bayer_texture', () => {
 		tex.dispose()
 	})
 
-	it('stores normalized values in [0, 1) matching BAYER_MATRIX / 64', () => {
+	it(`stores normalized values in [0, 1) matching BAYER_MATRIX / ${SQUARED_BAYER_SIZE}`, () => {
 		const tex = crt_dither.create_bayer_texture()
 		const data = tex.image.data as Float32Array
 		BAYER_MATRIX.forEach((row, y) => {

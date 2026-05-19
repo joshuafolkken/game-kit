@@ -237,7 +237,7 @@
 
 	.game-container :global(canvas) {
 		image-rendering: pixelated;
-		/* Color quantization + 8×8 Bayer ordered dithering is done GPU-side in <CrtDitherPass />
+		/* Color quantization + 4×4 Bayer ordered dithering is done GPU-side in <CrtDitherPass />
 		   (see crt-dither.ts). CSS only handles the subtle vibrance boost. */
 		filter: contrast(1.08) saturate(1.1);
 		border-radius: clamp(12px, 3vmin, 28px);
