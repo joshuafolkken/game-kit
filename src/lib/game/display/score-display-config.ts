@@ -17,7 +17,9 @@ export const CYBER_LABEL_COLOR = '#2a5a7a'
 export const CYBER_VALUE_COLOR = '#00ffff'
 export const RETRO_LABEL_COLOR = '#336633'
 export const RETRO_VALUE_COLOR = '#00ff88'
-export const NEW_HIGH_SCORE_COLOR = '#ffff00'
+export const HI_BASE_COLOR = '#ffff00'
+export const CYBER_NEW_HIGH_COLOR = '#cc66ff'
+export const RETRO_NEW_HIGH_COLOR = '#ff44ff'
 
 export const LABEL_FONT_SIZE = 0.055
 export const VALUE_FONT_SIZE = 0.1

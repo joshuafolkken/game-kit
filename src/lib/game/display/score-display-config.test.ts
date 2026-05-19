@@ -2,20 +2,22 @@ import { describe, expect, it } from 'vitest'
 import {
 	ANIM_DURATION_MS,
 	CYBER_LABEL_COLOR,
+	CYBER_NEW_HIGH_COLOR,
 	CYBER_PANEL_COLOR,
 	CYBER_PANEL_EMISSIVE,
 	CYBER_PANEL_EMISSIVE_INTENSITY,
 	CYBER_VALUE_COLOR,
 	DISPLAY_Y,
+	HI_BASE_COLOR,
 	HI_LABEL_Y,
 	HI_VALUE_Y,
 	LABEL_FONT_SIZE,
-	NEW_HIGH_SCORE_COLOR,
 	PANEL_H,
 	PANEL_OPACITY,
 	PANEL_W,
 	PANEL_Z_OFFSET,
 	RETRO_LABEL_COLOR,
+	RETRO_NEW_HIGH_COLOR,
 	RETRO_PANEL_COLOR,
 	RETRO_PANEL_EMISSIVE,
 	RETRO_PANEL_EMISSIVE_INTENSITY,
@@ -104,9 +106,35 @@ describe('colors', () => {
 		expect(CYBER_VALUE_COLOR).not.toBe(RETRO_VALUE_COLOR)
 	})
 
-	it('NEW_HIGH_SCORE_COLOR is different from both value colors', () => {
-		expect(NEW_HIGH_SCORE_COLOR).not.toBe(CYBER_VALUE_COLOR)
-		expect(NEW_HIGH_SCORE_COLOR).not.toBe(RETRO_VALUE_COLOR)
+	it('HI_BASE_COLOR is distinct from both mode value colors', () => {
+		expect(HI_BASE_COLOR).not.toBe(CYBER_VALUE_COLOR)
+		expect(HI_BASE_COLOR).not.toBe(RETRO_VALUE_COLOR)
+	})
+
+	it('CYBER_NEW_HIGH_COLOR is distinct from HI_BASE_COLOR and cyber value color', () => {
+		expect(CYBER_NEW_HIGH_COLOR).not.toBe(HI_BASE_COLOR)
+		expect(CYBER_NEW_HIGH_COLOR).not.toBe(CYBER_VALUE_COLOR)
+	})
+
+	it('RETRO_NEW_HIGH_COLOR is distinct from HI_BASE_COLOR and retro value color', () => {
+		expect(RETRO_NEW_HIGH_COLOR).not.toBe(HI_BASE_COLOR)
+		expect(RETRO_NEW_HIGH_COLOR).not.toBe(RETRO_VALUE_COLOR)
+	})
+
+	it('cyber and retro new-high colors are distinct from each other', () => {
+		expect(CYBER_NEW_HIGH_COLOR).not.toBe(RETRO_NEW_HIGH_COLOR)
+	})
+
+	it('HI_BASE_COLOR is bright yellow (#ffff00)', () => {
+		expect(HI_BASE_COLOR).toBe('#ffff00')
+	})
+
+	it('CYBER_NEW_HIGH_COLOR is a magenta-purple highlight', () => {
+		expect(CYBER_NEW_HIGH_COLOR).toBe('#cc66ff')
+	})
+
+	it('RETRO_NEW_HIGH_COLOR is a vivid magenta highlight', () => {
+		expect(RETRO_NEW_HIGH_COLOR).toBe('#ff44ff')
 	})
 
 	it('cyber emissive intensity is greater than retro (cyber glows more)', () => {
