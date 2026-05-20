@@ -4,6 +4,7 @@
 	import { audio } from '$lib/game/audio'
 	import ControlsScene from '$lib/game/controls/ControlsScene.svelte'
 	import VirtualJoystick from '$lib/game/controls/VirtualJoystick.svelte'
+	import CrtChromaticFilter from '$lib/game/CrtChromaticFilter.svelte'
 	import CrtDitherPass from '$lib/game/CrtDitherPass.svelte'
 	import { device } from '$lib/game/device.svelte'
 	import { fullscreen } from '$lib/game/fullscreen.svelte'
@@ -196,6 +197,7 @@
 		aria-hidden="true"
 		style:--scanline-period="{scanline_period_css}px"
 	></div>
+	<CrtChromaticFilter />
 	<Canvas dpr={pixel_dpr} createRenderer={create_renderer_no_aa}>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
@@ -240,8 +242,10 @@
 	.game-container :global(canvas) {
 		image-rendering: pixelated;
 		/* Color quantization + 4×4 Bayer ordered dithering is done GPU-side in <CrtDitherPass />
-		   (see crt-dither.ts). CSS only handles the subtle vibrance boost. */
-		filter: contrast(1.08) saturate(1.1);
+		   (see crt-dither.ts). CSS handles the subtle vibrance boost and chromatic aberration —
+		   the latter runs on the upscaled, native-device-pixel bitmap so sub-pixel R/B offsets
+		   actually resolve instead of snapping to dot-grid integers. */
+		filter: contrast(1.08) saturate(1.1) brightness(1.15) url(#crt-chromatic);
 		border-radius: clamp(12px, 3vmin, 28px);
 	}
 
@@ -311,18 +315,18 @@
 		   bulge of a CRT face without distorting actual canvas pixels. */
 		background:
 			radial-gradient(ellipse 65% 45% at 28% 22%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
-			radial-gradient(circle at top left, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
-			radial-gradient(circle at top right, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
-			radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
-			radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.55) 0%, transparent 38%),
+			radial-gradient(circle at top left, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
+			radial-gradient(circle at top right, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
+			radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
+			radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
 			repeating-linear-gradient(
 				0deg,
-				rgba(0, 0, 0, 0.45),
-				rgba(0, 0, 0, 0.45) calc(var(--scanline-period, 3px) / 2),
+				rgba(0, 0, 0, 0.7),
+				rgba(0, 0, 0, 0.7) calc(var(--scanline-period, 3px) / 2),
 				transparent calc(var(--scanline-period, 3px) / 2),
 				transparent var(--scanline-period, 3px)
 			),
-			radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.45) 100%);
+			radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.3) 100%);
 	}
 
 	@keyframes cyber-pulse {

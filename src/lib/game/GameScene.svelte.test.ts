@@ -362,14 +362,24 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(/const\s+DOTS_PER_SCANLINE\s*=\s*1/)
 		})
 
-		it('scanline gradient uses alpha 0.45 (heavy CRT look) on both gradient stops', () => {
-			// Reason: value-pin so silent drift back to 0.25 (too faint) is caught.
-			const alpha_matches = GAME_SCENE_SOURCE.match(/rgba\(\s*0,\s*0,\s*0,\s*0\.45\s*\)/g) ?? []
+		it('scanline gradient uses alpha 0.7 (paired with /2 thick lines, brightness boost compensates) on both stops', () => {
+			// Reason: value-pin so silent drift to a previous alpha (0.55, 0.5, 0.65, 0.45,
+			// 0.25, 1) is caught. Both scanline stops must use the same alpha, otherwise
+			// the dark/light cycle becomes asymmetric. The 0.7 alpha is paired with the /2
+			// duty cycle — thick stripes at high alpha. The overall darkening is offset by
+			// the canvas filter `brightness(1.15)` and the lightened corner / vignette
+			// alphas added in the same iteration.
+			const alpha_matches = GAME_SCENE_SOURCE.match(/rgba\(\s*0,\s*0,\s*0,\s*0\.7\s*\)/g) ?? []
 			expect(alpha_matches.length).toBeGreaterThanOrEqual(2)
-			// Negative: the previous 0.25 alpha must be gone from the scanline stops.
-			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/rgba\(\s*0,\s*0,\s*0,\s*0\.25\s*\)\s+calc\(var\(--scanline-period/,
-			)
+			// Negative: prior alphas must not be present in a scanline stop position
+			// (i.e. paired with the --scanline-period calc).
+			for (const prior_alpha of ['0\\.55', '0\\.5', '0\\.65', '0\\.45', '0\\.25', '1']) {
+				expect(GAME_SCENE_SOURCE).not.toMatch(
+					new RegExp(
+						`rgba\\(\\s*0,\\s*0,\\s*0,\\s*${prior_alpha}\\s*\\)\\s+calc\\(var\\(--scanline-period`,
+					),
+				)
+			}
 		})
 
 		it('derives scanline_period_css with device-pixel snapping (Math.round on device px) to avoid moiré', () => {
@@ -389,8 +399,14 @@ describe('GameScene', () => {
 		it('binds the scanline period to the CRT overlay via the --scanline-period CSS variable', () => {
 			expect(GAME_SCENE_SOURCE).toContain('style:--scanline-period="{scanline_period_css}px"')
 			expect(GAME_SCENE_SOURCE).toMatch(/var\(--scanline-period,\s*3px\)/)
-			// Duty cycle: dark : transparent = 1 : 1 (period / 2). CRT phosphor stripe look.
+			// Duty cycle: dark : transparent = 1 : 1 (period / 2). Thick scanline stripes —
+			// soft, traditional CRT phosphor look. Paired with the alpha-0.55 pin above so
+			// the 50%-duty dark stripes do not crush the image into a dim overall tone.
 			expect(GAME_SCENE_SOURCE).toMatch(/calc\(\s*var\(--scanline-period,\s*3px\)\s*\/\s*2\s*\)/)
+			// Negative: must not be /3 (1:2 thin-line duty cycle) at a scanline stop.
+			expect(GAME_SCENE_SOURCE).not.toMatch(
+				/rgba\([^)]*\)\s+calc\(\s*var\(--scanline-period,\s*3px\)\s*\/\s*3\s*\)/,
+			)
 		})
 
 		it('does not overlay a phosphor mask (RGB sub-pixel stripes) — kept off intentionally', () => {
@@ -402,7 +418,7 @@ describe('GameScene', () => {
 
 		it('applies a subtle CRT vibrance filter to the canvas (contrast + saturate, no hue shift)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(1\.08\)\s+saturate\(1\.1\)/,
+				/\.game-container\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(1\.08\)\s+saturate\(1\.1\)\s+brightness\(1\.15\)/,
 			)
 			expect(GAME_SCENE_SOURCE).not.toMatch(
 				/\.game-container\s+:global\(canvas\)[\s\S]*?hue-rotate/,
@@ -428,6 +444,25 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+right/)
 		})
 
+		it('uses alpha 0.4 for the four corner darkening gradients (lightened from 0.55 for legibility)', () => {
+			// Reason: corner darkening alpha was 0.55 originally. The scanline overlay was
+			// then bumped to alpha 1 (full-black stripes covering 50% of the screen), which
+			// flooded the periphery. We dropped corners to 0.4 so the screen edges stay
+			// readable while the curvature illusion still reads. Value-pin to catch
+			// regressions in either direction (back to 0.55 = too dark; to 0.25 = no curvature).
+			for (const corner of ['top\\s+left', 'top\\s+right', 'bottom\\s+left', 'bottom\\s+right']) {
+				expect(GAME_SCENE_SOURCE).toMatch(
+					new RegExp(
+						`radial-gradient\\(\\s*circle\\s+at\\s+${corner},\\s*rgba\\(\\s*0,\\s*0,\\s*0,\\s*0\\.4\\s*\\)`,
+					),
+				)
+			}
+			// Negative: the prior 0.55 alpha must not be present in any corner-darkening position.
+			expect(GAME_SCENE_SOURCE).not.toMatch(
+				/radial-gradient\(\s*circle\s+at\s+(?:top|bottom)\s+(?:left|right),\s*rgba\(\s*0,\s*0,\s*0,\s*0\.55\s*\)/,
+			)
+		})
+
 		it('adds a glass-dome highlight (light radial gradient in the upper-left quadrant)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
 				/radial-gradient\(\s*ellipse\s+\d+%\s+\d+%\s+at\s+\d+%\s+\d+%,[\s\S]*?rgba\(\s*255,\s*255,\s*255/,
@@ -438,6 +473,20 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(/repeating-linear-gradient\(\s*0deg/)
 			expect(GAME_SCENE_SOURCE).toMatch(
 				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%/,
+			)
+		})
+
+		it('uses alpha 0.3 for the center vignette (lightened from 0.45 to recover edge brightness)', () => {
+			// Reason: same logic as the corner-darkening pin — the alpha-1 scanline overlay
+			// dimmed the periphery too much, so the vignette alpha was dropped from 0.45 to
+			// 0.3 to lift the screen-edge brightness. Pinning the value catches drift in
+			// either direction.
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.3\s*\)\s+100%\s*\)/,
+			)
+			// Negative: prior 0.45 alpha must not be at the vignette's outer stop.
+			expect(GAME_SCENE_SOURCE).not.toMatch(
+				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.45\s*\)/,
 			)
 		})
 	})
@@ -455,6 +504,31 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).not.toMatch(/feComponentTransfer/)
 			expect(GAME_SCENE_SOURCE).not.toMatch(/url\(#crt-palette\)/)
 			expect(GAME_SCENE_SOURCE).not.toMatch(/\.crt-filter-defs\s*\{/)
+		})
+	})
+
+	describe('CRT chromatic aberration — wiring into GameScene', () => {
+		it('imports and renders <CrtChromaticFilter />', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/import\s+CrtChromaticFilter\s+from\s+'\$lib\/game\/CrtChromaticFilter\.svelte'/,
+			)
+			expect(GAME_SCENE_SOURCE).toMatch(/<CrtChromaticFilter\s*\/>/)
+		})
+
+		it('applies the chromatic filter to the canvas via CSS filter chain', () => {
+			// Reason: the SVG <filter> only takes effect when CSS references it. Locking in
+			// `url(#crt-chromatic)` on the canvas filter chain is the wiring contract that
+			// connects GameScene's <canvas> to the externally-defined filter.
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.game-container\s*:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*url\(#crt-chromatic\)/,
+			)
+		})
+
+		it('renders the SVG <filter id="crt-chromatic"> into the DOM at mount', () => {
+			const { container } = render_scene()
+			const filter = container.querySelector('#crt-chromatic')
+			expect(filter).toBeTruthy()
+			expect(filter?.tagName.toLowerCase()).toBe('filter')
 		})
 	})
 })
