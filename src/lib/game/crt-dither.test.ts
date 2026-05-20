@@ -12,6 +12,7 @@ import {
 	DOT_BLEND,
 	DOTS_PER_SCANLINE,
 	SCANLINE_BLEED,
+	SCANLINE_BLEED_FULL_PERIOD,
 	SCANLINE_DARK,
 	SCANLINE_FRAGMENT_SHADER,
 	SCANLINE_SHARPNESS,
@@ -42,6 +43,13 @@ describe('crt-dither constants', () => {
 	it('exposes SCANLINE_BLEED as a non-negative finite number (phosphor glow amount)', () => {
 		expect(Number.isFinite(SCANLINE_BLEED)).toBe(true)
 		expect(SCANLINE_BLEED).toBeGreaterThanOrEqual(0)
+	})
+
+	it('exposes SCANLINE_BLEED_FULL_PERIOD as a positive integer above the minimum period', () => {
+		expect(Number.isInteger(SCANLINE_BLEED_FULL_PERIOD)).toBe(true)
+		// Must exceed the minimum possible period (DOTS_PER_SCANLINE * 2 = 2) so that
+		// proportional scaling has a meaningful effect on small-viewport screens.
+		expect(SCANLINE_BLEED_FULL_PERIOD).toBeGreaterThan(DOTS_PER_SCANLINE * 2)
 	})
 
 	it('exposes DOT_BLEND in [0, 1] (0 = sharp pixels, 1 = full neighbour blend)', () => {
