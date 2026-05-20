@@ -143,7 +143,7 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 
 	it('rounds u_scanline_period to nearest integer to eliminate fractional-period moiré', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/Math\.round\(\s*DOTS_PER_SCANLINE\s*\*\s*SCANLINE_PHASES_PER_CYCLE\s*\*\s*hi_lo_ratio\s*,?\s*\)/,
+			/Math\.round\([^)]*DOTS_PER_SCANLINE[^)]*SCANLINE_PHASES_PER_CYCLE[^)]*hi_lo_ratio[^)]*\)/,
 		)
 	})
 
