@@ -92,6 +92,7 @@
 	let drag_start_x = $derived(input.drag_start_x)
 	let drag_start_y = $derived(input.drag_start_y)
 	let is_pseudo_fullscreen = $derived(fullscreen.is_pseudo_fullscreen)
+	let is_fullscreen_active = $derived(fullscreen.is_active)
 	let is_started = $derived(session.is_session_started)
 	let is_touch = $derived(device.is_touch_primary)
 	let game_status = $derived(is_started ? label_game_started : '')
@@ -160,6 +161,7 @@
 <div
 	class="game-container"
 	class:pseudo-fullscreen={is_pseudo_fullscreen}
+	class:is-fullscreen={is_fullscreen_active}
 	class:is-dragging-look={is_dragging_look}
 	bind:this={container}
 	bind:clientWidth={container_width}
@@ -242,6 +244,21 @@
 		height: 100vh;
 		height: 100dvh;
 		background: #0d0d12;
+		/* viewport-fit=cover makes 100dvh cover the full physical viewport on iOS,
+		   so the dark background extends behind the status bar / home indicator.
+		   Padding keeps the canvas and inner UI inside the safe area until fullscreen
+		   is engaged — see .game-container.is-fullscreen below. */
+		box-sizing: border-box;
+		padding-top: env(safe-area-inset-top, 0px);
+		padding-right: env(safe-area-inset-right, 0px);
+		padding-bottom: env(safe-area-inset-bottom, 0px);
+		padding-left: env(safe-area-inset-left, 0px);
+	}
+
+	.game-container.is-fullscreen {
+		/* When fullscreen is active (native or pseudo), drop the safe-area padding so the
+		   canvas and overlays draw edge-to-edge into the OS UI region. */
+		padding: 0;
 	}
 
 	.game-container :global(canvas) {
@@ -276,8 +293,11 @@
 
 	.pause-btn {
 		position: absolute;
-		bottom: 1rem;
-		right: 1rem;
+		/* Absolute children are anchored to the padding edge (= screen edge) regardless of
+		   the container's safe-area padding, so the button must add env() itself to stay
+		   clear of the home indicator / gesture bar in fullscreen as well as default state. */
+		bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+		right: calc(1rem + env(safe-area-inset-right, 0px));
 		z-index: 20;
 		width: 44px;
 		height: 44px;

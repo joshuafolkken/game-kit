@@ -592,4 +592,64 @@ describe('GameScene', () => {
 			expect(filter?.tagName.toLowerCase()).toBe('filter')
 		})
 	})
+
+	describe('safe-area drawing when fullscreen is engaged (Issue #80)', () => {
+		it('derives is_fullscreen_active from fullscreen.is_active', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/let\s+is_fullscreen_active\s*=\s*\$derived\(\s*fullscreen\.is_active\s*\)/,
+			)
+		})
+
+		it('binds class:is-fullscreen on the game-container using is_fullscreen_active', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/class:is-fullscreen=\{is_fullscreen_active\}/)
+		})
+
+		it('applies the is-fullscreen class when fullscreen.is_active is true', () => {
+			vi.spyOn(fullscreen, 'is_active', 'get').mockReturnValue(true)
+			const { container } = render_scene()
+			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+			expect(scene).toBeTruthy()
+			expect(scene?.classList.contains('is-fullscreen')).toBe(true)
+		})
+
+		it('omits the is-fullscreen class when fullscreen.is_active is false', () => {
+			vi.spyOn(fullscreen, 'is_active', 'get').mockReturnValue(false)
+			const { container } = render_scene()
+			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+			expect(scene).toBeTruthy()
+			expect(scene?.classList.contains('is-fullscreen')).toBe(false)
+		})
+
+		it('default .game-container reserves safe-area-inset padding on all four sides', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.game-container\s*\{[\s\S]*?padding-top:\s*env\(safe-area-inset-top/,
+			)
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.game-container\s*\{[\s\S]*?padding-right:\s*env\(safe-area-inset-right/,
+			)
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.game-container\s*\{[\s\S]*?padding-bottom:\s*env\(safe-area-inset-bottom/,
+			)
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.game-container\s*\{[\s\S]*?padding-left:\s*env\(safe-area-inset-left/,
+			)
+		})
+
+		it('.game-container uses box-sizing: border-box so the safe-area padding does not bloat the box', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/\.game-container\s*\{[\s\S]*?box-sizing:\s*border-box/)
+		})
+
+		it('.game-container.is-fullscreen drops the safe-area padding so content extends edge-to-edge', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/\.game-container\.is-fullscreen\s*\{[\s\S]*?padding:\s*0/)
+		})
+
+		it('.pause-btn offset includes env(safe-area-inset-*) so the button stays clear of OS UI even in fullscreen', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.pause-btn\s*\{[\s\S]*?bottom:\s*calc\([^)]*env\(safe-area-inset-bottom/,
+			)
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.pause-btn\s*\{[\s\S]*?right:\s*calc\([^)]*env\(safe-area-inset-right/,
+			)
+		})
+	})
 })
