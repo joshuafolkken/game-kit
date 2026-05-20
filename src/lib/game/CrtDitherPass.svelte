@@ -176,7 +176,10 @@
 			scanline_uniforms.u_scanline_axis.value.set(is_portrait ? 1 : 0, is_portrait ? 0 : 1)
 			if (lo_h > 0) {
 				const hi_lo_ratio = is_portrait ? hi_drawing_buf.x / lo_w : hi_drawing_buf.y / lo_h
-				const period = Math.round(DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE * hi_lo_ratio)
+				const period = Math.max(
+					DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE,
+					Math.round(DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE * hi_lo_ratio),
+				)
 				scanline_uniforms.u_scanline_period.value = period
 				scanline_uniforms.u_bleed.value = Math.min(
 					SCANLINE_BLEED,

@@ -141,9 +141,12 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_bleed\.value\s*=\s*Math\.min\(/)
 	})
 
-	it('rounds u_scanline_period to nearest integer to eliminate fractional-period moiré', () => {
+	it('rounds u_scanline_period to nearest integer and clamps to minimum valid period', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/Math\.round\([^)]*DOTS_PER_SCANLINE[^)]*SCANLINE_PHASES_PER_CYCLE[^)]*hi_lo_ratio[^)]*\)/,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/Math\.max\(\s*DOTS_PER_SCANLINE\s*\*\s*SCANLINE_PHASES_PER_CYCLE/,
 		)
 	})
 
