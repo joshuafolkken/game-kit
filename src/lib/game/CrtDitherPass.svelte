@@ -145,8 +145,11 @@
 			// Stage 1: render game + dither at low resolution.
 			lo_composer.setSize(ctx.size.current.width, ctx.size.current.height)
 			lo_composer.setPixelRatio(lo_dpr)
-			const lo_w = Math.floor(ctx.size.current.width * lo_dpr)
-			const lo_h = Math.floor(ctx.size.current.height * lo_dpr)
+			// Clamp to at least 1 so neither dimension is 0 on the first frame
+			// or on very small viewports — prevents divide-by-zero in the portrait
+			// hi_lo_ratio and guards against (0,0) reaching u_lo_resolution in the shader.
+			const lo_w = Math.max(1, Math.floor(ctx.size.current.width * lo_dpr))
+			const lo_h = Math.max(1, Math.floor(ctx.size.current.height * lo_dpr))
 			dither_uniforms.u_resolution.value.set(lo_w, lo_h)
 			upscale_uniforms.u_lo_resolution.value.set(lo_w, lo_h)
 			lo_composer.render(delta)
