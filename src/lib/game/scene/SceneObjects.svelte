@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from '@threlte/core'
 	import { interactivity, Text } from '@threlte/extras'
+	import { crt } from '$lib/game/crt.svelte'
 	import { fps } from '$lib/game/display/fps.svelte'
 	import FpsDisplay from '$lib/game/display/FpsDisplay.svelte'
 	import type { ScoreData } from '$lib/game/display/score-display-types'
@@ -34,9 +35,11 @@
 	import type { SceneObjectsMessages } from '$lib/game/scene/scene-objects-messages'
 	import { game_state } from '$lib/game/state.svelte'
 	import { alt_switch_input } from '$lib/game/switch/alt-switch-input'
+	import { crt_switch_input } from '$lib/game/switch/crt-switch-input'
 	import { fps_switch_input } from '$lib/game/switch/fps-switch-input'
 	import { fullscreen_switch_input } from '$lib/game/switch/fullscreen-switch-input'
 	import {
+		CRT_SWITCH_COLORS,
 		CYBER_SWITCH_COLORS,
 		FPS_SWITCH_COLORS,
 		FULLSCREEN_SWITCH_COLORS,
@@ -161,4 +164,15 @@
 	font_size_multiplier={current_font_size_multiplier}
 	onclick={fullscreen_switch_input.on_click}
 	colors={FULLSCREEN_SWITCH_COLORS}
+	geometry={{ switch_y: FPS_SWITCH_Y }}
+/>
+<Switch
+	position_x={FULLSCREEN_SWITCH_X}
+	is_active={crt.is_crt_enabled}
+	icon_type="crt"
+	label={messages.crt_switch_label}
+	font={current_font}
+	font_size_multiplier={current_font_size_multiplier}
+	onclick={crt_switch_input.on_click}
+	colors={CRT_SWITCH_COLORS}
 />

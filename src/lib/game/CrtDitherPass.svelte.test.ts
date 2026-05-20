@@ -126,6 +126,14 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		)
 	})
 
+	it('imports crt store and bypasses the CRT pipeline when CRT is disabled', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game\/crt\.svelte'/)
+		expect(CRT_DITHER_PASS_SOURCE).toContain('crt.is_crt_enabled')
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/ctx\.renderer\.render\(ctx\.scene,\s*ctx\.camera\.current\)/,
+		)
+	})
+
 	it('disposes both composers, bayer texture, and restores autoRender on unmount', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/onDestroy\(\s*\(\)\s*=>\s*\{[\s\S]*lo_composer\.dispose\(\)/,

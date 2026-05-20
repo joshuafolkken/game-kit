@@ -38,6 +38,13 @@ describe('Switch', () => {
 		expect(container).toBeTruthy()
 	})
 
+	it('renders crt icon without geometry override', () => {
+		const { container } = render(Switch, {
+			props: { ...BASE_PROPS, icon_type: 'crt' as const },
+		})
+		expect(container).toBeTruthy()
+	})
+
 	it('renders in active state', () => {
 		const { container } = render(Switch, {
 			props: { ...BASE_PROPS, is_active: true },

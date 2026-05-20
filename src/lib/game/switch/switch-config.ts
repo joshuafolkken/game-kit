@@ -1,5 +1,5 @@
-export type SwitchIconType = 'cyber' | 'fullscreen' | 'fps'
-export const SWITCH_ICON_TYPES: readonly SwitchIconType[] = ['cyber', 'fullscreen', 'fps']
+export type SwitchIconType = 'cyber' | 'fullscreen' | 'fps' | 'crt'
+export const SWITCH_ICON_TYPES: readonly SwitchIconType[] = ['cyber', 'fullscreen', 'fps', 'crt']
 
 export const SWITCH_Y = 1.2
 export const FPS_SWITCH_Y = 2.2
@@ -39,6 +39,11 @@ export const CORNER_ARM_CENTER = CORNER_POS - CORNER_ARM_HALF
 export const FULLSCREEN_ICON_Z = 0.015
 
 export const FPS_ICON_Z = 0.015
+export const CRT_ICON_Z = 0.015
+export const CRT_LINE_W = 0.28
+export const CRT_LINE_H = 0.04
+export const CRT_LINE_D = 0.015
+export const CRT_LINE_Y_STEP = 0.1
 export const FPS_BAR_WIDTH = 0.06
 export const FPS_BAR_DEPTH = 0.015
 export const FPS_BAR_BASE_Y = -0.08
@@ -91,6 +96,11 @@ export interface SwitchGeometry {
 	fps_icon_z?: number
 	fps_bar_width?: number
 	fps_bar_depth?: number
+	crt_icon_z?: number
+	crt_line_w?: number
+	crt_line_h?: number
+	crt_line_d?: number
+	crt_line_y_step?: number
 	panel_text_y?: number
 	panel_text_z?: number
 	panel_text_font_size?: number
@@ -131,6 +141,11 @@ export const DEFAULT_SWITCH_GEOMETRY: Required<SwitchGeometry> = {
 	fps_icon_z: FPS_ICON_Z,
 	fps_bar_width: FPS_BAR_WIDTH,
 	fps_bar_depth: FPS_BAR_DEPTH,
+	crt_icon_z: CRT_ICON_Z,
+	crt_line_w: CRT_LINE_W,
+	crt_line_h: CRT_LINE_H,
+	crt_line_d: CRT_LINE_D,
+	crt_line_y_step: CRT_LINE_Y_STEP,
 	panel_text_y: PANEL_TEXT_Y,
 	panel_text_z: PANEL_TEXT_Z,
 	panel_text_font_size: PANEL_TEXT_FONT_SIZE,
