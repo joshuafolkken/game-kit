@@ -5,30 +5,30 @@ vi.mock('node:fs', () => ({
 	mkdirSync: vi.fn(),
 }))
 vi.mock('node:child_process', () => ({ execSync: vi.fn() }))
-vi.mock('./gk-paths.ts', () => ({
-	gk_paths: {
+vi.mock('./jgame-paths.ts', () => ({
+	jgame_paths: {
 		PACKAGE_DIR: '/pkg',
 		TEMPLATES_DIR: '/pkg/templates',
 		PROJECT_ROOT: '/project',
 	},
 }))
 
-describe('gk_sync.run', () => {
+describe('jgame_sync.run', () => {
 	beforeEach(() => {
 		vi.spyOn(console, 'info').mockImplementation(() => {})
 	})
 
 	it('calls josh sync', async () => {
 		const { execSync } = await import('node:child_process')
-		const { gk_sync } = await import('./gk-sync.ts')
-		gk_sync.run()
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
 		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', expect.any(Object))
 	})
 
 	it('syncs +layout.svelte from templates to PROJECT_ROOT', async () => {
 		const { cpSync } = await import('node:fs')
-		const { gk_sync } = await import('./gk-sync.ts')
-		gk_sync.run()
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
 		expect(cpSync).toHaveBeenCalledWith(
 			'/pkg/templates/src/routes/+layout.svelte',
 			'/project/src/routes/+layout.svelte',
@@ -37,8 +37,8 @@ describe('gk_sync.run', () => {
 
 	it('syncs layout.css from templates to PROJECT_ROOT', async () => {
 		const { cpSync } = await import('node:fs')
-		const { gk_sync } = await import('./gk-sync.ts')
-		gk_sync.run()
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
 		expect(cpSync).toHaveBeenCalledWith(
 			'/pkg/templates/src/routes/layout.css',
 			'/project/src/routes/layout.css',
