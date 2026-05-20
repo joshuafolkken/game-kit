@@ -160,6 +160,13 @@ Before every `git commit` — including follow-up commits on the same branch —
 - `fullrun #<N>`: Read Issue #N → **normalize the title**: if the title is not in English or can be phrased more clearly/conventionally, derive a better English title and run `gh issue edit <N> --title "<title>"` → **add `in-progress` label** (create if missing: `gh label create "in-progress" --color "#0075ca" --description "Work is actively in progress" 2>/dev/null || true`, then `gh issue edit <N> --add-label "in-progress"`) → post the agreed plan only if the Issue body is blank (use `gh issue edit <N> --body "<plan>"`); if the body already has content, skip the plan-posting step → implement → `pnpm josh bump minor` → `pnpm josh git -y` → run `/review` skill → `pnpm josh followup --merge`. Issue plan comments MUST be written in English. Before implementing, run `git switch main && git pull`, then `josh latest` (includes `pnpm audit`; fix with `overrides` in `package.json` if vulnerabilities found). **After `josh latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, investigate why it existed and restore it before proceeding (do NOT remove intentional overrides without user approval). Also verify `devEngines` is unchanged — restore it and ask the user before making any change if it was modified.** After committing, run the `/review` skill on the completed PR diff; fix all high/medium-priority findings and re-run until clean before proceeding to `followup`. When running `pnpm josh followup --merge`, compose an implementation summary in English and pass it via `--notify-message`. Format: `"Implemented <title>:\n- <change1>\n- <change2>\n..."`. **`pnpm josh followup --merge` waits for CI, verifies AI review findings, sends the completion notification, then merges — all in one step. If AI review blockers are found, followup exits non-zero; fix the findings and re-run `pnpm josh followup --merge`.**
 - `fullrun new` or `fullrun new "<title>"`: Shortcut that combines `kickoff new` + `fullrun #<N>` into a single run. Steps: (1) Derive an English title from the conversation, or use the provided title. (2) Create Issue: `gh issue create --title "<title>" --body "<body>"`. Capture the new Issue number `<N>`. (3) Add `in-progress` label: `gh label create "in-progress" --color "#0075ca" --description "Work is actively in progress" 2>/dev/null || true`, then `gh issue edit <N> --add-label "in-progress"`. (4) Post the agreed plan in English. (5) If the working tree already has staged or modified files (e.g., user pre-staged kit/config changes), stash them first: `git stash`. (6) Run `git switch main && git pull`. (7) Run `josh latest` — **mandatory, never skip even if the working tree had modifications**. **After `josh latest`: verify `pnpm.overrides` was not modified — if any override was auto-removed or changed, restore it before proceeding. Also verify `devEngines` is unchanged — restore it and ask the user before making any change if it was modified. If you stashed changes in step 5, restore them now: `git stash pop`.** (8) Implement. (9) `pnpm josh bump minor`. (10) `pnpm josh git -y "<title> #<N>"`. (11) Run `/review` skill on the completed PR diff; fix all high/medium-priority findings and re-run until clean. (12) `pnpm josh followup "<title> #<N>" --merge --notify-message "Implemented <title>:\n- <change1>\n- <change2>\n..."`.
 
+#### `halfrun` — Implement + verify, stop before commit (for manual verification)
+
+`halfrun` sits between `kickoff` (plan only) and `fullrun` (full execution with auto-merge). It runs the full implementation + verification pipeline but **stops before commit** so the user can manually verify the change (typically by exercising the UI in a browser) before committing and merging. Use `halfrun` when the change needs human eyes before shipping.
+
+- `halfrun #<N>`: Read Issue #N → **normalize the title** (same as `fullrun`) → **add `in-progress` label** (create if missing: `gh label create "in-progress" --color "#0075ca" --description "Work is actively in progress" 2>/dev/null || true`, then `gh issue edit <N> --add-label "in-progress"`) → post the agreed plan only if the Issue body is blank → run `git switch main && git pull`, then `josh latest` (verify `pnpm.overrides` / `devEngines` unchanged; restore if modified) → implement → run the **full verification gate** (refactor → `pnpm josh lint` → `pnpm exec tsc --noEmit` → `pnpm josh cspell:dot` → `pnpm josh test:unit` → `/review` skill on `git diff main`, iterating until no high/medium findings remain) → send a `confirmation` Telegram with the resume commands in the body → **stop**. Plan comments MUST be in English. The `confirmation` Telegram body MUST include the exact resume commands: `pnpm josh notify --task-type confirmation --issue-url "<issue-url>" --body=$'halfrun ready for manual verification\nNext: pnpm josh bump minor && pnpm josh git -y "<title> #<N>" && pnpm josh followup "<title> #<N>" --merge --notify-message "Implemented <title>:\\n- <change1>\\n- ..."'`. **Invoking `halfrun` is _not_ authorization to commit, push, or merge** — do not run `pnpm josh bump minor`, `pnpm josh git -y`, or `pnpm josh followup` yourself; the user runs those manually after verifying. If the user comes back with fixes, treat each round as: implement → re-run the verification gate → send another `confirmation` Telegram → stop.
+- `halfrun new` or `halfrun new "<title>"`: Shortcut that combines `kickoff new` + `halfrun #<N>`. Steps mirror `fullrun new` (1)–(8): (1) Derive an English title or use the provided title. (2) `gh issue create --title "<title>" --body "<body>"`. Capture `<N>`. (3) Add `in-progress` label. (4) Post the agreed plan in English. (5) `git stash` if the working tree has changes. (6) `git switch main && git pull`. (7) `josh latest` — **mandatory**. Verify `pnpm.overrides` / `devEngines` are unchanged; `git stash pop` if stashed. (8) Implement. (9) Run the verification gate (refactor / lint / tsc / cspell / test:unit / `/review` on `git diff main`). (10) Send the `confirmation` Telegram (same body as `halfrun #<N>`) and **stop**. Do not run `pnpm josh bump minor`, `pnpm josh git -y`, or `pnpm josh followup`.
+
 #### `queue` — Sequential multi-issue fullrun
 
 `queue #N1 #N2 #N3 ...` runs `fullrun` for each issue in order. All issues must already exist (no `new` variant).
@@ -200,12 +207,57 @@ pnpm josh notify --task-type confirmation --issue-url "<issue-url>" --body=$'CI 
 - Do not make any follow-up commit, fix, or proceed to merge until the user explicitly confirms
 - This check runs independently of AI reviewer comment scanning — both may trigger in the same workflow run
 
+#### `/review` → `followup --merge` chain rule (MANDATORY)
+
+Within `fullrun` / `fullrun new` / `queue`, the `/review` skill output is **not** a turn boundary — it is an intermediate step, not a finished deliverable.
+
+**`fullrun` STOPPING CONDITIONS** (the chain ends only here):
+
+1. **PR is merged AND the `completion` Telegram notification has been sent** — normal end state.
+2. **A genuine blocker requires user judgment** — exactly three count:
+   - A CodeRabbit / Claude Review substantive finding that cannot be auto-verified as a false positive.
+   - The managed config-file confirmation gate (`josh sync`-distributed files in the diff).
+   - A CI failure that requires user input to resolve.
+
+   Send a `confirmation` Telegram **before** stopping.
+
+**Everything else — including `/review` producing a polished "Approve for merge" recommendation — is NOT a stopping condition.** Continue straight to `pnpm josh followup --merge` in the same turn.
+
+**Decision table** (map `/review` result → next action mechanically):
+
+| `/review` result                        | Findings severity  | Next action (same turn, no user input)                                                                              |
+| --------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Clean — every category says `No issues` | None               | Immediately run `pnpm josh followup "<title> #<N>" --merge --notify-message "..."`                                  |
+| Low findings only                       | Low                | Immediately run `pnpm josh followup --merge` (Low may be skipped with a one-line reason)                            |
+| One or more High / Medium findings      | High and/or Medium | Fix in place, re-stage, commit, push, re-run `/review`, loop. Do NOT report narratively and wait. Do NOT merge yet. |
+| `/review` itself errors / can't run     | n/a                | Report the error and stop with a `confirmation` Telegram                                                            |
+
+The recommendation line at the bottom of `/review` ("Approve for merge", etc.) is informational, not authoritative. **Severity of findings drives the decision, not the recommendation sentence.**
+
+**Anti-pattern catalog** — if you are about to emit text resembling any of the following, you are violating the chain rule. Cancel the message; run `pnpm josh followup --merge` instead.
+
+- "The `/review` is clean — ready to merge. Shall I proceed with `followup --merge`?"
+- "`/review` found no high/medium findings. Approve for merge after you confirm."
+- "Recommendation: Approve for merge. Let me know if you'd like me to continue."
+- "All green. Awaiting your go-ahead to merge."
+- "The review is complete. Should I run `pnpm josh followup --merge` now?"
+- Posting the `/review` Markdown output and then stopping the turn without a tool call.
+- Listing low-severity findings narratively and asking whether they should block merge.
+- Treating CodeRabbit rate-limit warnings as findings.
+
+All share one shape: presenting `/review` output to the user and waiting. **The user invoked `fullrun`; merging is part of that invocation. The chain ends at a stopping condition above, never at `/review` output.**
+
+This rule applies regardless of model (Claude / Gemini / Cursor) or account; the workflow is portable and the chain must hold across environments.
+
+See `node_modules/@joshuafolkken/kit/prompts/collaboration-workflow.md` → "Chain rule: `/review` → `followup --merge` decision table" for the canonical extended reference.
+
 #### `auto-merge` — Default `fullrun` behavior
 
 Every `fullrun` / `fullrun new` invocation uses `pnpm josh followup --merge`, which handles the full sequence internally: wait for CI → verify AI review findings → send completion notification → merge. Invoking `fullrun` is itself the explicit authorization to merge.
 
 - **AI review findings are checked automatically.** If blockers are found, it sends a `confirmation` Telegram and exits non-zero — fix the findings and re-run.
 - **CodeRabbit rate-limit is not a finding.** Treat it as "no findings" and proceed.
+- **Verify CodeRabbit findings before bypassing.** When CodeRabbit posts a substantive finding, do not pass `--coderabbit-ignore-reason` reflexively — first verify whether the finding is correct. Concrete example: CodeRabbit may flag a GitHub Actions SHA pin like `pnpm/action-setup@<sha> # v6.0.8` as "not matching the tag", because it queried `gh api repos/<owner>/<repo>/git/ref/tags/v6.0.8` which returns the **annotated-tag-object SHA**, not the **commit SHA** that the tag points to. GitHub Actions pins use the commit SHA. Confirm with `gh api repos/<owner>/<repo>/commits/<tag> --jq '.sha'` — if that matches the pinned SHA, the finding is a false positive. Only then bypass with `--coderabbit-ignore-reason "<verification-based-reason>"`, citing the verification command and its output.
 - Do **not** pass `--delete-branch` unless the user asks.
 - If the merge fails, report the reason and stop — do not retry with different flags or bypass protections.
 - **If the user wants to skip the merge step**, use `kickoff` (plan-only) or say "do not merge" in the same turn. In that case, pass `--no-merge` to `pnpm josh followup`. Outside a `fullrun` invocation, never run `gh pr merge` on your own.
@@ -221,7 +273,7 @@ Never send `completion` Telegram notifications manually with `pnpm josh notify -
 
 #### Mid-workflow stop notification (`confirmation`)
 
-Whenever the AI tool pauses a `kickoff`/`fullrun` mid-execution to wait for user confirmation, it MUST send a Telegram notification **before** stopping:
+Whenever the AI tool pauses a `kickoff` / `halfrun` / `fullrun` mid-execution to wait for user confirmation, it MUST send a Telegram notification **before** stopping. `halfrun`'s built-in stop before commit is a confirmation pause and follows this same rule — the resume-command body required by the `halfrun` section above is the specific form for that case:
 
 ```bash
 pnpm josh notify --task-type confirmation --issue-url "<issue-url>" --body=$'<one-line reason>\n<what is needed from the user>'
