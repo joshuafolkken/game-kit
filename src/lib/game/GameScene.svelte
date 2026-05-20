@@ -27,11 +27,6 @@
 	const MAX_DPR = 1
 	const FALLBACK_DPR = 1 / 3
 
-	// CRT scanlines: one scanline every N rendered dots. 1 pairs with a 256-pixel short
-	// edge to produce ~256 visible scanlines — same density as the X68000's 256-line CRT
-	// modes and close to NTSC 240p (240 visible) for that "real CRT" look.
-	const DOTS_PER_SCANLINE = 1
-
 	function create_renderer_no_aa(canvas: HTMLCanvasElement): WebGLRenderer {
 		return new WebGLRenderer({
 			canvas,
@@ -74,20 +69,10 @@
 			FALLBACK_DPR,
 		),
 	)
-	let device_pixel_ratio = $state(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
-	// Snap scanline period to an integer number of device pixels so every cycle samples the
-	// same fractional offset of the gradient — eliminates the moiré that fractional CSS-pixel
-	// periods cause when adjacent cycles land on different device-pixel phases.
-	let scanline_period_css = $derived.by(() => {
-		const raw_css = DOTS_PER_SCANLINE / pixel_dpr
-		const dpr = device_pixel_ratio || 1
-		const snapped_device_px = Math.max(1, Math.round(raw_css * dpr))
-		return snapped_device_px / dpr
-	})
-	// Portrait viewport (taller than wide): rotate scanlines 90° so the CRT illusion
-	// reads as a sideways-tilted display — matches X68000 vertical-line CRT modes.
-	let is_portrait = $derived(container_width > 0 && container_width < container_height)
-	let scanline_angle_css = $derived(is_portrait ? '90deg' : '0deg')
+	// lo_dpr is the low-res rendering scale passed to CrtDitherPass for Stage 1
+	// (game scene + dither). The canvas itself runs at dpr=1 so Stage 2 (scanlines
+	// + barrel) can operate at full CSS resolution for smooth CRT curves.
+	let lo_dpr = $derived(pixel_dpr)
 	let is_dragging_look = $derived(input.is_dragging_look)
 	let drag_start_x = $derived(input.drag_start_x)
 	let drag_start_y = $derived(input.drag_start_y)
@@ -128,17 +113,6 @@
 		loading.set_step('ready')
 		loading.mark_ready()
 	}
-
-	$effect(() => {
-		function update_dpr(): void {
-			device_pixel_ratio = window.devicePixelRatio || 1
-		}
-		update_dpr()
-		window.addEventListener('resize', update_dpr)
-		return function cleanup(): void {
-			window.removeEventListener('resize', update_dpr)
-		}
-	})
 
 	onMount(() => {
 		loading.set_step('loading_assets')
@@ -197,22 +171,16 @@
 	{#if is_alt}
 		<div class="cyber-glow" data-testid="cyber-glow" aria-hidden="true"></div>
 	{/if}
-	<div
-		class="crt-overlay"
-		data-testid="crt-overlay"
-		aria-hidden="true"
-		style:--scanline-period="{scanline_period_css}px"
-		style:--scanline-angle={scanline_angle_css}
-	></div>
+	<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
 	<CrtChromaticFilter />
-	<Canvas dpr={pixel_dpr} createRenderer={create_renderer_no_aa}>
+	<Canvas dpr={1} createRenderer={create_renderer_no_aa}>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
 				<ControlsScene {hint_text} {is_touch} />
 			{/if}
 		</Suspense>
-		<CrtDitherPass />
+		<CrtDitherPass {lo_dpr} />
 	</Canvas>
 	<VirtualJoystick {label_jump} show_jump={is_started} />
 	{#if is_dragging_look}
@@ -262,11 +230,9 @@
 	}
 
 	.game-container :global(canvas) {
-		image-rendering: pixelated;
-		/* Color quantization + 4×4 Bayer ordered dithering is done GPU-side in <CrtDitherPass />
-		   (see crt-dither.ts). CSS handles the subtle vibrance boost and chromatic aberration —
-		   the latter runs on the upscaled, native-device-pixel bitmap so sub-pixel R/B offsets
-		   actually resolve instead of snapping to dot-grid integers. */
+		/* WebGL pipeline handles nearest-neighbour upscale in the upscale pass —
+		   no CSS pixelated scaling needed. CSS handles vibrance boost and chromatic
+		   aberration on the already-upscaled, native-resolution bitmap. */
 		filter: contrast(0.9) saturate(1.8) brightness(1.1) url(#crt-chromatic);
 		border-radius: clamp(12px, 3vmin, 28px);
 	}
@@ -333,24 +299,17 @@
 		inset: 0;
 		pointer-events: none;
 		z-index: 6;
-		/* Match the canvas border-radius so scanlines and corner-darkening clip on the same curve. */
+		/* Match the canvas border-radius so corner-darkening clips on the same curve. */
 		border-radius: clamp(12px, 3vmin, 28px);
-		/* Stack (top to bottom): glass-dome highlight → 4 corner darkening (curvature illusion) →
-		   scanlines → center vignette. The 4 corners + center vignette together fake the
-		   bulge of a CRT face without distorting actual canvas pixels. */
+		/* Stack: glass-dome highlight → 4 corner darkening (curvature illusion) → center
+		   vignette. Scanlines live in the WebGL dither shader so they curve with the
+		   barrel-distortion pass; this overlay carries only static glass-face cues. */
 		background:
 			radial-gradient(ellipse 65% 45% at 28% 22%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
 			radial-gradient(circle at top left, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
 			radial-gradient(circle at top right, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
 			radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
 			radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
-			repeating-linear-gradient(
-				var(--scanline-angle, 0deg),
-				rgba(0, 0, 0, 0.7),
-				rgba(0, 0, 0, 0.7) calc(var(--scanline-period, 3px) / 2),
-				transparent calc(var(--scanline-period, 3px) / 2),
-				transparent var(--scanline-period, 3px)
-			),
 			radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.3) 100%);
 	}
 

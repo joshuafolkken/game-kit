@@ -9,6 +9,13 @@ import {
 	crt_dither,
 	DITHER_FRAGMENT_SHADER,
 	DITHER_VERTEX_SHADER,
+	DOT_BLEND,
+	DOTS_PER_SCANLINE,
+	SCANLINE_BLEED,
+	SCANLINE_DARK,
+	SCANLINE_FRAGMENT_SHADER,
+	SCANLINE_SHARPNESS,
+	UPSCALE_FRAGMENT_SHADER,
 } from './crt-dither'
 
 const SQUARED_BAYER_SIZE = BAYER_SIZE * BAYER_SIZE
@@ -25,6 +32,115 @@ describe('crt-dither constants', () => {
 
 	it('exposes BLACK_FLOOR = 0.06 so dark pixels never collapse to pure black', () => {
 		expect(BLACK_FLOOR).toBe(0.06)
+	})
+
+	it('exposes SCANLINE_DARK >= 0 (0 = fully black dark bands; glow comes from SCANLINE_BLEED)', () => {
+		expect(SCANLINE_DARK).toBeGreaterThanOrEqual(0)
+		expect(SCANLINE_DARK).toBeLessThan(1)
+	})
+
+	it('exposes SCANLINE_BLEED as a non-negative finite number (phosphor glow amount)', () => {
+		expect(Number.isFinite(SCANLINE_BLEED)).toBe(true)
+		expect(SCANLINE_BLEED).toBeGreaterThanOrEqual(0)
+	})
+
+	it('exposes DOT_BLEND in [0, 1] (0 = sharp pixels, 1 = full neighbour blend)', () => {
+		expect(Number.isFinite(DOT_BLEND)).toBe(true)
+		expect(DOT_BLEND).toBeGreaterThanOrEqual(0)
+		expect(DOT_BLEND).toBeLessThanOrEqual(1)
+	})
+
+	it('exposes DOTS_PER_SCANLINE as a positive integer', () => {
+		expect(Number.isInteger(DOTS_PER_SCANLINE)).toBe(true)
+		expect(DOTS_PER_SCANLINE).toBeGreaterThan(0)
+	})
+
+	it('exposes SCANLINE_SHARPNESS in the thin-scanline range (0.35–0.60 → ~15–25% dark duty cycle)', () => {
+		// 0.45 ≈ 20% dark zone. Clamp catches accidental revert to 1.0 (50% thick bands)
+		// or too-extreme values that make scanlines invisible.
+		expect(SCANLINE_SHARPNESS).toBeGreaterThanOrEqual(0.35)
+		expect(SCANLINE_SHARPNESS).toBeLessThanOrEqual(0.6)
+	})
+})
+
+describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
+	const PERIOD = 2
+	const HALF_PERIOD = PERIOD / 2
+	const QUARTER_PERIOD = PERIOD / 4
+
+	it('returns SCANLINE_DARK at the dark-band centre (phase = 0)', () => {
+		// Cosine: wave = 0.5*(1-cos(0)) = 0 → factor = dark + 0*(1-dark) = dark
+		expect(crt_dither.compute_scanline_factor(0, PERIOD, SCANLINE_DARK)).toBeCloseTo(
+			SCANLINE_DARK,
+			10,
+		)
+	})
+
+	it('returns 1.0 at the light-band centre (phase = period/2)', () => {
+		// Cosine: wave = 0.5*(1-cos(π)) = 1 → factor = dark + 1*(1-dark) = 1
+		expect(crt_dither.compute_scanline_factor(HALF_PERIOD, PERIOD, SCANLINE_DARK)).toBeCloseTo(
+			1,
+			10,
+		)
+	})
+
+	it('returns a smooth intermediate value at phase = period/4 (no hard step)', () => {
+		// Hard-step would return SCANLINE_DARK here; cosine (sharpness=1) returns mid-value.
+		const mid = SCANLINE_DARK + 0.5 * (1 - SCANLINE_DARK)
+		expect(
+			crt_dither.compute_scanline_factor(QUARTER_PERIOD, PERIOD, SCANLINE_DARK, 1),
+		).toBeCloseTo(mid, 6)
+	})
+
+	it('sharpness < 1 makes mid-phase brighter than sharpness = 1 (thinner dark bands)', () => {
+		const sharpness_1 = crt_dither.compute_scanline_factor(QUARTER_PERIOD, PERIOD, SCANLINE_DARK, 1)
+		const sharpness_thin = crt_dither.compute_scanline_factor(
+			QUARTER_PERIOD,
+			PERIOD,
+			SCANLINE_DARK,
+			SCANLINE_SHARPNESS,
+		)
+		expect(sharpness_thin).toBeGreaterThan(sharpness_1)
+	})
+
+	it('sharpness = 1 produces the same result as no sharpness argument (backward-compatible)', () => {
+		for (let c = 0; c <= PERIOD; c += PERIOD / 8) {
+			expect(crt_dither.compute_scanline_factor(c, PERIOD, SCANLINE_DARK, 1)).toBeCloseTo(
+				crt_dither.compute_scanline_factor(c, PERIOD, SCANLINE_DARK),
+				10,
+			)
+		}
+	})
+
+	it('always stays within [SCANLINE_DARK, 1.0] for all phases', () => {
+		for (let t = 0; t <= PERIOD; t += PERIOD / 20) {
+			const v = crt_dither.compute_scanline_factor(t, PERIOD, SCANLINE_DARK)
+			expect(v).toBeGreaterThanOrEqual(SCANLINE_DARK - 1e-10)
+			expect(v).toBeLessThanOrEqual(1 + 1e-10)
+		}
+	})
+
+	it('repeats every period units', () => {
+		for (let i = 0; i < 5; i++) {
+			const base = i * PERIOD
+			expect(crt_dither.compute_scanline_factor(base, PERIOD, SCANLINE_DARK)).toBeCloseTo(
+				SCANLINE_DARK,
+				10,
+			)
+			expect(
+				crt_dither.compute_scanline_factor(base + HALF_PERIOD, PERIOD, SCANLINE_DARK),
+			).toBeCloseTo(1, 10)
+		}
+	})
+
+	it('handles negative coordinates (positive-biased mod)', () => {
+		expect(crt_dither.compute_scanline_factor(-PERIOD, PERIOD, SCANLINE_DARK)).toBeCloseTo(
+			SCANLINE_DARK,
+			10,
+		)
+		expect(
+			crt_dither.compute_scanline_factor(-PERIOD + HALF_PERIOD, PERIOD, SCANLINE_DARK),
+		).toBeCloseTo(1, 10)
 	})
 })
 
@@ -160,6 +276,14 @@ describe('DITHER shader sources', () => {
 		}
 	})
 
+	it('dither shader does NOT contain scanline uniforms (moved to SCANLINE_FRAGMENT_SHADER)', () => {
+		// Scanlines now run at high resolution in their own pass so they appear as
+		// smooth curves rather than chunky pixel blocks.
+		expect(DITHER_FRAGMENT_SHADER).not.toContain('u_scanline_period')
+		expect(DITHER_FRAGMENT_SHADER).not.toContain('u_scanline_axis')
+		expect(DITHER_FRAGMENT_SHADER).not.toContain('u_scanline_dark')
+	})
+
 	it('fragment shader applies the dither offset BEFORE quantization', () => {
 		const fragment = DITHER_FRAGMENT_SHADER
 		const dither_offset_index = fragment.indexOf('vec3(threshold) * dither_step')
@@ -175,6 +299,67 @@ describe('DITHER shader sources', () => {
 
 	it('fragment shader declares u_color_levels as vec3 (per-channel quantization)', () => {
 		expect(DITHER_FRAGMENT_SHADER).toMatch(/uniform\s+vec3\s+u_color_levels/)
+	})
+})
+
+describe('UPSCALE shader source', () => {
+	it('uses u_lo_tex (not tDiffuse) so ShaderPass does not override the injection', () => {
+		expect(UPSCALE_FRAGMENT_SHADER).toContain('u_lo_tex')
+		expect(UPSCALE_FRAGMENT_SHADER).not.toContain('tDiffuse')
+	})
+
+	it('declares u_lo_resolution and u_dot_blend for dot-blend effect', () => {
+		expect(UPSCALE_FRAGMENT_SHADER).toContain('u_lo_resolution')
+		expect(UPSCALE_FRAGMENT_SHADER).toContain('u_dot_blend')
+	})
+
+	it('samples all 4 axis-aligned neighbours for the dot-blend', () => {
+		// 1 center + 4 neighbours = at least 5 texture2D calls
+		const sample_count = (UPSCALE_FRAGMENT_SHADER.match(/texture2D\(\s*u_lo_tex/g) ?? []).length
+		expect(sample_count).toBeGreaterThanOrEqual(5)
+	})
+
+	it('mixes center with neighbour average using u_dot_blend', () => {
+		expect(UPSCALE_FRAGMENT_SHADER).toMatch(/mix\(\s*center\s*,\s*neighbors\s*,\s*u_dot_blend\s*\)/)
+	})
+})
+
+describe('SCANLINE shader source', () => {
+	it('declares every required uniform', () => {
+		for (const uniform of [
+			'tDiffuse',
+			'u_resolution',
+			'u_scanline_period',
+			'u_scanline_axis',
+			'u_scanline_dark',
+		]) {
+			expect(SCANLINE_FRAGMENT_SHADER).toContain(uniform)
+		}
+	})
+
+	it('projects pixel coordinate onto u_scanline_axis (portrait/landscape flip)', () => {
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/dot\(\s*pixel\s*,\s*u_scanline_axis\s*\)/)
+	})
+
+	it('applies smooth cosine profile (no hard step — eliminates moiré with pixel-art grid)', () => {
+		expect(SCANLINE_FRAGMENT_SHADER).toContain('cos(')
+		expect(SCANLINE_FRAGMENT_SHADER).not.toContain('step(')
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/mix\(\s*u_scanline_dark\s*,\s*1\.0\s*,\s*wave\s*\)/)
+	})
+
+	it('declares u_scanline_sharpness uniform and applies pow() to the cosine wave', () => {
+		expect(SCANLINE_FRAGMENT_SHADER).toContain('u_scanline_sharpness')
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/pow\(\s*wave_cos\s*,\s*u_scanline_sharpness\s*\)/)
+	})
+
+	it('declares u_bleed and samples neighbors at ±half_period for phosphor glow', () => {
+		expect(SCANLINE_FRAGMENT_SHADER).toContain('u_bleed')
+		// Two neighbor samples offset along the scanline axis
+		const samples = (SCANLINE_FRAGMENT_SHADER.match(/texture2D\(\s*tDiffuse/g) ?? []).length
+		expect(samples).toBeGreaterThanOrEqual(3)
+		// Bleed attenuates with (1 - wave) so dark bands get max glow, bright bands get none
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/\(\s*1\.0\s*-\s*wave\s*\)/)
+		expect(SCANLINE_FRAGMENT_SHADER).toContain('half_period_uv')
 	})
 })
 
