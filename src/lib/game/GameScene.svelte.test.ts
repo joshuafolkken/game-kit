@@ -316,9 +316,17 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).toContain('bind:clientHeight={container_height}')
 		})
 
-		it('Canvas receives the derived pixel_dpr (not a fixed PIXEL_DPR constant)', () => {
-			expect(GAME_SCENE_SOURCE).toContain('<Canvas dpr={pixel_dpr}')
-			expect(GAME_SCENE_SOURCE).not.toMatch(/const\s+PIXEL_DPR\s*=/)
+		it('Canvas uses dpr={1} (full CSS resolution) — lo-res rendering is handled by CrtDitherPass', () => {
+			// The canvas runs at CSS resolution so Stage 2 CRT effects (scanlines + barrel)
+			// have full device pixels to work with. The low-res game render is done inside
+			// CrtDitherPass via the lo_dpr prop.
+			expect(GAME_SCENE_SOURCE).toContain('<Canvas dpr={1}')
+			expect(GAME_SCENE_SOURCE).not.toContain('<Canvas dpr={pixel_dpr}')
+		})
+
+		it('passes lo_dpr={pixel_dpr} to CrtDitherPass for the low-res game render stage', () => {
+			expect(GAME_SCENE_SOURCE).toContain('let lo_dpr = $derived(pixel_dpr)')
+			expect(GAME_SCENE_SOURCE).toContain('<CrtDitherPass {lo_dpr}')
 		})
 
 		it('defines shorter-edge-based DPR constants: TARGET_SHORT_EDGE_PIXELS=256 and MIN_SHORT_EDGE_PIXELS=128', () => {
@@ -352,66 +360,24 @@ describe('GameScene', () => {
 			expect(style.pointerEvents).toBe('none')
 		})
 
-		it('CSS defines .crt-overlay with repeating-linear-gradient (scanlines) and radial-gradient (vignette)', () => {
+		it('.crt-overlay no longer renders scanlines in CSS — moved to the WebGL dither shader', () => {
+			// Scanlines now live in DITHER_FRAGMENT_SHADER so they curve with the barrel pass.
+			expect(GAME_SCENE_SOURCE).not.toContain('repeating-linear-gradient')
+			expect(GAME_SCENE_SOURCE).not.toContain('--scanline-period')
+			expect(GAME_SCENE_SOURCE).not.toContain('--scanline-angle')
+		})
+
+		it('.crt-overlay still carries static glass-face cues (vignette + highlight)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{/)
-			// Scanline angle is now driven by the --scanline-angle CSS variable so the
-			// overlay can switch between horizontal (0deg, landscape) and vertical
-			// (90deg, portrait) without recomputing the whole gradient.
-			expect(GAME_SCENE_SOURCE).toMatch(
-				/repeating-linear-gradient\(\s*var\(--scanline-angle,\s*0deg\)/,
-			)
 			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*ellipse\s+at\s+center/)
 		})
 
-		it('defines DOTS_PER_SCANLINE = 1 (one scanline per dot — ~256 scanlines, X68000-class CRT)', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/const\s+DOTS_PER_SCANLINE\s*=\s*1/)
-		})
-
-		it('scanline gradient uses alpha 0.7 (paired with /2 thick lines, brightness boost compensates) on both stops', () => {
-			// Reason: value-pin so silent drift to a previous alpha (0.55, 0.5, 0.65, 0.45,
-			// 0.25, 1) is caught. Both scanline stops must use the same alpha, otherwise
-			// the dark/light cycle becomes asymmetric. The 0.7 alpha is paired with the /2
-			// duty cycle — thick stripes at high alpha. The overall darkening is offset by
-			// the canvas filter `brightness(1.15)` and the lightened corner / vignette
-			// alphas added in the same iteration.
-			const alpha_matches = GAME_SCENE_SOURCE.match(/rgba\(\s*0,\s*0,\s*0,\s*0\.7\s*\)/g) ?? []
-			expect(alpha_matches.length).toBeGreaterThanOrEqual(2)
-			// Negative: prior alphas must not be present in a scanline stop position
-			// (i.e. paired with the --scanline-period calc).
-			for (const prior_alpha of ['0\\.55', '0\\.5', '0\\.65', '0\\.45', '0\\.25', '1']) {
-				expect(GAME_SCENE_SOURCE).not.toMatch(
-					new RegExp(
-						`rgba\\(\\s*0,\\s*0,\\s*0,\\s*${prior_alpha}\\s*\\)\\s+calc\\(var\\(--scanline-period`,
-					),
-				)
-			}
-		})
-
-		it('derives scanline_period_css with device-pixel snapping (Math.round on device px) to avoid moiré', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(
-				/scanline_period_css\s*=\s*\$derived\.by\(\(\)\s*=>\s*\{[\s\S]*DOTS_PER_SCANLINE\s*\/\s*pixel_dpr/,
-			)
-			expect(GAME_SCENE_SOURCE).toMatch(/Math\.round\(\s*raw_css\s*\*\s*dpr\s*\)/)
-		})
-
-		it('tracks window.devicePixelRatio in a $state and updates it on resize', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/let\s+device_pixel_ratio\s*=\s*\$state\(/)
-			expect(GAME_SCENE_SOURCE).toContain('window.devicePixelRatio')
-			expect(GAME_SCENE_SOURCE).toMatch(/window\.addEventListener\(\s*'resize'/)
-			expect(GAME_SCENE_SOURCE).toMatch(/window\.removeEventListener\(\s*'resize'/)
-		})
-
-		it('binds the scanline period to the CRT overlay via the --scanline-period CSS variable', () => {
-			expect(GAME_SCENE_SOURCE).toContain('style:--scanline-period="{scanline_period_css}px"')
-			expect(GAME_SCENE_SOURCE).toMatch(/var\(--scanline-period,\s*3px\)/)
-			// Duty cycle: dark : transparent = 1 : 1 (period / 2). Thick scanline stripes —
-			// soft, traditional CRT phosphor look. Paired with the alpha-0.55 pin above so
-			// the 50%-duty dark stripes do not crush the image into a dim overall tone.
-			expect(GAME_SCENE_SOURCE).toMatch(/calc\(\s*var\(--scanline-period,\s*3px\)\s*\/\s*2\s*\)/)
-			// Negative: must not be /3 (1:2 thin-line duty cycle) at a scanline stop.
-			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/rgba\([^)]*\)\s+calc\(\s*var\(--scanline-period,\s*3px\)\s*\/\s*3\s*\)/,
-			)
+		it('GameScene no longer owns DOTS_PER_SCANLINE / device_pixel_ratio / scanline-derived state', () => {
+			expect(GAME_SCENE_SOURCE).not.toMatch(/const\s+DOTS_PER_SCANLINE\s*=/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+device_pixel_ratio\s*=\s*\$state\(/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_period_css/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+is_portrait\s*=\s*\$derived/)
 		})
 
 		it('does not overlay a phosphor mask (RGB sub-pixel stripes) — kept off intentionally', () => {
@@ -448,40 +414,11 @@ describe('GameScene', () => {
 		})
 	})
 
-	describe('CRT scanline orientation — vertical lines in portrait viewport', () => {
-		it('derives is_portrait from container_width < container_height (width > 0 guard)', () => {
-			// Width > 0 guard avoids treating the pre-mount 0x0 container size as portrait —
-			// before the first layout pass both dims are 0 and that's neither orientation.
-			expect(GAME_SCENE_SOURCE).toMatch(
-				/let\s+is_portrait\s*=\s*\$derived\(\s*container_width\s*>\s*0\s*&&\s*container_width\s*<\s*container_height\s*\)/,
-			)
-		})
-
-		it('derives scanline_angle_css as 90deg when portrait, 0deg otherwise', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(
-				/let\s+scanline_angle_css\s*=\s*\$derived\(\s*is_portrait\s*\?\s*'90deg'\s*:\s*'0deg'\s*\)/,
-			)
-		})
-
-		it('binds the scanline angle to the CRT overlay via the --scanline-angle CSS variable', () => {
-			expect(GAME_SCENE_SOURCE).toContain('style:--scanline-angle={scanline_angle_css}')
-			expect(GAME_SCENE_SOURCE).toMatch(/var\(--scanline-angle,\s*0deg\)/)
-		})
-
-		it('uses var(--scanline-angle, 0deg) inside repeating-linear-gradient — single gradient, dynamic angle', () => {
-			// Single gradient with a CSS-variable angle keeps the dark/light cycle, alpha,
-			// and duty-cycle constants in one place — only the rotation flips between
-			// landscape and portrait. Negative checks below catch reintroducing a hardcoded
-			// 0deg/90deg gradient (split-implementation regression).
-			expect(GAME_SCENE_SOURCE).toMatch(
-				/repeating-linear-gradient\(\s*var\(--scanline-angle,\s*0deg\),\s*rgba\(\s*0,\s*0,\s*0,\s*0\.7/,
-			)
-			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/repeating-linear-gradient\(\s*0deg,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.7/,
-			)
-			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/repeating-linear-gradient\(\s*90deg,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.7/,
-			)
+	describe('CRT scanline orientation — driven by the shader, not CSS', () => {
+		it('GameScene no longer owns scanline-orientation logic (moved to CrtDitherPass)', () => {
+			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/--scanline-angle/)
+			expect(GAME_SCENE_SOURCE).not.toContain('repeating-linear-gradient')
 		})
 	})
 
@@ -528,13 +465,11 @@ describe('GameScene', () => {
 			)
 		})
 
-		it('keeps the existing center vignette and scanlines untouched alongside the new curvature layers', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(
-				/repeating-linear-gradient\(\s*var\(--scanline-angle,\s*0deg\)/,
-			)
+		it('keeps the center vignette alongside the curvature layers (scanlines now in shader)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
 				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%/,
 			)
+			expect(GAME_SCENE_SOURCE).not.toContain('repeating-linear-gradient')
 		})
 
 		it('uses alpha 0.3 for the center vignette (lightened from 0.45 to recover edge brightness)', () => {
@@ -557,7 +492,7 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
 				/import\s+CrtDitherPass\s+from\s+'\$lib\/game\/CrtDitherPass\.svelte'/,
 			)
-			expect(GAME_SCENE_SOURCE).toMatch(/<Canvas[\s\S]*<CrtDitherPass\s*\/>[\s\S]*<\/Canvas>/)
+			expect(GAME_SCENE_SOURCE).toMatch(/<Canvas[\s\S]*<CrtDitherPass[^/]*\/>[\s\S]*<\/Canvas>/)
 		})
 
 		it('no longer references the legacy SVG palette filter (replaced by GPU post-process)', () => {
