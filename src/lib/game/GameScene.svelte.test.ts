@@ -354,7 +354,12 @@ describe('GameScene', () => {
 
 		it('CSS defines .crt-overlay with repeating-linear-gradient (scanlines) and radial-gradient (vignette)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{/)
-			expect(GAME_SCENE_SOURCE).toMatch(/repeating-linear-gradient\(\s*0deg/)
+			// Scanline angle is now driven by the --scanline-angle CSS variable so the
+			// overlay can switch between horizontal (0deg, landscape) and vertical
+			// (90deg, portrait) without recomputing the whole gradient.
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/repeating-linear-gradient\(\s*var\(--scanline-angle,\s*0deg\)/,
+			)
 			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*ellipse\s+at\s+center/)
 		})
 
@@ -443,6 +448,43 @@ describe('GameScene', () => {
 		})
 	})
 
+	describe('CRT scanline orientation — vertical lines in portrait viewport', () => {
+		it('derives is_portrait from container_width < container_height (width > 0 guard)', () => {
+			// Width > 0 guard avoids treating the pre-mount 0x0 container size as portrait —
+			// before the first layout pass both dims are 0 and that's neither orientation.
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/let\s+is_portrait\s*=\s*\$derived\(\s*container_width\s*>\s*0\s*&&\s*container_width\s*<\s*container_height\s*\)/,
+			)
+		})
+
+		it('derives scanline_angle_css as 90deg when portrait, 0deg otherwise', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/let\s+scanline_angle_css\s*=\s*\$derived\(\s*is_portrait\s*\?\s*'90deg'\s*:\s*'0deg'\s*\)/,
+			)
+		})
+
+		it('binds the scanline angle to the CRT overlay via the --scanline-angle CSS variable', () => {
+			expect(GAME_SCENE_SOURCE).toContain('style:--scanline-angle={scanline_angle_css}')
+			expect(GAME_SCENE_SOURCE).toMatch(/var\(--scanline-angle,\s*0deg\)/)
+		})
+
+		it('uses var(--scanline-angle, 0deg) inside repeating-linear-gradient — single gradient, dynamic angle', () => {
+			// Single gradient with a CSS-variable angle keeps the dark/light cycle, alpha,
+			// and duty-cycle constants in one place — only the rotation flips between
+			// landscape and portrait. Negative checks below catch reintroducing a hardcoded
+			// 0deg/90deg gradient (split-implementation regression).
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/repeating-linear-gradient\(\s*var\(--scanline-angle,\s*0deg\),\s*rgba\(\s*0,\s*0,\s*0,\s*0\.7/,
+			)
+			expect(GAME_SCENE_SOURCE).not.toMatch(
+				/repeating-linear-gradient\(\s*0deg,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.7/,
+			)
+			expect(GAME_SCENE_SOURCE).not.toMatch(
+				/repeating-linear-gradient\(\s*90deg,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.7/,
+			)
+		})
+	})
+
 	describe('CRT curvature — rounded corners + corner darkening + glass-dome highlight', () => {
 		it('applies a border-radius to the canvas to simulate the CRT screen shape', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
@@ -487,7 +529,9 @@ describe('GameScene', () => {
 		})
 
 		it('keeps the existing center vignette and scanlines untouched alongside the new curvature layers', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/repeating-linear-gradient\(\s*0deg/)
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/repeating-linear-gradient\(\s*var\(--scanline-angle,\s*0deg\)/,
+			)
 			expect(GAME_SCENE_SOURCE).toMatch(
 				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%/,
 			)

@@ -84,6 +84,10 @@
 		const snapped_device_px = Math.max(1, Math.round(raw_css * dpr))
 		return snapped_device_px / dpr
 	})
+	// Portrait viewport (taller than wide): rotate scanlines 90° so the CRT illusion
+	// reads as a sideways-tilted display — matches X68000 vertical-line CRT modes.
+	let is_portrait = $derived(container_width > 0 && container_width < container_height)
+	let scanline_angle_css = $derived(is_portrait ? '90deg' : '0deg')
 	let is_dragging_look = $derived(input.is_dragging_look)
 	let drag_start_x = $derived(input.drag_start_x)
 	let drag_start_y = $derived(input.drag_start_y)
@@ -196,6 +200,7 @@
 		data-testid="crt-overlay"
 		aria-hidden="true"
 		style:--scanline-period="{scanline_period_css}px"
+		style:--scanline-angle={scanline_angle_css}
 	></div>
 	<CrtChromaticFilter />
 	<Canvas dpr={pixel_dpr} createRenderer={create_renderer_no_aa}>
@@ -320,7 +325,7 @@
 			radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
 			radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
 			repeating-linear-gradient(
-				0deg,
+				var(--scanline-angle, 0deg),
 				rgba(0, 0, 0, 0.7),
 				rgba(0, 0, 0, 0.7) calc(var(--scanline-period, 3px) / 2),
 				transparent calc(var(--scanline-period, 3px) / 2),
