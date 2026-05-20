@@ -60,6 +60,24 @@ describe('jgame_install_bin_logic.generate_wrapper_script', () => {
 	})
 })
 
+describe('jgame_install_bin_logic.strip_trailing_slashes', () => {
+	it('returns the input unchanged when no trailing slash is present', () => {
+		expect(jgame_install_bin_logic.strip_trailing_slashes('/pkg')).toBe('/pkg')
+	})
+
+	it('strips a single trailing slash', () => {
+		expect(jgame_install_bin_logic.strip_trailing_slashes('/pkg/')).toBe('/pkg')
+	})
+
+	it('strips multiple consecutive trailing slashes', () => {
+		expect(jgame_install_bin_logic.strip_trailing_slashes('/pkg///')).toBe('/pkg')
+	})
+
+	it('does not strip internal slashes', () => {
+		expect(jgame_install_bin_logic.strip_trailing_slashes('/foo/bar/baz/')).toBe('/foo/bar/baz')
+	})
+})
+
 describe('jgame_install_bin_logic.is_dependency_install', () => {
 	it('returns false when INIT_CWD is empty (no info)', () => {
 		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '')).toBe(false)
@@ -67,6 +85,14 @@ describe('jgame_install_bin_logic.is_dependency_install', () => {
 
 	it('returns false when INIT_CWD equals package directory (source repo install)', () => {
 		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/pkg')).toBe(false)
+	})
+
+	it('returns false when INIT_CWD equals package directory with a trailing slash', () => {
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/pkg/')).toBe(false)
+	})
+
+	it('returns false when package directory has trailing slash and INIT_CWD does not', () => {
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg/', '/pkg')).toBe(false)
 	})
 
 	it('returns true when INIT_CWD differs from package directory (dependency install)', () => {
@@ -91,6 +117,24 @@ describe('jgame_install_bin_logic.is_bin_directory_on_path', () => {
 				'/home/u/.local/bin-extra:/usr/bin',
 			),
 		).toBe(false)
+	})
+
+	it('returns true when a PATH entry has a trailing slash but is otherwise equivalent', () => {
+		expect(
+			jgame_install_bin_logic.is_bin_directory_on_path(
+				'/home/u/.local/bin',
+				'/usr/bin:/home/u/.local/bin/',
+			),
+		).toBe(true)
+	})
+
+	it('returns true when bin_directory has a trailing slash but the PATH entry does not', () => {
+		expect(
+			jgame_install_bin_logic.is_bin_directory_on_path(
+				'/home/u/.local/bin/',
+				'/usr/bin:/home/u/.local/bin',
+			),
+		).toBe(true)
 	})
 
 	it('returns false on empty PATH', () => {

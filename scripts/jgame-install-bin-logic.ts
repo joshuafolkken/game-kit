@@ -5,6 +5,7 @@ const LOCAL_BIN_DIRNAME = '.local/bin'
 const NODE_COMMAND = 'node'
 const DOUBLE_QUOTE = '"'
 const WRAPPER_MARKER = '# game-kit jgame wrapper — managed by `jgame install`'
+const TRAILING_SLASHES_PATTERN = /\/+$/
 
 type WrapperPaths = {
 	node_command: string
@@ -31,6 +32,10 @@ function has_embedded_quote(file_path: string): boolean {
 	return file_path.includes(DOUBLE_QUOTE)
 }
 
+function strip_trailing_slashes(value: string): string {
+	return value.replace(TRAILING_SLASHES_PATTERN, '')
+}
+
 function generate_wrapper_script(paths: WrapperPaths): string {
 	if (has_embedded_quote(paths.node_command) || has_embedded_quote(paths.jgame_script_path)) {
 		throw new Error('Wrapper path must not contain embedded double-quotes')
@@ -42,11 +47,15 @@ function generate_wrapper_script(paths: WrapperPaths): string {
 function is_dependency_install(package_directory: string, init_cwd: string): boolean {
 	if (init_cwd === '') return false
 
-	return init_cwd !== package_directory
+	return strip_trailing_slashes(init_cwd) !== strip_trailing_slashes(package_directory)
 }
 
 function is_bin_directory_on_path(bin_directory: string, path_environment: string): boolean {
-	return path_environment.split(':').includes(bin_directory)
+	const normalized_bin_directory = strip_trailing_slashes(bin_directory)
+
+	return path_environment
+		.split(':')
+		.some((entry) => strip_trailing_slashes(entry) === normalized_bin_directory)
 }
 
 function detect_existing_wrapper_is_jgame(file_content: string): boolean {
@@ -77,6 +86,7 @@ const jgame_install_bin_logic = {
 	resolve_jgame_script_path,
 	resolve_node_command,
 	generate_wrapper_script,
+	strip_trailing_slashes,
 	is_dependency_install,
 	is_bin_directory_on_path,
 	detect_existing_wrapper_is_jgame,
