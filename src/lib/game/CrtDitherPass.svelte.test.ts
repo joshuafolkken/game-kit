@@ -134,6 +134,22 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		)
 	})
 
+	it('imports SCANLINE_BLEED_FULL_PERIOD and scales u_bleed proportionally to period', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toContain('SCANLINE_BLEED_FULL_PERIOD')
+		// u_bleed.value must be assigned dynamically (not only at init time)
+		// so that short-period viewports (mobile) get reduced bleed.
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_bleed\.value\s*=\s*Math\.min\(/)
+	})
+
+	it('rounds u_scanline_period to nearest integer and clamps to minimum valid period', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/Math\.round\([^)]*DOTS_PER_SCANLINE[^)]*SCANLINE_PHASES_PER_CYCLE[^)]*hi_lo_ratio[^)]*\)/,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/Math\.max\(\s*DOTS_PER_SCANLINE\s*\*\s*SCANLINE_PHASES_PER_CYCLE/,
+		)
+	})
+
 	it('disposes both composers, bayer texture, and restores autoRender on unmount', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/onDestroy\(\s*\(\)\s*=>\s*\{[\s\S]*lo_composer\.dispose\(\)/,

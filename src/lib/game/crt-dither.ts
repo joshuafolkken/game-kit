@@ -34,6 +34,12 @@ export const SCANLINE_SHARPNESS = SCANLINE_SHARPNESS_VALUE
 // scatter light into the dark gap between scanlines.
 export const SCANLINE_BLEED = SCANLINE_BLEED_VALUE
 
+// Scanline period (in hi-res pixels) at which SCANLINE_BLEED is applied at full
+// strength. Below this threshold the bleed scales proportionally with the period,
+// preventing the phosphor glow from washing out the narrow dark band on small
+// viewports (e.g. mobile, where the period may be as few as 3 pixels).
+export const SCANLINE_BLEED_FULL_PERIOD = 8
+
 // Fraction of the 4-neighbor average (up/down/left/right) mixed into each pixel
 // when upscaling from the low-res dithered game image. 0 = sharp pixel art,
 // 1 = fully box-blurred. 0.4 gives the soft "melting dots" look of real CRT
