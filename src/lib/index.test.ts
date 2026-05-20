@@ -4,6 +4,9 @@ import {
 	base_messages,
 	camera_shake,
 	credits_scroll,
+	crt,
+	CRT_SWITCH_COLORS,
+	crt_switch_input,
 	CYBER_SWITCH_COLORS,
 	DEFAULT_SWITCH_GEOMETRY,
 	device,
@@ -46,11 +49,13 @@ describe('library index exports', () => {
 		expect(loading).toBeDefined()
 		expect(fullscreen).toBeDefined()
 		expect(fps).toBeDefined()
+		expect(crt).toBeDefined()
 		expect(device).toBeDefined()
 	})
 
 	it('exports switch inputs', () => {
 		expect(alt_switch_input).toBeDefined()
+		expect(crt_switch_input).toBeDefined()
 		expect(fps_switch_input).toBeDefined()
 		expect(fullscreen_switch_input).toBeDefined()
 	})
@@ -77,10 +82,11 @@ describe('library index exports', () => {
 	})
 
 	it('exports switch colors and config', () => {
+		expect(CRT_SWITCH_COLORS).toBeDefined()
 		expect(CYBER_SWITCH_COLORS).toBeDefined()
 		expect(FPS_SWITCH_COLORS).toBeDefined()
 		expect(FULLSCREEN_SWITCH_COLORS).toBeDefined()
-		expect(SWITCH_ICON_TYPES).toEqual(['cyber', 'fullscreen', 'fps'])
+		expect(SWITCH_ICON_TYPES).toEqual(['cyber', 'fullscreen', 'fps', 'crt'])
 		expect(DEFAULT_SWITCH_GEOMETRY).toBeDefined()
 	})
 

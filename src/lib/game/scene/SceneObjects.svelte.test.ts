@@ -41,15 +41,22 @@ vi.mock('$lib/game/switch/switch-colors', () => ({
 	CYBER_SWITCH_COLORS: {},
 	FULLSCREEN_SWITCH_COLORS: {},
 	FPS_SWITCH_COLORS: {},
+	CRT_SWITCH_COLORS: {},
 }))
 vi.mock('$lib/game/switch/alt-switch-input', () => ({
 	alt_switch_input: { on_click: vi.fn() },
+}))
+vi.mock('$lib/game/switch/crt-switch-input', () => ({
+	crt_switch_input: { on_click: vi.fn() },
 }))
 vi.mock('$lib/game/switch/fullscreen-switch-input', () => ({
 	fullscreen_switch_input: { on_click: vi.fn() },
 }))
 vi.mock('$lib/game/switch/fps-switch-input', () => ({
 	fps_switch_input: { on_click: vi.fn() },
+}))
+vi.mock('$lib/game/crt.svelte', () => ({
+	crt: { is_crt_enabled: true, toggle: vi.fn() },
 }))
 vi.mock('$lib/game/display/fps.svelte', () => ({
 	fps: { is_fps_enabled: true, current_fps_text: '---', toggle: vi.fn() },
@@ -72,6 +79,7 @@ const MOCK_MESSAGES = {
 	alt_switch_label: 'ALT',
 	fullscreen_switch_label: 'FULLSCREEN',
 	fps_switch_label: 'FPS',
+	crt_switch_label: 'CRT',
 	score_high_score: 'HI',
 	score_round: 'RND',
 	score_current: 'SCORE',

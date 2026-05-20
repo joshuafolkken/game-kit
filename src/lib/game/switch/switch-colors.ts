@@ -70,3 +70,16 @@ export const FULLSCREEN_SWITCH_COLORS: SwitchColors = {
 	active_orb_emissive: 5,
 	inactive_orb_emissive: 0.2,
 }
+
+export const CRT_SWITCH_COLORS: SwitchColors = {
+	active: '#00ccff',
+	inactive: '#004455',
+	active_housing: '#001122',
+	inactive_housing: '#000a11',
+	active_housing_emissive: 0.4,
+	inactive_housing_emissive: 0.05,
+	active_ring_emissive: 4,
+	inactive_ring_emissive: 0.3,
+	active_orb_emissive: 5,
+	inactive_orb_emissive: 0.2,
+}
