@@ -416,13 +416,30 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*0,\s*255/)
 		})
 
-		it('applies a subtle CRT vibrance filter to the canvas (contrast + saturate, no hue shift)', () => {
+		it('applies a CRT vibrance filter to the canvas (lowered contrast + boosted saturation, no hue shift)', () => {
+			// Reason: filter chain was retuned from contrast(1.08) saturate(1.1) brightness(1.15)
+			// to contrast(0.9) saturate(1.8) brightness(1.1) for a richer, slightly softer
+			// X68000-style palette. The chromatic aberration url(...) stays last in the chain so
+			// channel separation operates on the post-vibrance image. Value-pin so silent drift
+			// back to prior tunings is caught.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(1\.08\)\s+saturate\(1\.1\)\s+brightness\(1\.15\)/,
+				/\.game-container\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.9\)\s+saturate\(1\.8\)\s+brightness\(1\.1\)\s+url\(#crt-chromatic\)/,
 			)
 			expect(GAME_SCENE_SOURCE).not.toMatch(
 				/\.game-container\s+:global\(canvas\)[\s\S]*?hue-rotate/,
 			)
+			// Negative: previous filter values must not be present on the canvas filter chain.
+			for (const prior of [
+				'contrast\\(1\\.08\\)',
+				'saturate\\(1\\.1\\)',
+				'brightness\\(1\\.15\\)',
+			]) {
+				expect(GAME_SCENE_SOURCE).not.toMatch(
+					new RegExp(
+						`\\.game-container\\s+:global\\(canvas\\)\\s*\\{[\\s\\S]*?filter:[^;]*${prior}`,
+					),
+				)
+			}
 		})
 	})
 

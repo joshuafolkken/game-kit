@@ -245,7 +245,7 @@
 		   (see crt-dither.ts). CSS handles the subtle vibrance boost and chromatic aberration —
 		   the latter runs on the upscaled, native-device-pixel bitmap so sub-pixel R/B offsets
 		   actually resolve instead of snapping to dot-grid integers. */
-		filter: contrast(1.08) saturate(1.1) brightness(1.15) url(#crt-chromatic);
+		filter: contrast(0.9) saturate(1.8) brightness(1.1) url(#crt-chromatic);
 		border-radius: clamp(12px, 3vmin, 28px);
 	}
 
