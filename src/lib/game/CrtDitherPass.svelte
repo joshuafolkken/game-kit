@@ -20,6 +20,7 @@
 		SCANLINE_SHARPNESS,
 		UPSCALE_FRAGMENT_SHADER,
 	} from '$lib/game/crt-dither'
+	import { crt } from '$lib/game/crt.svelte'
 	import { onDestroy } from 'svelte'
 	import { NearestFilter, ShaderMaterial, Texture, Vector2, Vector3 } from 'three'
 	import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
@@ -142,6 +143,12 @@
 	const hi_drawing_buf = new Vector2()
 	useTask(
 		(delta) => {
+			if (!crt.is_crt_enabled) {
+				ctx.renderer.setPixelRatio(ctx.dpr.current)
+				ctx.renderer.setSize(ctx.size.current.width, ctx.size.current.height)
+				ctx.renderer.render(ctx.scene, ctx.camera.current)
+				return
+			}
 			// Stage 1: render game + dither at low resolution.
 			lo_composer.setSize(ctx.size.current.width, ctx.size.current.height)
 			lo_composer.setPixelRatio(lo_dpr)

@@ -387,17 +387,18 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*0,\s*255/)
 		})
 
-		it('applies a CRT vibrance filter to the canvas (lowered contrast + boosted saturation, no hue shift)', () => {
+		it('applies a CRT vibrance filter to the canvas under .crt-active (lowered contrast + boosted saturation, no hue shift)', () => {
 			// Reason: filter chain was retuned from contrast(1.08) saturate(1.1) brightness(1.15)
 			// to contrast(0.9) saturate(1.8) brightness(1.1) for a richer, slightly softer
 			// X68000-style palette. The chromatic aberration url(...) stays last in the chain so
 			// channel separation operates on the post-vibrance image. Value-pin so silent drift
 			// back to prior tunings is caught.
+			// Filter is now gated on .crt-active so toggling CRT off removes all post-processing.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.9\)\s+saturate\(1\.8\)\s+brightness\(1\.1\)\s+url\(#crt-chromatic\)/,
+				/\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.9\)\s+saturate\(1\.8\)\s+brightness\(1\.1\)\s+url\(#crt-chromatic\)/,
 			)
 			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/\.game-container\s+:global\(canvas\)[\s\S]*?hue-rotate/,
+				/\.game-container\.crt-active\s+:global\(canvas\)[\s\S]*?hue-rotate/,
 			)
 			// Negative: previous filter values must not be present on the canvas filter chain.
 			for (const prior of [
@@ -407,7 +408,7 @@ describe('GameScene', () => {
 			]) {
 				expect(GAME_SCENE_SOURCE).not.toMatch(
 					new RegExp(
-						`\\.game-container\\s+:global\\(canvas\\)\\s*\\{[\\s\\S]*?filter:[^;]*${prior}`,
+						`\\.game-container\\.crt-active\\s+:global\\(canvas\\)\\s*\\{[\\s\\S]*?filter:[^;]*${prior}`,
 					),
 				)
 			}
@@ -425,7 +426,7 @@ describe('GameScene', () => {
 	describe('CRT curvature — rounded corners + corner darkening + glass-dome highlight', () => {
 		it('applies a border-radius to the canvas to simulate the CRT screen shape', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s+:global\(canvas\)\s*\{[\s\S]*?border-radius:\s*clamp\(/,
+				/\.game-container\s*:global\(canvas\)\s*\{[\s\S]*?border-radius:\s*clamp\(/,
 			)
 		})
 
@@ -504,19 +505,21 @@ describe('GameScene', () => {
 	})
 
 	describe('CRT chromatic aberration — wiring into GameScene', () => {
-		it('imports and renders <CrtChromaticFilter />', () => {
+		it('imports <CrtChromaticFilter /> and renders it conditionally when CRT is enabled', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
 				/import\s+CrtChromaticFilter\s+from\s+'\$lib\/game\/CrtChromaticFilter\.svelte'/,
 			)
 			expect(GAME_SCENE_SOURCE).toMatch(/<CrtChromaticFilter\s*\/>/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\{#if\s+is_crt_enabled\}[\s\S]*<CrtChromaticFilter/)
 		})
 
-		it('applies the chromatic filter to the canvas via CSS filter chain', () => {
+		it('applies the chromatic filter to the canvas via CSS filter chain under .crt-active', () => {
 			// Reason: the SVG <filter> only takes effect when CSS references it. Locking in
 			// `url(#crt-chromatic)` on the canvas filter chain is the wiring contract that
 			// connects GameScene's <canvas> to the externally-defined filter.
+			// Filter is now gated on .crt-active so toggling CRT off removes all post-processing.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s*:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*url\(#crt-chromatic\)/,
+				/\.game-container\.crt-active\s*:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*url\(#crt-chromatic\)/,
 			)
 		})
 

@@ -28,6 +28,7 @@ export {
 } from './game/loading.svelte'
 export { fullscreen, create_fullscreen, type FullscreenInstance } from './game/fullscreen.svelte'
 export { fps, create_fps, type FpsInstance } from './game/display/fps.svelte'
+export { crt, create_crt, type CrtInstance } from './game/crt.svelte'
 export { device, create_device, type DeviceInstance } from './game/device.svelte'
 
 export { camera_shake } from './game/player/camera-shake.svelte'
@@ -38,6 +39,7 @@ export { player_step } from './game/player/player-step'
 export { player_velocity } from './game/player/player-velocity'
 
 export { alt_switch_input } from './game/switch/alt-switch-input'
+export { crt_switch_input } from './game/switch/crt-switch-input'
 export { fps_switch_input } from './game/switch/fps-switch-input'
 export { fullscreen_switch_input } from './game/switch/fullscreen-switch-input'
 
@@ -55,6 +57,7 @@ export { type SceneObjectsMessages } from './game/scene/scene-objects-messages'
 export {
 	type SwitchColors,
 	type ResolvedSwitchColors,
+	CRT_SWITCH_COLORS,
 	CYBER_SWITCH_COLORS,
 	FPS_SWITCH_COLORS,
 	FULLSCREEN_SWITCH_COLORS,

@@ -15,6 +15,8 @@
 	import { onDestroy } from 'svelte'
 	import { MeshStandardMaterial } from 'three'
 
+	const CRT_LINES: readonly number[] = [-1, 0, 1]
+
 	type CornerSign = -1 | 1
 	type BarAxis = 'h' | 'v'
 	interface CornerBar {
@@ -210,7 +212,19 @@
 				/>
 			</T.Mesh>
 		{/each}
-	{:else}
+	{:else if icon_type === 'crt'}
+		<!-- CRT icon: 3 horizontal scanlines -->
+		{#each CRT_LINES as line (line)}
+			<T.Mesh position={[0, line * geom.crt_line_y_step, geom.crt_icon_z]}>
+				<T.BoxGeometry args={[geom.crt_line_w, geom.crt_line_h, geom.crt_line_d]} />
+				<T.MeshStandardMaterial
+					color={resolved.current_color}
+					emissive={resolved.current_color}
+					emissiveIntensity={resolved.ring_emissive}
+				/>
+			</T.Mesh>
+		{/each}
+	{:else if icon_type === 'fullscreen'}
 		<!-- Fullscreen icon: 4 corner L-brackets -->
 		{#each corner_bars as bar (bar.key)}
 			<T.Mesh position={[bar.px, bar.py, geom.fullscreen_icon_z]}>

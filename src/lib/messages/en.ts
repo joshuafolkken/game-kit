@@ -3,6 +3,7 @@ export const base_messages = {
 	cyber_switch_label: 'CYBER',
 	fullscreen_switch_label: 'FULLSCREEN',
 	fps_switch_label: 'FPS',
+	crt_switch_label: 'CRT',
 	click_to_start: 'CLICK TO START',
 	tap_to_start: 'TAP TO START',
 	sprint_button: 'SPRINT',

@@ -4,6 +4,7 @@
 	import { audio } from '$lib/game/audio'
 	import ControlsScene from '$lib/game/controls/ControlsScene.svelte'
 	import VirtualJoystick from '$lib/game/controls/VirtualJoystick.svelte'
+	import { crt } from '$lib/game/crt.svelte'
 	import CrtChromaticFilter from '$lib/game/CrtChromaticFilter.svelte'
 	import CrtDitherPass from '$lib/game/CrtDitherPass.svelte'
 	import { device } from '$lib/game/device.svelte'
@@ -82,6 +83,7 @@
 	let is_touch = $derived(device.is_touch_primary)
 	let game_status = $derived(is_started ? label_game_started : '')
 	let is_alt = $derived(game_state.is_alt)
+	let is_crt_enabled = $derived(crt.is_crt_enabled)
 
 	function start_game(): void {
 		if (session.is_session_started) return
@@ -137,6 +139,7 @@
 	class:pseudo-fullscreen={is_pseudo_fullscreen}
 	class:is-fullscreen={is_fullscreen_active}
 	class:is-dragging-look={is_dragging_look}
+	class:crt-active={is_crt_enabled}
 	bind:this={container}
 	bind:clientWidth={container_width}
 	bind:clientHeight={container_height}
@@ -172,7 +175,9 @@
 		<div class="cyber-glow" data-testid="cyber-glow" aria-hidden="true"></div>
 	{/if}
 	<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
-	<CrtChromaticFilter />
+	{#if is_crt_enabled}
+		<CrtChromaticFilter />
+	{/if}
 	<Canvas dpr={1} createRenderer={create_renderer_no_aa}>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
@@ -230,11 +235,14 @@
 	}
 
 	.game-container :global(canvas) {
+		border-radius: clamp(12px, 3vmin, 28px);
+	}
+
+	.game-container.crt-active :global(canvas) {
 		/* WebGL pipeline handles nearest-neighbour upscale in the upscale pass —
 		   no CSS pixelated scaling needed. CSS handles vibrance boost and chromatic
 		   aberration on the already-upscaled, native-resolution bitmap. */
 		filter: contrast(0.9) saturate(1.8) brightness(1.1) url(#crt-chromatic);
-		border-radius: clamp(12px, 3vmin, 28px);
 	}
 
 	.game-container.pseudo-fullscreen {

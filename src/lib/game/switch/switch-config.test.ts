@@ -39,8 +39,12 @@ describe('SWITCH_ICON_TYPES', () => {
 		expect(SWITCH_ICON_TYPES).toContain('fps')
 	})
 
-	it('has exactly three entries', () => {
-		expect(SWITCH_ICON_TYPES).toHaveLength(3)
+	it('includes crt', () => {
+		expect(SWITCH_ICON_TYPES).toContain('crt')
+	})
+
+	it('has exactly four entries', () => {
+		expect(SWITCH_ICON_TYPES).toHaveLength(4)
 	})
 })
 
