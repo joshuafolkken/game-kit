@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.28.0",
+	"version": "0.29.0",
 	"keywords": [
 		"svelte"
 	],
@@ -17,7 +17,7 @@
 		}
 	},
 	"bin": {
-		"gk": "dist/scripts/gk.js"
+		"jgame": "dist/scripts/jgame.js"
 	},
 	"type": "module",
 	"types": "./dist/index.d.ts",
@@ -31,7 +31,7 @@
 		"build": "vite build && pnpm run prepack",
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
 		"prepare": "svelte-kit sync || echo ''",
-		"build:scripts": "pnpm exec esbuild scripts/gk.ts --bundle --platform=node --packages=external --outdir=dist/scripts/ --format=esm --banner:js='#!/usr/bin/env node'",
+		"build:scripts": "pnpm exec esbuild scripts/jgame.ts --bundle --platform=node --packages=external --outdir=dist/scripts/ --format=esm --banner:js='#!/usr/bin/env node'",
 		"prepack": "svelte-kit sync && svelte-package && pnpm run build:scripts && publint",
 		"gen:pre": "node -e \"const fs=require('node:fs');const d='.svelte-kit/cloudflare';if(fs.existsSync(d))fs.readdirSync(d).forEach(f=>f.startsWith('_worker.')&&fs.rmSync(d+'/'+f,{force:true}))\"",
 		"gen": "pnpm gen:pre && wrangler types",

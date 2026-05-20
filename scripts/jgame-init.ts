@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { gk_paths } from './gk-paths.ts'
+import { jgame_paths } from './jgame-paths.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
@@ -98,7 +98,7 @@ function derive_names(raw: string): GameNames {
 }
 
 function read_game_kit_pkg(): GameKitPkg {
-	const raw = readFileSync(path.join(gk_paths.PACKAGE_DIR, 'package.json'), 'utf8')
+	const raw = readFileSync(path.join(jgame_paths.PACKAGE_DIR, 'package.json'), 'utf8')
 	return JSON.parse(raw) as GameKitPkg
 }
 
@@ -114,7 +114,7 @@ function build_scripts(): Record<string, string> {
 		preview: 'vite preview',
 		postinstall:
 			'lefthook install && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
-		gk: 'gk',
+		jgame: 'jgame',
 		josh: 'josh',
 	}
 }
@@ -172,7 +172,7 @@ function write_game_config(names: GameNames, project_dir: string): void {
 }
 
 function copy_templates(project_dir: string): void {
-	cpSync(gk_paths.TEMPLATES_DIR, project_dir, {
+	cpSync(jgame_paths.TEMPLATES_DIR, project_dir, {
 		recursive: true,
 		filter: (src: string) => !src.endsWith(TSCONFIG_FILE_NAME),
 	})
@@ -181,7 +181,7 @@ function copy_templates(project_dir: string): void {
 
 function run(game_name_raw?: string): void {
 	if (!game_name_raw) {
-		console.error('Error: game name is required.\nUsage: gk init <name>')
+		console.error('Error: game name is required.\nUsage: jgame init <name>')
 		process.exit(1)
 	}
 	const names = derive_names(game_name_raw)
@@ -191,9 +191,9 @@ function run(game_name_raw?: string): void {
 		)
 		process.exit(1)
 	}
-	const project_dir = path.join(gk_paths.PROJECT_ROOT, names.kebab)
+	const project_dir = path.join(jgame_paths.PROJECT_ROOT, names.kebab)
 	const opts = { ...SPAWN_OPTIONS, cwd: project_dir }
-	console.info('\n🎮 gk init — Scaffolding new game project\n')
+	console.info('\n🎮 jgame init — Scaffolding new game project\n')
 	mkdirSync(project_dir, { recursive: true })
 	write_package_json(names.kebab, project_dir)
 	copy_templates(project_dir)
@@ -205,11 +205,11 @@ function run(game_name_raw?: string): void {
 	console.info(build_done_msg(names.kebab))
 }
 
-const gk_init = {
+const jgame_init = {
 	run,
 	generate_package_json,
 	generate_tsconfig,
 	derive_names,
 	generate_game_config,
 }
-export { gk_init }
+export { jgame_init }
