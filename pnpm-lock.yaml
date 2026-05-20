@@ -224,8 +224,8 @@ importers:
         specifier: ^4.7.1
         version: 4.7.1(prettier@3.8.3)
       '@joshuafolkken/kit':
-        specifier: 0.175.0
-        version: 0.175.0(@playwright/test@1.60.0)(svelte@5.55.8(@typescript-eslint/types@8.59.4))
+        specifier: 0.176.0
+        version: 0.176.0(@playwright/test@1.60.0)(svelte@5.55.8(@typescript-eslint/types@8.59.4))
       '@playwright/test':
         specifier: 1.60.0
         version: 1.60.0
@@ -1721,8 +1721,8 @@ packages:
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
     engines: {node: '>=18'}
 
-  '@joshuafolkken/kit@0.175.0':
-    resolution: {integrity: sha512-0wLSM8pZLC2CvS/BCOhLhQzJF0GyJ5Wnf0IrXapj94JPf6y1Vx8fAEjdJBzj1Eqcf9i05F/CUbL0zWJSdfCGeQ==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.175.0/2c45a05bcefba6d5063b552ff1a95f4f5b62e0df}
+  '@joshuafolkken/kit@0.176.0':
+    resolution: {integrity: sha512-p8QIK6nxYcBbatCMB2rupCS3rQPOesN8wRVzWGzqesoJRGbjhszvQVbqfoBFXTVAuDWZdDCnoOmxg+TkMIU73g==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.176.0/c261b3db565aafc54fae3664c0b96ca16573f179}
     engines: {node: '>=22.19.0'}
     hasBin: true
     peerDependencies:
@@ -5708,7 +5708,7 @@ snapshots:
 
   '@isaacs/cliui@9.0.0': {}
 
-  '@joshuafolkken/kit@0.175.0(@playwright/test@1.60.0)(svelte@5.55.8(@typescript-eslint/types@8.59.4))':
+  '@joshuafolkken/kit@0.176.0(@playwright/test@1.60.0)(svelte@5.55.8(@typescript-eslint/types@8.59.4))':
     dependencies:
       '@playwright/test': 1.60.0
       js-yaml: 4.1.1
