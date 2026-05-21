@@ -1,11 +1,14 @@
 import { camera_shake } from '$lib/game/player/camera-shake.svelte'
+import { player_step } from '$lib/game/player/player-step'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import Player from './Player.svelte'
 
-vi.mock('@threlte/core', () => ({ T: {}, useTask: vi.fn() }))
-vi.mock('$lib/game/input/input.svelte', () => ({
-	input: {
+const KEYBOARD_AXIS_FRACTION = 0.5
+
+const { tick_holder, mock_input } = vi.hoisted(() => ({
+	tick_holder: { fn: null as ((delta: number) => void) | null },
+	mock_input: {
 		keys: { w: false, s: false, a: false, d: false },
 		joystick_move: { x: 0, y: 0 },
 		joystick_look: { x: 0, y: 0 },
@@ -13,11 +16,19 @@ vi.mock('$lib/game/input/input.svelte', () => ({
 		pitch: 0,
 		is_jump_requested: false,
 		is_sprinting: false,
-		clear_jump_request: vi.fn(),
-		apply_look_delta: vi.fn(),
-		set_joystick_look: vi.fn(),
+		clear_jump_request: () => {},
+		apply_look_delta: () => {},
+		set_joystick_look: () => {},
 	},
 }))
+
+vi.mock('@threlte/core', () => ({
+	T: {},
+	useTask: vi.fn((fn: (delta: number) => void) => {
+		tick_holder.fn = fn
+	}),
+}))
+vi.mock('$lib/game/input/input.svelte', () => ({ input: mock_input }))
 vi.mock('$lib/game/player/player-bounds', () => ({
 	player_bounds: { clamp_to_room: vi.fn((x: number, z: number) => ({ x, z })) },
 }))
@@ -48,6 +59,11 @@ vi.mock('$lib/game/player/camera-shake.svelte', () => ({
 describe('Player', () => {
 	afterEach(() => {
 		vi.mocked(camera_shake.trigger).mockClear()
+		vi.mocked(player_step.compute_velocity_after_look).mockClear()
+		mock_input.keys = { w: false, s: false, a: false, d: false }
+		mock_input.joystick_move = { x: 0, y: 0 }
+		mock_input.is_sprinting = false
+		tick_holder.fn = null
 	})
 
 	it('renders without error when not in gameover', () => {
@@ -65,5 +81,29 @@ describe('Player', () => {
 		render(Player, { props: { is_gameover: false } })
 		await Promise.resolve()
 		expect(vi.mocked(camera_shake.trigger)).not.toHaveBeenCalled()
+	})
+
+	it('W key passes forward scaled by KEYBOARD_AXIS_FRACTION to compute_velocity_after_look', () => {
+		mock_input.keys = { w: true, s: false, a: false, d: false }
+		render(Player, { props: { is_gameover: false } })
+		tick_holder.fn?.(0.016)
+		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
+		expect(call?.forward).toBeCloseTo(KEYBOARD_AXIS_FRACTION)
+	})
+
+	it('W+D diagonal passes pre-normalized forward scaled by KEYBOARD_AXIS_FRACTION', () => {
+		mock_input.keys = { w: true, s: false, a: false, d: true }
+		render(Player, { props: { is_gameover: false } })
+		tick_holder.fn?.(0.016)
+		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
+		expect(call?.forward).toBeCloseTo(KEYBOARD_AXIS_FRACTION / Math.SQRT2)
+	})
+
+	it('joystick full forward passes forward=1 unchanged', () => {
+		mock_input.joystick_move = { x: 0, y: 1 }
+		render(Player, { props: { is_gameover: false } })
+		tick_holder.fn?.(0.016)
+		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
+		expect(call?.forward).toBeCloseTo(1)
 	})
 })

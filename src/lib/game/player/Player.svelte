@@ -15,6 +15,7 @@
 	const FAR_PLANE = 50
 	const JOYSTICK_LOOK_SPEED = 2
 	const GAMEOVER_SHAKE_STRENGTH = 1.0
+	const KEYBOARD_AXIS_FRACTION = 0.5
 
 	interface Props {
 		is_gameover: boolean
@@ -37,9 +38,15 @@
 	})
 
 	function get_axis_input(): { forward: number; strafe: number } {
-		const forward = (input.keys.w ? 1 : 0) - (input.keys.s ? 1 : 0) + input.joystick_move.y
-		const strafe = (input.keys.d ? 1 : 0) - (input.keys.a ? 1 : 0) + input.joystick_move.x
-		return { forward, strafe }
+		const kb_f = (input.keys.w ? 1 : 0) - (input.keys.s ? 1 : 0)
+		const kb_s = (input.keys.d ? 1 : 0) - (input.keys.a ? 1 : 0)
+		const kb_len = Math.hypot(kb_f, kb_s)
+		const norm_f = kb_len > 1 ? kb_f / kb_len : kb_f
+		const norm_s = kb_len > 1 ? kb_s / kb_len : kb_s
+		return {
+			forward: norm_f * KEYBOARD_AXIS_FRACTION + input.joystick_move.y,
+			strafe: norm_s * KEYBOARD_AXIS_FRACTION + input.joystick_move.x,
+		}
 	}
 
 	function apply_movement(vel_x: number, vel_z: number, delta: number): void {
