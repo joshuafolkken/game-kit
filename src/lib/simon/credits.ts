@@ -1,5 +1,7 @@
+import { GAME_NAME, GAME_NAME_DISPLAY } from './game-name'
+
 export const CREDITS_LINES = [
-	'SIMON',
+	GAME_NAME,
 	'CREDITS',
 	'',
 	'',
@@ -41,7 +43,7 @@ export const CREDITS_LINES = [
 	'GAME CONCEPT',
 	'',
 	'',
-	'Simon is inspired by the',
+	`${GAME_NAME_DISPLAY} is inspired by the`,
 	'Classic Electronic Memory Game',
 	'originally designed by',
 	'Ralph H. Baer',

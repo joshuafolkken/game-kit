@@ -144,7 +144,7 @@ test('game scene loads without shadow-related WebGL errors', async ({ page }) =>
 	expect(webgl_errors).toHaveLength(0)
 })
 
-test('favicon link points to the Simon icon, not the Svelte logo', async ({ page }) => {
+test('favicon link points to the game icon, not the Svelte logo', async ({ page }) => {
 	await page.goto('/')
 	const icon_href = await page.evaluate(() => {
 		const links = document.querySelectorAll<HTMLLinkElement>('link[rel="icon"]')
@@ -152,6 +152,25 @@ test('favicon link points to the Simon icon, not the Svelte logo', async ({ page
 		return last?.getAttribute('href') ?? null
 	})
 	expect(icon_href).toBe('/icon.svg')
+})
+
+test('loading overlay shows JOSHUA GAME as the game title', async ({ page }) => {
+	await page.goto('/')
+	const game_title = await page.evaluate(() => {
+		const overlay = document.getElementById('static-loading-overlay')
+		const el = overlay?.querySelector('.game-title')
+		return el?.textContent ?? null
+	})
+	expect(game_title).toBe('JOSHUA GAME')
+})
+
+test('server HTML has game name placeholders replaced', async ({ page }) => {
+	const response = await page.request.get('/')
+	const html = await response.text()
+	expect(html).toContain('<title>Joshua Game</title>')
+	expect(html).toContain('>JOSHUA GAME<')
+	expect(html).not.toContain('__GAME_NAME__')
+	expect(html).not.toContain('__GAME_NAME_DISPLAY__')
 })
 
 test('PWA manifest is linked in document head', async ({ page }) => {
