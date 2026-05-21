@@ -75,7 +75,7 @@ const MOCK_SCORE_DATA: ScoreData = {
 }
 
 const MOCK_MESSAGES = {
-	game_title: 'SIMON',
+	game_title: 'JOSHUA GAME',
 	alt_switch_label: 'ALT',
 	fullscreen_switch_label: 'FULLSCREEN',
 	fps_switch_label: 'FPS',

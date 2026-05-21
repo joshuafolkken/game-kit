@@ -60,4 +60,9 @@ describe('simon_messages', () => {
 			expect(simon_messages).toHaveProperty(key)
 		}
 	})
+
+	it('uses Joshua Game as the display name', () => {
+		expect(simon_messages.game_title).toBe('JOSHUA GAME')
+		expect(simon_messages.game_application_label).toBe('Joshua Game')
+	})
 })

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { RequestEvent, ResolveOptions } from '@sveltejs/kit'
 import { describe, expect, it, vi } from 'vitest'
-import { handle, inject_version } from './hooks.server'
+import { handle, inject_game_name, inject_version } from './hooks.server'
 
 const { version } = JSON.parse(
 	readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
@@ -12,6 +12,28 @@ type ResolveFn = (event: RequestEvent, opts?: ResolveOptions) => Promise<Respons
 function make_resolve(): ResolveFn {
 	return vi.fn<ResolveFn>().mockResolvedValue(new Response(null, { status: 200 }))
 }
+
+describe('inject_game_name', () => {
+	it('replaces __GAME_NAME__ with the all-caps game name', () => {
+		const html = '<p class="game-title">__GAME_NAME__</p>'
+		expect(inject_game_name(html)).toBe('<p class="game-title">JOSHUA GAME</p>')
+	})
+
+	it('replaces __GAME_NAME_DISPLAY__ with the title-case game name', () => {
+		const html = '<title>__GAME_NAME_DISPLAY__</title>'
+		expect(inject_game_name(html)).toBe('<title>Joshua Game</title>')
+	})
+
+	it('replaces __GAME_NAME_DISPLAY__ before __GAME_NAME__ to avoid partial match', () => {
+		const html = '__GAME_NAME_DISPLAY__ and __GAME_NAME__'
+		expect(inject_game_name(html)).toBe('Joshua Game and JOSHUA GAME')
+	})
+
+	it('passes through html with no placeholders', () => {
+		const html = '<p>no placeholder here</p>'
+		expect(inject_game_name(html)).toBe(html)
+	})
+})
 
 describe('inject_version', () => {
 	it('replaces the placeholder with the package version', () => {

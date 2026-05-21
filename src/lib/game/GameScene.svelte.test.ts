@@ -11,7 +11,7 @@ import GameScene from './GameScene.svelte'
 import GAME_SCENE_SOURCE from './GameScene.svelte?raw'
 
 const LABEL_JUMP = 'JUMP'
-const LABEL_GAME = 'Simon game'
+const LABEL_GAME = 'Joshua Game'
 const LABEL_GAME_STARTED = 'Game started'
 const LABEL_PAUSE = 'Pause'
 

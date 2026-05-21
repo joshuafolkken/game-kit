@@ -86,6 +86,11 @@ describe('credits', () => {
 			expect(CREDITS_TEXT).toContain('A JOSHUA FOLKKEN GAME')
 		})
 
+		it('uses Joshua Game as the display name', () => {
+			expect(CREDITS_TEXT).toContain('JOSHUA GAME')
+			expect(CREDITS_TEXT).toContain('Joshua Game is inspired by the')
+		})
+
 		it('includes the STAFF section header', () => {
 			expect(CREDITS_TEXT).toContain('STAFF')
 		})

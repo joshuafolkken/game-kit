@@ -1,3 +1,5 @@
+import { GAME_NAME, GAME_NAME_DISPLAY } from '../simon/game-name'
+
 export const base_messages = {
 	press_start: 'PRESS START',
 	cyber_switch_label: 'CYBER',
@@ -25,11 +27,11 @@ export const base_messages = {
 } as const
 
 export const simon_messages = {
-	game_title: 'SIMON',
+	game_title: GAME_NAME,
 	simon_start: 'START',
 	simon_round: 'ROUND',
 	simon_gameover: 'GAME OVER',
-	game_application_label: 'Simon game',
+	game_application_label: GAME_NAME_DISPLAY,
 } as const
 
 export const messages = { ...base_messages, ...simon_messages } as const
