@@ -41,7 +41,9 @@ test('loading overlay displays Joshua Folkken below the logo', async ({ page }) 
 
 test('loading overlay displays game title below the brand', async ({ page }) => {
 	await page.goto('/')
-	await expect(page.locator('[data-testid="loading-overlay"] .game-title')).toHaveText('SIMON')
+	await expect(page.locator('[data-testid="loading-overlay"] .game-title')).toHaveText(
+		'JOSHUA GAME',
+	)
 })
 
 test('loading overlay displays game version below the brand', async ({ page }) => {

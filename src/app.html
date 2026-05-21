@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<title>Game Kit</title>
+		<title>__GAME_NAME_DISPLAY__</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<meta name="text-scale" content="scale" />
@@ -149,9 +149,9 @@
 				</g>
 			</svg>
 			<p class="brand">Joshua Folkken</p>
-			<!-- game-block MUST stay in sync with messages.game_title and package.json#version -->
+			<!-- game-block: injected at build time from src/lib/simon/game-name.ts via inject_game_name() in vite.config.ts -->
 			<div class="game-block">
-				<p class="game-title">SIMON</p>
+				<p class="game-title">__GAME_NAME__</p>
 				<p class="game-version">v__APP_VERSION__</p>
 			</div>
 			<p class="label">

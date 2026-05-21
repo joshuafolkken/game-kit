@@ -13,7 +13,7 @@ vi.mock('$lib/simon/board-config', () => ({
 vi.mock('$lib/game/state.svelte', () => ({ game_state: { is_alt: false } }))
 vi.mock('$lib/messages/en', () => ({
 	messages: {
-		game_title: 'SIMON',
+		game_title: 'JOSHUA GAME',
 		cyber_switch_label: 'CYBER',
 		fullscreen_switch_label: 'FULLSCREEN',
 		fps_switch_label: 'FPS',

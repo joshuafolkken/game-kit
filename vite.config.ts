@@ -3,13 +3,14 @@ import tailwindcss from '@tailwindcss/vite'
 import { SvelteKitPWA } from '@vite-pwa/sveltekit'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
+import { GAME_DESCRIPTION, GAME_NAME_DISPLAY } from './src/lib/simon/game-name'
 
 const BRAND_COLOR = '#0d0d12'
 
 const PWA_MANIFEST = {
-	name: 'Simon',
-	short_name: 'Simon',
-	description: 'A Simon memory game',
+	name: GAME_NAME_DISPLAY,
+	short_name: GAME_NAME_DISPLAY,
+	description: GAME_DESCRIPTION,
 	start_url: '/',
 	display: 'standalone' as const,
 	background_color: BRAND_COLOR,
