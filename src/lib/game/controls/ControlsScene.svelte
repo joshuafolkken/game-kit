@@ -141,13 +141,13 @@
 	const TOUCH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 90" fill="none">
 <rect x="2" y="2" width="236" height="86" rx="6" fill="rgba(120,80,255,0.05)" stroke="rgba(160,120,255,0.5)" stroke-width="1.5"/>
 <line x1="120" y1="2" x2="120" y2="88" stroke="rgba(140,110,255,0.5)" stroke-width="0.8" stroke-dasharray="3 3"/>
-<g transform="translate(5,-11)">
+<g transform="translate(5,4)">
 <path d="M38 56 A22 22 0 1 1 72 56" stroke="rgba(160,130,255,0.7)" stroke-width="2" stroke-linecap="round" fill="none"/>
 <polyline points="72,50 72,57 79,57" stroke="rgba(160,130,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 <circle cx="55" cy="56" r="6" fill="rgba(140,100,255,0.2)" stroke="rgba(160,130,255,0.7)" stroke-width="1.5"/>
 <circle cx="55" cy="56" r="2" fill="rgba(200,180,255,0.9)"/>
 </g>
-<g transform="translate(125,-11)">
+<g transform="translate(125,4)">
 <path d="M38 56 A22 22 0 1 1 72 56" stroke="rgba(160,130,255,0.7)" stroke-width="2" stroke-linecap="round" fill="none"/>
 <polyline points="72,50 72,57 79,57" stroke="rgba(160,130,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 <circle cx="55" cy="56" r="6" fill="rgba(140,100,255,0.2)" stroke="rgba(160,130,255,0.7)" stroke-width="1.5"/>
