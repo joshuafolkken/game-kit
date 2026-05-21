@@ -335,3 +335,28 @@ describe('ControlsScene PC icon padding — keyboard left padding equals mouse r
 		expect(Math.abs(inner_gap - HALVED_GAP_TARGET)).toBeLessThan(GAP_TOLERANCE)
 	})
 })
+
+// Frame rect: y=2 to y=88 → center y=45
+// Arc: M38 56 A22 22 0 1 1 72 56 → center (55, 42), peak y≈20; circle bottom y=62 → gesture center y≈41
+// y-translate for centering: 45 - 41 = 4
+const TOUCH_SVG_FRAME_CENTER_Y = 45
+const TOUCH_SVG_GESTURE_CENTER_Y = 41
+const TOUCH_SVG_CENTERING_TRANSLATE_Y = TOUCH_SVG_FRAME_CENTER_Y - TOUCH_SVG_GESTURE_CENTER_Y
+const TOUCH_SVG_CENTERING_TOLERANCE = 1
+const TOUCH_SVG_GESTURE_GROUP_COUNT = 2
+
+describe('ControlsScene touch SVG gesture centering — illustration vertically centered within frame', () => {
+	it('both gesture group y-translations center the bounding box within the frame rect', () => {
+		const svg_match = SOURCE.match(/const\s+TOUCH_SVG\s*=\s*`([\s\S]*?)`/)
+		expect(svg_match).not.toBeNull()
+		const svg_body = svg_match?.[1] ?? ''
+		const translate_matches = [...svg_body.matchAll(/transform="translate\(\d+,(-?\d+)\)"/g)]
+		expect(translate_matches).toHaveLength(TOUCH_SVG_GESTURE_GROUP_COUNT)
+		for (const match of translate_matches) {
+			const translate_y = Number(match[1])
+			expect(Math.abs(translate_y - TOUCH_SVG_CENTERING_TRANSLATE_Y)).toBeLessThanOrEqual(
+				TOUCH_SVG_CENTERING_TOLERANCE,
+			)
+		}
+	})
+})
