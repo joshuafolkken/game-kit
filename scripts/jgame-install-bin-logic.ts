@@ -44,7 +44,12 @@ function generate_wrapper_script(paths: WrapperPaths): string {
 	return `#!/bin/sh\n${WRAPPER_MARKER}\nexec "${paths.node_command}" "${paths.jgame_script_path}" "$@"\n`
 }
 
-function is_dependency_install(package_directory: string, init_cwd: string): boolean {
+function is_dependency_install(
+	package_directory: string,
+	init_cwd: string,
+	lifecycle_event: string,
+): boolean {
+	if (lifecycle_event !== 'postinstall') return false
 	if (init_cwd === '') return false
 
 	return strip_trailing_slashes(init_cwd) !== strip_trailing_slashes(package_directory)

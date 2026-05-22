@@ -79,24 +79,40 @@ describe('jgame_install_bin_logic.strip_trailing_slashes', () => {
 })
 
 describe('jgame_install_bin_logic.is_dependency_install', () => {
-	it('returns false when INIT_CWD is empty (no info)', () => {
-		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '')).toBe(false)
+	it('returns false when lifecycle_event is not postinstall (pnpm dlx context)', () => {
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/some/consumer', '')).toBe(false)
 	})
 
-	it('returns false when INIT_CWD equals package directory (source repo install)', () => {
-		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/pkg')).toBe(false)
+	it('returns false when lifecycle_event is a non-postinstall value', () => {
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/some/consumer', 'install')).toBe(
+			false,
+		)
+	})
+
+	it('returns false when INIT_CWD is empty even during postinstall', () => {
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '', 'postinstall')).toBe(false)
+	})
+
+	it('returns false when INIT_CWD equals package directory (source repo postinstall)', () => {
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/pkg', 'postinstall')).toBe(false)
 	})
 
 	it('returns false when INIT_CWD equals package directory with a trailing slash', () => {
-		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/pkg/')).toBe(false)
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/pkg/', 'postinstall')).toBe(
+			false,
+		)
 	})
 
 	it('returns false when package directory has trailing slash and INIT_CWD does not', () => {
-		expect(jgame_install_bin_logic.is_dependency_install('/pkg/', '/pkg')).toBe(false)
+		expect(jgame_install_bin_logic.is_dependency_install('/pkg/', '/pkg', 'postinstall')).toBe(
+			false,
+		)
 	})
 
-	it('returns true when INIT_CWD differs from package directory (dependency install)', () => {
-		expect(jgame_install_bin_logic.is_dependency_install('/pkg', '/some/consumer')).toBe(true)
+	it('returns true when lifecycle is postinstall and INIT_CWD differs (dependency postinstall)', () => {
+		expect(
+			jgame_install_bin_logic.is_dependency_install('/pkg', '/some/consumer', 'postinstall'),
+		).toBe(true)
 	})
 })
 
