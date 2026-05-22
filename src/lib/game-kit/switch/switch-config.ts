@@ -3,7 +3,7 @@ export const SWITCH_ICON_TYPES: readonly SwitchIconType[] = ['cyber', 'fullscree
 
 export const FPS_SWITCH_LABEL = 'FPS'
 export const FULLSCREEN_SWITCH_LABEL = 'FULLSCREEN'
-export const CRT_SWITCH_LABEL = 'CRT'
+export const CRT_SWITCH_LABEL = 'RETRO'
 
 export const SWITCH_Y = 1.2
 export const FPS_SWITCH_Y = 2.2
