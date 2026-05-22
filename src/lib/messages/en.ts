@@ -1,4 +1,4 @@
-import { GAME_NAME, GAME_NAME_DISPLAY } from '../simon/game-name'
+import { GAME_NAME, GAME_NAME_DISPLAY } from '../game/game-name'
 
 export const base_messages = {
 	press_start: 'PRESS START',
