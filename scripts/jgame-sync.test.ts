@@ -9,6 +9,8 @@ vi.mock('node:fs', async () => {
 		...actual,
 		cpSync: vi.fn(),
 		mkdirSync: vi.fn(),
+		readFileSync: vi.fn(),
+		writeFileSync: vi.fn(),
 	}
 })
 vi.mock('node:child_process', () => ({ execSync: vi.fn() }))
@@ -19,6 +21,8 @@ vi.mock('./jgame-paths.ts', () => ({
 		PROJECT_ROOT: '/project',
 	},
 }))
+
+const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
 
 // Framework / app-shell files that jgame sync refreshes on every run. Each
 // entry pairs the destination path inside the user project with the source
@@ -42,9 +46,27 @@ const REAL_TEMPLATES_DIR = path.resolve(
 	'../templates',
 )
 
+function stub_readFileSync_by_path(
+	read: ReturnType<typeof vi.fn>,
+	overrides: Record<string, string>,
+): void {
+	read.mockImplementation((file: string) => {
+		const key = String(file)
+		if (key in overrides) return overrides[key]
+		throw new Error(`unexpected readFileSync(${key})`)
+	})
+}
+
 describe('jgame_sync.run', () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.spyOn(console, 'info').mockImplementation(() => {})
+		const { readFileSync } = await import('node:fs')
+		const game_kit_pkg = JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } })
+		const consumer_pkg = JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } })
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': game_kit_pkg,
+			'/project/package.json': consumer_pkg,
+		})
 	})
 
 	it('calls josh sync', async () => {
@@ -78,5 +100,81 @@ describe('jgame_sync.run', () => {
 		jgame_sync.run()
 		expect(cpSync).toHaveBeenCalledWith('/pkg/templates/npmrc', '/project/.npmrc')
 		expect(existsSync(path.join(REAL_TEMPLATES_DIR, '.npmrc'))).toBe(false)
+	})
+})
+
+describe('jgame_sync managed package.json scripts', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.spyOn(console, 'info').mockImplementation(() => {})
+	})
+
+	it('rewrites a stale preview script to the canonical Worker-runtime value', async () => {
+		// Regression for #135: a project initialized before the fix has
+		// "preview": "vite preview" — jgame sync must correct it.
+		const { readFileSync, writeFileSync } = await import('node:fs')
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } }),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: { preview: 'vite preview', dev: 'vite dev' },
+			}),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		expect(writeFileSync).toHaveBeenCalledTimes(1)
+		const [written_path, written_body] = vi.mocked(writeFileSync).mock.calls[0]
+		expect(written_path).toBe('/project/package.json')
+		const written = JSON.parse(String(written_body))
+		expect(written.scripts.preview).toBe(CANONICAL_PREVIEW)
+		// Preserves consumer-owned scripts that are NOT in MANAGED_SCRIPT_KEYS.
+		expect(written.scripts.dev).toBe('vite dev')
+		// Preserves unrelated package.json fields.
+		expect(written.name).toBe('consumer')
+	})
+
+	it('does not rewrite package.json when scripts are already canonical', async () => {
+		const { readFileSync, writeFileSync } = await import('node:fs')
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } }),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: { preview: CANONICAL_PREVIEW, dev: 'vite dev' },
+			}),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		expect(writeFileSync).not.toHaveBeenCalled()
+	})
+
+	it('adds the canonical preview script when the consumer has no scripts field', async () => {
+		const { readFileSync, writeFileSync } = await import('node:fs')
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } }),
+			'/project/package.json': JSON.stringify({ name: 'consumer' }),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		expect(writeFileSync).toHaveBeenCalledTimes(1)
+		const written = JSON.parse(String(vi.mocked(writeFileSync).mock.calls[0][1]))
+		expect(written.scripts.preview).toBe(CANONICAL_PREVIEW)
+	})
+})
+
+describe('jgame_sync.apply_managed_scripts', () => {
+	it('reports no change when consumer already has canonical values', async () => {
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const pkg = { scripts: { preview: CANONICAL_PREVIEW } }
+		const did_change = jgame_sync.apply_managed_scripts(pkg, { preview: CANONICAL_PREVIEW })
+		expect(did_change).toBe(false)
+		expect(pkg.scripts.preview).toBe(CANONICAL_PREVIEW)
+	})
+
+	it('returns true and mutates scripts when a managed key is stale', async () => {
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const pkg = { scripts: { preview: 'vite preview' } }
+		const did_change = jgame_sync.apply_managed_scripts(pkg, { preview: CANONICAL_PREVIEW })
+		expect(did_change).toBe(true)
+		expect(pkg.scripts.preview).toBe(CANONICAL_PREVIEW)
 	})
 })
