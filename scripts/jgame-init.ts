@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
@@ -53,6 +54,7 @@ const REQUIRED_DEV_DEPS = [
 
 type GameKitPkg = {
 	version: string
+	scripts: Record<string, string>
 	devDependencies: Record<string, string>
 	devEngines: unknown
 	pnpm: { overrides: Record<string, string> }
@@ -110,12 +112,13 @@ function pick_deps(all: Record<string, string>, keys: readonly string[]): Record
 	return Object.fromEntries(keys.map((k) => [k, all[k] ?? '*']))
 }
 
-function build_scripts(): Record<string, string> {
+function build_scripts(pkg: GameKitPkg): Record<string, string> {
+	const managed = jgame_managed_scripts.pick_managed_scripts(pkg.scripts)
 	return {
 		preinstall: 'pnpm dlx @aikidosec/safe-chain setup-ci',
 		dev: 'vite dev',
 		build: 'vite build',
-		preview: 'vite preview',
+		preview: managed.preview,
 		postinstall:
 			'lefthook install && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
 		jgame: 'jgame',
@@ -129,7 +132,7 @@ function build_package_json(pkg: GameKitPkg, game_name: string): object {
 		version: '0.1.0',
 		private: true,
 		type: 'module',
-		scripts: build_scripts(),
+		scripts: build_scripts(pkg),
 		dependencies: { '@joshuafolkken/game-kit': `^${pkg.version}` },
 		devDependencies: pick_deps(pkg.devDependencies, REQUIRED_DEV_DEPS),
 		devEngines: pkg.devEngines,
