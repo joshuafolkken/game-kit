@@ -50,7 +50,8 @@ function should_block_overwrite(bin_path: string, force: boolean): boolean {
 
 function install_jgame_bin(options: InstallOptions): void {
 	const init_cwd = process.env['INIT_CWD'] ?? ''
-	if (jgame_install_bin_logic.is_dependency_install(PKG_DIR, init_cwd)) {
+	const lifecycle_event = process.env['npm_lifecycle_event'] ?? ''
+	if (jgame_install_bin_logic.is_dependency_install(PKG_DIR, init_cwd, lifecycle_event)) {
 		console.info(jgame_install_bin_logic.format_skip())
 		return
 	}

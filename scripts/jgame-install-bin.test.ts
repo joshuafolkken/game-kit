@@ -36,13 +36,28 @@ describe('jgame_install_bin.run', () => {
 		process.env = ORIGINAL_ENV_REF
 	})
 
-	it('skips installation when INIT_CWD differs from package directory (dependency install)', async () => {
+	it('skips installation when lifecycle is postinstall and INIT_CWD differs (dependency postinstall)', async () => {
 		const { writeFileSync } = await import('node:fs')
-		reset_env_then_apply({ INIT_CWD: '/some/consumer/project' })
+		reset_env_then_apply({
+			INIT_CWD: '/some/consumer/project',
+			npm_lifecycle_event: 'postinstall',
+		})
 		const { jgame_install_bin } = await import('./jgame-install-bin.ts')
 		jgame_install_bin.run({ force: false })
 		expect(writeFileSync).not.toHaveBeenCalled()
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('skipped'))
+	})
+
+	it('proceeds when INIT_CWD differs but lifecycle is not postinstall (pnpm dlx context)', async () => {
+		const { existsSync, writeFileSync } = await import('node:fs')
+		vi.mocked(existsSync).mockReturnValue(false)
+		reset_env_then_apply({ INIT_CWD: '/some/consumer/project' })
+		const { jgame_install_bin } = await import('./jgame-install-bin.ts')
+		jgame_install_bin.run({ force: false })
+		expect(writeFileSync).toHaveBeenCalledWith(
+			'/home/u/.local/bin/jgame',
+			expect.stringContaining('#!/bin/sh'),
+		)
 	})
 
 	it('writes wrapper with mode 0o755 when target does not exist', async () => {
