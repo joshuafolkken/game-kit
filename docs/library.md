@@ -37,6 +37,8 @@ pnpm add @joshuafolkken/game-kit
 
 ## 4. Use
 
+`GameScene` wraps the Threlte canvas, controls overlay, and lifecycle. Its `children` snippet receives 3D components (Threlte primitives plus the kit's `Room`, `Player`, etc.) rendered inside the canvas as siblings — not as parent / child of each other.
+
 ```svelte
 <script lang="ts">
 	import { device, GameScene, Player, Room } from '@joshuafolkken/game-kit'
@@ -45,11 +47,12 @@ pnpm add @joshuafolkken/game-kit
 </script>
 
 <GameScene {hint_text}>
-	<Room>
-		<Player />
-	</Room>
+	<Room />
+	<Player />
 </GameScene>
 ```
+
+For a full game (score display, credits, gameover overlay, switches), use `SceneObjects` and provide your game board via the `game_board` snippet. See [`templates/src/lib/simon/SimonScene.svelte`](../templates/src/lib/simon/SimonScene.svelte) for a complete reference.
 
 ## Exports
 
