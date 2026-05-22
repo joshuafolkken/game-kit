@@ -9,7 +9,7 @@
 	import { score } from '$lib/game/score.svelte'
 	import { simon } from '$lib/game/simon.svelte'
 	import SimonBoard from '$lib/game/SimonBoard.svelte'
-	import { messages } from '$lib/messages/en'
+	import { messages } from '$lib/simon/messages'
 
 	const { start_z: CREDITS_SCROLL_START_Z, end_z: CREDITS_SCROLL_END_Z } =
 		make_credits_scroll_bounds(CREDITS_LINE_COUNT, HALF_D)

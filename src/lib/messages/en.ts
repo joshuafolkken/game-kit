@@ -1,5 +1,3 @@
-import { GAME_NAME, GAME_NAME_DISPLAY } from '../game/game-name'
-
 export const base_messages = {
 	press_start: 'PRESS START',
 	cyber_switch_label: 'CYBER',
@@ -22,13 +20,3 @@ export const base_messages = {
 	controls_jump: 'Jump',
 	controls_return: 'Return to start',
 } as const
-
-export const simon_messages = {
-	game_title: GAME_NAME,
-	simon_start: 'START',
-	simon_round: 'ROUND',
-	simon_gameover: 'GAME OVER',
-	game_application_label: GAME_NAME_DISPLAY,
-} as const
-
-export const messages = { ...base_messages, ...simon_messages } as const
