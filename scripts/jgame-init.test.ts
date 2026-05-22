@@ -221,6 +221,27 @@ describe('jgame_init.run', () => {
 		})
 	})
 
+	it('copy_templates filter excludes tsconfig.json and npmrc', async () => {
+		const { cpSync } = await import('node:fs')
+		const { jgame_init } = await import('./jgame-init.ts')
+		jgame_init.run('tic-tac-toe')
+		const recursive_call = vi.mocked(cpSync).mock.calls.find(([src]) => src === '/pkg/templates')
+		const filter = recursive_call?.[2]?.filter
+		if (typeof filter !== 'function') throw new Error('filter must be a function')
+		expect(filter('/pkg/templates/tsconfig.json', '/project/tic-tac-toe/tsconfig.json')).toBe(false)
+		expect(filter('/pkg/templates/npmrc', '/project/tic-tac-toe/npmrc')).toBe(false)
+		expect(filter('/pkg/templates/svelte.config.js', '/project/tic-tac-toe/svelte.config.js')).toBe(
+			true,
+		)
+	})
+
+	it('writes .npmrc from templates/npmrc to bypass npm dotfile exclusion', async () => {
+		const { cpSync } = await import('node:fs')
+		const { jgame_init } = await import('./jgame-init.ts')
+		jgame_init.run('tic-tac-toe')
+		expect(cpSync).toHaveBeenCalledWith('/pkg/templates/npmrc', '/project/tic-tac-toe/.npmrc')
+	})
+
 	it('runs git init, pnpm install, and pnpm josh sync with project cwd', async () => {
 		const { execSync } = await import('node:child_process')
 		const { jgame_init } = await import('./jgame-init.ts')
