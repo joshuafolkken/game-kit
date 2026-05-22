@@ -15,9 +15,6 @@ vi.mock('$lib/messages/en', () => ({
 	messages: {
 		game_title: 'JOSHUA GAME',
 		cyber_switch_label: 'CYBER',
-		fullscreen_switch_label: 'FULLSCREEN',
-		fps_switch_label: 'FPS',
-		crt_switch_label: 'CRT',
 		score_high_score: 'HI',
 		score_round: 'RND',
 		score_current: 'SCORE',

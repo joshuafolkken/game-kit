@@ -45,7 +45,10 @@
 		FULLSCREEN_SWITCH_COLORS,
 	} from '$lib/game-kit/switch/switch-colors'
 	import {
+		CRT_SWITCH_LABEL,
+		FPS_SWITCH_LABEL,
 		FPS_SWITCH_Y,
+		FULLSCREEN_SWITCH_LABEL,
 		FULLSCREEN_SWITCH_X,
 		LEFT_SWITCH_X,
 	} from '$lib/game-kit/switch/switch-config'
@@ -140,7 +143,7 @@
 	position_x={LEFT_SWITCH_X}
 	is_active={fps.is_fps_enabled}
 	icon_type="fps"
-	label={messages.fps_switch_label}
+	label={FPS_SWITCH_LABEL}
 	font={current_font}
 	font_size_multiplier={current_font_size_multiplier}
 	onclick={fps_switch_input.on_click}
@@ -163,7 +166,7 @@
 	position_x={FULLSCREEN_SWITCH_X}
 	is_active={fullscreen.is_active}
 	icon_type="fullscreen"
-	label={messages.fullscreen_switch_label}
+	label={FULLSCREEN_SWITCH_LABEL}
 	font={current_font}
 	font_size_multiplier={current_font_size_multiplier}
 	onclick={fullscreen_switch_input.on_click}
@@ -174,7 +177,7 @@
 	position_x={FULLSCREEN_SWITCH_X}
 	is_active={crt.is_crt_enabled}
 	icon_type="crt"
-	label={messages.crt_switch_label}
+	label={CRT_SWITCH_LABEL}
 	font={current_font}
 	font_size_multiplier={current_font_size_multiplier}
 	onclick={crt_switch_input.on_click}
