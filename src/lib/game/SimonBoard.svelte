@@ -103,9 +103,9 @@
 		(is_alt ? CYBER_EMISSIVE_INTENSITY : EMISSIVE_INTENSITY) * simon_data.flash_intensity,
 	)
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
-	let use_alt_font = $derived(!crt.is_crt_enabled)
-	let current_font = $derived(fonts.get_font(use_alt_font))
-	let current_font_size = $derived(FONT_SIZE * fonts.get_font_size_multiplier(use_alt_font))
+	let should_use_alt_font = $derived(!crt.is_crt_enabled)
+	let current_font = $derived(fonts.get_font(should_use_alt_font))
+	let current_font_size = $derived(FONT_SIZE * fonts.get_font_size_multiplier(should_use_alt_font))
 </script>
 
 <T.Group position={[0, BOARD_Y, BOARD_Z]}>

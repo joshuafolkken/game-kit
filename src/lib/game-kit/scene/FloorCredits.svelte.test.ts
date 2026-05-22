@@ -44,15 +44,15 @@ describe('FloorCredits', () => {
 })
 
 describe('FloorCredits font selection — driven by CRT, not CYBER (is_alt)', () => {
-	it('derives use_alt_font from !crt.is_crt_enabled', () => {
+	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
 		expect(FLOOR_CREDITS_SOURCE).toMatch(
-			/let\s+use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
 		)
 	})
 
-	it('current_font passes use_alt_font into fonts.get_font (not is_alt)', () => {
+	it('current_font passes should_use_alt_font into fonts.get_font (not is_alt)', () => {
 		expect(FLOOR_CREDITS_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*use_alt_font\s*\)\s*\)/,
+			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/,
 		)
 	})
 

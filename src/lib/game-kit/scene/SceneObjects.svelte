@@ -86,14 +86,14 @@
 	// Font is driven by CRT state — CRT ON pairs the retro pixel font with the scanline
 	// aesthetic; CRT OFF switches to the modern Orbitron font. CYBER (is_alt) controls
 	// palette and lighting only.
-	let use_alt_font = $derived(!crt.is_crt_enabled)
+	let should_use_alt_font = $derived(!crt.is_crt_enabled)
 	let bg_color = $derived(is_alt ? CYBER_BG : NORMAL_BG)
 	let ambient_intensity = $derived(lighting.get_ambient_intensity(is_alt))
 	let ambient_color = $derived(lighting.get_ambient_color(is_alt))
 	let point_light_intensity = $derived(lighting.get_point_light_intensity(is_alt))
 	let point_light_color = $derived(is_alt ? CYBER_POINT_LIGHT_COLOR : NORMAL_POINT_LIGHT_COLOR)
-	let current_font = $derived(fonts.get_font(use_alt_font))
-	let current_font_size_multiplier = $derived(fonts.get_font_size_multiplier(use_alt_font))
+	let current_font = $derived(fonts.get_font(should_use_alt_font))
+	let current_font_size_multiplier = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
 	let current_title_font_size = $derived(TITLE_FONT_SIZE * current_font_size_multiplier)
 	let floor_color = $derived(is_alt ? CYBER_FLOOR_COLOR : FLOOR_COLOR)
 	let wall_color = $derived(is_alt ? CYBER_WALL_COLOR : WALL_COLOR)

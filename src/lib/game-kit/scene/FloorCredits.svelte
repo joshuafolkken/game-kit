@@ -27,8 +27,8 @@
 	let { is_alt, credits, scroll_start_z, scroll_end_z }: Props = $props()
 
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
-	let use_alt_font = $derived(!crt.is_crt_enabled)
-	let current_font = $derived(fonts.get_font(use_alt_font))
+	let should_use_alt_font = $derived(!crt.is_crt_enabled)
+	let current_font = $derived(fonts.get_font(should_use_alt_font))
 	let color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
 	let scroll_z = $state(untrack(() => scroll_start_z))
 

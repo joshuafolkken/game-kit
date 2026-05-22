@@ -76,9 +76,9 @@
 
 	// Font is driven by CRT state — CRT ON pairs the retro pixel font with the scanline
 	// aesthetic; CRT OFF switches to the modern Orbitron font.
-	let use_alt_font = $derived(!crt.is_crt_enabled)
-	let current_font = $derived(fonts.get_font(use_alt_font))
-	let current_font_size_mul = $derived(fonts.get_font_size_multiplier(use_alt_font))
+	let should_use_alt_font = $derived(!crt.is_crt_enabled)
+	let current_font = $derived(fonts.get_font(should_use_alt_font))
+	let current_font_size_mul = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
 	let viewport_aspect = $derived($size.width / $size.height)
 	let view_width_at_plane = $derived(TOUCH_VIEW_HEIGHT_AT_PLANE * viewport_aspect)
 	let touch_world_width = $derived(view_width_at_plane * TOUCH_WIDTH_RATIO)

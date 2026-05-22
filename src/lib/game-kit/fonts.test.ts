@@ -14,11 +14,11 @@ describe('fonts', () => {
 		expect(fonts.get_font(true)).toMatch(/^\/fonts\//)
 	})
 
-	it('get_font returns the retro pixel font for use_alt_font=false', () => {
+	it('get_font returns the retro pixel font for should_use_alt_font=false', () => {
 		expect(fonts.get_font(false)).toContain('PressStart2P')
 	})
 
-	it('get_font returns the alt (Orbitron) font for use_alt_font=true', () => {
+	it('get_font returns the alt (Orbitron) font for should_use_alt_font=true', () => {
 		expect(fonts.get_font(true)).toContain('Orbitron')
 	})
 

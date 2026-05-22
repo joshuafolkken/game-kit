@@ -68,17 +68,19 @@ describe('SimonBoard', () => {
 })
 
 describe('SimonBoard font selection — driven by CRT, not CYBER (is_alt)', () => {
-	it('derives use_alt_font from !crt.is_crt_enabled', () => {
+	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
 		expect(SIMON_BOARD_SOURCE).toMatch(
-			/let\s+use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
 		)
 	})
 
-	it('current_font and current_font_size use use_alt_font (not is_alt)', () => {
+	it('current_font and current_font_size use should_use_alt_font (not is_alt)', () => {
 		expect(SIMON_BOARD_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*use_alt_font\s*\)\s*\)/,
+			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/,
 		)
-		expect(SIMON_BOARD_SOURCE).toMatch(/fonts\.get_font_size_multiplier\(\s*use_alt_font\s*\)/)
+		expect(SIMON_BOARD_SOURCE).toMatch(
+			/fonts\.get_font_size_multiplier\(\s*should_use_alt_font\s*\)/,
+		)
 	})
 
 	it('imports crt from $lib/game-kit/crt.svelte', () => {
@@ -99,9 +101,9 @@ describe('SimonBoard font selection — driven by CRT, not CYBER (is_alt)', () =
 })
 
 describe('templates SimonBoard mirrors the CRT-driven font behavior', () => {
-	it('derives use_alt_font from !crt.is_crt_enabled', () => {
+	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
 		expect(TEMPLATE_SIMON_BOARD_SOURCE).toMatch(
-			/let\s+use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
 		)
 	})
 

@@ -222,12 +222,14 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 
 	it('uses theme font-size multiplier for visual size parity between PressStart2P and Orbitron', () => {
 		expect(SOURCE).toMatch(
-			/current_font_size_mul\s*=\s*\$derived\(fonts\.get_font_size_multiplier\(use_alt_font\)\)/,
+			/current_font_size_mul\s*=\s*\$derived\(fonts\.get_font_size_multiplier\(should_use_alt_font\)\)/,
 		)
 	})
 
-	it('derives use_alt_font from !crt.is_crt_enabled — font swaps with CRT, not CYBER', () => {
-		expect(SOURCE).toMatch(/let\s+use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/)
+	it('derives should_use_alt_font from !crt.is_crt_enabled — font swaps with CRT, not CYBER', () => {
+		expect(SOURCE).toMatch(
+			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+		)
 		expect(SOURCE).toMatch(/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/)
 		expect(SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
 	})
