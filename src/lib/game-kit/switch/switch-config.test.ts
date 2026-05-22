@@ -149,8 +149,8 @@ describe('system switch labels', () => {
 		expect(FULLSCREEN_SWITCH_LABEL).toBe('FULLSCREEN')
 	})
 
-	it('CRT_SWITCH_LABEL is the English CRT caption', () => {
-		expect(CRT_SWITCH_LABEL).toBe('CRT')
+	it('CRT_SWITCH_LABEL is the English RETRO caption', () => {
+		expect(CRT_SWITCH_LABEL).toBe('RETRO')
 	})
 })
 
