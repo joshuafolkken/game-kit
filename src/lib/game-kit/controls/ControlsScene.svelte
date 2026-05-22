@@ -2,8 +2,8 @@
 	import { T, useThrelte } from '@threlte/core'
 	import { Text } from '@threlte/extras'
 	import { compute_fit_scale } from '$lib/game-kit/controls/controls-fit'
+	import { crt } from '$lib/game-kit/crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
-	import { game_state } from '$lib/game-kit/state.svelte'
 	import { onMount } from 'svelte'
 	import { BackSide, CanvasTexture, DoubleSide, FrontSide, NearestFilter } from 'three'
 
@@ -74,9 +74,11 @@
 
 	const { size } = useThrelte()
 
-	let is_alt = $derived(game_state.is_alt)
-	let current_font = $derived(fonts.get_font(is_alt))
-	let current_font_size_mul = $derived(fonts.get_font_size_multiplier(is_alt))
+	// Font is driven by CRT state — CRT ON pairs the retro pixel font with the scanline
+	// aesthetic; CRT OFF switches to the modern Orbitron font.
+	let should_use_alt_font = $derived(!crt.is_crt_enabled)
+	let current_font = $derived(fonts.get_font(should_use_alt_font))
+	let current_font_size_mul = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
 	let viewport_aspect = $derived($size.width / $size.height)
 	let view_width_at_plane = $derived(TOUCH_VIEW_HEIGHT_AT_PLANE * viewport_aspect)
 	let touch_world_width = $derived(view_width_at_plane * TOUCH_WIDTH_RATIO)
