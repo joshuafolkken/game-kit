@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit'
-import { GAME_NAME, GAME_NAME_DISPLAY } from '$lib/simon/game-name'
+import { GAME_NAME, GAME_NAME_DISPLAY } from '$lib/game/game-name'
 import { version } from '../package.json'
 
 const APP_VERSION_PLACEHOLDER = '__APP_VERSION__'
