@@ -13,7 +13,7 @@
 	const BACKDROP_W = 6
 	const BACKDROP_H = 3.6
 	const BACKDROP_COLOR = '#000000'
-	const BACKDROP_OPACITY = 0.6
+	const BACKDROP_OPACITY = 0.9
 
 	const HINT_X = 0
 	const HINT_Y = 2.3
@@ -29,6 +29,10 @@
 	const KEYBOARD_H = 1.3
 
 	const MOUSE_X = 0.63
+	// Shift the mouse plane down so the mouse body bottom aligns with the keyboard Z-key bottom.
+	// Z-key bottom (keyboard plane y) ≈ -0.635; mouse body bottom offset (mouse plane y) ≈ -0.39;
+	// MOUSE_Y = -0.635 - (-0.39) ≈ -0.245.
+	const MOUSE_Y = -0.245
 	const MOUSE_W = 0.555
 	const MOUSE_H = 1.04
 
@@ -92,10 +96,10 @@
 	const KEYBOARD_LETTER_Z = 0.001
 
 	const KEYBOARD_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 148 176" fill="none">
-<rect x="54" y="2" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
-<rect x="2" y="46" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
-<rect x="54" y="46" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
-<rect x="106" y="46" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
+<rect x="54" y="22" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
+<rect x="2" y="66" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
+<rect x="54" y="66" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
+<rect x="106" y="66" width="40" height="32" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/>
 <g><rect x="2" y="110" width="144" height="28" rx="5" fill="rgba(120,80,255,0.15)" stroke="rgba(160,120,255,0.8)" stroke-width="1.5"/><polyline points="67,130 74,123 81,130" stroke="rgba(200,180,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><polyline points="67,125 74,118 81,125" stroke="rgba(200,180,255,0.9)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/></g>
 <rect x="2" y="150" width="56" height="24" rx="5" fill="rgba(80,60,160,0.1)" stroke="rgba(120,100,200,0.5)" stroke-width="1.5"/>
 <rect x="90" y="150" width="56" height="24" rx="5" fill="rgba(80,60,160,0.1)" stroke="rgba(120,100,200,0.5)" stroke-width="1.5"/>
@@ -111,11 +115,11 @@
 	}
 
 	const KEYBOARD_LETTERS: ReadonlyArray<KeyboardLetter> = [
-		{ text: 'W', vx: 74, vy: 18, vsize: 13, color: '#c8b4ff', opacity: 0.95 },
-		{ text: 'A', vx: 22, vy: 62, vsize: 13, color: '#c8b4ff', opacity: 0.95 },
-		{ text: 'S', vx: 74, vy: 62, vsize: 13, color: '#c8b4ff', opacity: 0.95 },
-		{ text: 'D', vx: 126, vy: 62, vsize: 13, color: '#c8b4ff', opacity: 0.95 },
-		{ text: 'ESC', vx: 30, vy: 162, vsize: 9, color: '#a08cdc', opacity: 0.7 },
+		{ text: 'W', vx: 74, vy: 38, vsize: 16, color: '#c8b4ff', opacity: 0.95 },
+		{ text: 'A', vx: 22, vy: 82, vsize: 16, color: '#c8b4ff', opacity: 0.95 },
+		{ text: 'S', vx: 74, vy: 82, vsize: 16, color: '#c8b4ff', opacity: 0.95 },
+		{ text: 'D', vx: 126, vy: 82, vsize: 16, color: '#c8b4ff', opacity: 0.95 },
+		{ text: 'ESC', vx: 30, vy: 162, vsize: 12, color: '#a08cdc', opacity: 0.7 },
 		{ text: '/', vx: 74, vy: 162, vsize: 11, color: '#7864c8', opacity: 0.5 },
 		{ text: 'Z', vx: 118, vy: 162, vsize: 13, color: '#a08cdc', opacity: 0.7 },
 	]
@@ -301,7 +305,7 @@
 			{/each}
 		{/if}
 		{#if mouse_tex}
-			<T.Mesh position={[MOUSE_X, 0, 0]} renderOrder={FOREGROUND_RENDER_ORDER}>
+			<T.Mesh position={[MOUSE_X, MOUSE_Y, 0]} renderOrder={FOREGROUND_RENDER_ORDER}>
 				<T.PlaneGeometry args={[MOUSE_W, MOUSE_H]} />
 				<T.MeshBasicMaterial
 					map={mouse_tex}
