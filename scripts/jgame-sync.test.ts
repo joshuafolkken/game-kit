@@ -1,9 +1,16 @@
+import { existsSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('node:fs', () => ({
-	cpSync: vi.fn(),
-	mkdirSync: vi.fn(),
-}))
+vi.mock('node:fs', async () => {
+	const actual = await vi.importActual<typeof import('node:fs')>('node:fs')
+	return {
+		...actual,
+		cpSync: vi.fn(),
+		mkdirSync: vi.fn(),
+	}
+})
 vi.mock('node:child_process', () => ({ execSync: vi.fn() }))
 vi.mock('./jgame-paths.ts', () => ({
 	jgame_paths: {
@@ -12,6 +19,25 @@ vi.mock('./jgame-paths.ts', () => ({
 		PROJECT_ROOT: '/project',
 	},
 }))
+
+// Framework / app-shell files that jgame sync refreshes on every run.
+const EXPECTED_SYNC_FILES = [
+	'.npmrc',
+	'src/app.d.ts',
+	'src/app.html',
+	'src/hooks.server.ts',
+	'src/routes/+layout.svelte',
+	'src/routes/layout.css',
+	'svelte.config.js',
+	'vite.config.ts',
+] as const
+
+// Resolve the real templates/ dir from this test file's location so the
+// "template source must exist" guard does not depend on the mocked PROJECT_ROOT.
+const REAL_TEMPLATES_DIR = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	'../templates',
+)
 
 describe('jgame_sync.run', () => {
 	beforeEach(() => {
@@ -25,23 +51,15 @@ describe('jgame_sync.run', () => {
 		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', expect.any(Object))
 	})
 
-	it('syncs +layout.svelte from templates to PROJECT_ROOT', async () => {
+	it.each(EXPECTED_SYNC_FILES)('syncs %s from templates to PROJECT_ROOT', async (file) => {
 		const { cpSync } = await import('node:fs')
 		const { jgame_sync } = await import('./jgame-sync.ts')
 		jgame_sync.run()
-		expect(cpSync).toHaveBeenCalledWith(
-			'/pkg/templates/src/routes/+layout.svelte',
-			'/project/src/routes/+layout.svelte',
-		)
+		expect(cpSync).toHaveBeenCalledWith(`/pkg/templates/${file}`, `/project/${file}`)
 	})
 
-	it('syncs layout.css from templates to PROJECT_ROOT', async () => {
-		const { cpSync } = await import('node:fs')
-		const { jgame_sync } = await import('./jgame-sync.ts')
-		jgame_sync.run()
-		expect(cpSync).toHaveBeenCalledWith(
-			'/pkg/templates/src/routes/layout.css',
-			'/project/src/routes/layout.css',
-		)
+	it.each(EXPECTED_SYNC_FILES)('has a real templates/%s source file to copy', (file) => {
+		// Guard against SYNC_FILES drift away from the actual templates directory.
+		expect(existsSync(path.join(REAL_TEMPLATES_DIR, file))).toBe(true)
 	})
 })
