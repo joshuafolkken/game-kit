@@ -52,7 +52,7 @@ pnpm add @joshuafolkken/game-kit
 </GameScene>
 ```
 
-For a full game (score display, credits, gameover overlay, switches), use `SceneObjects` and provide your game board via the `game_board` snippet. See [`templates/src/lib/simon/SimonScene.svelte`](../templates/src/lib/simon/SimonScene.svelte) for a complete reference.
+For a full game (score display, credits, gameover overlay, switches), use `SceneObjects` and provide your game board via the `game_board` snippet. See [`templates/src/lib/game/Scene.svelte`](../templates/src/lib/game/Scene.svelte) for a complete reference.
 
 ## Exports
 
@@ -132,6 +132,6 @@ Switch geometry: `SwitchIconType`, `SwitchGeometry`, `SWITCH_ICON_TYPES`, `DEFAU
 
 ## Reference implementation
 
-The [`templates/`](../templates/) directory in this repository contains a complete working game (Simon) built on every export above. After running [`jgame init`](./install.md), your project starts from a copy of that template.
+The [`templates/`](../templates/) directory in this repository contains a complete working game (a Simon-style memory game) built on every export above. After running [`jgame init`](./install.md), your project starts from a copy of that template.
 
 See [`src/lib/index.ts`](../src/lib/index.ts) for the canonical, always-up-to-date export list.

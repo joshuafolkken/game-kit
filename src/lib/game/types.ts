@@ -1,6 +1,6 @@
 export type ButtonColor = 'green' | 'red' | 'yellow' | 'blue'
 
-export interface SimonBoardData {
+export interface GameBoardData {
 	active_color: ButtonColor | null
 	pressed_color: ButtonColor | null
 	phase: string
@@ -9,4 +9,4 @@ export interface SimonBoardData {
 	flash_intensity: number
 }
 
-export type SimonPhase = 'idle' | 'showing' | 'player_input' | 'round_complete' | 'gameover'
+export type GamePhase = 'idle' | 'showing' | 'player_input' | 'round_complete' | 'gameover'

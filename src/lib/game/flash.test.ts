@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { simon_audio } from './audio'
+import { game_audio } from './audio'
 import {
 	cancel_flash,
 	FLASH_BURST_CYCLES,
@@ -11,7 +11,7 @@ import {
 	run_victory_flash,
 	type FlashState,
 	type FlashTimers,
-} from './simon-flash'
+} from './flash'
 import type { ButtonColor } from './types'
 
 const COLORS: ButtonColor[] = ['green', 'red', 'yellow', 'blue']
@@ -84,7 +84,7 @@ describe('cancel_flash', () => {
 describe('run_victory_flash', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
-		vi.spyOn(simon_audio, 'play_tone').mockImplementation(() => {})
+		vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {})
 	})
 
 	afterEach(() => {
@@ -110,7 +110,7 @@ describe('run_victory_flash', () => {
 	})
 
 	it('calls play_tone for each color during burst', async () => {
-		const spy = vi.spyOn(simon_audio, 'play_tone').mockImplementation(() => {})
+		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {})
 		const s = make_state()
 		const t = make_timers()
 		void run_victory_flash(s, t, COLORS, 0)
@@ -125,9 +125,9 @@ describe('run_victory_flash', () => {
 		void run_victory_flash(s, t, COLORS, 0)
 		await vi.advanceTimersByTimeAsync(0)
 		cancel_flash(s, t)
-		const calls_before = vi.mocked(simon_audio.play_tone).mock.calls.length
+		const calls_before = vi.mocked(game_audio.play_tone).mock.calls.length
 		await vi.runAllTimersAsync()
-		const calls_after = vi.mocked(simon_audio.play_tone).mock.calls.length
+		const calls_after = vi.mocked(game_audio.play_tone).mock.calls.length
 		expect(calls_after).toBe(calls_before)
 	})
 
@@ -146,7 +146,7 @@ describe('run_victory_flash', () => {
 
 	it('works with a custom color subset', async () => {
 		const custom: ButtonColor[] = ['green', 'blue']
-		const spy = vi.spyOn(simon_audio, 'play_tone').mockImplementation(() => {})
+		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {})
 		const s = make_state()
 		const t = make_timers()
 		void run_victory_flash(s, t, custom, 0)
