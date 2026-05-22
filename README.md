@@ -1,65 +1,20 @@
-# Svelte library
+# @joshuafolkken/game-kit
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+Svelte + [Threlte](https://threlte.xyz/) component library and CLI scaffold for building 3D mini-games.
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+- **`jgame` CLI** — scaffold a new SvelteKit + Threlte game project from a working template.
+- **Library exports** — drop-in scenes, player, controls, switches, and reactive state primitives for use inside any SvelteKit app.
 
-## Creating a project
+## Guides
 
-If you're seeing this, you've probably already done this step. Congrats!
+- [docs/install.md](./docs/install.md) — scaffold a new game project with `jgame init`
+- [docs/library.md](./docs/library.md) — use `@joshuafolkken/game-kit` as a library in an existing project
 
-```sh
-# create a new project in the current directory
-npx sv create
+## Prerequisites
 
-# create a new project in my-app
-npx sv create my-app
-```
+- [Node.js](https://nodejs.org/) with [pnpm](https://pnpm.io/) ≥ 11
+- [gh CLI](https://cli.github.com/) — required for GitHub Packages authentication. Install via `brew install gh` (macOS), `winget install GitHub.cli` (Windows), or see the [gh installation docs](https://github.com/cli/cli#installation).
 
-To recreate this project with the same configuration:
+## License
 
-```sh
-# recreate this project
-pnpm dlx sv@0.15.2 create --template library --types ts --add prettier eslint vitest="usages:unit" mcp="ide:claude-code,cursor,gemini+setup:remote" --install pnpm game-kit
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
-
-## Building
-
-To build your library:
-
-```sh
-npm pack
-```
-
-To create a production version of your showcase app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```sh
-npm publish
-```
+MIT
