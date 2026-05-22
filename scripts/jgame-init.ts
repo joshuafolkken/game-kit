@@ -5,6 +5,10 @@ import { jgame_paths } from './jgame-paths.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
+// npm strips `.npmrc` from published packages regardless of the `files` field,
+// so the template is shipped under a non-dotfile name and renamed on copy.
+const NPMRC_SRC_NAME = 'npmrc'
+const NPMRC_DEST_NAME = '.npmrc'
 
 const USER_TSCONFIG = {
 	extends: ['./.svelte-kit/tsconfig.json'],
@@ -171,12 +175,24 @@ function write_game_config(names: GameNames, project_dir: string): void {
 	console.info('  ✔ wrote    src/lib/game-config.ts')
 }
 
+function should_copy_template(src: string): boolean {
+	const name = path.basename(src)
+	return name !== TSCONFIG_FILE_NAME && name !== NPMRC_SRC_NAME
+}
+
 function copy_templates(project_dir: string): void {
 	cpSync(jgame_paths.TEMPLATES_DIR, project_dir, {
 		recursive: true,
-		filter: (src: string) => !src.endsWith(TSCONFIG_FILE_NAME),
+		filter: should_copy_template,
 	})
 	console.info('  ✔ copied   templates')
+}
+
+function write_npmrc(project_dir: string): void {
+	const src = path.join(jgame_paths.TEMPLATES_DIR, NPMRC_SRC_NAME)
+	const dest = path.join(project_dir, NPMRC_DEST_NAME)
+	cpSync(src, dest)
+	console.info(`  ✔ wrote    ${NPMRC_DEST_NAME}`)
 }
 
 function run(game_name_raw?: string): void {
@@ -197,6 +213,7 @@ function run(game_name_raw?: string): void {
 	mkdirSync(project_dir, { recursive: true })
 	write_package_json(names.kebab, project_dir)
 	copy_templates(project_dir)
+	write_npmrc(project_dir)
 	write_game_config(names, project_dir)
 	write_tsconfig(project_dir)
 	execSync('git init', opts)
