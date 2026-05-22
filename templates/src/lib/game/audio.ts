@@ -1,4 +1,4 @@
-import { audio as game_audio } from '@joshuafolkken/game-kit'
+import { audio } from '@joshuafolkken/game-kit'
 import type { ButtonColor } from './types'
 
 const FREQ: Record<ButtonColor, number> = { green: 415, red: 310, yellow: 252, blue: 209 }
@@ -15,8 +15,8 @@ let active_osc: OscillatorNode | null = null
 type OscGraph = { osc: OscillatorNode; gain: GainNode; ctx: AudioContext }
 
 function create_osc_graph(freq: number, is_alt: boolean): OscGraph | null {
-	game_audio.init_audio()
-	const ctx = game_audio.get_audio_context()
+	audio.init_audio()
+	const ctx = audio.get_audio_context()
 	if (!ctx) return null
 	const osc = ctx.createOscillator()
 	const gain = ctx.createGain()
@@ -68,7 +68,7 @@ function play_error_tone(duration_ms: number, is_alt: boolean): void {
 	play_raw_tone(ERROR_FREQ, duration_ms, is_alt)
 }
 
-export const simon_audio = {
+export const game_audio = {
 	play_tone,
 	play_error_tone,
 	start_tone,

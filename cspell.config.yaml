@@ -4,7 +4,6 @@ import:
 ignorePaths:
   - "**/credits-config.ts"
   - "**/game/credits.ts"
-  - "**/simon/credits.ts"
 words:
   - Baer
   - bilinearly

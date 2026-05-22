@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test'
 import { stub_touch_primary } from './e2e-helpers'
 
 const FULLSCREEN_NOT_CALLED_WAIT_MS = 200
-const HIGH_SCORE_STORAGE_KEY = 'simon_high_score'
-const HIGH_SCORE_ROUND_KEY = 'simon_high_score_round'
-const HIGH_SCORE_CHECK_KEY = 'simon_high_score_check'
+const HIGH_SCORE_STORAGE_KEY = 'game_high_score'
+const HIGH_SCORE_ROUND_KEY = 'game_high_score_round'
+const HIGH_SCORE_CHECK_KEY = 'game_high_score_check'
 const CHECK_SEED = 0x9e3779b9
 const SAMPLE_HIGH_SCORE = 5000
 const SAMPLE_HIGH_ROUND = 3

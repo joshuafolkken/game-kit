@@ -34,7 +34,7 @@ function on_center_click(): void {
 	board_callbacks.on_start()
 }
 
-export const simon_board_input = {
+export const game_board_input = {
 	configure,
 	on_button_pointer_down,
 	on_button_release,

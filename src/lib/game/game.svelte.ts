@@ -1,8 +1,8 @@
-import { game_state } from '@joshuafolkken/game-kit'
-import { simon_audio } from './audio'
+import { game_state } from '$lib/game-kit/state.svelte'
+import { game_audio } from './audio'
+import { cancel_flash, run_victory_flash, type FlashState, type FlashTimers } from './flash'
 import { score as default_score, type ScoreInstance } from './score.svelte'
-import { cancel_flash, run_victory_flash, type FlashState, type FlashTimers } from './simon-flash'
-import type { ButtonColor, SimonPhase } from './types'
+import type { ButtonColor, GamePhase } from './types'
 
 export const STEP_MS_1_5 = 500
 export const STEP_MS_6_13 = 400
@@ -16,8 +16,8 @@ export const RESTART_DELAY_MS = 1000
 const DEFAULT_COLORS: readonly ButtonColor[] = ['green', 'red', 'yellow', 'blue']
 const FALLBACK_COLOR: ButtonColor = 'green'
 
-type SimonState = {
-	phase: SimonPhase
+type GameState = {
+	phase: GamePhase
 	sequence: ButtonColor[]
 	position: number
 	active_color: ButtonColor | null
@@ -25,7 +25,7 @@ type SimonState = {
 	round: number
 } & FlashState
 
-type SimonTimers = {
+type GameTimers = {
 	show_gen: number
 	restart_timer: ReturnType<typeof setTimeout> | null
 	input_start_ms: number
@@ -42,24 +42,24 @@ function get_step_ms(len: number): number {
 	return STEP_MS_21_PLUS
 }
 
-function add_to_sequence(s: SimonState, colors: readonly ButtonColor[]): void {
+function add_to_sequence(s: GameState, colors: readonly ButtonColor[]): void {
 	const index = Math.floor(Math.random() * colors.length) // NOSONAR — game RNG, not security-sensitive
 	s.sequence.push(colors[index] ?? FALLBACK_COLOR)
 }
 
-function cancel_restart_timer(t: SimonTimers): void {
+function cancel_restart_timer(t: GameTimers): void {
 	if (t.restart_timer !== null) clearTimeout(t.restart_timer)
 	t.restart_timer = null
 }
 
-async function run_show(s: SimonState, t: SimonTimers, gen: number): Promise<void> {
+async function run_show(s: GameState, t: GameTimers, gen: number): Promise<void> {
 	const step_ms = get_step_ms(s.sequence.length)
 	const on_ms = step_ms * ON_RATIO
 	const off_ms = step_ms * OFF_RATIO
 	for (const color of s.sequence) {
 		if (gen !== t.show_gen) return
 		s.active_color = color
-		simon_audio.play_tone(color, on_ms, game_state.is_alt)
+		game_audio.play_tone(color, on_ms, game_state.is_alt)
 		await delay(on_ms)
 		if (gen !== t.show_gen) return
 		s.active_color = null
@@ -71,7 +71,7 @@ async function run_show(s: SimonState, t: SimonTimers, gen: number): Promise<voi
 	s.position = 0
 }
 
-function start_next_round(s: SimonState, t: SimonTimers, colors: readonly ButtonColor[]): void {
+function start_next_round(s: GameState, t: GameTimers, colors: readonly ButtonColor[]): void {
 	t.restart_timer = null
 	cancel_flash(s, t)
 	s.round += 1
@@ -80,7 +80,7 @@ function start_next_round(s: SimonState, t: SimonTimers, colors: readonly Button
 	void run_show(s, t, t.show_gen)
 }
 
-function schedule_next_round(s: SimonState, t: SimonTimers, colors: readonly ButtonColor[]): void {
+function schedule_next_round(s: GameState, t: GameTimers, colors: readonly ButtonColor[]): void {
 	cancel_restart_timer(t)
 	cancel_flash(s, t)
 	s.phase = 'showing'
@@ -89,8 +89,8 @@ function schedule_next_round(s: SimonState, t: SimonTimers, colors: readonly But
 }
 
 function handle_correct_release(
-	s: SimonState,
-	t: SimonTimers,
+	s: GameState,
+	t: GameTimers,
 	score: ScoreInstance,
 	colors: readonly ButtonColor[],
 ): void {
@@ -101,9 +101,9 @@ function handle_correct_release(
 	schedule_next_round(s, t, colors)
 }
 
-function start_simon(
-	s: SimonState,
-	t: SimonTimers,
+function start_game(
+	s: GameState,
+	t: GameTimers,
 	score: ScoreInstance,
 	colors: readonly ButtonColor[],
 ): void {
@@ -118,13 +118,13 @@ function start_simon(
 	void run_show(s, t, t.show_gen)
 }
 
-function release_simon(
-	s: SimonState,
-	t: SimonTimers,
+function release_game(
+	s: GameState,
+	t: GameTimers,
 	score: ScoreInstance,
 	colors: readonly ButtonColor[],
 ): void {
-	simon_audio.stop_tone()
+	game_audio.stop_tone()
 	const color = s.pressed_color
 	s.pressed_color = null
 	if (s.phase !== 'player_input') return
@@ -132,21 +132,21 @@ function release_simon(
 	if (color === s.sequence[s.position]) {
 		handle_correct_release(s, t, score, colors)
 	} else {
-		simon_audio.play_error_tone(ERROR_BEEP_MS, game_state.is_alt)
+		game_audio.play_error_tone(ERROR_BEEP_MS, game_state.is_alt)
 		s.phase = 'gameover'
 	}
 }
 
-function press_simon(s: SimonState, color: ButtonColor): void {
+function press_game(s: GameState, color: ButtonColor): void {
 	if (s.phase !== 'player_input') return
 	if (s.pressed_color !== null) return
 	s.pressed_color = color
-	simon_audio.start_tone(color, game_state.is_alt)
+	game_audio.start_tone(color, game_state.is_alt)
 }
 
-function reset_simon(s: SimonState, t: SimonTimers, score: ScoreInstance): void {
+function reset_game(s: GameState, t: GameTimers, score: ScoreInstance): void {
 	t.show_gen += 1
-	simon_audio.stop_tone()
+	game_audio.stop_tone()
 	s.pressed_color = null
 	cancel_restart_timer(t)
 	cancel_flash(s, t)
@@ -159,9 +159,9 @@ function reset_simon(s: SimonState, t: SimonTimers, score: ScoreInstance): void 
 	s.round = 0
 }
 
-function make_simon_api(
-	s: SimonState,
-	t: SimonTimers,
+function make_game_api(
+	s: GameState,
+	t: GameTimers,
 	score: ScoreInstance,
 	colors: readonly ButtonColor[],
 ) {
@@ -191,25 +191,25 @@ function make_simon_api(
 			return s.flash_intensity
 		},
 		start(): void {
-			start_simon(s, t, score, colors)
+			start_game(s, t, score, colors)
 		},
 		press(color: ButtonColor): void {
-			press_simon(s, color)
+			press_game(s, color)
 		},
 		release(): void {
-			release_simon(s, t, score, colors)
+			release_game(s, t, score, colors)
 		},
 		reset(): void {
-			reset_simon(s, t, score)
+			reset_game(s, t, score)
 		},
 	}
 }
 
-type SimonConfig = { colors?: readonly ButtonColor[] }
+type GameConfig = { colors?: readonly ButtonColor[] }
 
-export function create_simon(score: ScoreInstance, config: SimonConfig = {}) {
+export function create_game(score: ScoreInstance, config: GameConfig = {}) {
 	const colors = config.colors ?? DEFAULT_COLORS
-	const s = $state<SimonState>({
+	const s = $state<GameState>({
 		phase: 'idle',
 		sequence: [],
 		position: 0,
@@ -219,10 +219,10 @@ export function create_simon(score: ScoreInstance, config: SimonConfig = {}) {
 		flash_colors: [],
 		flash_intensity: 1,
 	})
-	const t: SimonTimers = { show_gen: 0, flash_gen: 0, restart_timer: null, input_start_ms: 0 }
-	return make_simon_api(s, t, score, colors)
+	const t: GameTimers = { show_gen: 0, flash_gen: 0, restart_timer: null, input_start_ms: 0 }
+	return make_game_api(s, t, score, colors)
 }
 
-export type SimonInstance = ReturnType<typeof create_simon>
+export type GameInstance = ReturnType<typeof create_game>
 
-export const simon = create_simon(default_score)
+export const game = create_game(default_score)

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { base_messages } from './en'
 
-const SIMON_SPECIFIC_KEYS = [
+const GAME_SPECIFIC_KEYS = [
 	'game_title',
-	'simon_start',
-	'simon_round',
-	'simon_gameover',
+	'game_start',
+	'game_round',
+	'game_gameover',
 	'game_application_label',
 ] as const
 
@@ -39,8 +39,8 @@ describe('base_messages', () => {
 		}
 	})
 
-	it('contains no Simon-specific keys (those belong in src/lib/simon/messages.ts)', () => {
-		for (const key of SIMON_SPECIFIC_KEYS) {
+	it('contains no game-specific keys (those belong in src/lib/game/messages.ts)', () => {
+		for (const key of GAME_SPECIFIC_KEYS) {
 			expect(base_messages).not.toHaveProperty(key)
 		}
 	})

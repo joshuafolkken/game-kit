@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { device } from '$lib/game-kit/device.svelte'
 	import GameScene from '$lib/game-kit/GameScene.svelte'
-	import { simon_board_input } from '$lib/game/simon-board-input'
-	import { simon } from '$lib/game/simon.svelte'
-	import SimonScene from '$lib/game/SimonScene.svelte'
-	import { messages } from '$lib/simon/messages'
+	import { game_board_input } from '$lib/game/board-input'
+	import { game } from '$lib/game/game.svelte'
+	import { messages } from '$lib/game/messages'
+	import Scene from '$lib/game/Scene.svelte'
 
-	simon_board_input.configure({
-		on_press: (color) => simon.press(color),
-		on_release: () => simon.release(),
-		on_start: () => simon.start(),
+	game_board_input.configure({
+		on_press: (color) => game.press(color),
+		on_release: () => game.release(),
+		on_start: () => game.start(),
 	})
 
 	let hint_text = $derived(
@@ -24,5 +24,5 @@
 	label_game_started={messages.game_started_announcement}
 	label_pause={messages.pause_button}
 >
-	<SimonScene />
+	<Scene />
 </GameScene>

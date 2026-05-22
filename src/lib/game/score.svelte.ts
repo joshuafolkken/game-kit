@@ -4,7 +4,7 @@ const MIN_TIME_COEFF = 0.1
 const CHECK_SEED = 0x9e3779b9
 const SCORE_FORMATTER = new Intl.NumberFormat('en-US')
 
-export const SIMON_SCORE_KEY_PREFIX = 'simon'
+export const GAME_SCORE_KEY_PREFIX = 'game'
 
 export type StorageKeys = { score: string; round: string; check: string }
 type RoundData = { elapsed_ms: number; sequence_length: number; round: number }
@@ -112,7 +112,7 @@ function make_score_api(s: ScoreState, keys: StorageKeys) {
 	}
 }
 
-export function create_score(key_prefix: string = SIMON_SCORE_KEY_PREFIX) {
+export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX) {
 	const keys: StorageKeys = {
 		score: `${key_prefix}_high_score`,
 		round: `${key_prefix}_high_score_round`,

@@ -17,9 +17,9 @@ const ELAPSED_10S = 10_000
 const ELAPSED_100S = 100_000
 
 const DEFAULT_KEYS: StorageKeys = {
-	score: 'simon_high_score',
-	round: 'simon_high_score_round',
-	check: 'simon_high_score_check',
+	score: 'game_high_score',
+	round: 'game_high_score_round',
+	check: 'game_high_score_check',
 }
 
 describe('score', () => {
