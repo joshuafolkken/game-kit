@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Canvas } from '@threlte/core'
 	import { Suspense } from '@threlte/extras'
+	import { should_use_antialias } from '$lib/game-kit/antialias'
 	import { audio } from '$lib/game-kit/audio'
 	import ControlsScene from '$lib/game-kit/controls/ControlsScene.svelte'
 	import VirtualJoystick from '$lib/game-kit/controls/VirtualJoystick.svelte'
@@ -28,13 +29,17 @@
 	const MAX_DPR = 1
 	const FALLBACK_DPR = 1 / 3
 
-	function create_renderer_no_aa(canvas: HTMLCanvasElement): WebGLRenderer {
-		return new WebGLRenderer({
-			canvas,
-			powerPreference: 'high-performance',
-			antialias: false,
-			alpha: true,
-		})
+	function create_renderer_factory(
+		antialias: boolean,
+	): (canvas: HTMLCanvasElement) => WebGLRenderer {
+		return function create_renderer(canvas: HTMLCanvasElement): WebGLRenderer {
+			return new WebGLRenderer({
+				canvas,
+				powerPreference: 'high-performance',
+				antialias,
+				alpha: true,
+			})
+		}
 	}
 
 	interface Props {
@@ -84,6 +89,11 @@
 	let game_status = $derived(is_started ? label_game_started : '')
 	let is_alt = $derived(game_state.is_alt)
 	let is_crt_enabled = $derived(crt.is_crt_enabled)
+	// AA is intentionally derived from is_touch only — not is_crt_enabled. Toggling RETRO must
+	// not change the WebGL antialias setting, because that requires remounting <Canvas>, which
+	// resets the player position. When RETRO is on the CRT post-process (dither + barrel)
+	// overwrites the framebuffer with low-res pixels, so always-on AA is visually transparent.
+	let is_aa_enabled = $derived(should_use_antialias(is_touch))
 
 	function start_game(): void {
 		if (session.is_session_started) return
@@ -178,7 +188,7 @@
 	{#if is_crt_enabled}
 		<CrtChromaticFilter />
 	{/if}
-	<Canvas dpr={1} createRenderer={create_renderer_no_aa}>
+	<Canvas dpr={1} createRenderer={create_renderer_factory(is_aa_enabled)}>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
