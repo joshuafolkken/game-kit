@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { SvelteKitPWA } from '@vite-pwa/sveltekit'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
-import { GAME_DESCRIPTION, GAME_NAME_DISPLAY } from './src/lib/simon/game-name'
+import { GAME_DESCRIPTION, GAME_NAME_DISPLAY } from './src/lib/game/game-name'
 
 const BRAND_COLOR = '#0d0d12'
 

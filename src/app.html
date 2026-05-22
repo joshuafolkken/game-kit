@@ -149,7 +149,7 @@
 				</g>
 			</svg>
 			<p class="brand">Joshua Folkken</p>
-			<!-- game-block: injected at request time from src/lib/simon/game-name.ts via inject_game_name() in src/hooks.server.ts -->
+			<!-- game-block: injected at request time from src/lib/game/game-name.ts via inject_game_name() in src/hooks.server.ts -->
 			<div class="game-block">
 				<p class="game-title">__GAME_NAME__</p>
 				<p class="game-version">v__APP_VERSION__</p>
@@ -171,7 +171,7 @@
 				Pseudo download-progress tracker. Watches resource entries via PerformanceObserver,
 				accumulates bytes and file count, and updates the <progress> bar value
 				and .progress text. The Svelte loading module disconnects this observer on mark_ready
-				and snaps the value to 100% — see src/lib/game/loading.svelte.ts.
+				and snaps the value to 100% — see src/lib/game-kit/loading.svelte.ts.
 			*/
 			;(function () {
 				var EXPECTED_TOTAL_BYTES = 8500000
@@ -222,7 +222,7 @@
 						update_overlay()
 					})
 					observer.observe({ type: 'resource' })
-					// Key must match OBSERVER_GLOBAL_KEY in src/lib/game/loading.svelte.ts
+					// Key must match OBSERVER_GLOBAL_KEY in src/lib/game-kit/loading.svelte.ts
 					globalThis.__loading_observer = observer
 				} catch (error) {
 					console.warn('Loading progress observer unavailable:', error)

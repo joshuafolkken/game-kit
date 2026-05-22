@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { device } from '$lib/game/device.svelte'
-	import GameScene from '$lib/game/GameScene.svelte'
+	import { device } from '$lib/game-kit/device.svelte'
+	import GameScene from '$lib/game-kit/GameScene.svelte'
+	import { simon_board_input } from '$lib/game/simon-board-input'
+	import { simon } from '$lib/game/simon.svelte'
+	import SimonScene from '$lib/game/SimonScene.svelte'
 	import { messages } from '$lib/messages/en'
-	import { simon_board_input } from '$lib/simon/simon-board-input'
-	import { simon } from '$lib/simon/simon.svelte'
-	import SimonScene from '$lib/simon/SimonScene.svelte'
 
 	simon_board_input.configure({
 		on_press: (color) => simon.press(color),
