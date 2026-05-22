@@ -590,4 +590,42 @@ describe('GameScene', () => {
 			)
 		})
 	})
+
+	describe('antialiasing — enabled on desktop when RETRO mode is off (Issue #116)', () => {
+		it('imports should_use_antialias from the antialias helper', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/import\s*\{\s*should_use_antialias\s*\}\s*from\s*'\$lib\/game-kit\/antialias'/,
+			)
+		})
+
+		it('derives is_aa_enabled from should_use_antialias(is_touch) only — not is_crt_enabled', () => {
+			// Reason: AA is fixed at WebGL context creation. Reacting to is_crt_enabled would
+			// force a Canvas remount on every RETRO toggle, resetting the player position.
+			// Always-on AA on desktop is masked by the CRT post-process when RETRO is on, so we
+			// only need is_touch as the input.
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/let\s+is_aa_enabled\s*=\s*\$derived\(\s*should_use_antialias\(\s*is_touch\s*\)\s*\)/,
+			)
+		})
+
+		it('does NOT wrap <Canvas> in a {#key} block — toggling RETRO must not remount the Canvas', () => {
+			// Negative pin: a `{#key is_aa_enabled}` or `{#key is_crt_enabled}` wrapper would
+			// destroy and recreate the WebGL context on toggle, resetting player position and
+			// scene state. Keep the Canvas mounted for the lifetime of the GameScene.
+			expect(GAME_SCENE_SOURCE).not.toMatch(/\{#key\s+is_aa_enabled\}/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/\{#key\s+is_crt_enabled\}/)
+		})
+
+		it('passes the antialias flag into the renderer factory via createRenderer', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/createRenderer=\{\s*create_renderer_factory\(\s*is_aa_enabled\s*\)\s*\}/,
+			)
+		})
+
+		it('no longer hardcodes antialias: false on the WebGLRenderer call', () => {
+			// Negative pin: a future regression that re-introduces the hardcoded `antialias: false`
+			// literal would silently break the desktop-RETRO-off path.
+			expect(GAME_SCENE_SOURCE).not.toMatch(/antialias:\s*false/)
+		})
+	})
 })
