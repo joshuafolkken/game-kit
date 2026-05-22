@@ -46,11 +46,13 @@ export const SCANLINE_BLEED_FULL_PERIOD = 8
 // phosphors where adjacent colored dots bled into each other.
 export const DOT_BLEND = DOT_BLEND_VALUE
 
-// 16 × 16 × 16 = 4096 unique colors (12-bit RGB — PC-9821 / Amiga HAM / Atari STE /
-// X68000 12-bit-mode class). Uniform per-channel quantization paired with 4×4 Bayer
-// ordered dithering (below) keeps the retro halftone texture while leaving enough
-// headroom that gradients remain mostly band-free.
-export const COLOR_LEVELS = { r: 16, g: 16, b: 16 } as const
+// 8 × 8 × 4 = 256 unique colors (VGA 3-3-2: 3-bit R, 3-bit G, 2-bit B — VGA Mode 13h /
+// MCGA class, a fixed 8-bit palette with no per-frame palette selection). Human
+// luminance perception is roughly 30% R / 59% G / 11% B, so giving blue half the
+// resolution of red and green wastes the fewest perceptually-distinct steps. Paired
+// with 4×4 Bayer ordered dithering (below) to hide the coarse banding — especially
+// in blue gradients, which only have 4 quantization levels.
+export const COLOR_LEVELS = { r: 8, g: 8, b: 4 } as const
 
 // 4×4 ordered (Bayer) dither matrix. Values 0..15 — every cell unique. The coarser
 // 4×4 pattern (vs 8×8) gives a chunkier, more visible cross-hatch — closer to the
