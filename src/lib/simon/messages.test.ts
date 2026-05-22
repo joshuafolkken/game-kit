@@ -1,3 +1,4 @@
+import { GAME_NAME, GAME_NAME_DISPLAY } from '$lib/game/game-name'
 import { base_messages } from '$lib/messages/en'
 import { describe, expect, it } from 'vitest'
 import { messages, simon_messages } from './messages'
@@ -17,9 +18,11 @@ describe('simon_messages', () => {
 		}
 	})
 
-	it('uses Joshua Game as the displayed game name', () => {
-		expect(simon_messages.game_title).toBe('JOSHUA GAME')
-		expect(simon_messages.game_application_label).toBe('Joshua Game')
+	it('threads GAME_NAME constants through into the composed labels', () => {
+		// Compare against the source-of-truth constants so renaming GAME_NAME later
+		// is caught by game-name.test.ts (value) rather than failing here (composition).
+		expect(simon_messages.game_title).toBe(GAME_NAME)
+		expect(simon_messages.game_application_label).toBe(GAME_NAME_DISPLAY)
 	})
 })
 
