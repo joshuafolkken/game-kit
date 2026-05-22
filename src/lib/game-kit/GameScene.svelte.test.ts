@@ -628,4 +628,54 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).not.toMatch(/antialias:\s*false/)
 		})
 	})
+
+	describe('status live-region is visually hidden via scoped CSS (Issue #131)', () => {
+		const MAX_VISUALLY_HIDDEN_HEIGHT_PX = 1
+
+		it('keeps [role="status"] visually hidden before the session starts', () => {
+			const { container } = render_scene()
+			const status = container.querySelector<HTMLElement>('[role="status"]')
+			expect(status).toBeTruthy()
+			if (!status) return
+			expect(status.getBoundingClientRect().height).toBeLessThanOrEqual(
+				MAX_VISUALLY_HIDDEN_HEIGHT_PX,
+			)
+		})
+
+		it('keeps [role="status"] visually hidden after session.start_session()', () => {
+			const { container } = render_scene()
+			session.start_session()
+			flushSync()
+			const status = container.querySelector<HTMLElement>('[role="status"]')
+			expect(status).toBeTruthy()
+			if (!status) return
+			expect(status.textContent).toBe(LABEL_GAME_STARTED)
+			expect(status.getBoundingClientRect().height).toBeLessThanOrEqual(
+				MAX_VISUALLY_HIDDEN_HEIGHT_PX,
+			)
+		})
+
+		it('drops the Tailwind sr-only class so dist consumers do not need Tailwind @source', () => {
+			// Reason: Tailwind v4 ignores node_modules by default. A consumer importing this
+			// component without an explicit `@source "../../node_modules/.../dist/**/*.svelte"`
+			// would not generate the `sr-only` utility, and the live-region would fall back to
+			// display: block and render as a ~24px visible band at the top of the viewport.
+			expect(GAME_SCENE_SOURCE).not.toMatch(/class="sr-only"/)
+		})
+
+		it('defines a scoped .visually-hidden style using the standard hiding scaffolding', () => {
+			// Standard visually-hidden pattern: 1px box, overflow hidden, clip rect, no white-space wrap.
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?position:\s*absolute/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?width:\s*1px/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?height:\s*1px/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?overflow:\s*hidden/)
+			expect(GAME_SCENE_SOURCE).toMatch(
+				/\.visually-hidden\s*\{[\s\S]*?clip:\s*rect\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/,
+			)
+		})
+
+		it('applies the scoped visually-hidden class to the [role="status"] element', () => {
+			expect(GAME_SCENE_SOURCE).toMatch(/<div\s+role="status"\s+class="visually-hidden">/)
+		})
+	})
 })
