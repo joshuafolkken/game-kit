@@ -1,30 +1,30 @@
 import { make_credits_scroll_bounds } from '$lib/game-kit/scene/credits-config'
+import { messages } from '$lib/game/messages'
 import { score } from '$lib/game/score.svelte'
-import { messages } from '$lib/simon/messages'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
-import SimonScene from './SimonScene.svelte'
+import Scene from './Scene.svelte'
 
 vi.mock('$lib/game-kit/scene/SceneObjects.svelte', () => ({ default: function SceneObjects() {} }))
-vi.mock('$lib/game/SimonBoard.svelte', () => ({ default: function SimonBoard() {} }))
+vi.mock('$lib/game/Board.svelte', () => ({ default: function Board() {} }))
 vi.mock('$lib/game/board-config', () => ({
 	SCORE_DISPLAY_Z: -4.65,
 }))
 vi.mock('$lib/game-kit/state.svelte', () => ({ game_state: { is_alt: false } }))
-vi.mock('$lib/simon/messages', () => ({
+vi.mock('$lib/game/messages', () => ({
 	messages: {
 		game_title: 'JOSHUA GAME',
 		cyber_switch_label: 'CYBER',
 		score_high_score: 'HI',
 		score_round: 'RND',
 		score_current: 'SCORE',
-		simon_gameover: 'GAME OVER',
-		simon_round: 'ROUND',
-		simon_start: 'START',
+		game_gameover: 'GAME OVER',
+		game_round: 'ROUND',
+		game_start: 'START',
 	},
 }))
-vi.mock('$lib/game/simon.svelte', () => ({
-	simon: {
+vi.mock('$lib/game/game.svelte', () => ({
+	game: {
 		active_color: null,
 		pressed_color: null,
 		phase: 'idle',
@@ -52,14 +52,14 @@ vi.mock('$lib/game-kit/scene/credits-config', () => ({
 }))
 vi.mock('$lib/game-kit/scene/room-config', () => ({ ROOM_W: 10, ROOM_D: 10, ROOM_H: 5, HALF_D: 5 }))
 
-describe('SimonScene', () => {
+describe('Scene', () => {
 	it('renders without error', () => {
-		const { container } = render(SimonScene)
+		const { container } = render(Scene)
 		expect(container).toBeTruthy()
 	})
 
 	it('calls make_credits_scroll_bounds with CREDITS_LINE_COUNT and HALF_D', () => {
-		render(SimonScene)
+		render(Scene)
 		expect(vi.mocked(make_credits_scroll_bounds)).toHaveBeenCalledWith(1, 5)
 	})
 

@@ -1,5 +1,4 @@
-import { simon_audio } from '$lib/game/audio'
-import { create_score, score } from '$lib/game/score.svelte'
+import { game_audio } from '$lib/game/audio'
 import {
 	FLASH_BURST_CYCLES,
 	FLASH_BURST_OFF_MS,
@@ -7,16 +6,17 @@ import {
 	FLASH_CASCADE_FWD_MS,
 	FLASH_CASCADE_REV_MS,
 	FLASH_FINALE_MS,
-} from '$lib/game/simon-flash'
+} from '$lib/game/flash'
 import {
-	create_simon,
+	create_game,
 	ERROR_BEEP_MS,
+	game,
 	OFF_RATIO,
 	ON_RATIO,
 	RESTART_DELAY_MS,
-	simon,
 	STEP_MS_1_5,
-} from '$lib/game/simon.svelte'
+} from '$lib/game/game.svelte'
+import { create_score, score } from '$lib/game/score.svelte'
 import type { ButtonColor } from '$lib/game/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -30,266 +30,266 @@ function wrong_color(color: ButtonColor): ButtonColor {
 }
 
 function seq_at(i: number): ButtonColor {
-	const color = simon.sequence[i]
+	const color = game.sequence[i]
 	if (!color) throw new Error(`sequence index ${String(i)} out of range`)
 	return color
 }
 
-describe('simon FSM', () => {
+describe('game FSM', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
-		simon.reset()
+		game.reset()
 	})
 
 	afterEach(() => {
 		vi.clearAllTimers()
 		vi.useRealTimers()
 		vi.restoreAllMocks()
-		simon.reset()
+		game.reset()
 	})
 
 	it('starts in idle phase with empty sequence and round 0', () => {
-		expect(simon.phase).toBe('idle')
-		expect(simon.sequence).toHaveLength(0)
-		expect(simon.round).toBe(0)
-		expect(simon.active_color).toBeNull()
-		expect(simon.pressed_color).toBeNull()
+		expect(game.phase).toBe('idle')
+		expect(game.sequence).toHaveLength(0)
+		expect(game.round).toBe(0)
+		expect(game.active_color).toBeNull()
+		expect(game.pressed_color).toBeNull()
 	})
 
 	it('start() transitions to showing, sets round 1, adds one sequence item', () => {
-		simon.start()
-		expect(simon.phase).toBe('showing')
-		expect(simon.round).toBe(1)
-		expect(simon.sequence).toHaveLength(1)
+		game.start()
+		expect(game.phase).toBe('showing')
+		expect(game.round).toBe(1)
+		expect(game.sequence).toHaveLength(1)
 	})
 
 	it('start() sets active_color to first sequence item immediately', () => {
-		simon.start()
-		expect(simon.active_color).toBe(seq_at(0))
+		game.start()
+		expect(game.active_color).toBe(seq_at(0))
 	})
 
 	it('showing phase transitions to player_input after timers complete', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		expect(simon.phase).toBe('player_input')
-		expect(simon.position).toBe(0)
-		expect(simon.active_color).toBeNull()
+		expect(game.phase).toBe('player_input')
+		expect(game.position).toBe(0)
+		expect(game.active_color).toBeNull()
 	})
 
 	it('active_color clears after on_ms and phase becomes player_input after off_ms', async () => {
-		simon.start()
-		expect(simon.active_color).toBe(seq_at(0))
+		game.start()
+		expect(game.active_color).toBe(seq_at(0))
 		await vi.advanceTimersByTimeAsync(ON_MS)
-		expect(simon.active_color).toBeNull()
+		expect(game.active_color).toBeNull()
 		await vi.advanceTimersByTimeAsync(OFF_MS)
-		expect(simon.phase).toBe('player_input')
+		expect(game.phase).toBe('player_input')
 	})
 
 	it('final correct press + release advances to showing for the next round', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		expect(simon.phase).toBe('showing')
-		expect(simon.round).toBe(1)
+		game.press(seq_at(0))
+		game.release()
+		expect(game.phase).toBe('showing')
+		expect(game.round).toBe(1)
 	})
 
 	it('round does not advance while last button is still held', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
 		const final_color = seq_at(0)
-		simon.press(final_color)
+		game.press(final_color)
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS * 2)
-		expect(simon.phase).toBe('player_input')
-		expect(simon.round).toBe(1)
-		expect(simon.pressed_color).toBe(final_color)
+		expect(game.phase).toBe('player_input')
+		expect(game.round).toBe(1)
+		expect(game.pressed_color).toBe(final_color)
 	})
 
 	it('next round starts after 1 second delay following release of final button', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		expect(simon.phase).toBe('showing')
+		game.press(seq_at(0))
+		game.release()
+		expect(game.phase).toBe('showing')
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS)
-		expect(simon.round).toBe(2)
-		expect(simon.sequence).toHaveLength(2)
+		expect(game.round).toBe(2)
+		expect(game.sequence).toHaveLength(2)
 	})
 
 	it('press is ignored while another button is being held', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		const spy = vi.spyOn(simon_audio, 'start_tone')
-		simon.press('green')
-		simon.press('red')
+		game.press(seq_at(0))
+		const spy = vi.spyOn(game_audio, 'start_tone')
+		game.press('green')
+		game.press('red')
 		expect(spy).not.toHaveBeenCalled()
-		expect(simon.phase).toBe('player_input')
+		expect(game.phase).toBe('player_input')
 	})
 
 	it('reset() while a button is held returns to idle', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.reset()
+		game.press(seq_at(0))
+		game.reset()
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS)
-		expect(simon.phase).toBe('idle')
-		expect(simon.round).toBe(0)
+		expect(game.phase).toBe('idle')
+		expect(game.round).toBe(0)
 	})
 
 	it('reset() cancels restart timer so next round does not start', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		simon.reset()
+		game.press(seq_at(0))
+		game.release()
+		game.reset()
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS)
-		expect(simon.phase).toBe('idle')
-		expect(simon.round).toBe(0)
+		expect(game.phase).toBe('idle')
+		expect(game.round).toBe(0)
 	})
 
 	it('correct intermediate press + release advances position without completing round', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0)) // complete round 1
-		simon.release()
+		game.press(seq_at(0)) // complete round 1
+		game.release()
 		await vi.runAllTimersAsync() // drain round 2 show
 		const first_color = seq_at(0)
-		simon.press(first_color) // first of two correct presses
-		simon.release()
-		expect(simon.position).toBe(1)
-		expect(simon.phase).toBe('player_input')
-		expect(simon.round).toBe(2)
+		game.press(first_color) // first of two correct presses
+		game.release()
+		expect(game.position).toBe(1)
+		expect(game.phase).toBe('player_input')
+		expect(game.round).toBe(2)
 	})
 
 	it('wrong press + release triggers gameover', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(wrong_color(seq_at(0)))
-		simon.release()
-		expect(simon.phase).toBe('gameover')
+		game.press(wrong_color(seq_at(0)))
+		game.release()
+		expect(game.phase).toBe('gameover')
 	})
 
 	it('wrong press + release plays error tone for ERROR_BEEP_MS', async () => {
-		const spy = vi.spyOn(simon_audio, 'play_error_tone')
-		simon.start()
+		const spy = vi.spyOn(game_audio, 'play_error_tone')
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(wrong_color(seq_at(0)))
-		simon.release()
+		game.press(wrong_color(seq_at(0)))
+		game.release()
 		expect(spy).toHaveBeenCalledWith(ERROR_BEEP_MS, false)
 	})
 
 	it('press() is ignored when not in player_input phase', () => {
-		simon.start() // phase = showing
-		simon.press('green')
-		expect(simon.phase).toBe('showing')
+		game.start() // phase = showing
+		game.press('green')
+		expect(game.phase).toBe('showing')
 	})
 
 	it('pressed_color is set on press and does not auto-clear', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
 		const color = seq_at(0)
-		simon.press(color)
-		expect(simon.pressed_color).toBe(color)
+		game.press(color)
+		expect(game.pressed_color).toBe(color)
 		await vi.advanceTimersByTimeAsync(TONE_MS + 10)
-		expect(simon.pressed_color).toBe(color)
+		expect(game.pressed_color).toBe(color)
 	})
 
 	it('release() clears pressed_color', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		expect(simon.pressed_color).toBeNull()
+		game.press(seq_at(0))
+		game.release()
+		expect(game.pressed_color).toBeNull()
 	})
 
 	it('reset() returns all state to initial values', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.reset()
-		expect(simon.phase).toBe('idle')
-		expect(simon.sequence).toHaveLength(0)
-		expect(simon.position).toBe(0)
-		expect(simon.active_color).toBeNull()
-		expect(simon.pressed_color).toBeNull()
-		expect(simon.round).toBe(0)
+		game.reset()
+		expect(game.phase).toBe('idle')
+		expect(game.sequence).toHaveLength(0)
+		expect(game.position).toBe(0)
+		expect(game.active_color).toBeNull()
+		expect(game.pressed_color).toBeNull()
+		expect(game.round).toBe(0)
 	})
 
 	it('reset() clears pressed_color immediately', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
 		const wrong = wrong_color(seq_at(0))
-		simon.press(wrong)
-		expect(simon.pressed_color).toBe(wrong)
-		simon.reset()
-		expect(simon.pressed_color).toBeNull()
+		game.press(wrong)
+		expect(game.pressed_color).toBe(wrong)
+		game.reset()
+		expect(game.pressed_color).toBeNull()
 	})
 
 	it('reset() cancels an in-progress sequence display', async () => {
-		simon.start()
-		simon.reset()
+		game.start()
+		game.reset()
 		await vi.runAllTimersAsync()
-		expect(simon.phase).toBe('idle')
+		expect(game.phase).toBe('idle')
 	})
 
 	it('release while phase is showing does not schedule an extra next-round timer', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0)) // holding the final button (phase still player_input)
-		simon.release() // completes round 1 → phase becomes showing
-		simon.release() // should be ignored while showing
+		game.press(seq_at(0)) // holding the final button (phase still player_input)
+		game.release() // completes round 1 → phase becomes showing
+		game.release() // should be ignored while showing
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS)
-		expect(simon.round).toBe(2)
+		expect(game.round).toBe(2)
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS)
-		expect(simon.round).toBe(2)
+		expect(game.round).toBe(2)
 	})
 
 	it('start() from gameover restarts the game', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(wrong_color(seq_at(0)))
-		simon.release()
-		expect(simon.phase).toBe('gameover')
-		simon.start()
-		expect(simon.phase).toBe('showing')
-		expect(simon.round).toBe(1)
+		game.press(wrong_color(seq_at(0)))
+		game.release()
+		expect(game.phase).toBe('gameover')
+		game.start()
+		expect(game.phase).toBe('showing')
+		expect(game.round).toBe(1)
 	})
 
 	it('start() is ignored while showing', () => {
-		simon.start()
-		simon.start()
-		expect(simon.round).toBe(1)
+		game.start()
+		game.start()
+		expect(game.round).toBe(1)
 	})
 
 	it('start() is ignored during player_input', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.start()
-		expect(simon.phase).toBe('player_input')
+		game.start()
+		expect(game.phase).toBe('player_input')
 	})
 
 	it('press() starts tone for pressed color', async () => {
-		const spy = vi.spyOn(simon_audio, 'start_tone')
-		simon.start()
+		const spy = vi.spyOn(game_audio, 'start_tone')
+		game.start()
 		await vi.runAllTimersAsync()
 		const color = seq_at(0)
-		simon.press(color)
+		game.press(color)
 		expect(spy).toHaveBeenCalledWith(color, false)
 	})
 
 	it('press() does not start tone when not in player_input phase', () => {
-		simon.start() // phase = showing
-		const spy = vi.spyOn(simon_audio, 'start_tone')
-		simon.press('green')
+		game.start() // phase = showing
+		const spy = vi.spyOn(game_audio, 'start_tone')
+		game.press('green')
 		expect(spy).not.toHaveBeenCalled()
 	})
 
 	it('release() stops the tone', async () => {
-		const spy = vi.spyOn(simon_audio, 'stop_tone')
-		simon.start()
+		const spy = vi.spyOn(game_audio, 'stop_tone')
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
+		game.press(seq_at(0))
+		game.release()
 		expect(spy).toHaveBeenCalled()
 	})
 })
@@ -297,54 +297,54 @@ describe('simon FSM', () => {
 describe('score integration', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
-		simon.reset()
+		game.reset()
 	})
 
 	afterEach(() => {
 		vi.clearAllTimers()
 		vi.useRealTimers()
 		vi.restoreAllMocks()
-		simon.reset()
+		game.reset()
 	})
 
 	it('current_score is 0 while the final button is held and increases after release', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
+		game.press(seq_at(0))
 		expect(score.current_score).toBe(0)
-		simon.release()
+		game.release()
 		expect(score.current_score).toBeGreaterThan(0)
 	})
 
 	it('current_score is 1000 when round 1 is cleared with ~0 elapsed time', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
+		game.press(seq_at(0))
+		game.release()
 		expect(score.current_score).toBe(1_000)
 	})
 
-	it('current_score resets to 0 after simon.reset()', async () => {
-		simon.start()
+	it('current_score resets to 0 after game.reset()', async () => {
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
+		game.press(seq_at(0))
+		game.release()
 		expect(score.current_score).toBeGreaterThan(0)
-		simon.reset()
+		game.reset()
 		expect(score.current_score).toBe(0)
 	})
 
-	it('current_score resets to 0 when a new game starts via simon.start()', async () => {
-		simon.start()
+	it('current_score resets to 0 when a new game starts via game.start()', async () => {
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
+		game.press(seq_at(0))
+		game.release()
 		expect(score.current_score).toBeGreaterThan(0)
 		await vi.runAllTimersAsync()
-		simon.press(wrong_color(seq_at(0)))
-		simon.release()
-		expect(simon.phase).toBe('gameover')
-		simon.start()
+		game.press(wrong_color(seq_at(0)))
+		game.release()
+		expect(game.phase).toBe('gameover')
+		game.start()
 		expect(score.current_score).toBe(0)
 	})
 })
@@ -352,45 +352,45 @@ describe('score integration', () => {
 describe('victory flash', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
-		simon.reset()
+		game.reset()
 	})
 
 	afterEach(() => {
 		vi.clearAllTimers()
 		vi.useRealTimers()
 		vi.restoreAllMocks()
-		simon.reset()
+		game.reset()
 	})
 
 	it('flash_colors is empty before any round completes', () => {
-		simon.start()
-		expect(simon.flash_colors).toHaveLength(0)
+		game.start()
+		expect(game.flash_colors).toHaveLength(0)
 	})
 
 	it('flash_colors contains all 4 colors immediately after release on round_complete', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		expect(simon.flash_colors).toHaveLength(4)
-		expect(simon.flash_colors).toEqual(expect.arrayContaining(ALL_COLORS))
+		game.press(seq_at(0))
+		game.release()
+		expect(game.flash_colors).toHaveLength(4)
+		expect(game.flash_colors).toEqual(expect.arrayContaining(ALL_COLORS))
 	})
 
 	it('flash_intensity is greater than 1 immediately after release on round_complete', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		expect(simon.flash_intensity).toBeGreaterThan(1)
+		game.press(seq_at(0))
+		game.release()
+		expect(game.flash_intensity).toBeGreaterThan(1)
 	})
 
 	it('play_tone is called for all colors during burst stage', async () => {
-		const spy = vi.spyOn(simon_audio, 'play_tone')
-		simon.start()
+		const spy = vi.spyOn(game_audio, 'play_tone')
+		game.start()
 		await vi.runAllTimersAsync()
 		spy.mockClear()
-		simon.press(seq_at(0))
-		simon.release()
+		game.press(seq_at(0))
+		game.release()
 		const called_colors = spy.mock.calls.map((c) => c[0])
 		expect(called_colors).toContain('green')
 		expect(called_colors).toContain('red')
@@ -403,39 +403,39 @@ describe('victory flash', () => {
 			FLASH_BURST_CYCLES * (FLASH_BURST_ON_MS + FLASH_BURST_OFF_MS) +
 			ALL_COLORS.length * (FLASH_CASCADE_FWD_MS + FLASH_CASCADE_REV_MS) +
 			FLASH_FINALE_MS
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
+		game.press(seq_at(0))
+		game.release()
 		await vi.advanceTimersByTimeAsync(flash_total_ms + 10)
-		expect(simon.flash_colors).toHaveLength(0)
-		expect(simon.flash_intensity).toBe(1)
+		expect(game.flash_colors).toHaveLength(0)
+		expect(game.flash_intensity).toBe(1)
 	})
 
 	it('reset() clears flash_colors and flash_intensity immediately', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		expect(simon.flash_colors).toHaveLength(4)
-		simon.reset()
-		expect(simon.flash_colors).toHaveLength(0)
-		expect(simon.flash_intensity).toBe(1)
+		game.press(seq_at(0))
+		game.release()
+		expect(game.flash_colors).toHaveLength(4)
+		game.reset()
+		expect(game.flash_colors).toHaveLength(0)
+		expect(game.flash_intensity).toBe(1)
 	})
 
 	it('flash_colors and flash_intensity cleared when next round starts', async () => {
-		simon.start()
+		game.start()
 		await vi.runAllTimersAsync()
-		simon.press(seq_at(0))
-		simon.release()
-		expect(simon.flash_colors).toHaveLength(4)
+		game.press(seq_at(0))
+		game.release()
+		expect(game.flash_colors).toHaveLength(4)
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS)
-		expect(simon.flash_colors).toHaveLength(0)
-		expect(simon.flash_intensity).toBe(1)
+		expect(game.flash_colors).toHaveLength(0)
+		expect(game.flash_intensity).toBe(1)
 	})
 })
 
-describe('create_simon isolation', () => {
+describe('create_game isolation', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
 	})
@@ -449,8 +449,8 @@ describe('create_simon isolation', () => {
 	it('two instances do not share phase state', () => {
 		const score_a = create_score()
 		const score_b = create_score()
-		const a = create_simon(score_a)
-		const b = create_simon(score_b)
+		const a = create_game(score_a)
+		const b = create_game(score_b)
 		a.start()
 		expect(a.phase).toBe('showing')
 		expect(b.phase).toBe('idle')
@@ -460,18 +460,18 @@ describe('create_simon isolation', () => {
 	it('two instances do not share sequence state', () => {
 		const score_a = create_score()
 		const score_b = create_score()
-		const a = create_simon(score_a)
-		const b = create_simon(score_b)
+		const a = create_game(score_a)
+		const b = create_game(score_b)
 		a.start()
 		expect(a.sequence).toHaveLength(1)
 		expect(b.sequence).toHaveLength(0)
 		a.reset()
 	})
 
-	it('create_simon with custom colors only uses those colors in sequence', () => {
+	it('create_game with custom colors only uses those colors in sequence', () => {
 		const score_c = create_score()
 		const custom_colors: ButtonColor[] = ['green', 'blue']
-		const c = create_simon(score_c, { colors: custom_colors })
+		const c = create_game(score_c, { colors: custom_colors })
 		c.start()
 		for (let i = 0; i < 20; i++) {
 			c.reset()

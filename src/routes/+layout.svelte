@@ -4,7 +4,7 @@
 	import { loading, OVERLAY_ELEMENT_ID, OVERLAY_HIDDEN_CLASS } from '$lib/game-kit/loading.svelte'
 	import { game_state } from '$lib/game-kit/state.svelte'
 	import { switch_audio } from '$lib/game-kit/switch/switch-audio'
-	import { messages } from '$lib/simon/messages'
+	import { messages } from '$lib/game/messages'
 
 	const LOADING_STATUS_ID = 'loading-status'
 	const LOADING_PROGRESS_SELECTOR = `#${OVERLAY_ELEMENT_ID} .progress`

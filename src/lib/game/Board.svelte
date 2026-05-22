@@ -4,8 +4,8 @@
 	import { crt } from '$lib/game-kit/crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
 	import { BOARD_LABEL_Z, BOARD_Y, BOARD_Z } from './board-config'
-	import { simon_board_input } from './simon-board-input'
-	import type { ButtonColor, SimonBoardData } from './types'
+	import { game_board_input } from './board-input'
+	import type { ButtonColor, GameBoardData } from './types'
 
 	const INNER_RADIUS = 0.3
 	const OUTER_RADIUS = 0.7
@@ -32,7 +32,7 @@
 	}
 
 	interface Props {
-		simon_data: SimonBoardData
+		game_data: GameBoardData
 		is_alt: boolean
 		text_gameover: string
 		text_round: string
@@ -74,13 +74,13 @@
 		},
 	] as const satisfies readonly ButtonConfig[]
 
-	let { simon_data, is_alt, text_gameover, text_round, text_start }: Props = $props()
+	let { game_data, is_alt, text_gameover, text_round, text_start }: Props = $props()
 
 	function is_lit(color: ButtonColor): boolean {
 		return (
-			simon_data.active_color === color ||
-			simon_data.pressed_color === color ||
-			simon_data.flash_colors.includes(color)
+			game_data.active_color === color ||
+			game_data.pressed_color === color ||
+			game_data.flash_colors.includes(color)
 		)
 	}
 
@@ -93,14 +93,14 @@
 	}
 
 	function get_center_text(): string {
-		if (simon_data.phase === 'gameover') return text_gameover
-		if (simon_data.round > 0) return `${text_round} ${simon_data.round}`
+		if (game_data.phase === 'gameover') return text_gameover
+		if (game_data.round > 0) return `${text_round} ${game_data.round}`
 		return text_start
 	}
 
 	let center_text = $derived(get_center_text())
 	let emissive_intensity = $derived(
-		(is_alt ? CYBER_EMISSIVE_INTENSITY : EMISSIVE_INTENSITY) * simon_data.flash_intensity,
+		(is_alt ? CYBER_EMISSIVE_INTENSITY : EMISSIVE_INTENSITY) * game_data.flash_intensity,
 	)
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
 	let should_use_alt_font = $derived(!crt.is_crt_enabled)
@@ -118,9 +118,9 @@
 		<T.Group rotation.z={btn.rotation}>
 			<T.Mesh
 				onpointerdown={(e: { nativeEvent: { button: number } }) =>
-					simon_board_input.on_button_pointer_down(e, btn.color)}
-				onpointerup={() => simon_board_input.on_button_release()}
-				onpointerleave={() => simon_board_input.on_button_release()}
+					game_board_input.on_button_pointer_down(e, btn.color)}
+				onpointerup={() => game_board_input.on_button_release()}
+				onpointerleave={() => game_board_input.on_button_release()}
 			>
 				<T.RingGeometry
 					args={[INNER_RADIUS, OUTER_RADIUS, THETA_SEGMENTS, 1, THETA_START, THETA_LENGTH]}
@@ -137,7 +137,7 @@
 		</T.Group>
 	{/each}
 
-	<T.Mesh onclick={() => simon_board_input.on_center_click()}>
+	<T.Mesh onclick={() => game_board_input.on_center_click()}>
 		<T.CircleGeometry args={[CENTER_RADIUS, CIRCLE_SEGMENTS]} />
 		<T.MeshStandardMaterial color="#222222" roughness={0.5} />
 	</T.Mesh>

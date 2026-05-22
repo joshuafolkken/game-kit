@@ -1,5 +1,5 @@
-import { game_state } from '$lib/game/state.svelte'
-import { simon_audio } from './audio'
+import { game_state } from '@joshuafolkken/game-kit'
+import { game_audio } from './audio'
 import type { ButtonColor } from './types'
 
 export const FLASH_BURST_ON_MS = 30
@@ -28,7 +28,7 @@ function delay(ms: number): Promise<void> {
 
 function play_all_tones(colors: readonly ButtonColor[], duration_ms: number): void {
 	const is_alt = game_state.is_alt
-	for (const color of colors) simon_audio.play_tone(color, duration_ms, is_alt)
+	for (const color of colors) game_audio.play_tone(color, duration_ms, is_alt)
 }
 
 export function cancel_flash(s: FlashState, t: FlashTimers): void {
@@ -66,14 +66,14 @@ async function flash_cascade(
 		if (t.flash_gen !== gen) return
 		s.flash_colors = [color]
 		s.flash_intensity = FLASH_INTENSITY_BURST
-		simon_audio.play_tone(color, FLASH_CASCADE_FWD_MS, game_state.is_alt)
+		game_audio.play_tone(color, FLASH_CASCADE_FWD_MS, game_state.is_alt)
 		await delay(FLASH_CASCADE_FWD_MS)
 	}
 	for (const color of [...colors].reverse()) {
 		if (t.flash_gen !== gen) return
 		s.flash_colors = [color]
 		s.flash_intensity = FLASH_INTENSITY_BURST
-		simon_audio.play_tone(color, FLASH_CASCADE_REV_MS, game_state.is_alt)
+		game_audio.play_tone(color, FLASH_CASCADE_REV_MS, game_state.is_alt)
 		await delay(FLASH_CASCADE_REV_MS)
 	}
 }
