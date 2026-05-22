@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fonts } from '@joshuafolkken/game-kit'
+	import { crt, fonts } from '@joshuafolkken/game-kit'
 	import { T } from '@threlte/core'
 	import { Text } from '@threlte/extras'
 	import { BOARD_LABEL_Z, BOARD_Y, BOARD_Z } from './board-config'
@@ -101,8 +101,10 @@
 	let emissive_intensity = $derived(
 		(is_alt ? CYBER_EMISSIVE_INTENSITY : EMISSIVE_INTENSITY) * simon_data.flash_intensity,
 	)
-	let current_font = $derived(fonts.get_font(is_alt))
-	let current_font_size = $derived(FONT_SIZE * fonts.get_font_size_multiplier(is_alt))
+	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
+	let should_use_alt_font = $derived(!crt.is_crt_enabled)
+	let current_font = $derived(fonts.get_font(should_use_alt_font))
+	let current_font_size = $derived(FONT_SIZE * fonts.get_font_size_multiplier(should_use_alt_font))
 </script>
 
 <T.Group position={[0, BOARD_Y, BOARD_Z]}>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core'
 	import { Text } from '@threlte/extras'
+	import { crt } from '$lib/game-kit/crt.svelte'
 	import { get_hi_value_color } from '$lib/game-kit/display/score-display-color'
 	import {
 		ANIM_DURATION_MS,
@@ -86,8 +87,10 @@
 
 	useTask(tick)
 
-	let current_font = $derived(fonts.get_font(is_alt))
-	let font_size_multiplier = $derived(fonts.get_font_size_multiplier(is_alt))
+	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
+	let should_use_alt_font = $derived(!crt.is_crt_enabled)
+	let current_font = $derived(fonts.get_font(should_use_alt_font))
+	let font_size_multiplier = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
 	let panel_color = $derived(is_alt ? CYBER_PANEL_COLOR : RETRO_PANEL_COLOR)
 	let panel_emissive = $derived(is_alt ? CYBER_PANEL_EMISSIVE : RETRO_PANEL_EMISSIVE)
 	let panel_emissive_intensity = $derived(
