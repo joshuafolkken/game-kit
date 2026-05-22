@@ -290,3 +290,90 @@ describe('create_score isolation', () => {
 		vi.unstubAllGlobals()
 	})
 })
+
+describe('legacy simon_* migration', () => {
+	const LEGACY_SCORE = 7_500
+	const LEGACY_ROUND = 8
+	const LEGACY_KEYS = {
+		score: 'simon_high_score',
+		round: 'simon_high_score_round',
+		check: 'simon_high_score_check',
+	}
+	const NEW_KEYS = {
+		score: 'game_high_score',
+		round: 'game_high_score_round',
+		check: 'game_high_score_check',
+	}
+
+	afterEach(() => {
+		vi.unstubAllGlobals()
+	})
+
+	function stub_legacy_only(store: Record<string, string>): { set_calls: [string, string][] } {
+		const set_calls: [string, string][] = []
+		vi.stubGlobal('localStorage', {
+			getItem: (key: string) => store[key] ?? null,
+			setItem: (key: string, value: string) => {
+				set_calls.push([key, value])
+				store[key] = value
+			},
+		})
+		return { set_calls }
+	}
+
+	it('loads legacy simon_* scores when new game_* keys are empty', () => {
+		const legacy_check = compute_check(LEGACY_SCORE, LEGACY_ROUND)
+		stub_legacy_only({
+			[LEGACY_KEYS.score]: String(LEGACY_SCORE),
+			[LEGACY_KEYS.round]: String(LEGACY_ROUND),
+			[LEGACY_KEYS.check]: String(legacy_check),
+		})
+		const migrated = create_score()
+		expect(migrated.high_score).toBe(LEGACY_SCORE)
+		expect(migrated.high_score_round).toBe(LEGACY_ROUND)
+	})
+
+	it('writes migrated legacy data under the new game_* keys', () => {
+		const legacy_check = compute_check(LEGACY_SCORE, LEGACY_ROUND)
+		const { set_calls } = stub_legacy_only({
+			[LEGACY_KEYS.score]: String(LEGACY_SCORE),
+			[LEGACY_KEYS.round]: String(LEGACY_ROUND),
+			[LEGACY_KEYS.check]: String(legacy_check),
+		})
+		create_score()
+		const written_keys = new Set(set_calls.map(([key]) => key))
+		expect(written_keys.has(NEW_KEYS.score)).toBe(true)
+		expect(written_keys.has(NEW_KEYS.round)).toBe(true)
+		expect(written_keys.has(NEW_KEYS.check)).toBe(true)
+	})
+
+	it('does not overwrite existing game_* data with legacy values', () => {
+		const new_score = 2_000
+		const new_round = 3
+		const new_check = compute_check(new_score, new_round)
+		const legacy_check = compute_check(LEGACY_SCORE, LEGACY_ROUND)
+		stub_legacy_only({
+			[NEW_KEYS.score]: String(new_score),
+			[NEW_KEYS.round]: String(new_round),
+			[NEW_KEYS.check]: String(new_check),
+			[LEGACY_KEYS.score]: String(LEGACY_SCORE),
+			[LEGACY_KEYS.round]: String(LEGACY_ROUND),
+			[LEGACY_KEYS.check]: String(legacy_check),
+		})
+		const fresh = create_score()
+		expect(fresh.high_score).toBe(new_score)
+		expect(fresh.high_score_round).toBe(new_round)
+	})
+
+	it('does not run migration for non-default key prefixes', () => {
+		const legacy_check = compute_check(LEGACY_SCORE, LEGACY_ROUND)
+		const { set_calls } = stub_legacy_only({
+			[LEGACY_KEYS.score]: String(LEGACY_SCORE),
+			[LEGACY_KEYS.round]: String(LEGACY_ROUND),
+			[LEGACY_KEYS.check]: String(legacy_check),
+		})
+		const custom = create_score('test')
+		expect(custom.high_score).toBe(0)
+		expect(set_calls).toHaveLength(0)
+	})
+})
