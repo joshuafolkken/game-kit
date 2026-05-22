@@ -4,7 +4,7 @@
 	import { simon_board_input } from '$lib/game/simon-board-input'
 	import { simon } from '$lib/game/simon.svelte'
 	import SimonScene from '$lib/game/SimonScene.svelte'
-	import { messages } from '$lib/messages/en'
+	import { messages } from '$lib/simon/messages'
 
 	simon_board_input.configure({
 		on_press: (color) => simon.press(color),

@@ -1,6 +1,6 @@
 import { make_credits_scroll_bounds } from '$lib/game-kit/scene/credits-config'
 import { score } from '$lib/game/score.svelte'
-import { messages } from '$lib/messages/en'
+import { messages } from '$lib/simon/messages'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import SimonScene from './SimonScene.svelte'
@@ -11,7 +11,7 @@ vi.mock('$lib/game/board-config', () => ({
 	SCORE_DISPLAY_Z: -4.65,
 }))
 vi.mock('$lib/game-kit/state.svelte', () => ({ game_state: { is_alt: false } }))
-vi.mock('$lib/messages/en', () => ({
+vi.mock('$lib/simon/messages', () => ({
 	messages: {
 		game_title: 'JOSHUA GAME',
 		cyber_switch_label: 'CYBER',
