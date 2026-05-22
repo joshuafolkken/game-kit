@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.44.0",
+	"version": "0.45.0",
 	"keywords": [
 		"svelte"
 	],
@@ -86,7 +86,7 @@
 		"vitest-browser-svelte": "^2.1.1",
 		"workbox-build": "^7.4.1",
 		"workbox-window": "^7.4.1",
-		"wrangler": "^4.93.0"
+		"wrangler": "^4.93.1"
 	},
 	"peerDependencies": {
 		"@threlte/core": ">=8.0.0",

@@ -27,8 +27,10 @@ describe('crt-dither constants', () => {
 		expect(BAYER_SIZE).toBe(4)
 	})
 
-	it('exposes COLOR_LEVELS = { r: 16, g: 16, b: 16 } (16×16×16 = 4096 unique colors, 12-bit RGB)', () => {
-		expect(COLOR_LEVELS).toEqual({ r: 16, g: 16, b: 16 })
+	it('exposes COLOR_LEVELS = { r: 8, g: 8, b: 4 } (8×8×4 = 256 unique colors, VGA 3-3-2)', () => {
+		const VGA_332_TOTAL_COLORS = 256
+		expect(COLOR_LEVELS).toEqual({ r: 8, g: 8, b: 4 })
+		expect(COLOR_LEVELS.r * COLOR_LEVELS.g * COLOR_LEVELS.b).toBe(VGA_332_TOTAL_COLORS)
 	})
 
 	it('exposes BLACK_FLOOR = 0.06 so dark pixels never collapse to pure black', () => {
@@ -222,10 +224,10 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 		}
 	})
 
-	it('all three channels produce the same number of distinct outputs (uniform quantization)', () => {
-		// COLOR_LEVELS is now uniform across R/G/B (was asymmetric 8/8/4). Sanity-check
-		// that the dither math actually flows through with matching cardinality on every
-		// channel — if we ever revert to asymmetric levels, this guards the change point.
+	it('R and G produce equal cardinality and B produces fewer (VGA 3-3-2 asymmetric quantization)', () => {
+		// VGA 3-3-2 gives blue half the levels of red/green (8/8/4). Lock in that asymmetry
+		// here so any accidental return to uniform per-channel levels (e.g. { r: 16, g: 16, b: 16 })
+		// fails this guard at the COLOR_LEVELS change point.
 		function distinct_outputs(levels: number): number {
 			const seen = new Set<number>()
 			for (let v = 0; v <= 100; v++) {
@@ -236,8 +238,10 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 			return seen.size
 		}
 		const red = distinct_outputs(COLOR_LEVELS.r)
-		expect(distinct_outputs(COLOR_LEVELS.g)).toBe(red)
-		expect(distinct_outputs(COLOR_LEVELS.b)).toBe(red)
+		const green = distinct_outputs(COLOR_LEVELS.g)
+		const blue = distinct_outputs(COLOR_LEVELS.b)
+		expect(green).toBe(red)
+		expect(blue).toBeLessThan(red)
 	})
 })
 
