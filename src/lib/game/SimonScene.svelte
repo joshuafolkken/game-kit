@@ -35,9 +35,6 @@
 	const scene_messages: SceneObjectsMessages = {
 		game_title: messages.game_title,
 		alt_switch_label: messages.cyber_switch_label,
-		fullscreen_switch_label: messages.fullscreen_switch_label,
-		fps_switch_label: messages.fps_switch_label,
-		crt_switch_label: messages.crt_switch_label,
 		score_high_score: messages.score_high_score,
 		score_round: messages.score_round,
 		score_current: messages.score_current,

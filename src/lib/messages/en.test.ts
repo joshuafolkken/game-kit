@@ -15,8 +15,6 @@ describe('messages', () => {
 			'game_title',
 			'press_start',
 			'cyber_switch_label',
-			'fullscreen_switch_label',
-			'fps_switch_label',
 			'click_to_start',
 			'tap_to_start',
 			'simon_start',

@@ -6,9 +6,12 @@ import {
 	CORNER_ARM,
 	CORNER_ARM_CENTER,
 	CORNER_POS,
+	CRT_SWITCH_LABEL,
 	CYBER_RING_TUBULAR,
 	DEFAULT_SWITCH_GEOMETRY,
+	FPS_SWITCH_LABEL,
 	FPS_SWITCH_Y,
+	FULLSCREEN_SWITCH_LABEL,
 	FULLSCREEN_SWITCH_X,
 	HIT_AREA_Z,
 	LABEL_FONT_SIZE,
@@ -134,6 +137,20 @@ describe('CYBER_RING_TUBULAR', () => {
 describe('HIT_AREA_Z', () => {
 	it('is positive (in front of panel face)', () => {
 		expect(HIT_AREA_Z).toBeGreaterThan(0)
+	})
+})
+
+describe('system switch labels', () => {
+	it('FPS_SWITCH_LABEL is the English FPS caption', () => {
+		expect(FPS_SWITCH_LABEL).toBe('FPS')
+	})
+
+	it('FULLSCREEN_SWITCH_LABEL is the English FULLSCREEN caption', () => {
+		expect(FULLSCREEN_SWITCH_LABEL).toBe('FULLSCREEN')
+	})
+
+	it('CRT_SWITCH_LABEL is the English CRT caption', () => {
+		expect(CRT_SWITCH_LABEL).toBe('CRT')
 	})
 })
 

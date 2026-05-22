@@ -1,6 +1,10 @@
 export type SwitchIconType = 'cyber' | 'fullscreen' | 'fps' | 'crt'
 export const SWITCH_ICON_TYPES: readonly SwitchIconType[] = ['cyber', 'fullscreen', 'fps', 'crt']
 
+export const FPS_SWITCH_LABEL = 'FPS'
+export const FULLSCREEN_SWITCH_LABEL = 'FULLSCREEN'
+export const CRT_SWITCH_LABEL = 'CRT'
+
 export const SWITCH_Y = 1.2
 export const FPS_SWITCH_Y = 2.2
 // 2x the score display wall distance: back wall=-5, score display=-4.65, distance=0.35, 2x=0.70
