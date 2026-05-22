@@ -160,7 +160,7 @@
 	onkeydown={on_key_down}
 	data-testid="game-scene"
 >
-	<div role="status" class="sr-only">{game_status}</div>
+	<div role="status" class="visually-hidden">{game_status}</div>
 	{#if is_started && is_touch}
 		<button
 			class="pause-btn"
@@ -273,6 +273,22 @@
 		pointer-events: none;
 		z-index: 100;
 		transform: translate(-2px, -2px);
+	}
+
+	/* Self-contained visually-hidden style for the status announcement, so consumers do not
+	   need to add Tailwind `@source` for `dist/` to pick up `sr-only`. Tailwind v4 ignores
+	   node_modules by default, and a missing `sr-only` would let the live-region text render
+	   as a visible band at the top of the viewport. */
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	.pause-btn {
