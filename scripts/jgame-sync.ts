@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
-import { cpSync, mkdirSync } from 'node:fs'
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
@@ -37,13 +38,43 @@ function sync_file(entry: SyncEntry): void {
 	console.info(`  ✔ synced   ${entry.dest}`)
 }
 
+type ConsumerPkg = { scripts?: Record<string, string>; [key: string]: unknown }
+
+function apply_managed_scripts(pkg: ConsumerPkg, canonical: Record<string, string>): boolean {
+	const scripts = pkg.scripts ?? {}
+	let did_change = false
+	for (const key of jgame_managed_scripts.MANAGED_SCRIPT_KEYS) {
+		if (scripts[key] !== canonical[key]) {
+			scripts[key] = canonical[key]
+			did_change = true
+		}
+	}
+	pkg.scripts = scripts
+	return did_change
+}
+
+function sync_managed_scripts(): void {
+	const pkg_path = path.join(jgame_paths.PROJECT_ROOT, 'package.json')
+	const raw = readFileSync(pkg_path, 'utf8')
+	const pkg = JSON.parse(raw) as ConsumerPkg
+	const canonical = jgame_managed_scripts.read_canonical_scripts()
+	const did_change = apply_managed_scripts(pkg, canonical)
+	if (!did_change) {
+		console.info('  ✔ checked  package.json scripts (up-to-date)')
+		return
+	}
+	writeFileSync(pkg_path, `${JSON.stringify(pkg, null, '\t')}\n`)
+	console.info('  ✔ synced   package.json scripts')
+}
+
 function run(): void {
 	console.info('\n🔄 jgame sync\n')
 	execSync('pnpm josh sync', SPAWN_OPTIONS)
 	console.info('\nGame-specific files:')
 	for (const entry of SYNC_FILES) sync_file(entry)
+	sync_managed_scripts()
 	console.info('\n✅ Done.\n')
 }
 
-const jgame_sync = { run }
+const jgame_sync = { run, apply_managed_scripts }
 export { jgame_sync }

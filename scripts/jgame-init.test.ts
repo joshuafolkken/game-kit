@@ -15,8 +15,11 @@ vi.mock('./jgame-paths.ts', () => ({
 	},
 }))
 
+const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
+
 const MOCK_PKG = {
 	version: '1.0.0',
+	scripts: { preview: CANONICAL_PREVIEW },
 	devDependencies: {
 		'@joshuafolkken/kit': '0.162.0',
 		'@sveltejs/kit': '^2.0.0',
@@ -63,6 +66,17 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.scripts.dev).toBe('vite dev')
 		expect(result.scripts.jgame).toBe('jgame')
 		expect(result.scripts.josh).toBe('josh')
+	})
+
+	it('emits the canonical Cloudflare Worker preview script (not vite preview)', async () => {
+		// Regression for #135: vite preview bypasses the Worker runtime, so
+		// hooks.server.ts (CSP, redirects, HTML injection) never executes and
+		// Worker-runtime E2E silently breaks. The value must come from game-kit's
+		// own package.json so the two paths cannot drift.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+		expect(result.scripts.preview).toBe(CANONICAL_PREVIEW)
+		expect(result.scripts.preview).not.toBe('vite preview')
 	})
 })
 
