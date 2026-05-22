@@ -3,6 +3,7 @@ import { createRawSnippet } from 'svelte'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import SceneObjects from './SceneObjects.svelte'
+import SCENE_OBJECTS_SOURCE from './SceneObjects.svelte?raw'
 
 vi.mock('@threlte/core', () => ({
 	T: {},
@@ -118,5 +119,36 @@ describe('SceneObjects', () => {
 		const game_board = createRawSnippet(() => ({ render: () => '<span></span>' }))
 		const { container } = render(SceneObjects, { props: make_props(game_board) })
 		expect(container).toBeTruthy()
+	})
+})
+
+describe('SceneObjects font selection — driven by CRT, not CYBER (is_alt)', () => {
+	it('derives use_alt_font from !crt.is_crt_enabled (font swaps with CRT, not CYBER)', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(
+			/let\s+use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+		)
+	})
+
+	it('current_font passes use_alt_font into fonts.get_font (not is_alt)', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(
+			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*use_alt_font\s*\)\s*\)/,
+		)
+	})
+
+	it('current_font_size_multiplier passes use_alt_font into fonts.get_font_size_multiplier', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(
+			/let\s+current_font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_font_size_multiplier\(\s*use_alt_font\s*\)\s*\)/,
+		)
+	})
+
+	it('imports crt from $lib/game-kit/crt.svelte so the derived can read is_crt_enabled', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/,
+		)
+	})
+
+	it('does not pass is_alt directly into fonts helpers (font is no longer CYBER-driven)', () => {
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/)
 	})
 })

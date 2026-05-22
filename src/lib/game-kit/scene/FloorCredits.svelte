@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useTask } from '@threlte/core'
 	import { Text } from '@threlte/extras'
+	import { crt } from '$lib/game-kit/crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
 	import { untrack } from 'svelte'
 	import {
@@ -25,7 +26,9 @@
 
 	let { is_alt, credits, scroll_start_z, scroll_end_z }: Props = $props()
 
-	let current_font = $derived(fonts.get_font(is_alt))
+	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
+	let use_alt_font = $derived(!crt.is_crt_enabled)
+	let current_font = $derived(fonts.get_font(use_alt_font))
 	let color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
 	let scroll_z = $state(untrack(() => scroll_start_z))
 

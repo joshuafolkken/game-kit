@@ -5,16 +5,16 @@ const FONT_FAMILY_ALT = 'Orbitron'
 const RETRO_FONT_SIZE_MULTIPLIER = 0.8
 const ALT_FONT_SIZE_MULTIPLIER = 1
 
-function get_font(is_alt: boolean): string {
-	return is_alt ? FONT_ALT : FONT_RETRO
+function get_font(use_alt_font: boolean): string {
+	return use_alt_font ? FONT_ALT : FONT_RETRO
 }
 
-function get_font_family(is_alt: boolean): string {
-	return is_alt ? FONT_FAMILY_ALT : FONT_FAMILY_RETRO
+function get_font_family(use_alt_font: boolean): string {
+	return use_alt_font ? FONT_FAMILY_ALT : FONT_FAMILY_RETRO
 }
 
-function get_font_size_multiplier(is_alt: boolean): number {
-	return is_alt ? ALT_FONT_SIZE_MULTIPLIER : RETRO_FONT_SIZE_MULTIPLIER
+function get_font_size_multiplier(use_alt_font: boolean): number {
+	return use_alt_font ? ALT_FONT_SIZE_MULTIPLIER : RETRO_FONT_SIZE_MULTIPLIER
 }
 
 export const fonts = {

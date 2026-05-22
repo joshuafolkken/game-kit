@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
+import TEMPLATE_SIMON_BOARD_SOURCE from '../../../templates/src/lib/simon/SimonBoard.svelte?raw'
 import SimonBoard from './SimonBoard.svelte'
+import SIMON_BOARD_SOURCE from './SimonBoard.svelte?raw'
 import type { SimonBoardData } from './types'
 
 vi.mock('@threlte/core', () => ({ T: {}, useTask: vi.fn() }))
@@ -62,5 +64,57 @@ describe('SimonBoard', () => {
 			},
 		})
 		expect(container).toBeTruthy()
+	})
+})
+
+describe('SimonBoard font selection — driven by CRT, not CYBER (is_alt)', () => {
+	it('derives use_alt_font from !crt.is_crt_enabled', () => {
+		expect(SIMON_BOARD_SOURCE).toMatch(
+			/let\s+use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+		)
+	})
+
+	it('current_font and current_font_size use use_alt_font (not is_alt)', () => {
+		expect(SIMON_BOARD_SOURCE).toMatch(
+			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*use_alt_font\s*\)\s*\)/,
+		)
+		expect(SIMON_BOARD_SOURCE).toMatch(/fonts\.get_font_size_multiplier\(\s*use_alt_font\s*\)/)
+	})
+
+	it('imports crt from $lib/game-kit/crt.svelte', () => {
+		expect(SIMON_BOARD_SOURCE).toMatch(
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/,
+		)
+	})
+
+	it('keeps is_alt prop driving button palette (lit/dim color helpers)', () => {
+		expect(SIMON_BOARD_SOURCE).toMatch(/return\s+is_alt\s*\?\s*btn\.cyber_lit_color/)
+		expect(SIMON_BOARD_SOURCE).toMatch(/return\s+is_alt\s*\?\s*btn\.cyber_dim_color/)
+	})
+
+	it('does not pass is_alt directly into fonts helpers', () => {
+		expect(SIMON_BOARD_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
+		expect(SIMON_BOARD_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/)
+	})
+})
+
+describe('templates SimonBoard mirrors the CRT-driven font behavior', () => {
+	it('derives use_alt_font from !crt.is_crt_enabled', () => {
+		expect(TEMPLATE_SIMON_BOARD_SOURCE).toMatch(
+			/let\s+use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+		)
+	})
+
+	it('imports crt from @joshuafolkken/game-kit', () => {
+		expect(TEMPLATE_SIMON_BOARD_SOURCE).toMatch(
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'@joshuafolkken\/game-kit'/,
+		)
+	})
+
+	it('does not pass is_alt directly into fonts helpers', () => {
+		expect(TEMPLATE_SIMON_BOARD_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
+		expect(TEMPLATE_SIMON_BOARD_SOURCE).not.toMatch(
+			/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/,
+		)
 	})
 })
