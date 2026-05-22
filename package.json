@@ -70,7 +70,7 @@
 		"globals": "^17.6.0",
 		"playwright": "^1.60.0",
 		"prettier": "^3.8.3",
-		"prettier-plugin-svelte": "^4.0.0",
+		"prettier-plugin-svelte": "^4.0.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"publint": "^0.3.21",
 		"rollup-plugin-visualizer": "^7.0.1",
