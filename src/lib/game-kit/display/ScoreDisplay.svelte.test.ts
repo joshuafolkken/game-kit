@@ -9,8 +9,8 @@ vi.mock('@threlte/core', () => ({ T: {}, useTask: vi.fn() }))
 vi.mock('@threlte/extras', () => ({ Text: {} }))
 vi.mock('$lib/game-kit/fonts', () => ({
 	fonts: {
-		get_font: vi.fn(() => 'sans'),
-		get_font_size_multiplier: vi.fn(() => 1),
+		get_active_font: vi.fn(() => 'sans'),
+		get_active_font_size_multiplier: vi.fn(() => 1),
 	},
 }))
 
@@ -77,38 +77,41 @@ describe('ScoreDisplay', () => {
 	})
 })
 
-describe('ScoreDisplay font selection — driven by CRT, not CYBER (is_alt)', () => {
-	it('derives should_use_alt_font from !crt.is_crt_enabled (font swaps with CRT, not CYBER)', () => {
+describe('ScoreDisplay font selection — driven by CRT-aware fonts helpers, not by is_alt (CYBER)', () => {
+	it('current_font uses fonts.get_active_font() (no caller-supplied flag)', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_active_font\(\s*\)\s*\)/,
 		)
 	})
 
-	it('current_font passes should_use_alt_font into fonts.get_font (not is_alt)', () => {
+	it('font_size_multiplier uses fonts.get_active_font_size_multiplier()', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/,
+			/let\s+font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_active_font_size_multiplier\(\s*\)\s*\)/,
 		)
 	})
 
-	it('font_size_multiplier passes should_use_alt_font into fonts.get_font_size_multiplier', () => {
-		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/let\s+font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_font_size_multiplier\(\s*should_use_alt_font\s*\)\s*\)/,
-		)
+	it('no longer derives a local should_use_alt_font (CRT awareness lives in fonts.ts)', () => {
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/\bshould_use_alt_font\b/)
 	})
 
-	it('imports crt from $lib/game-kit/crt.svelte', () => {
-		expect(SCORE_DISPLAY_SOURCE).toMatch(
+	it('no longer imports crt directly (consumer is decoupled from CRT module)', () => {
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(
 			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/,
 		)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/\bcrt\.is_crt_enabled\b/)
 	})
 
 	it('keeps is_alt prop driving palette decisions (panel/label/value colors)', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(/let\s+panel_color\s*=\s*\$derived\(\s*is_alt\s*\?/)
 	})
 
-	it('does not pass is_alt directly into fonts helpers', () => {
+	it('does not pass is_alt into any fonts helper (font axis is CRT, not CYBER)', () => {
 		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
 		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_active_font\(\s*is_alt\s*\)/)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(
+			/fonts\.get_active_font_size_multiplier\(\s*is_alt\s*\)/,
+		)
 	})
 })
 
