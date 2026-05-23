@@ -23,7 +23,6 @@ function make_game_data(overrides: Partial<GameBoardData> = {}): GameBoardData {
 const BOARD_TEXT_PROPS = {
 	is_alt: false,
 	text_gameover: 'GAME OVER',
-	text_round: 'ROUND',
 	text_start: 'START',
 }
 
@@ -95,6 +94,76 @@ describe('Board font selection — driven by CRT, not CYBER (is_alt)', () => {
 	it('does not pass is_alt directly into fonts helpers', () => {
 		expect(BOARD_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
 		expect(BOARD_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/)
+	})
+})
+
+describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () => {
+	it('FONT_SIZE is pinned to 0.13 — bumped for a larger single-line START label', () => {
+		// Reason: FONT_SIZE drives the START / idle label only; pin the literal value
+		// so the requested size bump is not silently undone.
+		expect(BOARD_SOURCE).toMatch(/const\s+FONT_SIZE\s*=\s*0\.13\b/)
+	})
+
+	it('MULTILINE_FONT_SIZE is pinned to 0.16 — per-line size used by the 2-line GAME OVER label', () => {
+		// Reason: GAME OVER is the only 2-line center label; pin the per-line size so
+		// the relative hierarchy with START (single-line) is preserved.
+		expect(BOARD_SOURCE).toMatch(/const\s+MULTILINE_FONT_SIZE\s*=\s*0\.16\b/)
+	})
+
+	it('ROUND_DIGIT_FONT_SIZE is pinned to 0.2 — size for the digit-only ROUND display', () => {
+		// Reason: during a round the center shows just the round number, which is the
+		// focal info during play; pin the literal so it stays at the chosen prominence.
+		expect(BOARD_SOURCE).toMatch(/const\s+ROUND_DIGIT_FONT_SIZE\s*=\s*0\.2\b/)
+	})
+
+	it('MULTILINE_LINE_HEIGHT is pinned to 1.4 — gives GAME / OVER a little breathing room', () => {
+		expect(BOARD_SOURCE).toMatch(/const\s+MULTILINE_LINE_HEIGHT\s*=\s*1\.4\b/)
+	})
+
+	it('center font sizes follow the intended hierarchy: ROUND_DIGIT > MULTILINE > FONT_SIZE', () => {
+		const fz = BOARD_SOURCE.match(/const\s+FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/)
+		const ml = BOARD_SOURCE.match(/const\s+MULTILINE_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/)
+		const rd = BOARD_SOURCE.match(/const\s+ROUND_DIGIT_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/)
+		expect(fz).not.toBeNull()
+		expect(ml).not.toBeNull()
+		expect(rd).not.toBeNull()
+		expect(Number(ml?.[1])).toBeGreaterThan(Number(fz?.[1]))
+		expect(Number(rd?.[1])).toBeGreaterThan(Number(ml?.[1]))
+	})
+
+	it('GAME OVER text is split into two lines by replacing its space with a newline', () => {
+		expect(BOARD_SOURCE).toMatch(/text_gameover\.replace\(\s*['"`] ['"`]\s*,\s*['"`]\\n['"`]\s*\)/)
+	})
+
+	it('ROUND state renders only the round number (no label prefix, no newline)', () => {
+		expect(BOARD_SOURCE).toMatch(/return\s+String\(\s*game_data\.round\s*\)/)
+		// Sanity: the old "label\nnumber" template should be gone.
+		expect(BOARD_SOURCE).not.toMatch(/`\$\{text_round\}\\n\$\{game_data\.round\}`/)
+	})
+
+	it('is_multiline_center is true only for the gameover phase (round display is single-line)', () => {
+		expect(BOARD_SOURCE).toMatch(
+			/is_multiline_center\s*=\s*\$derived\(\s*game_data\.phase\s*===\s*['"]gameover['"]\s*\)/,
+		)
+	})
+
+	it('center base font size has a 3-way selection (gameover → MULTILINE, round>0 → ROUND_DIGIT, else → FONT_SIZE)', () => {
+		expect(BOARD_SOURCE).toMatch(
+			/function\s+get_center_base_font_size\(\)\s*:\s*number\s*\{[\s\S]*MULTILINE_FONT_SIZE[\s\S]*ROUND_DIGIT_FONT_SIZE[\s\S]*FONT_SIZE[\s\S]*\}/,
+		)
+		expect(BOARD_SOURCE).toMatch(
+			/center_base_font_size\s*=\s*\$derived\(\s*get_center_base_font_size\(\)\s*\)/,
+		)
+	})
+
+	it('Text component receives lineHeight={current_line_height} so GAME OVER gets extra spacing', () => {
+		expect(BOARD_SOURCE).toMatch(/<Text[\s\S]*lineHeight=\{current_line_height\}[\s\S]*\/>/)
+		// Whitespace-normalized substring check avoids the long chain of `\s*` separators
+		// (SonarCloud rule typescript:S5852 flags such patterns as ReDoS candidates).
+		const normalized = BOARD_SOURCE.replace(/\s+/g, ' ')
+		expect(normalized).toContain(
+			'current_line_height = $derived( is_multiline_center ? MULTILINE_LINE_HEIGHT : SINGLE_LINE_HEIGHT',
+		)
 	})
 })
 

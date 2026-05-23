@@ -1,5 +1,5 @@
 const HALF = 0.5
-const BARREL_STRENGTH_VALUE = 0.15
+const BARREL_STRENGTH_VALUE = 0.1
 
 // Quadratic barrel-distortion strength. 0.0 = identity (flat). Real-world CRT
 // face curvature reads as ~0.15–0.25 in this formulation; 0.2 matches the visual

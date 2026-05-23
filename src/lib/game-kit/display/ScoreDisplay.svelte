@@ -16,6 +16,7 @@
 		LABEL_FONT_SIZE,
 		PANEL_H,
 		PANEL_OPACITY,
+		PANEL_TILT_X,
 		PANEL_W,
 		PANEL_Z_OFFSET,
 		RETRO_LABEL_COLOR,
@@ -109,7 +110,7 @@
 	let round_text = $derived(String(score_data.last_cleared_round))
 </script>
 
-<T.Group position={[0, DISPLAY_Y, position_z]}>
+<T.Group position={[0, DISPLAY_Y, position_z]} rotation.x={PANEL_TILT_X}>
 	<T.Mesh position.z={PANEL_Z_OFFSET}>
 		<T.PlaneGeometry args={[PANEL_W, PANEL_H]} />
 		<T.MeshStandardMaterial
