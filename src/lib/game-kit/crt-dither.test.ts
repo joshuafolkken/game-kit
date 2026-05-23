@@ -60,6 +60,13 @@ describe('crt-dither constants', () => {
 		expect(DOT_BLEND).toBeLessThanOrEqual(1)
 	})
 
+	it('DOT_BLEND is pinned to 0.2 — toned-down dot bleed for sharper on-screen text', () => {
+		// Reason: the range test above only catches obviously broken values; pin the
+		// literal so future drift back toward the original 0.4 (more pronounced
+		// phosphor smear) is surfaced as a regression.
+		expect(DOT_BLEND).toBe(0.2)
+	})
+
 	it('exposes DOTS_PER_SCANLINE as a positive integer', () => {
 		expect(Number.isInteger(DOTS_PER_SCANLINE)).toBe(true)
 		expect(DOTS_PER_SCANLINE).toBeGreaterThan(0)

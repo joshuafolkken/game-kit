@@ -1,3 +1,4 @@
+import { BACKING_RADIUS, BOARD_Y } from '$lib/game/board-config.js'
 import { describe, expect, it } from 'vitest'
 import {
 	ANIM_DURATION_MS,
@@ -14,6 +15,7 @@ import {
 	LABEL_FONT_SIZE,
 	PANEL_H,
 	PANEL_OPACITY,
+	PANEL_TILT_X,
 	PANEL_W,
 	PANEL_Z_OFFSET,
 	RETRO_LABEL_COLOR,
@@ -48,9 +50,53 @@ describe('SCORE_TEXT_Z', () => {
 	})
 })
 
+const EXPECTED_DISPLAY_Y = 2.38
+// Edge-to-edge gap (scoreboard bottom edge → board top edge) intentionally
+// compact so the scoreboard hovers just above the game board without overlapping.
+// Expected value depends on PANEL_TILT_X (larger tilt → cos shrinks → larger gap).
+const EXPECTED_EDGE_GAP = 0.044
+const EDGE_GAP_TOLERANCE = 1e-2
+const HALF_DIVISOR = 2
+const HALF_PI = Math.PI / 2
+const EXPECTED_PANEL_TILT_X = 0.4
+const EXPECTED_HI_LABEL_Y = 0.18
+const EXPECTED_SCORE_LABEL_Y = -0.09
+
 describe('layout geometry', () => {
 	it('DISPLAY_Y places the panel above the floor', () => {
 		expect(DISPLAY_Y).toBeGreaterThan(0)
+	})
+
+	it('DISPLAY_Y is pinned to 2.38 (scoreboard sits compact above the board top)', () => {
+		// Reason: DISPLAY_Y is the only signal that controls the scoreboard-to-board
+		// vertical spacing; pinning the literal value catches silent drift that
+		// would re-open the gap or push the scoreboard into the board (overlap).
+		expect(DISPLAY_Y).toBe(EXPECTED_DISPLAY_Y)
+	})
+
+	it('scoreboard bottom edge sits ~0.044 above the board top edge (compact gap, no overlap)', () => {
+		// Board top edge in world y: BOARD_Y + BACKING_RADIUS.
+		// Scoreboard bottom edge accounts for the downward tilt rotating the panel
+		// half-height around the panel center, so the projected y extent is
+		// (PANEL_H / 2) * cos(PANEL_TILT_X).
+		const board_top_y = BOARD_Y + BACKING_RADIUS
+		const tilted_half_height = (PANEL_H / HALF_DIVISOR) * Math.cos(PANEL_TILT_X)
+		const scoreboard_bottom_y = DISPLAY_Y - tilted_half_height
+		const edge_gap = scoreboard_bottom_y - board_top_y
+		expect(edge_gap).toBeGreaterThan(0)
+		expect(Math.abs(edge_gap - EXPECTED_EDGE_GAP)).toBeLessThan(EDGE_GAP_TOLERANCE)
+	})
+
+	it('PANEL_TILT_X is pinned to 0.4 rad (downward tilt toward the player)', () => {
+		// Reason: the tilt angle is the only signal for the downward angle of the
+		// scoreboard face; pinning the literal prevents silent drift that would
+		// flatten or invert the angle.
+		expect(PANEL_TILT_X).toBe(EXPECTED_PANEL_TILT_X)
+	})
+
+	it('PANEL_TILT_X is a positive angle smaller than π/2 (tilts down, not flipped)', () => {
+		expect(PANEL_TILT_X).toBeGreaterThan(0)
+		expect(PANEL_TILT_X).toBeLessThan(HALF_PI)
 	})
 
 	it('PANEL_W is wider than PANEL_H (landscape orientation)', () => {
@@ -84,12 +130,36 @@ describe('text layout', () => {
 		expect(HI_VALUE_Y).toBeGreaterThan(SCORE_LABEL_Y)
 	})
 
+	it('HI_LABEL_Y is pinned to 0.18 — lowered slightly to sit closer to its value row', () => {
+		// Reason: HI/RND labels were nudged down toward their value rows for a tighter
+		// label-value pair. Pin the literal so future drift doesn't re-open the gap.
+		expect(HI_LABEL_Y).toBe(EXPECTED_HI_LABEL_Y)
+	})
+
+	it('SCORE_LABEL_Y is pinned to -0.09 — lowered slightly to sit closer to its value row', () => {
+		expect(SCORE_LABEL_Y).toBe(EXPECTED_SCORE_LABEL_Y)
+	})
+
 	it('LABEL_FONT_SIZE is smaller than VALUE_FONT_SIZE', () => {
 		expect(LABEL_FONT_SIZE).toBeLessThan(VALUE_FONT_SIZE)
 	})
 
 	it('ROUND_VALUE_FONT_SIZE is smaller than VALUE_FONT_SIZE', () => {
 		expect(ROUND_VALUE_FONT_SIZE).toBeLessThan(VALUE_FONT_SIZE)
+	})
+
+	it('LABEL_FONT_SIZE is pinned to 0.08 (bumped from 0.055 so retro-mode HI/RND/SCORE labels stay legible)', () => {
+		// Reason: retro mode multiplies font sizes by 0.8, so a small literal change
+		// silently makes the labels invisible. Pin the new size so future drift surfaces.
+		expect(LABEL_FONT_SIZE).toBe(0.08)
+	})
+
+	it('VALUE_FONT_SIZE is pinned to 0.115 (slightly enlarged for readability)', () => {
+		expect(VALUE_FONT_SIZE).toBe(0.115)
+	})
+
+	it('ROUND_VALUE_FONT_SIZE is pinned to 0.105 (slightly enlarged in tandem with VALUE_FONT_SIZE)', () => {
+		expect(ROUND_VALUE_FONT_SIZE).toBe(0.105)
 	})
 })
 
