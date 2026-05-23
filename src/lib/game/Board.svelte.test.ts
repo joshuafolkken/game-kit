@@ -158,8 +158,11 @@ describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () =
 
 	it('Text component receives lineHeight={current_line_height} so GAME OVER gets extra spacing', () => {
 		expect(BOARD_SOURCE).toMatch(/<Text[\s\S]*lineHeight=\{current_line_height\}[\s\S]*\/>/)
-		expect(BOARD_SOURCE).toMatch(
-			/current_line_height\s*=\s*\$derived\(\s*is_multiline_center\s*\?\s*MULTILINE_LINE_HEIGHT\s*:\s*SINGLE_LINE_HEIGHT\s*,?\s*\)/,
+		// Whitespace-normalized substring check avoids the long chain of `\s*` separators
+		// (SonarCloud rule typescript:S5852 flags such patterns as ReDoS candidates).
+		const normalized = BOARD_SOURCE.replace(/\s+/g, ' ')
+		expect(normalized).toContain(
+			'current_line_height = $derived( is_multiline_center ? MULTILINE_LINE_HEIGHT : SINGLE_LINE_HEIGHT',
 		)
 	})
 })
