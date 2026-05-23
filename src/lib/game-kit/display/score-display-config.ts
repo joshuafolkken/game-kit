@@ -1,6 +1,10 @@
 export const SCORE_TEXT_Z = 0.05
 
-export const DISPLAY_Y = 2.5
+export const DISPLAY_Y = 2.38
+// Slight downward tilt (radians) so the panel face angles toward the player who
+// stands below it; keeps the scoreboard readable when DISPLAY_Y is lowered closer
+// to the game board.
+export const PANEL_TILT_X = 0.4
 export const PANEL_W = 1.6
 export const PANEL_H = 0.62
 export const PANEL_Z_OFFSET = -0.01
@@ -21,13 +25,13 @@ export const HI_BASE_COLOR = '#ffff00'
 export const CYBER_NEW_HIGH_COLOR = '#cc66ff'
 export const RETRO_NEW_HIGH_COLOR = '#ff44ff'
 
-export const LABEL_FONT_SIZE = 0.055
-export const VALUE_FONT_SIZE = 0.1
-export const ROUND_VALUE_FONT_SIZE = 0.09
+export const LABEL_FONT_SIZE = 0.08
+export const VALUE_FONT_SIZE = 0.115
+export const ROUND_VALUE_FONT_SIZE = 0.105
 
-export const HI_LABEL_Y = 0.2
+export const HI_LABEL_Y = 0.18
 export const HI_VALUE_Y = 0.07
-export const SCORE_LABEL_Y = -0.07
+export const SCORE_LABEL_Y = -0.09
 export const SCORE_VALUE_Y = -0.2
 export const ROUND_X = 0.52
 

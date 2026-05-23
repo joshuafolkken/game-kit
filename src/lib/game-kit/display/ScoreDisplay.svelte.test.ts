@@ -111,3 +111,15 @@ describe('ScoreDisplay font selection — driven by CRT, not CYBER (is_alt)', ()
 		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/)
 	})
 })
+
+describe('ScoreDisplay panel tilt — root group rotates by PANEL_TILT_X for a downward angle', () => {
+	it('imports PANEL_TILT_X from score-display-config', () => {
+		expect(SCORE_DISPLAY_SOURCE).toMatch(
+			/import\s*\{[\s\S]*\bPANEL_TILT_X\b[\s\S]*\}\s*from\s*'\$lib\/game-kit\/display\/score-display-config'/,
+		)
+	})
+
+	it('root <T.Group> applies rotation.x={PANEL_TILT_X}', () => {
+		expect(SCORE_DISPLAY_SOURCE).toMatch(/<T\.Group[^>]*\brotation\.x=\{PANEL_TILT_X\}[^>]*>/)
+	})
+})

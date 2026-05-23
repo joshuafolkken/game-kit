@@ -29,6 +29,13 @@ describe('crt-barrel constants', () => {
 		// samples land deep outside [0,1] and the entire screen edge clips to black.
 		expect(BARREL_STRENGTH).toBeLessThanOrEqual(1)
 	})
+
+	it('BARREL_STRENGTH is pinned to 0.1 — toned-down curvature for sharper on-screen text', () => {
+		// Reason: the range tests above only catch obviously broken values; pin the
+		// literal so future drift back toward the original 0.15 (more visible curve)
+		// is surfaced as a regression.
+		expect(BARREL_STRENGTH).toBe(0.1)
+	})
 })
 
 describe('crt_barrel.apply_barrel_uv', () => {
