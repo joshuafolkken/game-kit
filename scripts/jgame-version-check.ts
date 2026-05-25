@@ -4,16 +4,15 @@ import { fileURLToPath } from 'node:url'
 import { jgame_version_api } from './jgame-version-api.ts'
 import { jgame_version_check_logic } from './jgame-version-check-logic.ts'
 
+const TRAILING_SEPARATOR_PATTERN = /[\\/]+$/
+
 function resolve_package_json_path(script_directory: string): string {
-	const segments = script_directory.split(path.sep)
+	const trimmed = script_directory.replace(TRAILING_SEPARATOR_PATTERN, '')
+	const segments = trimmed.split(path.sep)
 	const is_dist = segments.at(-2) === 'dist' && segments.at(-1) === 'scripts'
 	const levels_up = is_dist ? 2 : 1
 
-	return path.join(
-		script_directory,
-		...Array.from({ length: levels_up }, () => '..'),
-		'package.json',
-	)
+	return path.join(trimmed, ...Array.from({ length: levels_up }, () => '..'), 'package.json')
 }
 
 const PACKAGE_JSON_PATH = resolve_package_json_path(path.dirname(fileURLToPath(import.meta.url)))
