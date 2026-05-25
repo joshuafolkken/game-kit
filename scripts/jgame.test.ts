@@ -11,6 +11,9 @@ vi.mock('./jgame-init.ts', () => ({
 }))
 vi.mock('./jgame-sync.ts', () => ({ jgame_sync: { run: vi.fn() } }))
 vi.mock('./jgame-install-bin.ts', () => ({ jgame_install_bin: { run: vi.fn() } }))
+vi.mock('./jgame-version-check.ts', () => ({
+	jgame_version_check: { run: vi.fn(), parse_version: vi.fn() },
+}))
 
 describe('route_command', () => {
 	beforeEach(() => {
@@ -48,6 +51,12 @@ describe('route_command', () => {
 		const { jgame_install_bin } = await import('./jgame-install-bin.ts')
 		route_command('install', '--force')
 		expect(jgame_install_bin.run).toHaveBeenCalledWith({ force: true })
+	})
+
+	it('routes version to jgame_version_check.run', async () => {
+		const { jgame_version_check } = await import('./jgame-version-check.ts')
+		route_command('version')
+		expect(jgame_version_check.run).toHaveBeenCalledOnce()
 	})
 
 	it('exits with code 1 for unknown command and prints jgame usage', () => {
