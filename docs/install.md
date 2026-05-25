@@ -4,21 +4,21 @@ Create a new SvelteKit + Threlte game from the `@joshuafolkken/game-kit` templat
 
 ## 1. Authenticate
 
-GitHub Packages requires auth even for public packages.
+GitHub Packages requires auth even for public packages. The token comes from the [gh CLI](https://cli.github.com/); if you haven't already, run `gh auth login --scopes read:packages`.
 
-**bash / zsh (macOS, Linux):**
+Persist `NODE_AUTH_TOKEN` so every shell session picks up a fresh token automatically. Add the following line to `~/.zshrc`:
 
 ```bash
 export NODE_AUTH_TOKEN=$(gh auth token)
 ```
 
-**PowerShell (Windows):**
+Then reload:
 
-```powershell
-$env:NODE_AUTH_TOKEN = (gh auth token)
+```bash
+exec $SHELL
 ```
 
-If you get a 401, run `gh auth login --scopes read:packages`.
+The token is re-evaluated on each shell startup, so gh's token rotation is picked up automatically.
 
 ## 2. Configure `.npmrc`
 
@@ -31,34 +31,7 @@ Add both lines to your user-level `~/.npmrc` (or to a project-level `.npmrc` if 
 
 Without this, `pnpm` will try the public npm registry for `@joshuafolkken/*` packages and fail.
 
-## 3. Scaffold
-
-```bash
-pnpm dlx @joshuafolkken/game-kit init my-game
-```
-
-Replace `my-game` with your game name. Input is normalized to kebab-case automatically.
-
-This copies the template into `./my-game/`, runs `pnpm install`, and syncs managed config files.
-
-## 4. Develop
-
-```bash
-cd my-game
-pnpm dev
-```
-
-Open http://localhost:5173.
-
-To publish the project to a private GitHub repo right away:
-
-```bash
-gh repo create my-game --private --source=. --push
-```
-
-## Optional: install `jgame` globally
-
-To call `jgame` directly without `pnpm dlx`, the GitHub Packages auth from steps 1 and 2 must be in place.
+## 3. Install `jgame` globally
 
 ### One-time pnpm setup
 
@@ -66,7 +39,7 @@ pnpm requires a one-time setup before any global install — it registers `PNPM_
 
 ```bash
 pnpm setup
-exec $SHELL   # or open a new terminal / source ~/.zshrc
+exec $SHELL
 ```
 
 If `pnpm setup` reports it is already configured, you can skip this step.
@@ -85,9 +58,34 @@ Update later with:
 pnpm up -g @joshuafolkken/game-kit
 ```
 
+## 4. Scaffold
+
+```bash
+jgame init my-game
+```
+
+Replace `my-game` with your game name. Input is normalized to kebab-case automatically.
+
+This copies the template into `./my-game/`, runs `pnpm install`, and syncs managed config files.
+
+## 5. Develop
+
+```bash
+cd my-game
+pnpm dev
+```
+
+Open http://localhost:5173.
+
+To publish the project to a private GitHub repo right away:
+
+```bash
+gh repo create my-game --private --source=. --push
+```
+
 ## Other commands
 
-After installing, the `jgame` binary exposes:
+The `jgame` binary exposes:
 
 | Subcommand          | Description                                             |
 | ------------------- | ------------------------------------------------------- |
