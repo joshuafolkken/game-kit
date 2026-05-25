@@ -56,24 +56,27 @@ To publish the project to a private GitHub repo right away:
 gh repo create my-game --private --source=. --push
 ```
 
-## Optional: install `jgame` locally
+## Optional: install `jgame` globally
 
 To call `jgame` directly without `pnpm dlx`:
 
 ```bash
-pnpm dlx @joshuafolkken/game-kit install
+pnpm add -g @joshuafolkken/game-kit
 ```
 
-Installs a `jgame` wrapper into `~/.local/bin/jgame`. Make sure `~/.local/bin` is in your `PATH`.
+This installs the `jgame` binary into your pnpm global bin directory (already on your `PATH`). The GitHub Packages auth from steps 1 and 2 must be in place.
+
+Update later with:
+
+```bash
+pnpm up -g @joshuafolkken/game-kit
+```
 
 ## Other commands
 
 After installing, the `jgame` binary exposes:
 
-| Subcommand                | Description                                             |
-| ------------------------- | ------------------------------------------------------- |
-| `jgame init <name>`       | Scaffold a new game project                             |
-| `jgame sync`              | Sync managed config files from the latest published kit |
-| `jgame install [--force]` | Install the `jgame` wrapper into `~/.local/bin`         |
-
-Pass `--force` to `jgame install` to overwrite an existing file at the target path.
+| Subcommand          | Description                                             |
+| ------------------- | ------------------------------------------------------- |
+| `jgame init <name>` | Scaffold a new game project                             |
+| `jgame sync`        | Sync managed config files from the latest published kit |

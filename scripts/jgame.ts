@@ -1,16 +1,14 @@
 import { fileURLToPath } from 'node:url'
 import { jgame_init } from './jgame-init.ts'
-import { jgame_install_bin } from './jgame-install-bin.ts'
 import { jgame_sync } from './jgame-sync.ts'
 import { jgame_version_check } from './jgame-version-check.ts'
 import { jgame_version_upgrade } from './jgame-version-upgrade.ts'
 
-const USAGE = 'Usage: jgame <init|sync|install|version|version:upgrade> [name|--force]'
+const USAGE = 'Usage: jgame <init|sync|version|version:upgrade> [name]'
 
 export function route_command(command: string | undefined, argument?: string): void {
 	if (command === 'init') return jgame_init.run(argument)
 	if (command === 'sync') return jgame_sync.run()
-	if (command === 'install') return jgame_install_bin.run({ force: argument === '--force' })
 	if (command === 'version') return jgame_version_check.run()
 	if (command === 'version:upgrade') return jgame_version_upgrade.run()
 	console.error(`Unknown command: ${command ?? '(none)'}`)
