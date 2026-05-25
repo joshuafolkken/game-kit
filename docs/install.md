@@ -58,13 +58,26 @@ gh repo create my-game --private --source=. --push
 
 ## Optional: install `jgame` globally
 
-To call `jgame` directly without `pnpm dlx`:
+To call `jgame` directly without `pnpm dlx`, the GitHub Packages auth from steps 1 and 2 must be in place.
+
+### One-time pnpm setup
+
+pnpm requires a one-time setup before any global install — it registers `PNPM_HOME` and appends it to your `PATH` via your shell rc file:
+
+```bash
+pnpm setup
+exec $SHELL   # or open a new terminal / source ~/.zshrc
+```
+
+If `pnpm setup` reports it is already configured, you can skip this step.
+
+### Install
 
 ```bash
 pnpm add -g @joshuafolkken/game-kit
 ```
 
-This installs the `jgame` binary into your pnpm global bin directory (already on your `PATH`). The GitHub Packages auth from steps 1 and 2 must be in place.
+This installs the `jgame` binary into your pnpm global bin directory. Verify with `which jgame`.
 
 Update later with:
 
