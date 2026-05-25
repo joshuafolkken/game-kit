@@ -28,6 +28,16 @@ describe('package.json lifecycle scripts', () => {
 		expect(pkg.scripts.prepare).toMatch(/fix-gh-packages/)
 	})
 
+	it('installs the global jgame shim in prepare so it fires only for the package owner', () => {
+		expect(pkg.scripts.prepare).toMatch(/jgame-install-bin/)
+	})
+
+	it('gates the jgame-install-bin call behind a tsx availability check', () => {
+		expect(pkg.scripts.prepare).toContain(
+			'command -v tsx >/dev/null 2>&1 && tsx scripts/jgame-install-bin.ts',
+		)
+	})
+
 	it('keeps safe-chain in preinstall for consumer-side malware scanning', () => {
 		expect(pkg.scripts.preinstall).toMatch(/safe-chain/)
 	})
