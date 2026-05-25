@@ -18,3 +18,21 @@ describe('jgame_version_check.parse_version', () => {
 		expect(() => jgame_version_check.parse_version('"plain-string"')).toThrow(/version/u)
 	})
 })
+
+describe('jgame_version_check.resolve_package_json_path', () => {
+	it('returns <pkg>/package.json when script is at dist/scripts (built layout)', () => {
+		expect(jgame_version_check.resolve_package_json_path('/pkg/dist/scripts')).toBe(
+			'/pkg/package.json',
+		)
+	})
+
+	it('returns <pkg>/package.json when script is at scripts (source layout)', () => {
+		expect(jgame_version_check.resolve_package_json_path('/pkg/scripts')).toBe('/pkg/package.json')
+	})
+
+	it('treats a non-dist scripts segment as source layout (one level up)', () => {
+		expect(jgame_version_check.resolve_package_json_path('/elsewhere/scripts')).toBe(
+			'/elsewhere/package.json',
+		)
+	})
+})
