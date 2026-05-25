@@ -23,6 +23,22 @@ describe('jgame_install_bin_logic.resolve_jgame_script_path', () => {
 	})
 })
 
+describe('jgame_install_bin_logic.resolve_package_directory', () => {
+	it('returns pkg root when script is at dist/scripts (built layout)', () => {
+		expect(jgame_install_bin_logic.resolve_package_directory('/pkg/dist/scripts')).toBe('/pkg')
+	})
+
+	it('returns pkg root when script is at scripts (source layout)', () => {
+		expect(jgame_install_bin_logic.resolve_package_directory('/pkg/scripts')).toBe('/pkg')
+	})
+
+	it('treats a non-dist scripts segment as source layout', () => {
+		expect(jgame_install_bin_logic.resolve_package_directory('/elsewhere/scripts')).toBe(
+			'/elsewhere',
+		)
+	})
+})
+
 describe('jgame_install_bin_logic.resolve_node_command', () => {
 	it('returns the bare node command (resolved via PATH at runtime)', () => {
 		expect(jgame_install_bin_logic.resolve_node_command()).toBe('node')
