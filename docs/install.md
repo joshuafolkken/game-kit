@@ -87,7 +87,9 @@ gh repo create my-game --private --source=. --push
 
 The `jgame` binary exposes:
 
-| Subcommand          | Description                                             |
-| ------------------- | ------------------------------------------------------- |
-| `jgame init <name>` | Scaffold a new game project                             |
-| `jgame sync`        | Sync managed config files from the latest published kit |
+| Subcommand                           | Description                                             |
+| ------------------------------------ | ------------------------------------------------------- |
+| `jgame init <name>`                  | Scaffold a new game project                             |
+| `jgame sync`                         | Sync managed config files from the latest published kit |
+| `jgame version` (`jgame v`)          | Show installed and latest published versions            |
+| `jgame version:upgrade` (`jgame vu`) | Upgrade `@joshuafolkken/game-kit` to the latest version |
