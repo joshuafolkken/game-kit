@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.69.0",
+	"version": "0.70.0",
 	"keywords": [
 		"svelte"
 	],
@@ -108,20 +108,6 @@
 			"limit": "500 kB"
 		}
 	],
-	"pnpm": {
-		"overrides": {
-			"serialize-javascript": ">=7.0.5",
-			"ws": ">=8.20.1"
-		},
-		"onlyBuiltDependencies": [
-			"@joshuafolkken/kit",
-			"esbuild",
-			"lefthook",
-			"sharp",
-			"unrs-resolver",
-			"workerd"
-		]
-	},
 	"sideEffects": [
 		"**/*.css"
 	],
