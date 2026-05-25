@@ -1,6 +1,9 @@
 const PACKAGE_NAME = '@joshuafolkken/game-kit'
 const UPGRADE_COMMAND = 'pnpm'
 const UPGRADE_ARGS_PREFIX = ['add', '-D'] as const
+const GLOBAL_UPGRADE_ARGS_PREFIX = ['add', '-g'] as const
+const GLOBAL_UPGRADE_BYPASS_FLAG = '--safe-chain-skip-minimum-package-age'
+const DEP_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'] as const
 
 interface PackageJsonWithPnpmOverrides {
 	pnpm?: { overrides?: Record<string, string> }
@@ -57,6 +60,41 @@ function format_upgrade_command(latest: string): string {
 	return [UPGRADE_COMMAND, ...build_upgrade_args(latest)].join(' ')
 }
 
+function try_parse_json(raw: string): unknown {
+	try {
+		return JSON.parse(raw)
+	} catch {
+		return undefined
+	}
+}
+
+function has_game_kit_in_dep_field(value: object, field: (typeof DEP_FIELDS)[number]): boolean {
+	const map: unknown = Reflect.get(value, field)
+	if (typeof map !== 'object' || map === null) return false
+
+	return PACKAGE_NAME in map
+}
+
+function has_game_kit_in_any_dep_field(parsed: object): boolean {
+	return DEP_FIELDS.some((field) => has_game_kit_in_dep_field(parsed, field))
+}
+
+function is_consumer_project_context(raw: string | undefined): raw is string {
+	if (raw === undefined) return false
+	const parsed = try_parse_json(raw)
+	if (typeof parsed !== 'object' || parsed === null) return false
+
+	return has_game_kit_in_any_dep_field(parsed)
+}
+
+function build_global_upgrade_args(latest: string): Array<string> {
+	return [...GLOBAL_UPGRADE_ARGS_PREFIX, `${PACKAGE_NAME}@${latest}`, GLOBAL_UPGRADE_BYPASS_FLAG]
+}
+
+function format_global_upgrade_command(latest: string): string {
+	return [UPGRADE_COMMAND, ...build_global_upgrade_args(latest)].join(' ')
+}
+
 const jgame_version_upgrade_logic = {
 	PACKAGE_NAME,
 	UPGRADE_COMMAND,
@@ -65,6 +103,9 @@ const jgame_version_upgrade_logic = {
 	format_capped_message,
 	build_upgrade_args,
 	format_upgrade_command,
+	is_consumer_project_context,
+	build_global_upgrade_args,
+	format_global_upgrade_command,
 }
 
 export { jgame_version_upgrade_logic }

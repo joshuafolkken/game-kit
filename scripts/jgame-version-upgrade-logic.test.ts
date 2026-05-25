@@ -74,3 +74,58 @@ describe('jgame_version_upgrade_logic.format_upgrade_command', () => {
 		)
 	})
 })
+
+describe('jgame_version_upgrade_logic.is_consumer_project_context', () => {
+	it('returns true when game-kit is in dependencies', () => {
+		const raw = JSON.stringify({ dependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
+		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
+	})
+
+	it('returns true when game-kit is in devDependencies', () => {
+		const raw = JSON.stringify({ devDependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
+		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
+	})
+
+	it('returns true when game-kit is in peerDependencies', () => {
+		const raw = JSON.stringify({ peerDependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
+		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
+	})
+
+	it('returns false when game-kit is not in any dependency field', () => {
+		const raw = JSON.stringify({ dependencies: { 'other-pkg': '^1.0.0' } })
+		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(false)
+	})
+
+	it('returns false when raw is undefined (file missing)', () => {
+		expect(jgame_version_upgrade_logic.is_consumer_project_context(undefined)).toBe(false)
+	})
+
+	it('returns false when raw is malformed JSON', () => {
+		expect(jgame_version_upgrade_logic.is_consumer_project_context('not valid {{{')).toBe(false)
+	})
+
+	it('returns false when raw parses to a non-object', () => {
+		expect(jgame_version_upgrade_logic.is_consumer_project_context('"plain-string"')).toBe(false)
+		expect(jgame_version_upgrade_logic.is_consumer_project_context('42')).toBe(false)
+		expect(jgame_version_upgrade_logic.is_consumer_project_context('null')).toBe(false)
+	})
+})
+
+describe('jgame_version_upgrade_logic.build_global_upgrade_args', () => {
+	it('returns pnpm add -g args with the safe-chain bypass flag for the requested version', () => {
+		expect(jgame_version_upgrade_logic.build_global_upgrade_args('0.64.0')).toEqual([
+			'add',
+			'-g',
+			'@joshuafolkken/game-kit@0.64.0',
+			'--safe-chain-skip-minimum-package-age',
+		])
+	})
+})
+
+describe('jgame_version_upgrade_logic.format_global_upgrade_command', () => {
+	it('joins command and global args for display', () => {
+		expect(jgame_version_upgrade_logic.format_global_upgrade_command('0.64.0')).toBe(
+			'pnpm add -g @joshuafolkken/game-kit@0.64.0 --safe-chain-skip-minimum-package-age',
+		)
+	})
+})
