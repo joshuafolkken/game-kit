@@ -18,21 +18,23 @@ Single quotes around `$LINE` keep `$(gh auth token)` literal, so the token is re
 
 ## 2. Configure `.npmrc`
 
-Tell `pnpm` to resolve `@joshuafolkken/*` against GitHub Packages with the token from §1. The following snippet is idempotent:
+Tell `pnpm` to resolve `@joshuafolkken/*` against GitHub Packages with the token from §1. Run the following from your project root; the snippet is idempotent:
 
 ```bash
 REGISTRY='@joshuafolkken:registry=https://npm.pkg.github.com'
 TOKEN='//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}'
-grep -qxF "$REGISTRY" ~/.npmrc 2>/dev/null || echo "$REGISTRY" >> ~/.npmrc
-grep -qxF "$TOKEN"    ~/.npmrc 2>/dev/null || echo "$TOKEN"    >> ~/.npmrc
+grep -qxF "$REGISTRY" .npmrc 2>/dev/null || echo "$REGISTRY" >> .npmrc
+grep -qxF "$TOKEN"    .npmrc 2>/dev/null || echo "$TOKEN"    >> .npmrc
 ```
 
-`${NODE_AUTH_TOKEN}` is intentionally written as a literal placeholder — `pnpm` expands it from the env var at install time (which is why §1 must come first). To scope this to a single project, swap `~/.npmrc` for `./.npmrc`.
+**Commit the resulting `.npmrc`.** `${NODE_AUTH_TOKEN}` is a literal placeholder and contains no secret — `pnpm` expands it from the env var at install time (which is why §1 must come first). Each developer and CI provides `NODE_AUTH_TOKEN` separately, so committing this file unlocks `pnpm install` for the whole team without leaking credentials.
+
+If you'd rather keep this scoped to your machine instead of the project, swap `.npmrc` for `~/.npmrc` in the snippet above.
 
 ## 3. Install
 
 ```bash
-pnpm add @joshuafolkken/game-kit
+pnpm add -D @joshuafolkken/game-kit
 ```
 
 ## 4. Use
