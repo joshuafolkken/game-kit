@@ -4,7 +4,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { jgame_install_bin_logic } from './jgame-install-bin-logic.ts'
 
-const PKG_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
+const PKG_DIR = jgame_install_bin_logic.resolve_package_directory(
+	path.dirname(fileURLToPath(import.meta.url)),
+)
 const WRAPPER_MODE = 0o755
 
 type InstallOptions = { force: boolean }
@@ -71,3 +73,5 @@ function install_jgame_bin(options: InstallOptions): void {
 const jgame_install_bin = { run: install_jgame_bin }
 
 export { jgame_install_bin }
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) install_jgame_bin({ force: false })

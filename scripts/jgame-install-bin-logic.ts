@@ -24,6 +24,14 @@ function resolve_jgame_script_path(package_directory: string): string {
 	return path.join(package_directory, 'dist', 'scripts', 'jgame.js')
 }
 
+function resolve_package_directory(script_directory: string): string {
+	const segments = script_directory.split(path.sep)
+	const is_dist = segments.at(-2) === 'dist' && segments.at(-1) === 'scripts'
+	const levels_up = is_dist ? 2 : 1
+
+	return path.join(script_directory, ...Array.from({ length: levels_up }, () => '..'))
+}
+
 function resolve_node_command(): string {
 	return NODE_COMMAND
 }
@@ -89,6 +97,7 @@ const jgame_install_bin_logic = {
 	resolve_local_bin_directory,
 	resolve_bin_path,
 	resolve_jgame_script_path,
+	resolve_package_directory,
 	resolve_node_command,
 	generate_wrapper_script,
 	strip_trailing_slashes,
