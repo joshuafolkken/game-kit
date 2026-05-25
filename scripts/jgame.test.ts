@@ -14,6 +14,13 @@ vi.mock('./jgame-install-bin.ts', () => ({ jgame_install_bin: { run: vi.fn() } }
 vi.mock('./jgame-version-check.ts', () => ({
 	jgame_version_check: { run: vi.fn(), parse_version: vi.fn() },
 }))
+vi.mock('./jgame-version-upgrade.ts', () => ({
+	jgame_version_upgrade: {
+		run: vi.fn(),
+		read_project_overrides: vi.fn(),
+		exec_pnpm_add: vi.fn(),
+	},
+}))
 
 describe('route_command', () => {
 	beforeEach(() => {
@@ -57,6 +64,12 @@ describe('route_command', () => {
 		const { jgame_version_check } = await import('./jgame-version-check.ts')
 		route_command('version')
 		expect(jgame_version_check.run).toHaveBeenCalledOnce()
+	})
+
+	it('routes version:upgrade to jgame_version_upgrade.run', async () => {
+		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
+		route_command('version:upgrade')
+		expect(jgame_version_upgrade.run).toHaveBeenCalledOnce()
 	})
 
 	it('exits with code 1 for unknown command and prints jgame usage', () => {
