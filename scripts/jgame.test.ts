@@ -10,7 +10,6 @@ vi.mock('./jgame-init.ts', () => ({
 	},
 }))
 vi.mock('./jgame-sync.ts', () => ({ jgame_sync: { run: vi.fn() } }))
-vi.mock('./jgame-install-bin.ts', () => ({ jgame_install_bin: { run: vi.fn() } }))
 vi.mock('./jgame-version-check.ts', () => ({
 	jgame_version_check: { run: vi.fn(), parse_version: vi.fn() },
 }))
@@ -48,16 +47,10 @@ describe('route_command', () => {
 		expect(jgame_sync.run).toHaveBeenCalledOnce()
 	})
 
-	it('routes install to jgame_install_bin.run without force', async () => {
-		const { jgame_install_bin } = await import('./jgame-install-bin.ts')
-		route_command('install')
-		expect(jgame_install_bin.run).toHaveBeenCalledWith({ force: false })
-	})
-
-	it('routes install --force to jgame_install_bin.run with force=true', async () => {
-		const { jgame_install_bin } = await import('./jgame-install-bin.ts')
-		route_command('install', '--force')
-		expect(jgame_install_bin.run).toHaveBeenCalledWith({ force: true })
+	it('treats install as unknown command', () => {
+		expect(() => route_command('install')).toThrow('process.exit called')
+		expect(process.exit).toHaveBeenCalledWith(1)
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Unknown command: install'))
 	})
 
 	it('routes version to jgame_version_check.run', async () => {
