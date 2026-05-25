@@ -11,6 +11,7 @@ const PACKAGE_JSON_PATH = path.join(
 
 interface PackageJsonShape {
 	scripts: Record<string, string | undefined>
+	pnpm?: unknown
 }
 
 const pkg = JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8')) as PackageJsonShape
@@ -35,5 +36,9 @@ describe('package.json lifecycle scripts', () => {
 
 	it('keeps safe-chain in preinstall for consumer-side malware scanning', () => {
 		expect(pkg.scripts.preinstall).toMatch(/safe-chain/)
+	})
+
+	it('does not declare a pnpm field (settings live in pnpm-workspace.yaml)', () => {
+		expect(pkg.pnpm).toBeUndefined()
 	})
 })

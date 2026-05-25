@@ -14,3 +14,5 @@ minimumReleaseAgeExclude:
 
 overrides:
   cookie: ^0.7.0
+  serialize-javascript: '>=7.0.5'
+  ws: '>=8.20.1'

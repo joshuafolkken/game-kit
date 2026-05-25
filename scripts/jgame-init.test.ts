@@ -27,7 +27,6 @@ const MOCK_PKG = {
 		vite: '^6.0.0',
 	},
 	devEngines: { packageManager: { name: 'pnpm', version: '>=11.0.0-0', onFail: 'error' } },
-	pnpm: { overrides: { cookie: '^0.7.0' } },
 }
 
 describe('jgame_init.generate_package_json', () => {
@@ -54,10 +53,10 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.devDependencies['@joshuafolkken/kit']).toBe('0.162.0')
 	})
 
-	it('preserves pnpm overrides', async () => {
+	it('does not emit a pnpm field (settings are sourced from pnpm-workspace.yaml, copied via templates)', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
-		expect(result.pnpm.overrides['cookie']).toBe('^0.7.0')
+		expect(result.pnpm).toBeUndefined()
 	})
 
 	it('includes required scripts', async () => {

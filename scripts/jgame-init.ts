@@ -57,7 +57,6 @@ type GameKitPkg = {
 	scripts: Record<string, string>
 	devDependencies: Record<string, string>
 	devEngines: unknown
-	pnpm: { overrides: Record<string, string> }
 }
 
 type GameNames = {
@@ -136,7 +135,6 @@ function build_package_json(pkg: GameKitPkg, game_name: string): object {
 		dependencies: { '@joshuafolkken/game-kit': `^${pkg.version}` },
 		devDependencies: pick_deps(pkg.devDependencies, REQUIRED_DEV_DEPS),
 		devEngines: pkg.devEngines,
-		pnpm: { overrides: pkg.pnpm.overrides },
 	}
 }
 

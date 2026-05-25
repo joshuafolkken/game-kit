@@ -15,6 +15,6 @@ minimumReleaseAgeExclude:
 
 overrides:
   cookie: ^0.7.0
-  # GHSA-58qx-3vcg-4xpx (moderate) is fixed in ws@8.20.1; force the whole tree
-  # onto the patched line. Mirrored in package.json#pnpm.overrides.
+  # GHSA-58qx-3vcg-4xpx (moderate) is fixed in ws@8.20.1; force the whole tree onto the patched line.
   ws: '>=8.20.1'
+  serialize-javascript: '>=7.0.5'
