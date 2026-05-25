@@ -13,21 +13,13 @@ describe('jgame_version_check_logic.format_version_status', () => {
 	})
 })
 
-describe('jgame_version_check_logic.format_update_command', () => {
-	it('formats pnpm add command targeting @joshuafolkken/game-kit', () => {
-		expect(jgame_version_check_logic.format_update_command('1.2.3')).toBe(
-			'pnpm add -D @joshuafolkken/game-kit@1.2.3',
-		)
-	})
-})
-
 describe('jgame_version_check_logic.format_version_output', () => {
 	it('omits update hint when current matches latest', () => {
 		const output = jgame_version_check_logic.format_version_output('0.55.0', '0.55.0')
 		expect(output).toBe(['Current: 0.55.0', 'Latest:  0.55.0', '✓ Up to date'].join('\n'))
 	})
 
-	it('includes update command when current is behind latest', () => {
+	it('suggests jgame vu (not a raw pnpm command) when current is behind latest', () => {
 		const output = jgame_version_check_logic.format_version_output('0.55.0', '0.56.0')
 		expect(output).toBe(
 			[
@@ -35,9 +27,14 @@ describe('jgame_version_check_logic.format_version_output', () => {
 				'Latest:  0.56.0',
 				'⚠ Update available: 0.55.0 → 0.56.0',
 				'',
-				'Run: pnpm add -D @joshuafolkken/game-kit@0.56.0',
+				'Run: jgame vu',
 			].join('\n'),
 		)
+	})
+
+	it('does not leak a raw pnpm command (consumer- or global-specific) into the update hint', () => {
+		const output = jgame_version_check_logic.format_version_output('0.55.0', '0.56.0')
+		expect(output).not.toMatch(/pnpm\s+add/u)
 	})
 
 	it('exposes the canonical package name', () => {
