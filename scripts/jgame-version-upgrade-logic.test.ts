@@ -112,12 +112,11 @@ describe('jgame_version_upgrade_logic.is_consumer_project_context', () => {
 })
 
 describe('jgame_version_upgrade_logic.build_global_upgrade_args', () => {
-	it('returns pnpm add -g args with the safe-chain bypass flag for the requested version', () => {
+	it('returns pnpm add -g args for the requested version (no safe-chain flag — raw pnpm via spawn)', () => {
 		expect(jgame_version_upgrade_logic.build_global_upgrade_args('0.64.0')).toEqual([
 			'add',
 			'-g',
 			'@joshuafolkken/game-kit@0.64.0',
-			'--safe-chain-skip-minimum-package-age',
 		])
 	})
 })
@@ -125,7 +124,7 @@ describe('jgame_version_upgrade_logic.build_global_upgrade_args', () => {
 describe('jgame_version_upgrade_logic.format_global_upgrade_command', () => {
 	it('joins command and global args for display', () => {
 		expect(jgame_version_upgrade_logic.format_global_upgrade_command('0.64.0')).toBe(
-			'pnpm add -g @joshuafolkken/game-kit@0.64.0 --safe-chain-skip-minimum-package-age',
+			'pnpm add -g @joshuafolkken/game-kit@0.64.0',
 		)
 	})
 })
