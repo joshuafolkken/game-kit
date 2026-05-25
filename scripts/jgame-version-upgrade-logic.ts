@@ -2,7 +2,6 @@ const PACKAGE_NAME = '@joshuafolkken/game-kit'
 const UPGRADE_COMMAND = 'pnpm'
 const UPGRADE_ARGS_PREFIX = ['add', '-D'] as const
 const GLOBAL_UPGRADE_ARGS_PREFIX = ['add', '-g'] as const
-const GLOBAL_UPGRADE_BYPASS_FLAG = '--safe-chain-skip-minimum-package-age'
 const DEP_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'] as const
 
 interface PackageJsonWithPnpmOverrides {
@@ -88,7 +87,7 @@ function is_consumer_project_context(raw: string | undefined): raw is string {
 }
 
 function build_global_upgrade_args(latest: string): Array<string> {
-	return [...GLOBAL_UPGRADE_ARGS_PREFIX, `${PACKAGE_NAME}@${latest}`, GLOBAL_UPGRADE_BYPASS_FLAG]
+	return [...GLOBAL_UPGRADE_ARGS_PREFIX, `${PACKAGE_NAME}@${latest}`]
 }
 
 function format_global_upgrade_command(latest: string): string {

@@ -96,12 +96,7 @@ describe('jgame_version_upgrade', () => {
 
 		expect(spawnSync).toHaveBeenCalledWith(
 			'pnpm',
-			[
-				'add',
-				'-g',
-				`@joshuafolkken/game-kit@${LATEST_VERSION}`,
-				'--safe-chain-skip-minimum-package-age',
-			],
+			['add', '-g', `@joshuafolkken/game-kit@${LATEST_VERSION}`],
 			expect.anything(),
 		)
 	})
@@ -121,12 +116,7 @@ describe('jgame_version_upgrade', () => {
 
 		expect(spawnSync).toHaveBeenCalledWith(
 			'pnpm',
-			[
-				'add',
-				'-g',
-				`@joshuafolkken/game-kit@${LATEST_VERSION}`,
-				'--safe-chain-skip-minimum-package-age',
-			],
+			['add', '-g', `@joshuafolkken/game-kit@${LATEST_VERSION}`],
 			expect.anything(),
 		)
 	})
