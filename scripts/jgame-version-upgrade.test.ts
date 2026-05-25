@@ -28,7 +28,7 @@ function mock_spawn_result(status: number): {
 
 describe('jgame_version_upgrade', () => {
 	beforeEach(() => {
-		vi.clearAllMocks()
+		vi.resetAllMocks()
 		vi.spyOn(console, 'info').mockImplementation(() => {})
 		vi.spyOn(console, 'warn').mockImplementation(() => {})
 		vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -86,7 +86,7 @@ describe('jgame_version_upgrade', () => {
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
 		vi.mocked(readFileSync).mockImplementation(() => {
-			throw new Error('ENOENT')
+			throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
 		})
 		vi.mocked(jgame_version_api.fetch_latest_version).mockReturnValue(LATEST_VERSION)
 		vi.mocked(spawnSync).mockReturnValue(mock_spawn_result(0))
@@ -131,12 +131,22 @@ describe('jgame_version_upgrade', () => {
 		)
 	})
 
+	it('rethrows non-ENOENT errors from readFileSync instead of falling back to global', async () => {
+		const { readFileSync } = await import('node:fs')
+		vi.mocked(readFileSync).mockImplementation(() => {
+			throw Object.assign(new Error('permission denied'), { code: 'EACCES' })
+		})
+		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
+
+		expect(() => jgame_version_upgrade.run()).toThrow(/permission denied/u)
+	})
+
 	it('warns and skips spawn when fetch_latest_version returns undefined', async () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
 		vi.mocked(readFileSync).mockImplementation(() => {
-			throw new Error('ENOENT')
+			throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
 		})
 		vi.mocked(jgame_version_api.fetch_latest_version).mockReturnValue(undefined)
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')

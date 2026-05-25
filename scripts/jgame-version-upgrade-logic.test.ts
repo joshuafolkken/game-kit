@@ -129,3 +129,29 @@ describe('jgame_version_upgrade_logic.format_global_upgrade_command', () => {
 		)
 	})
 })
+
+describe('jgame_version_upgrade_logic.is_enoent_error', () => {
+	it('returns true for an error-like object with code === "ENOENT"', () => {
+		expect(jgame_version_upgrade_logic.is_enoent_error({ code: 'ENOENT' })).toBe(true)
+	})
+
+	it('returns true for an Error instance augmented with code === "ENOENT"', () => {
+		const error = Object.assign(new Error('not found'), { code: 'ENOENT' })
+		expect(jgame_version_upgrade_logic.is_enoent_error(error)).toBe(true)
+	})
+
+	it('returns false for other error codes (e.g. EACCES)', () => {
+		expect(jgame_version_upgrade_logic.is_enoent_error({ code: 'EACCES' })).toBe(false)
+	})
+
+	it('returns false for an Error without a code property', () => {
+		expect(jgame_version_upgrade_logic.is_enoent_error(new Error('boom'))).toBe(false)
+	})
+
+	it('returns false for primitives and null', () => {
+		expect(jgame_version_upgrade_logic.is_enoent_error(null)).toBe(false)
+		expect(jgame_version_upgrade_logic.is_enoent_error(undefined)).toBe(false)
+		expect(jgame_version_upgrade_logic.is_enoent_error('ENOENT')).toBe(false)
+		expect(jgame_version_upgrade_logic.is_enoent_error(42)).toBe(false)
+	})
+})

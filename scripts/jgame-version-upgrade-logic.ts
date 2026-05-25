@@ -95,6 +95,13 @@ function format_global_upgrade_command(latest: string): string {
 	return [UPGRADE_COMMAND, ...build_global_upgrade_args(latest)].join(' ')
 }
 
+function is_enoent_error(value: unknown): boolean {
+	if (typeof value !== 'object' || value === null) return false
+	if (!('code' in value)) return false
+
+	return value.code === 'ENOENT'
+}
+
 const jgame_version_upgrade_logic = {
 	PACKAGE_NAME,
 	UPGRADE_COMMAND,
@@ -106,6 +113,7 @@ const jgame_version_upgrade_logic = {
 	is_consumer_project_context,
 	build_global_upgrade_args,
 	format_global_upgrade_command,
+	is_enoent_error,
 }
 
 export { jgame_version_upgrade_logic }

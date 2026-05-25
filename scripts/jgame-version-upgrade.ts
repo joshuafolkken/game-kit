@@ -9,8 +9,9 @@ const PROJECT_PACKAGE_JSON = path.join(process.cwd(), 'package.json')
 function read_project_package_json_or_undefined(): string | undefined {
 	try {
 		return readFileSync(PROJECT_PACKAGE_JSON, 'utf8')
-	} catch {
-		return undefined
+	} catch (error) {
+		if (jgame_version_upgrade_logic.is_enoent_error(error)) return undefined
+		throw error
 	}
 }
 
