@@ -99,7 +99,7 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 		// Reason: the other tests only check that opacity={BACKDROP_OPACITY} is wired up,
 		// so silent value drift wouldn't be caught. Pin the literal value here so visual
 		// regressions on the CLICK TO START backdrop are surfaced.
-		expect(SOURCE).toMatch(/const\s+BACKDROP_OPACITY\s*=\s*0\.9/)
+		expect(SOURCE).toMatch(/const\s+BACKDROP_OPACITY\s*=\s*0\.9/u)
 	})
 
 	it('icon materials are DoubleSide so they remain visible when viewed from behind', () => {
@@ -124,19 +124,19 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 	})
 
 	it('FrontSide, BackSide, and DoubleSide are all imported from three', () => {
-		expect(SOURCE).toMatch(/import\s*\{[^}]*\bFrontSide\b[^}]*\}\s*from\s*'three'/)
-		expect(SOURCE).toMatch(/import\s*\{[^}]*\bBackSide\b[^}]*\}\s*from\s*'three'/)
-		expect(SOURCE).toMatch(/import\s*\{[^}]*\bDoubleSide\b[^}]*\}\s*from\s*'three'/)
+		expect(SOURCE).toMatch(/import\s*\{[^}]*\bFrontSide\b[^}]*\}\s*from\s*'three'/u)
+		expect(SOURCE).toMatch(/import\s*\{[^}]*\bBackSide\b[^}]*\}\s*from\s*'three'/u)
+		expect(SOURCE).toMatch(/import\s*\{[^}]*\bDoubleSide\b[^}]*\}\s*from\s*'three'/u)
 	})
 })
 
 describe('ControlsScene PC icon fit — keyboard and mouse must not overflow the viewport', () => {
 	it('keyboard and mouse meshes are wrapped in a T.Group with scale={pc_scale}', () => {
-		expect(SOURCE).toMatch(/<T\.Group[^>]*\bscale=\{pc_scale\}/)
+		expect(SOURCE).toMatch(/<T\.Group[^>]*\bscale=\{pc_scale\}/u)
 	})
 
 	it('PC group is positioned at the shared y/z so scaling keeps icons vertically anchored', () => {
-		expect(SOURCE).toMatch(/<T\.Group\s+position=\{\[0,\s*PC_GROUP_Y,\s*PC_GROUP_Z\]\}/)
+		expect(SOURCE).toMatch(/<T\.Group\s+position=\{\[0,\s*PC_GROUP_Y,\s*PC_GROUP_Z\]\}/u)
 	})
 
 	it('keyboard mesh uses group-local position [KEYBOARD_X, 0, 0]', () => {
@@ -155,26 +155,26 @@ describe('ControlsScene PC icon fit — keyboard and mouse must not overflow the
 
 	it('compute_fit_scale is imported from the controls-fit helper module', () => {
 		expect(SOURCE).toMatch(
-			/import\s*\{\s*compute_fit_scale\s*\}\s*from\s*'\$lib\/game-kit\/controls\/controls-fit'/,
+			/import\s*\{\s*compute_fit_scale\s*\}\s*from\s*'\$lib\/game-kit\/controls\/controls-fit'/u,
 		)
 	})
 
 	it('PC_NATURAL_SPAN and PC_MIN_SIDE_PADDING constants are defined (min padding constraint replaces width ratio)', () => {
-		expect(SOURCE).toMatch(/const\s+PC_NATURAL_SPAN\s*=/)
-		expect(SOURCE).toMatch(/const\s+PC_MIN_SIDE_PADDING\s*=\s*0\.138/)
-		expect(SOURCE).not.toMatch(/PC_SAFE_WIDTH_RATIO/)
+		expect(SOURCE).toMatch(/const\s+PC_NATURAL_SPAN\s*=/u)
+		expect(SOURCE).toMatch(/const\s+PC_MIN_SIDE_PADDING\s*=\s*0\.138/u)
+		expect(SOURCE).not.toMatch(/PC_SAFE_WIDTH_RATIO/u)
 	})
 
 	it('hint text group is scaled by pc_scale so it shrinks together with the icons (does not overflow icon span)', () => {
 		expect(SOURCE).toMatch(
-			/<T\.Group\s+position=\{\[HINT_X,\s*HINT_Y,\s*HINT_Z\]\}\s+scale=\{pc_scale\}/,
+			/<T\.Group\s+position=\{\[HINT_X,\s*HINT_Y,\s*HINT_Z\]\}\s+scale=\{pc_scale\}/u,
 		)
 	})
 })
 
 describe('ControlsScene keyboard letters — overlaid as Threlte Text using the theme font', () => {
 	it('keyboard SVG contains only key boxes (no <text> elements) — letters are overlaid as Threlte Text', () => {
-		const svg_match = SOURCE.match(/const\s+KEYBOARD_SVG\s*=\s*`([\s\S]*?)`/)
+		const svg_match = SOURCE.match(/const\s+KEYBOARD_SVG\s*=\s*`([\s\S]*?)`/u)
 		expect(svg_match).not.toBeNull()
 		const svg_body = svg_match?.[1] ?? ''
 		expect(svg_body).not.toContain('<text')
@@ -183,8 +183,8 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 	})
 
 	it('KEYBOARD_LETTERS array enumerates all 7 letter overlays (W, A, S, D, ESC, /, Z)', () => {
-		expect(SOURCE).toMatch(/const\s+KEYBOARD_LETTERS\s*:\s*ReadonlyArray<KeyboardLetter>\s*=/)
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/)
+		expect(SOURCE).toMatch(/const\s+KEYBOARD_LETTERS\s*:\s*ReadonlyArray<KeyboardLetter>\s*=/u)
+		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
 		expect(letter_match).not.toBeNull()
 		const block = letter_match?.[0] ?? ''
 		expect(block).toContain("text: 'W'")
@@ -199,48 +199,48 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 	it('WASD letters are pinned to vsize 16 — kept large for readability', () => {
 		// Reason: vsize is the only signal of intentional visual sizing; without pinning,
 		// silent drift during unrelated edits could shrink the keys back.
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/)
+		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
 		const block = letter_match?.[0] ?? ''
-		expect(block).toMatch(/text:\s*'W'[^}]*vsize:\s*16/)
-		expect(block).toMatch(/text:\s*'A'[^}]*vsize:\s*16/)
-		expect(block).toMatch(/text:\s*'S'[^}]*vsize:\s*16/)
-		expect(block).toMatch(/text:\s*'D'[^}]*vsize:\s*16/)
+		expect(block).toMatch(/text:\s*'W'[^}]*vsize:\s*16/u)
+		expect(block).toMatch(/text:\s*'A'[^}]*vsize:\s*16/u)
+		expect(block).toMatch(/text:\s*'S'[^}]*vsize:\s*16/u)
+		expect(block).toMatch(/text:\s*'D'[^}]*vsize:\s*16/u)
 	})
 
 	it('WASD letter vy values are pinned to the lowered key positions (W=38, A/S/D=82)', () => {
 		// Reason: the WASD rows were moved down so the ASD-to-space gap matches the
 		// space-to-ESC gap. The letter vy values must follow the rect centers.
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/)
+		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
 		const block = letter_match?.[0] ?? ''
-		expect(block).toMatch(/text:\s*'W'[^}]*vy:\s*38/)
-		expect(block).toMatch(/text:\s*'A'[^}]*vy:\s*82/)
-		expect(block).toMatch(/text:\s*'S'[^}]*vy:\s*82/)
-		expect(block).toMatch(/text:\s*'D'[^}]*vy:\s*82/)
+		expect(block).toMatch(/text:\s*'W'[^}]*vy:\s*38/u)
+		expect(block).toMatch(/text:\s*'A'[^}]*vy:\s*82/u)
+		expect(block).toMatch(/text:\s*'S'[^}]*vy:\s*82/u)
+		expect(block).toMatch(/text:\s*'D'[^}]*vy:\s*82/u)
 	})
 
 	it('ESC label is pinned to vsize 12 — bumped above 9 to match WASD legibility while staying within its key', () => {
 		// Reason: ESC has 3 glyphs versus the single-glyph WASD/Z keys, so it is sized
 		// smaller than 16 to avoid horizontal overflow within the key rect. Pinning the
 		// literal value prevents accidental regression to the previous tiny size.
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/)
+		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
 		const block = letter_match?.[0] ?? ''
-		expect(block).toMatch(/text:\s*'ESC'[^}]*vsize:\s*12/)
+		expect(block).toMatch(/text:\s*'ESC'[^}]*vsize:\s*12/u)
 	})
 
 	it('provides viewbox → plane coordinate helpers', () => {
-		expect(SOURCE).toMatch(/function\s+viewbox_x_to_plane\s*\(\s*vx\s*:\s*number\s*\)/)
-		expect(SOURCE).toMatch(/function\s+viewbox_y_to_plane\s*\(\s*vy\s*:\s*number\s*\)/)
+		expect(SOURCE).toMatch(/function\s+viewbox_x_to_plane\s*\(\s*vx\s*:\s*number\s*\)/u)
+		expect(SOURCE).toMatch(/function\s+viewbox_y_to_plane\s*\(\s*vy\s*:\s*number\s*\)/u)
 		expect(SOURCE).toMatch(
-			/function\s+viewbox_size_to_world\s*\(\s*vsize\s*:\s*number\s*,\s*size_mul\s*:\s*number\s*\)/,
+			/function\s+viewbox_size_to_world\s*\(\s*vsize\s*:\s*number\s*,\s*size_mul\s*:\s*number\s*\)/u,
 		)
 	})
 
 	it('renders one Threlte Text per letter via {#each KEYBOARD_LETTERS} inside the PC group', () => {
-		expect(SOURCE).toMatch(/\{#each\s+KEYBOARD_LETTERS\s+as\s+letter/)
+		expect(SOURCE).toMatch(/\{#each\s+KEYBOARD_LETTERS\s+as\s+letter/u)
 	})
 
 	it('letter Text uses font={current_font} so it matches the hint text font exactly', () => {
-		const each_block = SOURCE.match(/\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/)
+		const each_block = SOURCE.match(/\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u)
 		expect(each_block).not.toBeNull()
 		const block = each_block?.[0] ?? ''
 		expect(block).toContain('font={current_font}')
@@ -253,63 +253,65 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 
 	it('uses theme font-size multiplier for visual size parity between PressStart2P and Orbitron', () => {
 		expect(SOURCE).toMatch(
-			/current_font_size_mul\s*=\s*\$derived\(fonts\.get_font_size_multiplier\(should_use_alt_font\)\)/,
+			/current_font_size_mul\s*=\s*\$derived\(fonts\.get_font_size_multiplier\(should_use_alt_font\)\)/u,
 		)
 	})
 
 	it('derives should_use_alt_font from !crt.is_crt_enabled — font swaps with CRT, not CYBER', () => {
 		expect(SOURCE).toMatch(
-			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
-		expect(SOURCE).toMatch(/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/)
-		expect(SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
+		expect(SOURCE).toMatch(
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
+		)
+		expect(SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/u)
 	})
 
 	it('does not regenerate the keyboard texture on font change (texture is static; only Text overlays react)', () => {
-		expect(SOURCE).not.toMatch(/function\s+make_keyboard_svg\s*\(/)
-		expect(SOURCE).not.toMatch(/old_tex\?\.dispose\(\)/)
+		expect(SOURCE).not.toMatch(/function\s+make_keyboard_svg\s*\(/u)
+		expect(SOURCE).not.toMatch(/old_tex\?\.dispose\(\)/u)
 	})
 })
 
 describe('ControlsScene viewport reactivity — sizes update on window resize', () => {
 	it('subscribes to Threlte size store via $size so $derived reacts to resize', () => {
-		expect(SOURCE).toMatch(/const\s*\{\s*size\s*\}\s*=\s*useThrelte\(\)/)
+		expect(SOURCE).toMatch(/const\s*\{\s*size\s*\}\s*=\s*useThrelte\(\)/u)
 		expect(SOURCE).toContain('$size.width')
 		expect(SOURCE).toContain('$size.height')
 	})
 
 	it('does not use the non-reactive .current accessor on size (would freeze viewport_aspect)', () => {
-		expect(SOURCE).not.toMatch(/\bctx\.size\.current\b/)
-		expect(SOURCE).not.toMatch(/\bsize\.current\.(width|height)\b/)
+		expect(SOURCE).not.toMatch(/\bctx\.size\.current\b/u)
+		expect(SOURCE).not.toMatch(/\bsize\.current\.(width|height)\b/u)
 	})
 })
 
 describe('ControlsScene texture loading — leak-safe blob URLs and unhandled rejections', () => {
 	it('svg_to_texture revokes the object URL in a finally block (no leak on failure)', () => {
-		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/)
+		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
 		expect(fn_match).not.toBeNull()
 		const body = fn_match?.[0] ?? ''
-		expect(body).toMatch(/\}\s*finally\s*\{[\s\S]*URL\.revokeObjectURL\(url\)[\s\S]*\}/)
+		expect(body).toMatch(/\}\s*finally\s*\{[\s\S]*URL\.revokeObjectURL\(url\)[\s\S]*\}/u)
 	})
 
 	it('svg_to_texture does not call URL.revokeObjectURL outside the finally block', () => {
-		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/)
+		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
 		const body = fn_match?.[0] ?? ''
-		const revoke_count = (body.match(/URL\.revokeObjectURL\(/g) ?? []).length
+		const revoke_count = (body.match(/URL\.revokeObjectURL\(/gu) ?? []).length
 		expect(revoke_count).toBe(1)
 	})
 
 	it('load_textures catches Promise.all rejection to avoid unhandled rejection', () => {
-		const fn_match = SOURCE.match(/async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/)
+		const fn_match = SOURCE.match(/async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/u)
 		expect(fn_match).not.toBeNull()
 		const body = fn_match?.[0] ?? ''
-		expect(body).toMatch(/try\s*\{[\s\S]*await Promise\.all/)
-		expect(body).toMatch(/\}\s*catch\s*\([^)]*\)\s*\{/)
+		expect(body).toMatch(/try\s*\{[\s\S]*await Promise\.all/u)
+		expect(body).toMatch(/\}\s*catch\s*\([^)]*\)\s*\{/u)
 	})
 })
 
 function extract_const_number(source: string, name: string): number {
-	const re = new RegExp(`const\\s+${name}\\s*=\\s*(-?\\d+(?:\\.\\d+)?)`)
+	const re = new RegExp(`const\\s+${name}\\s*=\\s*(-?\\d+(?:\\.\\d+)?)`, 'u')
 	const match = source.match(re)
 	if (!match) throw new Error(`constant ${name} not found in source`)
 	return Number(match[1])
@@ -426,7 +428,7 @@ const MOUSE_Z_ALIGNMENT_TOLERANCE = 0.01
 
 describe('ControlsScene mouse vertical alignment — mouse body bottom matches Z key bottom', () => {
 	it('MOUSE_Y constant is defined and the mesh uses [MOUSE_X, MOUSE_Y, 0]', () => {
-		expect(SOURCE).toMatch(/const\s+MOUSE_Y\s*=\s*-?\d+(?:\.\d+)?/)
+		expect(SOURCE).toMatch(/const\s+MOUSE_Y\s*=\s*-?\d+(?:\.\d+)?/u)
 		expect(SOURCE).toContain('position={[MOUSE_X, MOUSE_Y, 0]}')
 	})
 
@@ -464,10 +466,10 @@ const TOUCH_SVG_GESTURE_GROUP_COUNT = 2
 
 describe('ControlsScene touch SVG gesture centering — illustration vertically centered within frame', () => {
 	it('both gesture group y-translations center the bounding box within the frame rect', () => {
-		const svg_match = SOURCE.match(/const\s+TOUCH_SVG\s*=\s*`([\s\S]*?)`/)
+		const svg_match = SOURCE.match(/const\s+TOUCH_SVG\s*=\s*`([\s\S]*?)`/u)
 		expect(svg_match).not.toBeNull()
 		const svg_body = svg_match?.[1] ?? ''
-		const translate_matches = [...svg_body.matchAll(/transform="translate\(\d+,(-?\d+)\)"/g)]
+		const translate_matches = [...svg_body.matchAll(/transform="translate\(\d+,(-?\d+)\)"/gu)]
 		expect(translate_matches).toHaveLength(TOUCH_SVG_GESTURE_GROUP_COUNT)
 		for (const match of translate_matches) {
 			const translate_y = Number(match[1])

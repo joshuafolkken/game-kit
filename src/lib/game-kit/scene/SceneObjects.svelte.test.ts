@@ -125,30 +125,30 @@ describe('SceneObjects', () => {
 describe('SceneObjects font selection — driven by CRT, not CYBER (is_alt)', () => {
 	it('derives should_use_alt_font from !crt.is_crt_enabled (font swaps with CRT, not CYBER)', () => {
 		expect(SCENE_OBJECTS_SOURCE).toMatch(
-			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/,
+			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
 	})
 
 	it('current_font passes should_use_alt_font into fonts.get_font (not is_alt)', () => {
 		expect(SCENE_OBJECTS_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/,
+			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/u,
 		)
 	})
 
 	it('current_font_size_multiplier passes should_use_alt_font into fonts.get_font_size_multiplier', () => {
 		expect(SCENE_OBJECTS_SOURCE).toMatch(
-			/let\s+current_font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_font_size_multiplier\(\s*should_use_alt_font\s*\)\s*\)/,
+			/let\s+current_font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_font_size_multiplier\(\s*should_use_alt_font\s*\)\s*\)/u,
 		)
 	})
 
 	it('imports crt from $lib/game-kit/crt.svelte so the derived can read is_crt_enabled', () => {
 		expect(SCENE_OBJECTS_SOURCE).toMatch(
-			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/,
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
 		)
 	})
 
 	it('does not pass is_alt directly into fonts helpers (font is no longer CYBER-driven)', () => {
-		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
-		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/)
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/u)
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/u)
 	})
 })

@@ -107,26 +107,26 @@ describe('Switch — panel_text material (matches the border frame glow)', () =>
 	// frame ("枠") so the digits glow at matching brightness.
 
 	it('imports MeshStandardMaterial from three', () => {
-		expect(SWITCH_SOURCE).toMatch(/import\s*\{[^}]*MeshStandardMaterial[^}]*\}\s*from\s*'three'/)
+		expect(SWITCH_SOURCE).toMatch(/import\s*\{[^}]*MeshStandardMaterial[^}]*\}\s*from\s*'three'/u)
 	})
 
 	it('constructs a MeshStandardMaterial for panel_text', () => {
-		expect(SWITCH_SOURCE).toMatch(/new\s+MeshStandardMaterial\(/)
+		expect(SWITCH_SOURCE).toMatch(/new\s+MeshStandardMaterial\(/u)
 		// The result must be stored in a binding referenced by the Text tag (see below).
-		expect(SWITCH_SOURCE).toMatch(/panel_text_material/)
+		expect(SWITCH_SOURCE).toMatch(/panel_text_material/u)
 	})
 
 	it('syncs the material color and emissive to the resolved border-frame values', () => {
 		// Color = border color, emissive = border color, intensity = ring_emissive
 		// (= same emissive intensity as the border frame).
 		expect(SWITCH_SOURCE).toMatch(
-			/panel_text_material\.color\.set\(\s*resolved\.current_color\s*\)/,
+			/panel_text_material\.color\.set\(\s*resolved\.current_color\s*\)/u,
 		)
 		expect(SWITCH_SOURCE).toMatch(
-			/panel_text_material\.emissive\.set\(\s*resolved\.current_color\s*\)/,
+			/panel_text_material\.emissive\.set\(\s*resolved\.current_color\s*\)/u,
 		)
 		expect(SWITCH_SOURCE).toMatch(
-			/panel_text_material\.emissiveIntensity\s*=\s*resolved\.ring_emissive/,
+			/panel_text_material\.emissiveIntensity\s*=\s*resolved\.ring_emissive/u,
 		)
 	})
 
@@ -134,11 +134,11 @@ describe('Switch — panel_text material (matches the border frame glow)', () =>
 		// panel_text Text must receive material={...}; the prior `color=` prop must be gone
 		// so the material's color/emissive own the appearance.
 		expect(SWITCH_SOURCE).toMatch(
-			/text=\{\s*panel_text\s*\}[\s\S]*?material=\{\s*panel_text_material\s*\}/,
+			/text=\{\s*panel_text\s*\}[\s\S]*?material=\{\s*panel_text_material\s*\}/u,
 		)
 	})
 
 	it('disposes the material on unmount', () => {
-		expect(SWITCH_SOURCE).toMatch(/onDestroy\([\s\S]*panel_text_material\.dispose\(\)/)
+		expect(SWITCH_SOURCE).toMatch(/onDestroy\([\s\S]*panel_text_material\.dispose\(\)/u)
 	})
 })

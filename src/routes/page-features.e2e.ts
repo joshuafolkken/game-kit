@@ -84,7 +84,7 @@ test('pseudo-fullscreen class is applied when native API is unavailable on touch
 		scene.click()
 	})
 
-	await expect(page.locator('[data-testid="game-scene"]')).toHaveClass(/pseudo-fullscreen/)
+	await expect(page.locator('[data-testid="game-scene"]')).toHaveClass(/pseudo-fullscreen/u)
 })
 
 test('page has no critical or serious accessibility violations', async ({ page }) => {

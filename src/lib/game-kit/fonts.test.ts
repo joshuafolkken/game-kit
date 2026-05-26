@@ -11,11 +11,11 @@ describe('fonts', () => {
 	})
 
 	it('get_font returns a local font path for retro selection', () => {
-		expect(fonts.get_font(false)).toMatch(/^\/fonts\//)
+		expect(fonts.get_font(false)).toMatch(/^\/fonts\//u)
 	})
 
 	it('get_font returns a local font path for alt selection', () => {
-		expect(fonts.get_font(true)).toMatch(/^\/fonts\//)
+		expect(fonts.get_font(true)).toMatch(/^\/fonts\//u)
 	})
 
 	it('get_font returns the retro pixel font for should_use_alt_font=false', () => {
