@@ -67,8 +67,20 @@ function sync_managed_scripts(): void {
 	console.info('  ✔ synced   package.json scripts')
 }
 
+// pnpm 11 runs an automatic deps-status check (= `pnpm install`) before any
+// `pnpm <script>` invocation. If the consumer project's pnpm-workspace.yaml is
+// outdated (e.g. missing the bare-name `@joshuafolkken/game-kit` entry in
+// `minimumReleaseAgeExclude`), that pre-flight install fails the supply-chain
+// policy and `pnpm josh sync` never executes — so the canonical sync that would
+// have fixed the yaml never runs. Pre-syncing pnpm-workspace.yaml here breaks
+// the chicken-and-egg by updating the file before pnpm is invoked.
+function pre_sync_pnpm_workspace_yaml(): void {
+	sync_file({ dest: 'pnpm-workspace.yaml' })
+}
+
 function run(): void {
 	console.info('\n🔄 jgame sync\n')
+	pre_sync_pnpm_workspace_yaml()
 	execSync('pnpm josh sync', SPAWN_OPTIONS)
 	console.info('\nGame-specific files:')
 	for (const entry of SYNC_FILES) sync_file(entry)
