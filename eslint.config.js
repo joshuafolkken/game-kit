@@ -36,7 +36,7 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'@typescript-eslint/naming-convention': 'off',
 	// TODO #188 follow-up: prefer `type` over `interface` consistently
 	'@typescript-eslint/consistent-type-definitions': 'off',
-	// TODO #188 follow-up: drop redundant file extensions in imports
+	// TODO #188 follow-up: configure import/extensions allowList for Three.js .js deep imports + package.json + SvelteKit hooks.server (rule auto-fix is no-op; needs allowList in rule config — deferred for human review)
 	'import/extensions': 'off',
 	// TODO #188 follow-up: rename files to PascalCase for Svelte components / `.svelte.ts`
 	'unicorn/filename-case': 'off',
@@ -122,8 +122,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'prefer-const': 'off',
 	// TODO #188 follow-up: simplify regex literals to their canonical form
 	'unicorn/better-regex': 'off',
-	// TODO #188 follow-up: add numeric separators to large numeric literals
-	'unicorn/numeric-separators-style': 'off',
 	// TODO #188 follow-up: prefer RegExp.exec over String.match where suitable
 	'@typescript-eslint/prefer-regexp-exec': 'off',
 	// TODO #188 follow-up: prefer spread over Array.from / apply

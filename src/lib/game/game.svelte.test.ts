@@ -321,7 +321,7 @@ describe('score integration', () => {
 		await vi.runAllTimersAsync()
 		game.press(seq_at(0))
 		game.release()
-		expect(score.current_score).toBe(1_000)
+		expect(score.current_score).toBe(1000)
 	})
 
 	it('current_score resets to 0 after game.reset()', async () => {
