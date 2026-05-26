@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { jgame_managed_dev_deps } from './jgame-managed-dev-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
 
@@ -26,40 +27,6 @@ const USER_TSCONFIG = {
 		noEmitOnError: false,
 	},
 }
-
-// `eslint`, `prettier`, and the prettier plugins are devDeps of @joshuafolkken/kit
-// so they are NOT installed transitively for consumers — they must be direct
-// devDeps of the scaffolded project for the binaries / plugin resolution to work.
-const REQUIRED_DEV_DEPS = [
-	'@ianvs/prettier-plugin-sort-imports',
-	'@joshuafolkken/kit',
-	'@sveltejs/adapter-cloudflare',
-	'@sveltejs/kit',
-	'@sveltejs/vite-plugin-svelte',
-	'@tailwindcss/forms',
-	'@tailwindcss/typography',
-	'@tailwindcss/vite',
-	'@threlte/core',
-	'@threlte/extras',
-	'@types/node',
-	'@types/three',
-	'@vite-pwa/sveltekit',
-	'cspell',
-	'eslint',
-	'prettier',
-	'prettier-plugin-svelte',
-	'prettier-plugin-tailwindcss',
-	'svelte',
-	'svelte-check',
-	'tailwindcss',
-	'three',
-	'typescript',
-	'vite',
-	'vite-plugin-pwa',
-	'workbox-build',
-	'workbox-window',
-	'wrangler',
-] as const
 
 type GameKitPkg = {
 	version: string
@@ -124,10 +91,6 @@ function detect_host_pnpm_version(): string {
 	return execSync('pnpm --version').toString().trim()
 }
 
-function pick_deps(all: Record<string, string>, keys: readonly string[]): Record<string, string> {
-	return Object.fromEntries(keys.map((k) => [k, all[k] ?? '*']))
-}
-
 function build_scripts(pkg: GameKitPkg): Record<string, string> {
 	const managed = jgame_managed_scripts.pick_managed_scripts(pkg.scripts)
 	return {
@@ -150,7 +113,7 @@ function build_package_json(pkg: GameKitPkg, game_name: string): object {
 		type: 'module',
 		scripts: build_scripts(pkg),
 		dependencies: { '@joshuafolkken/game-kit': `^${pkg.version}` },
-		devDependencies: pick_deps(pkg.devDependencies, REQUIRED_DEV_DEPS),
+		devDependencies: jgame_managed_dev_deps.pick_required_deps(pkg.devDependencies),
 		packageManager: `pnpm@${detect_host_pnpm_version()}`,
 		devEngines: pkg.devEngines,
 	}

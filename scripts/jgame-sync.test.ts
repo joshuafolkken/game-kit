@@ -57,12 +57,41 @@ function stub_readFileSync_by_path(
 	})
 }
 
+// devDependencies map that mirrors game-kit's own pins for the lint/format toolchain.
+// Used as the canonical source for sync_managed_dev_deps assertions.
+const KIT_DEV_DEPS_FIXTURE = {
+	'@joshuafolkken/kit': '0.162.0',
+	cspell: '^10.0.0',
+	eslint: '^10.4.0',
+	prettier: '^3.8.3',
+	'prettier-plugin-svelte': '^4.0.1',
+	'prettier-plugin-tailwindcss': '^0.8.0',
+	'@ianvs/prettier-plugin-sort-imports': '^4.7.1',
+}
+
+// Returns a devDependencies map that satisfies every entry in REQUIRED_DEV_DEPS,
+// so tests that focus on a different concern (managed scripts, file sync) can
+// keep sync_managed_dev_deps as a silent no-op.
+async function build_complete_consumer_dev_deps(): Promise<Record<string, string>> {
+	const { jgame_managed_dev_deps } = await import('./jgame-managed-dev-deps.ts')
+	const overrides: Record<string, string> = { ...KIT_DEV_DEPS_FIXTURE }
+	return Object.fromEntries(
+		jgame_managed_dev_deps.REQUIRED_DEV_DEPS.map((k) => [k, overrides[k] ?? '*']),
+	)
+}
+
 describe('jgame_sync.run', () => {
 	beforeEach(async () => {
 		vi.spyOn(console, 'info').mockImplementation(() => {})
 		const { readFileSync } = await import('node:fs')
-		const game_kit_pkg = JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } })
-		const consumer_pkg = JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } })
+		const game_kit_pkg = JSON.stringify({
+			scripts: { preview: CANONICAL_PREVIEW },
+			devDependencies: KIT_DEV_DEPS_FIXTURE,
+		})
+		const consumer_pkg = JSON.stringify({
+			scripts: { preview: CANONICAL_PREVIEW },
+			devDependencies: KIT_DEV_DEPS_FIXTURE,
+		})
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': game_kit_pkg,
 			'/project/package.json': consumer_pkg,
@@ -74,6 +103,35 @@ describe('jgame_sync.run', () => {
 		const { jgame_sync } = await import('./jgame-sync.ts')
 		jgame_sync.run()
 		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', expect.any(Object))
+	})
+
+	it('calls josh init --type sveltekit to self-heal missing configs (#186)', async () => {
+		// Regression for #186: projects scaffolded before #184 are missing
+		// eslint.config.js / prettier.config.js. jgame sync must invoke josh init
+		// to scaffold them, because josh sync early-returns on missing destinations.
+		const { execSync } = await import('node:child_process')
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		expect(execSync).toHaveBeenCalledWith('pnpm josh init --type sveltekit', expect.any(Object))
+	})
+
+	it('runs pnpm josh init AFTER pnpm josh sync (#186)', async () => {
+		// josh sync's preflight pnpm install installs the new devDeps that
+		// sync_managed_dev_deps just wrote into package.json; josh init then
+		// scaffolds any missing config files with those deps already available.
+		const { execSync } = await import('node:child_process')
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		const exec_calls = vi.mocked(execSync).mock.calls
+		const sync_index = exec_calls.findIndex(([cmd]) => String(cmd) === 'pnpm josh sync')
+		const init_index = exec_calls.findIndex(
+			([cmd]) => String(cmd) === 'pnpm josh init --type sveltekit',
+		)
+		expect(sync_index).toBeGreaterThanOrEqual(0)
+		expect(init_index).toBeGreaterThanOrEqual(0)
+		const sync_order = vi.mocked(execSync).mock.invocationCallOrder[sync_index]
+		const init_order = vi.mocked(execSync).mock.invocationCallOrder[init_index]
+		expect(init_order).toBeGreaterThan(sync_order)
 	})
 
 	it.each(EXPECTED_SYNC_ENTRIES)(
@@ -144,11 +202,16 @@ describe('jgame_sync managed package.json scripts', () => {
 		// Regression for #135: a project initialized before the fix has
 		// "preview": "vite preview" — jgame sync must correct it.
 		const { readFileSync, writeFileSync } = await import('node:fs')
+		const dev_deps = await build_complete_consumer_dev_deps()
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
-			'/pkg/package.json': JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } }),
+			'/pkg/package.json': JSON.stringify({
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
 				scripts: { preview: 'vite preview', dev: 'vite dev' },
+				devDependencies: dev_deps,
 			}),
 		})
 		const { jgame_sync } = await import('./jgame-sync.ts')
@@ -166,11 +229,16 @@ describe('jgame_sync managed package.json scripts', () => {
 
 	it('does not rewrite package.json when scripts are already canonical', async () => {
 		const { readFileSync, writeFileSync } = await import('node:fs')
+		const dev_deps = await build_complete_consumer_dev_deps()
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
-			'/pkg/package.json': JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } }),
+			'/pkg/package.json': JSON.stringify({
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
 				scripts: { preview: CANONICAL_PREVIEW, dev: 'vite dev' },
+				devDependencies: dev_deps,
 			}),
 		})
 		const { jgame_sync } = await import('./jgame-sync.ts')
@@ -180,15 +248,135 @@ describe('jgame_sync managed package.json scripts', () => {
 
 	it('adds the canonical preview script when the consumer has no scripts field', async () => {
 		const { readFileSync, writeFileSync } = await import('node:fs')
+		const dev_deps = await build_complete_consumer_dev_deps()
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
-			'/pkg/package.json': JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } }),
-			'/project/package.json': JSON.stringify({ name: 'consumer' }),
+			'/pkg/package.json': JSON.stringify({
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				devDependencies: dev_deps,
+			}),
 		})
 		const { jgame_sync } = await import('./jgame-sync.ts')
 		jgame_sync.run()
 		expect(writeFileSync).toHaveBeenCalledTimes(1)
 		const written = JSON.parse(String(vi.mocked(writeFileSync).mock.calls[0][1]))
 		expect(written.scripts.preview).toBe(CANONICAL_PREVIEW)
+	})
+})
+
+describe('jgame_sync managed package.json devDependencies', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.spyOn(console, 'info').mockImplementation(() => {})
+	})
+
+	it('adds missing required devDeps to consumer package.json (#186)', async () => {
+		// Regression for #186: a project scaffolded before #184 is missing prettier,
+		// eslint, etc. jgame sync must inject them so the next pnpm install (the
+		// preflight before pnpm josh sync) installs the binaries that lint/format need.
+		const { readFileSync, writeFileSync } = await import('node:fs')
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': JSON.stringify({
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: { '@joshuafolkken/kit': '0.150.0' },
+			}),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		const pkg_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+		expect(pkg_writes.length).toBeGreaterThanOrEqual(1)
+		const final_pkg = JSON.parse(String(pkg_writes.at(-1)?.[1]))
+		expect(final_pkg.devDependencies.prettier).toBe('^3.8.3')
+		expect(final_pkg.devDependencies.eslint).toBe('^10.4.0')
+	})
+
+	it('preserves existing pins instead of downgrading (#186)', async () => {
+		// Users who upgraded a single dep ahead of game-kit must not be silently
+		// rolled back to game-kit's older pin.
+		const { readFileSync, writeFileSync } = await import('node:fs')
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': JSON.stringify({
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: { prettier: '^3.99.0' },
+			}),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		const pkg_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+		const final_pkg = JSON.parse(String(pkg_writes.at(-1)?.[1]))
+		expect(final_pkg.devDependencies.prettier).toBe('^3.99.0')
+	})
+
+	it('does not rewrite package.json when every required dep is already present', async () => {
+		const { readFileSync, writeFileSync } = await import('node:fs')
+		const dev_deps = await build_complete_consumer_dev_deps()
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': JSON.stringify({
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: { preview: CANONICAL_PREVIEW },
+				devDependencies: dev_deps,
+			}),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+		const pkg_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+		expect(pkg_writes).toHaveLength(0)
+	})
+})
+
+describe('jgame_sync.apply_managed_dev_deps', () => {
+	it('returns false and leaves pkg untouched when every required dep is present', async () => {
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const required = { prettier: '^3.8.3', eslint: '^10.4.0' }
+		const pkg = { devDependencies: { prettier: '^3.99.0', eslint: '^10.4.0' } }
+		const did_change = jgame_sync.apply_managed_dev_deps(pkg, required)
+		expect(did_change).toBe(false)
+		expect(pkg.devDependencies).toEqual({ prettier: '^3.99.0', eslint: '^10.4.0' })
+	})
+
+	it('returns true and adds only the missing required deps', async () => {
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const required = { prettier: '^3.8.3', eslint: '^10.4.0', cspell: '^10.0.0' }
+		const pkg = { devDependencies: { prettier: '^3.99.0' } }
+		const did_change = jgame_sync.apply_managed_dev_deps(pkg, required)
+		expect(did_change).toBe(true)
+		expect(pkg.devDependencies).toEqual({
+			prettier: '^3.99.0',
+			eslint: '^10.4.0',
+			cspell: '^10.0.0',
+		})
+	})
+
+	it('initializes devDependencies when the consumer has none', async () => {
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const required = { prettier: '^3.8.3' }
+		const pkg: { devDependencies?: Record<string, string> } = {}
+		const did_change = jgame_sync.apply_managed_dev_deps(pkg, required)
+		expect(did_change).toBe(true)
+		expect(pkg.devDependencies).toEqual({ prettier: '^3.8.3' })
 	})
 })
 
