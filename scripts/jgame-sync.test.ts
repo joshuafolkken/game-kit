@@ -91,6 +91,37 @@ describe('jgame_sync.run', () => {
 		expect(existsSync(path.join(REAL_TEMPLATES_DIR, src))).toBe(true)
 	})
 
+	it('pre-syncs pnpm-workspace.yaml BEFORE invoking pnpm josh sync (regression for #182)', async () => {
+		// pnpm 11 runs a deps-status check (pnpm install) before every pnpm script.
+		// If the consumer's pnpm-workspace.yaml lacks the bare-name @joshuafolkken/game-kit
+		// exclude, that pre-flight install fails on ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION
+		// and pnpm josh sync (which would have refreshed the yaml) never executes.
+		// jgame sync must therefore refresh pnpm-workspace.yaml itself, BEFORE invoking pnpm.
+		const { cpSync } = await import('node:fs')
+		const { execSync } = await import('node:child_process')
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		jgame_sync.run()
+
+		const cp_calls = vi.mocked(cpSync).mock.calls
+		const exec_calls = vi.mocked(execSync).mock.calls
+		const yaml_cp_index = cp_calls.findIndex(
+			([src, dest]) =>
+				String(src) === '/pkg/templates/pnpm-workspace.yaml' &&
+				String(dest) === '/project/pnpm-workspace.yaml',
+		)
+		const josh_sync_index = exec_calls.findIndex(([cmd]) => String(cmd) === 'pnpm josh sync')
+		const yaml_cp_order = vi.mocked(cpSync).mock.invocationCallOrder[yaml_cp_index]
+		const josh_sync_order = vi.mocked(execSync).mock.invocationCallOrder[josh_sync_index]
+
+		expect(yaml_cp_index).toBeGreaterThanOrEqual(0)
+		expect(josh_sync_index).toBeGreaterThanOrEqual(0)
+		expect(yaml_cp_order).toBeLessThan(josh_sync_order)
+	})
+
+	it('has a real templates/pnpm-workspace.yaml source file to pre-sync', () => {
+		expect(existsSync(path.join(REAL_TEMPLATES_DIR, 'pnpm-workspace.yaml'))).toBe(true)
+	})
+
 	it('writes .npmrc from templates/npmrc to bypass npm dotfile exclusion', async () => {
 		// Regression: npm pack strips templates/.npmrc from the published tarball,
 		// so the source must be a non-dotfile name (`npmrc`) while the destination
