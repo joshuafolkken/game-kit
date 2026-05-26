@@ -309,8 +309,8 @@ describe('legacy simon_* migration', () => {
 		vi.unstubAllGlobals()
 	})
 
-	function stub_legacy_only(store: Record<string, string>): { set_calls: [string, string][] } {
-		const set_calls: [string, string][] = []
+	function stub_legacy_only(store: Record<string, string>): { set_calls: Array<[string, string]> } {
+		const set_calls: Array<[string, string]> = []
 		vi.stubGlobal('localStorage', {
 			getItem: (key: string) => store[key] ?? null,
 			setItem: (key: string, value: string) => {

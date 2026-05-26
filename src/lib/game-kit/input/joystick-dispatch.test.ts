@@ -17,8 +17,8 @@ class FakeEvent {
 	}
 }
 
-function make_fake_dom(): { dom: HTMLElement; dispatched: string[] } {
-	const dispatched: string[] = []
+function make_fake_dom(): { dom: HTMLElement; dispatched: Array<string> } {
+	const dispatched: Array<string> = []
 	const dom = {
 		getBoundingClientRect: () => ({ left: RECT_LEFT, top: RECT_TOP }),
 		dispatchEvent: (e: FakeEvent) => {

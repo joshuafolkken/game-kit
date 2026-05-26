@@ -13,7 +13,7 @@ function make_touch(id: number, x: number, y: number, target: Element): Touch {
 	return new Touch({ identifier: id, target, clientX: x, clientY: y })
 }
 
-function fire(type: string, target: EventTarget, changed: Touch[], all: Touch[]): void {
+function fire(type: string, target: EventTarget, changed: Array<Touch>, all: Array<Touch>): void {
 	target.dispatchEvent(
 		new TouchEvent(type, {
 			changedTouches: changed,

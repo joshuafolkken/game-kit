@@ -19,7 +19,7 @@
 	const LETTER_KEY_WIDTH = 40
 	const LETTER_KEY_HEIGHT = 32
 
-	const LETTER_KEYS: readonly LetterKey[] = [
+	const LETTER_KEYS: ReadonlyArray<LetterKey> = [
 		{ class_name: 'key-w', rect_x: 54, rect_y: 2, text_x: 74, text_y: 18, label: 'W' },
 		{ class_name: 'key-a', rect_x: 2, rect_y: 46, text_x: 22, text_y: 62, label: 'A' },
 		{ class_name: 'key-s', rect_x: 54, rect_y: 46, text_x: 74, text_y: 62, label: 'S' },
@@ -39,7 +39,7 @@
 	const RETURN_KEY_HEIGHT = 24
 	const RETURN_KEY_TEXT_Y = 162
 
-	const RETURN_KEYS: readonly ReturnKey[] = [
+	const RETURN_KEYS: ReadonlyArray<ReturnKey> = [
 		{ class_name: 'key-esc', rect_x: 2, text_x: 30, text_font_size: 9, label: 'ESC' },
 		{ class_name: 'key-z', rect_x: 90, text_x: 118, text_font_size: 13, label: 'Z' },
 	] as const

@@ -13,12 +13,12 @@ export const OFF_RATIO = 0.3
 export const ERROR_BEEP_MS = 3000
 export const RESTART_DELAY_MS = 1000
 
-const DEFAULT_COLORS: readonly ButtonColor[] = ['green', 'red', 'yellow', 'blue']
+const DEFAULT_COLORS: ReadonlyArray<ButtonColor> = ['green', 'red', 'yellow', 'blue']
 const FALLBACK_COLOR: ButtonColor = 'green'
 
 type GameState = {
 	phase: GamePhase
-	sequence: ButtonColor[]
+	sequence: Array<ButtonColor>
 	position: number
 	active_color: ButtonColor | null
 	pressed_color: ButtonColor | null
@@ -42,7 +42,7 @@ function get_step_ms(len: number): number {
 	return STEP_MS_21_PLUS
 }
 
-function add_to_sequence(s: GameState, colors: readonly ButtonColor[]): void {
+function add_to_sequence(s: GameState, colors: ReadonlyArray<ButtonColor>): void {
 	const index = Math.floor(Math.random() * colors.length) // NOSONAR — game RNG, not security-sensitive
 	s.sequence.push(colors[index] ?? FALLBACK_COLOR)
 }
@@ -71,7 +71,7 @@ async function run_show(s: GameState, t: GameTimers, gen: number): Promise<void>
 	s.position = 0
 }
 
-function start_next_round(s: GameState, t: GameTimers, colors: readonly ButtonColor[]): void {
+function start_next_round(s: GameState, t: GameTimers, colors: ReadonlyArray<ButtonColor>): void {
 	t.restart_timer = null
 	cancel_flash(s, t)
 	s.round += 1
@@ -80,7 +80,11 @@ function start_next_round(s: GameState, t: GameTimers, colors: readonly ButtonCo
 	void run_show(s, t, t.show_gen)
 }
 
-function schedule_next_round(s: GameState, t: GameTimers, colors: readonly ButtonColor[]): void {
+function schedule_next_round(
+	s: GameState,
+	t: GameTimers,
+	colors: ReadonlyArray<ButtonColor>,
+): void {
 	cancel_restart_timer(t)
 	cancel_flash(s, t)
 	s.phase = 'showing'
@@ -92,7 +96,7 @@ function handle_correct_release(
 	s: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 ): void {
 	s.position += 1
 	if (s.position < s.sequence.length) return
@@ -105,7 +109,7 @@ function start_game(
 	s: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 ): void {
 	if (s.phase === 'showing' || s.phase === 'player_input') return
 	cancel_restart_timer(t)
@@ -122,7 +126,7 @@ function release_game(
 	s: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 ): void {
 	game_audio.stop_tone()
 	const color = s.pressed_color
@@ -163,7 +167,7 @@ function make_game_api(
 	s: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 ) {
 	return {
 		get phase() {
@@ -205,7 +209,7 @@ function make_game_api(
 	}
 }
 
-type GameConfig = { colors?: readonly ButtonColor[] }
+type GameConfig = { colors?: ReadonlyArray<ButtonColor> }
 
 export function create_game(score: ScoreInstance, config: GameConfig = {}) {
 	const colors = config.colors ?? DEFAULT_COLORS

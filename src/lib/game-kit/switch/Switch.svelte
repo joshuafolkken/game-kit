@@ -15,7 +15,7 @@
 	import { onDestroy } from 'svelte'
 	import { MeshStandardMaterial } from 'three'
 
-	const CRT_LINES: readonly number[] = [-1, 0, 1]
+	const CRT_LINES: ReadonlyArray<number> = [-1, 0, 1]
 
 	type CornerSign = -1 | 1
 	type BarAxis = 'h' | 'v'
@@ -50,9 +50,9 @@
 		h: number
 	}
 
-	const CORNER_SIGNS: readonly CornerSign[] = [-1, 1]
+	const CORNER_SIGNS: ReadonlyArray<CornerSign> = [-1, 1]
 	const HIT_AREA_PADDING = 0.12
-	const FPS_BARS: readonly FpsBar[] = [
+	const FPS_BARS: ReadonlyArray<FpsBar> = [
 		{ key: 0, x: -FPS_BAR_X_STEP, h: FPS_BAR_1_H },
 		{ key: 1, x: 0, h: FPS_BAR_2_H },
 		{ key: 2, x: FPS_BAR_X_STEP, h: FPS_BAR_3_H },

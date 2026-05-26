@@ -14,7 +14,7 @@ import {
 } from './flash'
 import type { ButtonColor } from './types'
 
-const COLORS: ButtonColor[] = ['green', 'red', 'yellow', 'blue']
+const COLORS: Array<ButtonColor> = ['green', 'red', 'yellow', 'blue']
 
 function make_state(): FlashState {
 	return { flash_colors: [], flash_intensity: 1 }
@@ -145,7 +145,7 @@ describe('run_victory_flash', () => {
 	})
 
 	it('works with a custom color subset', async () => {
-		const custom: ButtonColor[] = ['green', 'blue']
+		const custom: Array<ButtonColor> = ['green', 'blue']
 		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {})
 		const s = make_state()
 		const t = make_timers()

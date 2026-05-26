@@ -20,7 +20,7 @@ import { create_score, score } from '$lib/game/score.svelte'
 import type { ButtonColor } from '$lib/game/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const ALL_COLORS: ButtonColor[] = ['green', 'red', 'yellow', 'blue']
+const ALL_COLORS: Array<ButtonColor> = ['green', 'red', 'yellow', 'blue']
 const TONE_MS = 200
 const ON_MS = STEP_MS_1_5 * ON_RATIO
 const OFF_MS = STEP_MS_1_5 * OFF_RATIO
@@ -470,7 +470,7 @@ describe('create_game isolation', () => {
 
 	it('create_game with custom colors only uses those colors in sequence', () => {
 		const score_c = create_score()
-		const custom_colors: ButtonColor[] = ['green', 'blue']
+		const custom_colors: Array<ButtonColor> = ['green', 'blue']
 		const c = create_game(score_c, { colors: custom_colors })
 		c.start()
 		for (let i = 0; i < 20; i++) {

@@ -81,7 +81,7 @@
 			cyber_lit_color: '#00ccff',
 			cyber_dim_color: '#003355',
 		},
-	] as const satisfies readonly ButtonConfig[]
+	] as const satisfies ReadonlyArray<ButtonConfig>
 
 	let { game_data, is_alt, text_gameover, text_start }: Props = $props()
 

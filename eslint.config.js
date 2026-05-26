@@ -14,7 +14,7 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'id-length': 'off',
 	// TODO #188 follow-up: rename abbreviated identifiers
 	'unicorn/prevent-abbreviations': 'off',
-	// TODO #188 follow-up: replace `null` with `undefined`
+	// TODO #188 follow-up: replace `null` with `undefined` (Three.js uniforms / DOM contracts need per-case review; deferred until reviewer is awake)
 	'unicorn/no-null': 'off',
 	// TODO #188 follow-up: split oversize functions
 	'max-lines-per-function': 'off',
@@ -26,8 +26,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'no-restricted-syntax': 'off',
 	// TODO #188 follow-up: split functions with too many statements
 	'max-statements': 'off',
-	// TODO #188 follow-up: use Array<T> consistently
-	'@typescript-eslint/array-type': 'off',
 	// TODO #188 follow-up: replace empty methods with explicit no-op or default
 	'@typescript-eslint/no-empty-function': 'off',
 	// TODO #188 follow-up: wrap void expressions in block syntax
