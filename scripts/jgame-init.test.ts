@@ -24,8 +24,14 @@ const MOCK_PKG = {
 	version: '1.0.0',
 	scripts: { preview: CANONICAL_PREVIEW },
 	devDependencies: {
+		'@ianvs/prettier-plugin-sort-imports': '^4.7.1',
 		'@joshuafolkken/kit': '0.162.0',
 		'@sveltejs/kit': '^2.0.0',
+		cspell: '^10.0.0',
+		eslint: '^10.4.0',
+		prettier: '^3.8.3',
+		'prettier-plugin-svelte': '^4.0.1',
+		'prettier-plugin-tailwindcss': '^0.8.0',
 		svelte: '^5.0.0',
 		vite: '^6.0.0',
 	},
@@ -56,6 +62,21 @@ describe('jgame_init.generate_package_json', () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 		expect(result.devDependencies['@joshuafolkken/kit']).toBe('0.162.0')
+	})
+
+	it('includes lint/format toolchain in devDependencies (#184)', async () => {
+		// Regression for #184: kit declares `prettier` and `eslint` as devDeps,
+		// not regular deps, so they are NOT installed transitively for consumers.
+		// Without these in the scaffolded package.json, `pnpm josh lint` /
+		// `pnpm josh format` fail on first use with "Command not found".
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+		expect(result.devDependencies.prettier).toBe('^3.8.3')
+		expect(result.devDependencies.eslint).toBe('^10.4.0')
+		expect(result.devDependencies['prettier-plugin-svelte']).toBe('^4.0.1')
+		expect(result.devDependencies['prettier-plugin-tailwindcss']).toBe('^0.8.0')
+		expect(result.devDependencies['@ianvs/prettier-plugin-sort-imports']).toBe('^4.7.1')
+		expect(result.devDependencies.cspell).toBe('^10.0.0')
 	})
 
 	it('does not emit a pnpm field (settings are sourced from pnpm-workspace.yaml, copied via templates)', async () => {
@@ -286,14 +307,30 @@ describe('jgame_init.run', () => {
 		expect(cpSync).toHaveBeenCalledWith('/pkg/templates/npmrc', '/project/tic-tac-toe/.npmrc')
 	})
 
-	it('runs git init, pnpm install, and pnpm josh sync with project cwd', async () => {
+	it('runs git init, pnpm install, pnpm josh init, and pnpm josh sync with project cwd', async () => {
 		const { execSync } = await import('node:child_process')
 		const { jgame_init } = await import('./jgame-init.ts')
 		jgame_init.run('tic-tac-toe')
 		const opts = expect.objectContaining({ cwd: '/project/tic-tac-toe' })
 		expect(execSync).toHaveBeenCalledWith('git init', opts)
 		expect(execSync).toHaveBeenCalledWith('pnpm install', opts)
+		expect(execSync).toHaveBeenCalledWith('pnpm josh init --type sveltekit', opts)
 		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', opts)
+	})
+
+	it('invokes pnpm josh init before pnpm josh sync (#184)', async () => {
+		// Regression for #184: `josh sync` early-returns when destination configs
+		// do not exist, so eslint.config.js / prettier.config.js never get
+		// scaffolded. `josh init` MUST run first to create them, then `josh sync`
+		// updates anything already present.
+		const { execSync } = await import('node:child_process')
+		const { jgame_init } = await import('./jgame-init.ts')
+		jgame_init.run('tic-tac-toe')
+		const calls = vi.mocked(execSync).mock.calls.map(([cmd]) => cmd)
+		const init_index = calls.indexOf('pnpm josh init --type sveltekit')
+		const sync_index = calls.indexOf('pnpm josh sync')
+		expect(init_index).toBeGreaterThan(-1)
+		expect(sync_index).toBeGreaterThan(init_index)
 	})
 
 	it('prints next-steps message with cd and pnpm dev', async () => {
