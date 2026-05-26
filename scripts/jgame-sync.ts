@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { jgame_managed_dev_deps } from './jgame-managed-dev-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
 
@@ -38,7 +39,11 @@ function sync_file(entry: SyncEntry): void {
 	console.info(`  ✔ synced   ${entry.dest}`)
 }
 
-type ConsumerPkg = { scripts?: Record<string, string>; [key: string]: unknown }
+type ConsumerPkg = {
+	scripts?: Record<string, string>
+	devDependencies?: Record<string, string>
+	[key: string]: unknown
+}
 
 function apply_managed_scripts(pkg: ConsumerPkg, canonical: Record<string, string>): boolean {
 	const scripts = pkg.scripts ?? {}
@@ -67,6 +72,34 @@ function sync_managed_scripts(): void {
 	console.info('  ✔ synced   package.json scripts')
 }
 
+// Preserves existing pins so consumers who upgraded individual packages are not
+// silently downgraded — only fills in missing entries. Mutates `pkg`.
+function apply_managed_dev_deps(pkg: ConsumerPkg, required: Record<string, string>): boolean {
+	const existing = pkg.devDependencies ?? {}
+	const missing = Object.entries(required).filter(([key]) => !(key in existing))
+	if (missing.length === 0) {
+		pkg.devDependencies = existing
+		return false
+	}
+	pkg.devDependencies = { ...existing, ...Object.fromEntries(missing) }
+	return true
+}
+
+// Must run BEFORE pnpm so the preflight install picks up new devDeps (#184 self-heal).
+function sync_managed_dev_deps(): void {
+	const pkg_path = path.join(jgame_paths.PROJECT_ROOT, 'package.json')
+	const raw = readFileSync(pkg_path, 'utf8')
+	const pkg = JSON.parse(raw) as ConsumerPkg
+	const required = jgame_managed_dev_deps.read_required_deps_from_kit()
+	const did_change = apply_managed_dev_deps(pkg, required)
+	if (!did_change) {
+		console.info('  ✔ checked  package.json devDependencies (up-to-date)')
+		return
+	}
+	writeFileSync(pkg_path, `${JSON.stringify(pkg, null, '\t')}\n`)
+	console.info('  ✔ synced   package.json devDependencies')
+}
+
 // pnpm 11 runs an automatic deps-status check (= `pnpm install`) before any
 // `pnpm <script>` invocation. If the consumer project's pnpm-workspace.yaml is
 // outdated (e.g. missing the bare-name `@joshuafolkken/game-kit` entry in
@@ -80,13 +113,17 @@ function pre_sync_pnpm_workspace_yaml(): void {
 
 function run(): void {
 	console.info('\n🔄 jgame sync\n')
+	sync_managed_dev_deps()
 	pre_sync_pnpm_workspace_yaml()
 	execSync('pnpm josh sync', SPAWN_OPTIONS)
+	// `josh sync` early-returns for missing configs (#184); `josh init` is the
+	// canonical scaffolder and is idempotent on existing files.
+	execSync('pnpm josh init --type sveltekit', SPAWN_OPTIONS)
 	console.info('\nGame-specific files:')
 	for (const entry of SYNC_FILES) sync_file(entry)
 	sync_managed_scripts()
 	console.info('\n✅ Done.\n')
 }
 
-const jgame_sync = { run, apply_managed_scripts }
+const jgame_sync = { run, apply_managed_scripts, apply_managed_dev_deps }
 export { jgame_sync }
