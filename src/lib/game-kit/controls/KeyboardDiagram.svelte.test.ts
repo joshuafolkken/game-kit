@@ -52,7 +52,7 @@ describe('KeyboardDiagram', () => {
 		const polylines = Array.from(container.querySelectorAll('.key-space polyline'))
 		expect(polylines).toHaveLength(2)
 		for (const p of polylines) {
-			const points = p.getAttribute('points')?.trim().split(/\s+/) ?? []
+			const points = p.getAttribute('points')?.trim().split(/\s+/u) ?? []
 			expect(points).toHaveLength(3)
 		}
 	})
@@ -65,7 +65,7 @@ describe('KeyboardDiagram', () => {
 				p
 					.getAttribute('points')
 					?.trim()
-					.split(/\s+/)
+					.split(/\s+/u)
 					.map((pt) => Number(pt.split(',')[1])) ?? [],
 		)
 		const span = Math.max(...all_y_values) - Math.min(...all_y_values)

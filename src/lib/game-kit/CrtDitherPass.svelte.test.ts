@@ -9,21 +9,21 @@ import CRT_DITHER_PASS_SOURCE from './CrtDitherPass.svelte?raw'
 describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 	it('imports EffectComposer / RenderPass / ShaderPass / OutputPass from three/examples', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/from\s+'three\/examples\/jsm\/postprocessing\/EffectComposer\.js'/,
+			/from\s+'three\/examples\/jsm\/postprocessing\/EffectComposer\.js'/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/from\s+'three\/examples\/jsm\/postprocessing\/RenderPass\.js'/,
+			/from\s+'three\/examples\/jsm\/postprocessing\/RenderPass\.js'/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/from\s+'three\/examples\/jsm\/postprocessing\/ShaderPass\.js'/,
+			/from\s+'three\/examples\/jsm\/postprocessing\/ShaderPass\.js'/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/from\s+'three\/examples\/jsm\/postprocessing\/OutputPass\.js'/,
+			/from\s+'three\/examples\/jsm\/postprocessing\/OutputPass\.js'/u,
 		)
 	})
 
 	it('imports dither / scanline / upscale shaders from crt-dither', () => {
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-dither'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-dither'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('DITHER_FRAGMENT_SHADER')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('DITHER_VERTEX_SHADER')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('SCANLINE_FRAGMENT_SHADER')
@@ -32,21 +32,21 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 
 	it('uses useThrelte and useTask from @threlte/core', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/import\s*\{[^}]*useThrelte[^}]*\}\s*from\s*'@threlte\/core'/,
+			/import\s*\{[^}]*useThrelte[^}]*\}\s*from\s*'@threlte\/core'/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/import\s*\{[^}]*useTask[^}]*\}\s*from\s*'@threlte\/core'/,
+			/import\s*\{[^}]*useTask[^}]*\}\s*from\s*'@threlte\/core'/u,
 		)
 	})
 
 	it('disables Threlte default auto-render so the composer drives the frame', () => {
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/ctx\.autoRender\.set\(\s*false\s*\)/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/ctx\.autoRender\.set\(\s*false\s*\)/u)
 	})
 
 	it('renders both composers in a useTask scheduled on ctx.renderStage', () => {
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*lo_composer\.render\(/)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*hi_composer\.render\(/)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/stage:\s*ctx\.renderStage/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*lo_composer\.render\(/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*hi_composer\.render\(/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/stage:\s*ctx\.renderStage/u)
 	})
 
 	it('Stage 1 adds passes in order: RenderPass → OutputPass → ShaderPass(dither)', () => {
@@ -75,21 +75,21 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 
 	it('syncs lo_composer and hi_composer sizes inside the render task (not $effect)', () => {
 		// Same rAF-vs-microtask rationale as the original single-composer setup.
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector2[^}]*\}\s*from\s*'three'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector2[^}]*\}\s*from\s*'three'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setSize(')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setPixelRatio(lo_dpr)')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setSize(')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setPixelRatio(ctx.dpr.current)')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('dither_uniforms.u_resolution.value.set(')
 		// Negative: must NOT compute u_resolution from CSS × DPR (old bug).
-		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/u_resolution\.value\.set\(\s*width\s*\*\s*dpr/)
+		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/u_resolution\.value\.set\(\s*width\s*\*\s*dpr/u)
 	})
 
 	it('initializes the u_color_levels uniform as a Vector3 (per-channel quantization)', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/u_color_levels:\s*\{\s*value:\s*new Vector3\(\s*COLOR_LEVELS\.r,\s*COLOR_LEVELS\.g,\s*COLOR_LEVELS\.b\s*\)\s*\}/,
+			/u_color_levels:\s*\{\s*value:\s*new Vector3\(\s*COLOR_LEVELS\.r,\s*COLOR_LEVELS\.g,\s*COLOR_LEVELS\.b\s*\)\s*\}/u,
 		)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector3[^}]*\}\s*from\s*'three'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector3[^}]*\}\s*from\s*'three'/u)
 	})
 
 	it('wraps the uniforms in a ShaderMaterial before passing to ShaderPass', () => {
@@ -99,38 +99,40 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		// actually reads, leaving u_resolution stuck at (1,1) and the bayer texture sampling
 		// a single cell (no visible dither, dark pixels crushed). Passing a ShaderMaterial
 		// avoids the clone (ShaderPass uses material.uniforms directly).
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*ShaderMaterial[^}]*\}\s*from\s*'three'/)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/new ShaderMaterial\(\s*\{\s*uniforms:\s*dither_uniforms[\s\S]*?\}\s*\)/,
+			/import\s*\{[^}]*ShaderMaterial[^}]*\}\s*from\s*'three'/u,
 		)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/new ShaderPass\(\s*dither_material\s*\)/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/new ShaderMaterial\(\s*\{\s*uniforms:\s*dither_uniforms[\s\S]*?\}\s*\)/u,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/new ShaderPass\(\s*dither_material\s*\)/u)
 		// Negative: must NOT pass a plain object literal to ShaderPass (the bug pattern).
-		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/new ShaderPass\(\s*\{\s*uniforms:/)
+		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/new ShaderPass\(\s*\{\s*uniforms:/u)
 	})
 
 	it('forces NearestFilter on lo_composer render targets (keeps dither dots crisp)', () => {
 		// NearestFilter prevents bilinear blur when the lo-res dithered output is
 		// sampled by the upscale pass — ensures the pixel art dots stay sharp.
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*NearestFilter[^}]*\}\s*from\s*'three'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*NearestFilter[^}]*\}\s*from\s*'three'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/lo_composer\.renderTarget1\.texture\.minFilter\s*=\s*NearestFilter/,
+			/lo_composer\.renderTarget1\.texture\.minFilter\s*=\s*NearestFilter/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/lo_composer\.renderTarget1\.texture\.magFilter\s*=\s*NearestFilter/,
+			/lo_composer\.renderTarget1\.texture\.magFilter\s*=\s*NearestFilter/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/lo_composer\.renderTarget2\.texture\.minFilter\s*=\s*NearestFilter/,
+			/lo_composer\.renderTarget2\.texture\.minFilter\s*=\s*NearestFilter/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/lo_composer\.renderTarget2\.texture\.magFilter\s*=\s*NearestFilter/,
+			/lo_composer\.renderTarget2\.texture\.magFilter\s*=\s*NearestFilter/u,
 		)
 	})
 
 	it('imports crt store and bypasses the CRT pipeline when CRT is disabled', () => {
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt\.svelte'/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt\.svelte'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('crt.is_crt_enabled')
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/ctx\.renderer\.render\(ctx\.scene,\s*ctx\.camera\.current\)/,
+			/ctx\.renderer\.render\(ctx\.scene,\s*ctx\.camera\.current\)/u,
 		)
 	})
 
@@ -138,24 +140,24 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toContain('SCANLINE_BLEED_FULL_PERIOD')
 		// u_bleed.value must be assigned dynamically (not only at init time)
 		// so that short-period viewports (mobile) get reduced bleed.
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_bleed\.value\s*=\s*Math\.min\(/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_bleed\.value\s*=\s*Math\.min\(/u)
 	})
 
 	it('rounds u_scanline_period to nearest integer and clamps to minimum valid period', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/Math\.round\([^)]*DOTS_PER_SCANLINE[^)]*SCANLINE_PHASES_PER_CYCLE[^)]*hi_lo_ratio[^)]*\)/,
+			/Math\.round\([^)]*DOTS_PER_SCANLINE[^)]*SCANLINE_PHASES_PER_CYCLE[^)]*hi_lo_ratio[^)]*\)/u,
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/Math\.max\(\s*DOTS_PER_SCANLINE\s*\*\s*SCANLINE_PHASES_PER_CYCLE/,
+			/Math\.max\(\s*DOTS_PER_SCANLINE\s*\*\s*SCANLINE_PHASES_PER_CYCLE/u,
 		)
 	})
 
 	it('disposes both composers, bayer texture, and restores autoRender on unmount', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/onDestroy\(\s*\(\)\s*=>\s*\{[\s\S]*lo_composer\.dispose\(\)/,
+			/onDestroy\(\s*\(\)\s*=>\s*\{[\s\S]*lo_composer\.dispose\(\)/u,
 		)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/hi_composer\.dispose\(\)/)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/bayer_texture\.dispose\(\)/)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/onDestroy\([\s\S]*ctx\.autoRender\.set\(\s*true\s*\)/)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/hi_composer\.dispose\(\)/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/bayer_texture\.dispose\(\)/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/onDestroy\([\s\S]*ctx\.autoRender\.set\(\s*true\s*\)/u)
 	})
 })

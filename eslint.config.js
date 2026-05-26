@@ -48,8 +48,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'@typescript-eslint/no-unnecessary-condition': 'off',
 	// TODO #188 follow-up: initialize all declared variables
 	'init-declarations': 'off',
-	// TODO #188 follow-up: add `u` flag to all regex literals (auto-fix skipped due to parser errors in test files)
-	'require-unicode-regexp': 'off',
 	// TODO #188 follow-up: tighten template-literal expression types
 	'@typescript-eslint/restrict-template-expressions': 'off',
 	// TODO #188 follow-up: add explicit return types at module boundaries

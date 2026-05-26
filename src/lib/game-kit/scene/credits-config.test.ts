@@ -33,11 +33,11 @@ describe('credits-config', () => {
 	})
 
 	it('CREDITS_NORMAL_COLOR is a valid hex color', () => {
-		expect(CREDITS_NORMAL_COLOR).toMatch(/^#[0-9a-fA-F]{6}$/)
+		expect(CREDITS_NORMAL_COLOR).toMatch(/^#[0-9a-fA-F]{6}$/u)
 	})
 
 	it('CREDITS_CYBER_COLOR is a valid hex color', () => {
-		expect(CREDITS_CYBER_COLOR).toMatch(/^#[0-9a-fA-F]{6}$/)
+		expect(CREDITS_CYBER_COLOR).toMatch(/^#[0-9a-fA-F]{6}$/u)
 	})
 
 	it('CREDITS_NORMAL_COLOR and CREDITS_CYBER_COLOR are distinct', () => {

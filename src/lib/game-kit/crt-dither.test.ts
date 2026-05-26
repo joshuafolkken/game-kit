@@ -278,8 +278,8 @@ describe('crt_dither.create_bayer_texture', () => {
 
 describe('DITHER shader sources', () => {
 	it('vertex shader exposes v_uv and computes gl_Position', () => {
-		expect(DITHER_VERTEX_SHADER).toMatch(/varying\s+vec2\s+v_uv/)
-		expect(DITHER_VERTEX_SHADER).toMatch(/gl_Position\s*=/)
+		expect(DITHER_VERTEX_SHADER).toMatch(/varying\s+vec2\s+v_uv/u)
+		expect(DITHER_VERTEX_SHADER).toMatch(/gl_Position\s*=/u)
 	})
 
 	it('fragment shader declares every required uniform', () => {
@@ -313,11 +313,11 @@ describe('DITHER shader sources', () => {
 	})
 
 	it('fragment shader enforces the black floor with max(..., u_black_floor)', () => {
-		expect(DITHER_FRAGMENT_SHADER).toMatch(/max\(\s*quantized\s*,\s*vec3\(u_black_floor\)\s*\)/)
+		expect(DITHER_FRAGMENT_SHADER).toMatch(/max\(\s*quantized\s*,\s*vec3\(u_black_floor\)\s*\)/u)
 	})
 
 	it('fragment shader declares u_color_levels as vec3 (per-channel quantization)', () => {
-		expect(DITHER_FRAGMENT_SHADER).toMatch(/uniform\s+vec3\s+u_color_levels/)
+		expect(DITHER_FRAGMENT_SHADER).toMatch(/uniform\s+vec3\s+u_color_levels/u)
 	})
 })
 
@@ -334,12 +334,14 @@ describe('UPSCALE shader source', () => {
 
 	it('samples all 4 axis-aligned neighbours for the dot-blend', () => {
 		// 1 center + 4 neighbours = at least 5 texture2D calls
-		const sample_count = (UPSCALE_FRAGMENT_SHADER.match(/texture2D\(\s*u_lo_tex/g) ?? []).length
+		const sample_count = (UPSCALE_FRAGMENT_SHADER.match(/texture2D\(\s*u_lo_tex/gu) ?? []).length
 		expect(sample_count).toBeGreaterThanOrEqual(5)
 	})
 
 	it('mixes center with neighbour average using u_dot_blend', () => {
-		expect(UPSCALE_FRAGMENT_SHADER).toMatch(/mix\(\s*center\s*,\s*neighbors\s*,\s*u_dot_blend\s*\)/)
+		expect(UPSCALE_FRAGMENT_SHADER).toMatch(
+			/mix\(\s*center\s*,\s*neighbors\s*,\s*u_dot_blend\s*\)/u,
+		)
 	})
 })
 
@@ -357,27 +359,27 @@ describe('SCANLINE shader source', () => {
 	})
 
 	it('projects pixel coordinate onto u_scanline_axis (portrait/landscape flip)', () => {
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/dot\(\s*pixel\s*,\s*u_scanline_axis\s*\)/)
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/dot\(\s*pixel\s*,\s*u_scanline_axis\s*\)/u)
 	})
 
 	it('applies smooth cosine profile (no hard step — eliminates moiré with pixel-art grid)', () => {
 		expect(SCANLINE_FRAGMENT_SHADER).toContain('cos(')
 		expect(SCANLINE_FRAGMENT_SHADER).not.toContain('step(')
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/mix\(\s*u_scanline_dark\s*,\s*1\.0\s*,\s*wave\s*\)/)
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/mix\(\s*u_scanline_dark\s*,\s*1\.0\s*,\s*wave\s*\)/u)
 	})
 
 	it('declares u_scanline_sharpness uniform and applies pow() to the cosine wave', () => {
 		expect(SCANLINE_FRAGMENT_SHADER).toContain('u_scanline_sharpness')
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/pow\(\s*wave_cos\s*,\s*u_scanline_sharpness\s*\)/)
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/pow\(\s*wave_cos\s*,\s*u_scanline_sharpness\s*\)/u)
 	})
 
 	it('declares u_bleed and samples neighbors at ±half_period for phosphor glow', () => {
 		expect(SCANLINE_FRAGMENT_SHADER).toContain('u_bleed')
 		// Two neighbor samples offset along the scanline axis
-		const samples = (SCANLINE_FRAGMENT_SHADER.match(/texture2D\(\s*tDiffuse/g) ?? []).length
+		const samples = (SCANLINE_FRAGMENT_SHADER.match(/texture2D\(\s*tDiffuse/gu) ?? []).length
 		expect(samples).toBeGreaterThanOrEqual(3)
 		// Bleed attenuates with (1 - wave) so dark bands get max glow, bright bands get none
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/\(\s*1\.0\s*-\s*wave\s*\)/)
+		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/\(\s*1\.0\s*-\s*wave\s*\)/u)
 		expect(SCANLINE_FRAGMENT_SHADER).toContain('half_period_uv')
 	})
 })

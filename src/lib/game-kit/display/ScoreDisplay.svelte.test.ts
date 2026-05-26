@@ -80,37 +80,37 @@ describe('ScoreDisplay', () => {
 describe('ScoreDisplay font selection — driven by CRT-aware fonts helpers, not by is_alt (CYBER)', () => {
 	it('current_font uses fonts.get_active_font() (no caller-supplied flag)', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_active_font\(\s*\)\s*\)/,
+			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_active_font\(\s*\)\s*\)/u,
 		)
 	})
 
 	it('font_size_multiplier uses fonts.get_active_font_size_multiplier()', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/let\s+font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_active_font_size_multiplier\(\s*\)\s*\)/,
+			/let\s+font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_active_font_size_multiplier\(\s*\)\s*\)/u,
 		)
 	})
 
 	it('no longer derives a local should_use_alt_font (CRT awareness lives in fonts.ts)', () => {
-		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/\bshould_use_alt_font\b/)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/\bshould_use_alt_font\b/u)
 	})
 
 	it('no longer imports crt directly (consumer is decoupled from CRT module)', () => {
 		expect(SCORE_DISPLAY_SOURCE).not.toMatch(
-			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/,
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
 		)
-		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/\bcrt\.is_crt_enabled\b/)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/\bcrt\.is_crt_enabled\b/u)
 	})
 
 	it('keeps is_alt prop driving palette decisions (panel/label/value colors)', () => {
-		expect(SCORE_DISPLAY_SOURCE).toMatch(/let\s+panel_color\s*=\s*\$derived\(\s*is_alt\s*\?/)
+		expect(SCORE_DISPLAY_SOURCE).toMatch(/let\s+panel_color\s*=\s*\$derived\(\s*is_alt\s*\?/u)
 	})
 
 	it('does not pass is_alt into any fonts helper (font axis is CRT, not CYBER)', () => {
-		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/)
-		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/)
-		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_active_font\(\s*is_alt\s*\)/)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/u)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/u)
+		expect(SCORE_DISPLAY_SOURCE).not.toMatch(/fonts\.get_active_font\(\s*is_alt\s*\)/u)
 		expect(SCORE_DISPLAY_SOURCE).not.toMatch(
-			/fonts\.get_active_font_size_multiplier\(\s*is_alt\s*\)/,
+			/fonts\.get_active_font_size_multiplier\(\s*is_alt\s*\)/u,
 		)
 	})
 })
@@ -118,11 +118,11 @@ describe('ScoreDisplay font selection — driven by CRT-aware fonts helpers, not
 describe('ScoreDisplay panel tilt — root group rotates by PANEL_TILT_X for a downward angle', () => {
 	it('imports PANEL_TILT_X from score-display-config', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/import\s*\{[\s\S]*\bPANEL_TILT_X\b[\s\S]*\}\s*from\s*'\$lib\/game-kit\/display\/score-display-config'/,
+			/import\s*\{[\s\S]*\bPANEL_TILT_X\b[\s\S]*\}\s*from\s*'\$lib\/game-kit\/display\/score-display-config'/u,
 		)
 	})
 
 	it('root <T.Group> applies rotation.x={PANEL_TILT_X}', () => {
-		expect(SCORE_DISPLAY_SOURCE).toMatch(/<T\.Group[^>]*\brotation\.x=\{PANEL_TILT_X\}[^>]*>/)
+		expect(SCORE_DISPLAY_SOURCE).toMatch(/<T\.Group[^>]*\brotation\.x=\{PANEL_TILT_X\}[^>]*>/u)
 	})
 })
