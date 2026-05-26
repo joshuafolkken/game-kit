@@ -11,14 +11,17 @@ interface LoadingObserver {
 	disconnect: () => void
 }
 
-type LoadingState<T extends string> = {
+interface LoadingState<T extends string> {
 	is_visible: boolean
 	current_step: T
 	status_text: string
 	progress: string
 	progress_value: number
 }
-type LoadingRefs = { hide_timer_id: ReturnType<typeof setTimeout> | null }
+
+interface LoadingRefs {
+	hide_timer_id: ReturnType<typeof setTimeout> | null
+}
 
 function disconnect_observer(): void {
 	const scope = globalThis as Record<string, unknown>

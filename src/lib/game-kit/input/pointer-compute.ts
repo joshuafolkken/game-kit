@@ -3,13 +3,23 @@ import type { Camera, Vector2 } from 'three'
 
 const NDC_SCALE = 2
 
-type CameraRef = { current: Camera }
-type PointerRef = {
+interface CameraRef {
+	current: Camera
+}
+
+interface PointerRef {
 	current: Vector2
 	update: (fn: (p: Vector2) => Vector2) => void
 }
-type RaycasterRef = { setFromCamera: (pointer: Vector2, camera: Camera) => void }
-type ComputeCtx = { pointer: PointerRef; raycaster: RaycasterRef }
+
+interface RaycasterRef {
+	setFromCamera: (pointer: Vector2, camera: Camera) => void
+}
+
+interface ComputeCtx {
+	pointer: PointerRef
+	raycaster: RaycasterRef
+}
 
 function is_valid_target(target: EventTarget | null): target is HTMLElement {
 	return target instanceof HTMLElement && target.clientWidth > 0 && target.clientHeight > 0

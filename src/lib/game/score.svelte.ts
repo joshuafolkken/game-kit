@@ -9,7 +9,11 @@ export const GAME_SCORE_KEY_PREFIX = 'game'
 // migrate into the new prefix instead of resetting to zero on first load.
 const LEGACY_SCORE_KEY_PREFIX = 'simon'
 
-export type StorageKeys = { score: string; round: string; check: string }
+export interface StorageKeys {
+	score: string
+	round: string
+	check: string
+}
 
 function make_storage_keys(prefix: string): StorageKeys {
 	return {
@@ -19,7 +23,11 @@ function make_storage_keys(prefix: string): StorageKeys {
 	}
 }
 
-type RoundData = { elapsed_ms: number; sequence_length: number; round: number }
+interface RoundData {
+	elapsed_ms: number
+	sequence_length: number
+	round: number
+}
 
 export function compute_check(value: number, round: number): number {
 	return (Math.imul(value + 1, CHECK_SEED) ^ Math.imul(round + 1, CHECK_SEED >>> 1)) >>> 0
@@ -69,7 +77,7 @@ export function format_score(value: number): string {
 	return SCORE_FORMATTER.format(value)
 }
 
-type ScoreState = {
+interface ScoreState {
 	current_score: number
 	high_score: number
 	high_score_round: number

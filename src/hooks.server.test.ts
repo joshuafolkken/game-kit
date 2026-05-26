@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { handle, inject_game_name, inject_version } from './hooks.server'
 
 const { version } = JSON.parse(
-	readFileSync(new URL('../package.json', import.meta.url), 'utf-8'),
+	readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 ) as { version: string }
 
 type ResolveFn = (event: RequestEvent, opts?: ResolveOptions) => Promise<Response>

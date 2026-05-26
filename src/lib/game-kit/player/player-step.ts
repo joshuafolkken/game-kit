@@ -1,6 +1,6 @@
 import { player_velocity, type Velocity } from '$lib/game-kit/player/player-velocity'
 
-type StepInput = {
+interface StepInput {
 	yaw: number
 	joystick_look_x: number
 	joystick_look_y: number
@@ -11,7 +11,7 @@ type StepInput = {
 	is_sprinting: boolean
 }
 
-type StepResult = {
+interface StepResult {
 	velocity: Velocity
 	delta_yaw: number
 	delta_pitch: number

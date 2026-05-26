@@ -1,13 +1,17 @@
 import { player_speed } from '$lib/game-kit/player/player-speed'
 
-type VelocityInput = {
+interface VelocityInput {
 	yaw: number
 	forward: number
 	strafe: number
 	is_sprinting: boolean
 }
 
-type Velocity = { x: number; y: number; z: number }
+interface Velocity {
+	x: number
+	y: number
+	z: number
+}
 
 function compute_velocity(velocity_input: VelocityInput): Velocity {
 	const fw_x = -Math.sin(velocity_input.yaw)

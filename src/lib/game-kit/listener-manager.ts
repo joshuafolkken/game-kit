@@ -1,4 +1,4 @@
-export type ListenerSpec = {
+export interface ListenerSpec {
 	target: EventTarget
 	type: string
 	handler: EventListener

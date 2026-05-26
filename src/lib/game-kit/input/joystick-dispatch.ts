@@ -1,6 +1,10 @@
 import { override_event_offset } from '$lib/game-kit/input/override-event-offset'
 
-type DispatchCtx = { dom: HTMLElement; offset_x: number; offset_y: number }
+interface DispatchCtx {
+	dom: HTMLElement
+	offset_x: number
+	offset_y: number
+}
 
 function get_dispatch_ctx(x: number, y: number): DispatchCtx | null {
 	const dom = document.querySelector('canvas')?.parentElement

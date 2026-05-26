@@ -13,12 +13,12 @@ const FLASH_INTENSITY_BURST = 2.5
 const FLASH_INTENSITY_FINALE = 4
 const FLASH_INTENSITY_RESET = 1
 
-export type FlashState = {
+export interface FlashState {
 	flash_colors: Array<ButtonColor>
 	flash_intensity: number
 }
 
-export type FlashTimers = {
+export interface FlashTimers {
 	flash_gen: number
 }
 
