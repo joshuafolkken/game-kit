@@ -12,6 +12,7 @@ function find_mesh_open_tag(source: string, position_marker: string): string {
 	const block_start = source.lastIndexOf('<T.Mesh', start_index)
 	const block_end = source.indexOf('>', start_index)
 	if (block_start < 0 || block_end < 0) throw new Error(`mesh open tag not bounded`)
+
 	return source.slice(block_start, block_end + 1)
 }
 
@@ -21,6 +22,7 @@ function find_mesh_full_block(source: string, position_marker: string): string {
 	const block_start = source.lastIndexOf('<T.Mesh', start_index)
 	const block_end = source.indexOf('</T.Mesh>', start_index)
 	if (block_start < 0 || block_end < 0) throw new Error(`mesh full block not bounded`)
+
 	return source.slice(block_start, block_end)
 }
 
@@ -30,6 +32,7 @@ function find_mesh_blocks_by_render_order(
 ): Array<string> {
 	const blocks: Array<string> = []
 	let cursor = 0
+
 	while (cursor < source.length) {
 		const order_index = source.indexOf(render_order_token, cursor)
 		if (order_index < 0) break
@@ -39,28 +42,33 @@ function find_mesh_blocks_by_render_order(
 		blocks.push(source.slice(block_start, block_end))
 		cursor = block_end + 1
 	}
+
 	return blocks
 }
 
 describe('ControlsScene render order — regression for camera-angle brightness flicker', () => {
 	it('backdrop mesh declares renderOrder=0 so it draws before foreground icons', () => {
 		const block = find_mesh_open_tag(SOURCE, 'BACKDROP_X, BACKDROP_Y, BACKDROP_Z')
+
 		expect(block).toContain(`renderOrder={BACKDROP_RENDER_ORDER}`)
 		expect(SOURCE).toContain(`const BACKDROP_RENDER_ORDER = ${String(BACKDROP_RENDER_ORDER_VALUE)}`)
 	})
 
 	it('touch icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
 		const block = find_mesh_open_tag(SOURCE, '[0, TOUCH_Y, TOUCH_Z]')
+
 		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
 	})
 
 	it('keyboard icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
 		const block = find_mesh_open_tag(SOURCE, '[KEYBOARD_X, 0, 0]')
+
 		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
 	})
 
 	it('mouse icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
 		const block = find_mesh_open_tag(SOURCE, '[MOUSE_X, MOUSE_Y, 0]')
+
 		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
 	})
 
@@ -75,6 +83,7 @@ describe('ControlsScene render order — regression for camera-angle brightness 
 describe('ControlsScene dual-backdrop — icons dim through backdrop from both sides', () => {
 	it('front-facing backdrop uses FrontSide so it draws only when camera is in front', () => {
 		const blocks = find_mesh_blocks_by_render_order(SOURCE, 'renderOrder={BACKDROP_RENDER_ORDER}')
+
 		expect(blocks).toHaveLength(1)
 		expect(blocks[0]).toContain('side={FrontSide}')
 		expect(blocks[0]).toContain('opacity={BACKDROP_OPACITY}')
@@ -85,6 +94,7 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 			SOURCE,
 			'renderOrder={BACKDROP_BACK_RENDER_ORDER}',
 		)
+
 		expect(blocks).toHaveLength(1)
 		expect(blocks[0]).toContain('side={BackSide}')
 		expect(blocks[0]).toContain('opacity={BACKDROP_OPACITY}')
@@ -95,6 +105,7 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 			SOURCE,
 			'renderOrder={BACKDROP_BACK_RENDER_ORDER}',
 		)
+
 		expect(blocks[0]).toContain('position={[BACKDROP_X, BACKDROP_Y, BACKDROP_Z]}')
 	})
 
@@ -109,6 +120,7 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 		const touch_block = find_mesh_full_block(SOURCE, '[0, TOUCH_Y, TOUCH_Z]')
 		const keyboard_block = find_mesh_full_block(SOURCE, '[KEYBOARD_X, 0, 0]')
 		const mouse_block = find_mesh_full_block(SOURCE, '[MOUSE_X, MOUSE_Y, 0]')
+
 		expect(touch_block).toContain('side={DoubleSide}')
 		expect(keyboard_block).toContain('side={DoubleSide}')
 		expect(mouse_block).toContain('side={DoubleSide}')
@@ -178,8 +190,10 @@ describe('ControlsScene PC icon fit — keyboard and mouse must not overflow the
 describe('ControlsScene keyboard letters — overlaid as Threlte Text using the theme font', () => {
 	it('keyboard SVG contains only key boxes (no <text> elements) — letters are overlaid as Threlte Text', () => {
 		const svg_match = SOURCE.match(/const\s+KEYBOARD_SVG\s*=\s*`([\s\S]*?)`/u)
+
 		expect(svg_match).not.toBeNull()
 		const svg_body = svg_match?.[1] ?? ''
+
 		expect(svg_body).not.toContain('<text')
 		// Hardcoded font-family must not appear anywhere
 		expect(SOURCE).not.toContain('"Orbitron, monospace"')
@@ -188,8 +202,10 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 	it('KEYBOARD_LETTERS array enumerates all 7 letter overlays (W, A, S, D, ESC, /, Z)', () => {
 		expect(SOURCE).toMatch(/const\s+KEYBOARD_LETTERS\s*:\s*ReadonlyArray<KeyboardLetter>\s*=/u)
 		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
+
 		expect(letter_match).not.toBeNull()
 		const block = letter_match?.[0] ?? ''
+
 		expect(block).toContain("text: 'W'")
 		expect(block).toContain("text: 'A'")
 		expect(block).toContain("text: 'S'")
@@ -204,6 +220,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 		// silent drift during unrelated edits could shrink the keys back.
 		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
 		const block = letter_match?.[0] ?? ''
+
 		expect(block).toMatch(/text:\s*'W'[^}]*vsize:\s*16/u)
 		expect(block).toMatch(/text:\s*'A'[^}]*vsize:\s*16/u)
 		expect(block).toMatch(/text:\s*'S'[^}]*vsize:\s*16/u)
@@ -215,6 +232,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 		// space-to-ESC gap. The letter vy values must follow the rect centers.
 		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
 		const block = letter_match?.[0] ?? ''
+
 		expect(block).toMatch(/text:\s*'W'[^}]*vy:\s*38/u)
 		expect(block).toMatch(/text:\s*'A'[^}]*vy:\s*82/u)
 		expect(block).toMatch(/text:\s*'S'[^}]*vy:\s*82/u)
@@ -227,6 +245,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 		// literal value prevents accidental regression to the previous tiny size.
 		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
 		const block = letter_match?.[0] ?? ''
+
 		expect(block).toMatch(/text:\s*'ESC'[^}]*vsize:\s*12/u)
 	})
 
@@ -244,8 +263,10 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 
 	it('letter Text uses font={current_font} so it matches the hint text font exactly', () => {
 		const each_block = SOURCE.match(/\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u)
+
 		expect(each_block).not.toBeNull()
 		const block = each_block?.[0] ?? ''
+
 		expect(block).toContain('font={current_font}')
 		expect(block).toContain('fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}')
 		expect(block).toContain('color={letter.color}')
@@ -292,8 +313,10 @@ describe('ControlsScene viewport reactivity — sizes update on window resize', 
 describe('ControlsScene texture loading — leak-safe blob URLs and unhandled rejections', () => {
 	it('svg_to_texture revokes the object URL in a finally block (no leak on failure)', () => {
 		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
+
 		expect(fn_match).not.toBeNull()
 		const body = fn_match?.[0] ?? ''
+
 		expect(body).toMatch(/\}\s*finally\s*\{[\s\S]*URL\.revokeObjectURL\(url\)[\s\S]*\}/u)
 	})
 
@@ -301,13 +324,16 @@ describe('ControlsScene texture loading — leak-safe blob URLs and unhandled re
 		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
 		const body = fn_match?.[0] ?? ''
 		const revoke_count = (body.match(/URL\.revokeObjectURL\(/gu) ?? []).length
+
 		expect(revoke_count).toBe(1)
 	})
 
 	it('load_textures catches Promise.all rejection to avoid unhandled rejection', () => {
 		const fn_match = SOURCE.match(/async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/u)
+
 		expect(fn_match).not.toBeNull()
 		const body = fn_match?.[0] ?? ''
+
 		expect(body).toMatch(/try\s*\{[\s\S]*await Promise\.all/u)
 		expect(body).toMatch(/\}\s*catch\s*\([^)]*\)\s*\{/u)
 	})
@@ -317,6 +343,7 @@ function extract_const_number(source: string, name: string): number {
 	const re = new RegExp(`const\\s+${name}\\s*=\\s*(-?\\d+(?:\\.\\d+)?)`, 'u')
 	const match = source.match(re)
 	if (!match) throw new Error(`constant ${name} not found in source`)
+
 	return Number(match[1])
 }
 
@@ -338,6 +365,7 @@ describe('ControlsScene PC icon padding — keyboard left padding equals mouse r
 		const mouse_w = extract_const_number(SOURCE, 'MOUSE_W')
 		const keyboard_left_outer = Math.abs(keyboard_x - keyboard_w / HALF_DIVISOR_VALUE)
 		const mouse_right_outer = mouse_x + mouse_w / HALF_DIVISOR_VALUE
+
 		expect(Math.abs(keyboard_left_outer - mouse_right_outer)).toBeLessThan(
 			PLANE_OUTER_SYMMETRY_TOLERANCE,
 		)
@@ -352,6 +380,7 @@ describe('ControlsScene PC icon padding — keyboard left padding equals mouse r
 		const keyboard_body_left = keyboard_plane_left + KEYBOARD_SVG_LEFT_MARGIN_FRACTION * keyboard_w
 		const mouse_plane_right = mouse_x + mouse_w / HALF_DIVISOR_VALUE
 		const mouse_body_right = mouse_plane_right - MOUSE_SVG_SIDE_MARGIN_FRACTION * mouse_w
+
 		expect(Math.abs(Math.abs(keyboard_body_left) - mouse_body_right)).toBeLessThan(
 			BODY_SYMMETRY_TOLERANCE,
 		)
@@ -359,6 +388,7 @@ describe('ControlsScene PC icon padding — keyboard left padding equals mouse r
 
 	it('PC_GROUP_Y is raised to add bottom padding under the keyboard', () => {
 		const pc_group_y = extract_const_number(SOURCE, 'PC_GROUP_Y')
+
 		expect(pc_group_y).toBe(EXPECTED_PC_GROUP_Y)
 	})
 
@@ -376,6 +406,7 @@ describe('ControlsScene PC icon padding — keyboard left padding equals mouse r
 		const inner_gap = mouse_plane_left - keyboard_plane_right
 		const HALVED_GAP_TARGET = 0.15
 		const GAP_TOLERANCE = 0.02
+
 		expect(Math.abs(inner_gap - HALVED_GAP_TARGET)).toBeLessThan(GAP_TOLERANCE)
 	})
 })
@@ -412,6 +443,7 @@ describe('ControlsScene keyboard row spacing — WASD lowered so ASD↔Space gap
 		const space_bottom = EXPECTED_SPACE_ROW_Y + EXPECTED_SPACE_ROW_HEIGHT
 		const asd_to_space = EXPECTED_SPACE_ROW_Y - asd_bottom
 		const space_to_esc = EXPECTED_ESC_ROW_Y - space_bottom
+
 		expect(asd_to_space).toBe(EXPECTED_ASD_TO_SPACE_GAP)
 		expect(space_to_esc).toBe(EXPECTED_SPACE_TO_ESC_GAP)
 		expect(asd_to_space).toBe(space_to_esc)
@@ -470,12 +502,16 @@ const TOUCH_SVG_GESTURE_GROUP_COUNT = 2
 describe('ControlsScene touch SVG gesture centering — illustration vertically centered within frame', () => {
 	it('both gesture group y-translations center the bounding box within the frame rect', () => {
 		const svg_match = SOURCE.match(/const\s+TOUCH_SVG\s*=\s*`([\s\S]*?)`/u)
+
 		expect(svg_match).not.toBeNull()
 		const svg_body = svg_match?.[1] ?? ''
 		const translate_matches = [...svg_body.matchAll(/transform="translate\(\d+,(-?\d+)\)"/gu)]
+
 		expect(translate_matches).toHaveLength(TOUCH_SVG_GESTURE_GROUP_COUNT)
+
 		for (const match of translate_matches) {
 			const translate_y = Number(match[1])
+
 			expect(Math.abs(translate_y - TOUCH_SVG_CENTERING_TRANSLATE_Y)).toBeLessThanOrEqual(
 				TOUCH_SVG_CENTERING_TOLERANCE,
 			)

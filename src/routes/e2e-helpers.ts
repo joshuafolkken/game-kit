@@ -6,6 +6,7 @@ export async function stub_touch_primary(page: Page, is_touch: boolean): Promise
 	await page.addInitScript(
 		([query, matches]) => {
 			const original = globalThis.matchMedia.bind(globalThis)
+
 			globalThis.matchMedia = function patched(input: string): MediaQueryList {
 				if (input === query) {
 					return {
@@ -21,6 +22,7 @@ export async function stub_touch_primary(page: Page, is_touch: boolean): Promise
 						},
 					} as MediaQueryList
 				}
+
 				return original(input)
 			}
 		},

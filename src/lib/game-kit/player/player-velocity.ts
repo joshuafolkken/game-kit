@@ -20,6 +20,7 @@ function compute_velocity(velocity_input: VelocityInput): Velocity {
 	const nx = len > 1 ? vx / len : vx
 	const nz = len > 1 ? vz / len : vz
 	const speed = player_speed.get_move_speed(velocity_input.is_sprinting)
+
 	return { x: nx * speed, y: 0, z: nz * speed }
 }
 

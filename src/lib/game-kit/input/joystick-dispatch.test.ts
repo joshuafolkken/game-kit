@@ -23,14 +23,17 @@ function make_fake_dom(): { dom: HTMLElement; dispatched: Array<string> } {
 		getBoundingClientRect: () => ({ left: RECT_LEFT, top: RECT_TOP }),
 		dispatchEvent: (e: FakeEvent) => {
 			dispatched.push(e.type)
+
 			return true
 		},
 	} as unknown as HTMLElement
+
 	return { dom, dispatched }
 }
 
 function stub_document(parent: HTMLElement | null): void {
 	const canvas = parent ? { parentElement: parent } : null
+
 	vi.stubGlobal('document', { querySelector: () => canvas })
 }
 
@@ -42,6 +45,7 @@ describe('dispatch_pointer_down', () => {
 	it('does nothing when no canvas found', () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
+
 		joystick_dispatch.dispatch_pointer_down(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toHaveLength(0)
 	})
@@ -49,6 +53,7 @@ describe('dispatch_pointer_down', () => {
 	it('dispatches pointermove then pointerdown', () => {
 		vi.stubGlobal('PointerEvent', FakeEvent)
 		const { dom, dispatched } = make_fake_dom()
+
 		stub_document(dom)
 		joystick_dispatch.dispatch_pointer_down(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toEqual(['pointermove', 'pointerdown'])
@@ -59,6 +64,7 @@ describe('dispatch_pointer_up', () => {
 	it('does nothing when no canvas found', () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
+
 		joystick_dispatch.dispatch_pointer_up(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toHaveLength(0)
 	})
@@ -67,6 +73,7 @@ describe('dispatch_pointer_up', () => {
 		vi.stubGlobal('PointerEvent', FakeEvent)
 		vi.stubGlobal('MouseEvent', FakeEvent)
 		const { dom, dispatched } = make_fake_dom()
+
 		stub_document(dom)
 		joystick_dispatch.dispatch_pointer_up(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toEqual(['pointerup', 'click', 'pointerleave'])
@@ -76,6 +83,7 @@ describe('dispatch_pointer_up', () => {
 		vi.stubGlobal('PointerEvent', FakeEvent)
 		vi.stubGlobal('MouseEvent', FakeEvent)
 		const { dom, dispatched } = make_fake_dom()
+
 		stub_document(dom)
 		joystick_dispatch.dispatch_pointer_up(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y, false)
 		expect(dispatched).toEqual(['pointerup', 'pointerleave'])
@@ -86,6 +94,7 @@ describe('dispatch_pointer_cancel', () => {
 	it('does nothing when no canvas found', () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
+
 		joystick_dispatch.dispatch_pointer_cancel(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toHaveLength(0)
 	})
@@ -93,6 +102,7 @@ describe('dispatch_pointer_cancel', () => {
 	it('dispatches pointerup then pointerleave', () => {
 		vi.stubGlobal('PointerEvent', FakeEvent)
 		const { dom, dispatched } = make_fake_dom()
+
 		stub_document(dom)
 		joystick_dispatch.dispatch_pointer_cancel(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toEqual(['pointerup', 'pointerleave'])

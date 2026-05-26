@@ -11,6 +11,7 @@ const READY_PROGRESS_VALUE = 100
 test('page response includes HTTP security headers', async ({ page }) => {
 	const response = await page.goto('/')
 	const headers = response?.headers() ?? {}
+
 	expect(headers['x-frame-options']).toBe('SAMEORIGIN')
 	expect(headers['x-content-type-options']).toBe('nosniff')
 	expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin')
@@ -91,8 +92,10 @@ test('first click on the game scene does not toggle cyber mode (cyber-glow stays
 	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
 	const glow_locator = page.locator('[data-testid="cyber-glow"]')
 	const initial_glow_count = await glow_locator.count()
+
 	await page.locator('[data-testid="game-scene"]').click()
 	const after_glow_count = await glow_locator.count()
+
 	expect(after_glow_count).toBe(initial_glow_count)
 })
 

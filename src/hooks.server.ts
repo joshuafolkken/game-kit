@@ -45,6 +45,8 @@ export const handle: Handle = async function handle({ event, resolve }) {
 			return inject_game_name(inject_version(html))
 		},
 	})
+
 	inject_security_headers(response)
+
 	return response
 }

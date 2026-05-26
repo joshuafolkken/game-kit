@@ -35,12 +35,14 @@ describe('fps_switch_input', () => {
 	it('plays switch click sound when session is started', () => {
 		session.start_session()
 		const spy = vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {})
+
 		fps_switch_input.on_click()
 		expect(spy).toHaveBeenCalledTimes(1)
 	})
 
 	it('does not play switch click sound when session is not started', () => {
 		const spy = vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {})
+
 		fps_switch_input.on_click()
 		expect(spy).not.toHaveBeenCalled()
 	})

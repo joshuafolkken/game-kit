@@ -59,6 +59,7 @@ describe('FPS_SWITCH_Y', () => {
 	it('label clears the top of the CYBER button (no overlap)', () => {
 		const fps_label_y = FPS_SWITCH_Y - LABEL_Y_OFFSET
 		const cyber_top_y = SWITCH_Y + PANEL_HALF
+
 		expect(fps_label_y).toBeGreaterThan(cyber_top_y)
 	})
 })

@@ -10,5 +10,6 @@ export function create_switch_input(config: SwitchInputConfig): { on_click: () =
 		switch_audio.play_switch_click()
 		config.action()
 	}
+
 	return { on_click }
 }

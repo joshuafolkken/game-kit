@@ -61,28 +61,33 @@ describe('credits-config', () => {
 	describe('make_credits_scroll_bounds', () => {
 		it('start_z is positive', () => {
 			const { start_z } = credits_scroll.make_credits_scroll_bounds(10, TEST_HALF_DEPTH)
+
 			expect(start_z).toBeGreaterThan(0)
 		})
 
 		it('end_z is negative', () => {
 			const { end_z } = credits_scroll.make_credits_scroll_bounds(10, TEST_HALF_DEPTH)
+
 			expect(end_z).toBeLessThan(0)
 		})
 
 		it('start_z and end_z are symmetric around zero', () => {
 			const { start_z, end_z } = credits_scroll.make_credits_scroll_bounds(10, TEST_HALF_DEPTH)
+
 			expect(start_z).toBeCloseTo(-end_z)
 		})
 
 		it('start_z increases as line_count increases', () => {
 			const small = credits_scroll.make_credits_scroll_bounds(10, TEST_HALF_DEPTH)
 			const large = credits_scroll.make_credits_scroll_bounds(100, TEST_HALF_DEPTH)
+
 			expect(large.start_z).toBeGreaterThan(small.start_z)
 		})
 
 		it('start_z increases as half_depth increases', () => {
 			const shallow = credits_scroll.make_credits_scroll_bounds(10, 1)
 			const deep = credits_scroll.make_credits_scroll_bounds(10, 10)
+
 			expect(deep.start_z).toBeGreaterThan(shallow.start_z)
 		})
 	})
@@ -101,11 +106,13 @@ describe('credits-config', () => {
 				END_Z,
 				CREDITS_SCROLL_SPEED,
 			)
+
 			expect(result).toBeCloseTo(initial_z - CREDITS_SCROLL_SPEED * FRAME_DELTA)
 		})
 
 		it('resets to start_z when z drops below end_z', () => {
 			const past_end = END_Z - 0.1
+
 			expect(credits_scroll.advance_scroll(past_end, 0, START_Z, END_Z, CREDITS_SCROLL_SPEED)).toBe(
 				START_Z,
 			)
@@ -120,6 +127,7 @@ describe('credits-config', () => {
 		it('continues scrolling when z is above end_z', () => {
 			const z = 0
 			const result = credits_scroll.advance_scroll(z, 1, START_Z, END_Z, CREDITS_SCROLL_SPEED)
+
 			expect(result).toBeLessThan(z)
 			expect(result).not.toBe(START_Z)
 		})
@@ -128,6 +136,7 @@ describe('credits-config', () => {
 			const initial_z = 5
 			const slow = credits_scroll.advance_scroll(initial_z, FRAME_DELTA, START_Z, END_Z, 0.1)
 			const fast = credits_scroll.advance_scroll(initial_z, FRAME_DELTA, START_Z, END_Z, 1)
+
 			expect(fast).toBeLessThan(slow)
 		})
 	})

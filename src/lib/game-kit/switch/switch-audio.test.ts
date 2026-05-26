@@ -23,6 +23,7 @@ describe('switch_audio.play_switch_click', () => {
 
 	it('is a no-op before init is called', async () => {
 		const { switch_audio } = await import('./switch-audio.js')
+
 		switch_audio.play_switch_click()
 		expect(play_mock).not.toHaveBeenCalled()
 	})
@@ -30,12 +31,14 @@ describe('switch_audio.play_switch_click', () => {
 	it('does not throw when Audio is unavailable', async () => {
 		vi.stubGlobal('Audio', undefined)
 		const { switch_audio } = await import('./switch-audio.js')
+
 		switch_audio.init(MOCK_URL)
 		expect(() => switch_audio.play_switch_click()).not.toThrow()
 	})
 
 	it('calls play on the audio element', async () => {
 		const { switch_audio } = await import('./switch-audio.js')
+
 		switch_audio.init(MOCK_URL)
 		switch_audio.play_switch_click()
 		expect(play_mock).toHaveBeenCalledTimes(1)
@@ -43,6 +46,7 @@ describe('switch_audio.play_switch_click', () => {
 
 	it('resets currentTime to 0 before playing', async () => {
 		const { switch_audio } = await import('./switch-audio.js')
+
 		switch_audio.init(MOCK_URL)
 		switch_audio.play_switch_click()
 		shared_instance.currentTime = 99
@@ -52,6 +56,7 @@ describe('switch_audio.play_switch_click', () => {
 
 	it('reuses the same Audio instance across calls', async () => {
 		const { switch_audio } = await import('./switch-audio.js')
+
 		switch_audio.init(MOCK_URL)
 		switch_audio.play_switch_click()
 		switch_audio.play_switch_click()
@@ -60,6 +65,7 @@ describe('switch_audio.play_switch_click', () => {
 
 	it('creates Audio with the correct URL', async () => {
 		const { switch_audio } = await import('./switch-audio.js')
+
 		switch_audio.init(MOCK_URL)
 		switch_audio.play_switch_click()
 		expect(audio_ctor).toHaveBeenCalledWith(MOCK_URL)

@@ -104,12 +104,14 @@
 	function get_center_text(): string {
 		if (game_data.phase === 'gameover') return text_gameover.replace(' ', '\n')
 		if (game_data.round > 0) return String(game_data.round)
+
 		return text_start
 	}
 
 	function get_center_base_font_size(): number {
 		if (game_data.phase === 'gameover') return MULTILINE_FONT_SIZE
 		if (game_data.round > 0) return ROUND_DIGIT_FONT_SIZE
+
 		return FONT_SIZE
 	}
 

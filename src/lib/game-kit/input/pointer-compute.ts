@@ -17,6 +17,7 @@ function is_valid_target(target: EventTarget | null): target is HTMLElement {
 
 function compute_target_offset(event: DomEvent, target: HTMLElement): { x: number; y: number } {
 	const rect = target.getBoundingClientRect()
+
 	return { x: event.clientX - rect.left, y: event.clientY - rect.top }
 }
 
@@ -27,8 +28,10 @@ export function make_pointer_compute(
 		if (!is_valid_target(event.target)) return
 		const { clientWidth: w, clientHeight: h } = event.target
 		const { x, y } = compute_target_offset(event, event.target)
+
 		ctx.pointer.update((p) => {
 			p.set((x / w) * NDC_SCALE - 1, -(y / h) * NDC_SCALE + 1)
+
 			return p
 		})
 		ctx.raycaster.setFromCamera(ctx.pointer.current, camera.current)

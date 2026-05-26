@@ -114,8 +114,10 @@
 				event.preventDefault()
 				session.reset_session()
 			}
+
 			return
 		}
+
 		if (event.key !== 'Enter') return
 		event.preventDefault()
 		start_game()
@@ -134,6 +136,7 @@
 			console.warn('[GameScene] No <canvas> found at mount — synthetic pointer events disabled')
 		const cleanup_input = input.setup_listeners(canvas_el)
 		const cleanup_fullscreen = fullscreen.setup_listeners()
+
 		return function cleanup(): void {
 			cleanup_input()
 			cleanup_fullscreen()

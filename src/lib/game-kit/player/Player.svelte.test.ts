@@ -68,6 +68,7 @@ describe('Player', () => {
 
 	it('renders without error when not in gameover', () => {
 		const { container } = render(Player, { props: { is_gameover: false } })
+
 		expect(container).toBeTruthy()
 	})
 
@@ -88,6 +89,7 @@ describe('Player', () => {
 		render(Player, { props: { is_gameover: false } })
 		tick_holder.fn?.(0.016)
 		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
+
 		expect(call?.forward).toBeCloseTo(KEYBOARD_AXIS_FRACTION)
 	})
 
@@ -96,6 +98,7 @@ describe('Player', () => {
 		render(Player, { props: { is_gameover: false } })
 		tick_holder.fn?.(0.016)
 		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
+
 		expect(call?.forward).toBeCloseTo(KEYBOARD_AXIS_FRACTION / Math.SQRT2)
 	})
 
@@ -104,6 +107,7 @@ describe('Player', () => {
 		render(Player, { props: { is_gameover: false } })
 		tick_holder.fn?.(0.016)
 		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
+
 		expect(call?.forward).toBeCloseTo(1)
 	})
 })

@@ -76,6 +76,7 @@ describe('credits', () => {
 
 		it('includes Special Thanks new contributors after the section header', () => {
 			const special_thanks_block = CREDITS_TEXT.split('SPECIAL THANKS')[1] ?? ''
+
 			expect(special_thanks_block).toContain('Incognito')
 			expect(special_thanks_block).toContain('Daisuke')
 			expect(special_thanks_block).toContain('@akikawa922')
@@ -148,6 +149,7 @@ describe('credits', () => {
 
 		it('matches the number of newlines in CREDITS_TEXT plus one', () => {
 			const line_count_from_text = CREDITS_TEXT.split('\n').length
+
 			expect(CREDITS_LINE_COUNT).toBe(line_count_from_text)
 		})
 	})

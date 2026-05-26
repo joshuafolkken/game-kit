@@ -7,6 +7,7 @@ afterEach(() => {
 
 function make_audio_ctx_ctor(state: AudioContextState) {
 	const resume = vi.fn().mockImplementation(() => Promise.resolve())
+
 	return {
 		ctor: class {
 			readonly state = state
@@ -27,9 +28,11 @@ describe('game audio', () => {
 	it('get_audio_context resumes suspended AudioContext', async () => {
 		vi.resetModules()
 		const { ctor, resume } = make_audio_ctx_ctor('suspended')
+
 		vi.stubGlobal('AudioContext', ctor)
 
 		const { audio } = await import('./audio')
+
 		audio.init_audio()
 		audio.get_audio_context()
 
@@ -39,9 +42,11 @@ describe('game audio', () => {
 	it('get_audio_context does not call resume when running', async () => {
 		vi.resetModules()
 		const { ctor, resume } = make_audio_ctx_ctor('running')
+
 		vi.stubGlobal('AudioContext', ctor)
 
 		const { audio } = await import('./audio')
+
 		audio.init_audio()
 		audio.get_audio_context()
 
@@ -51,6 +56,7 @@ describe('game audio', () => {
 	it('init_audio is idempotent — multiple calls create only one AudioContext', async () => {
 		vi.resetModules()
 		let instance_count = 0
+
 		vi.stubGlobal(
 			'AudioContext',
 			class {
@@ -62,6 +68,7 @@ describe('game audio', () => {
 		)
 
 		const { audio } = await import('./audio')
+
 		audio.init_audio()
 		audio.init_audio()
 

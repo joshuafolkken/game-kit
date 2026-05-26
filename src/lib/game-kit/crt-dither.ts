@@ -67,17 +67,20 @@ export const BAYER_MATRIX: ReadonlyArray<ReadonlyArray<number>> = [
 function create_bayer_texture(): DataTexture {
 	const cells = BAYER_SIZE_VALUE * BAYER_SIZE_VALUE
 	const data = new Float32Array(cells)
+
 	BAYER_MATRIX.forEach((row, y) => {
 		row.forEach((value, x) => {
 			data[y * BAYER_SIZE_VALUE + x] = value / cells
 		})
 	})
 	const texture = new DataTexture(data, BAYER_SIZE_VALUE, BAYER_SIZE_VALUE, RedFormat, FloatType)
+
 	texture.minFilter = NearestFilter
 	texture.magFilter = NearestFilter
 	texture.wrapS = RepeatWrapping
 	texture.wrapT = RepeatWrapping
 	texture.needsUpdate = true
+
 	return texture
 }
 
@@ -99,6 +102,7 @@ function compute_scanline_factor(
 	const phase = ((coord % period) + period) % period
 	const wave_cos = HALF * (1 - Math.cos((TWO_PI * phase) / period))
 	const wave = Math.pow(wave_cos, sharpness)
+
 	return dark_factor + wave * (1 - dark_factor)
 }
 
@@ -116,6 +120,7 @@ function quantize_with_dither_2d(
 	const dithered = channel + threshold * dither_step
 	const quantized = Math.floor(dithered * levels) / (levels - 1)
 	const clamped = Math.min(1, Math.max(0, quantized))
+
 	return Math.max(clamped, floor_val)
 }
 

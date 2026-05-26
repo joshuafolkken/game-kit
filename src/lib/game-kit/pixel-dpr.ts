@@ -11,6 +11,7 @@ function compute_pixel_dpr(
 	const target_dpr = target_short_edge / shorter
 	const min_dpr = min_short_edge / shorter
 	const capped_dpr = Math.min(max_dpr, target_dpr)
+
 	return Math.max(min_dpr, capped_dpr)
 }
 

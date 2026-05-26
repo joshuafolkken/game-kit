@@ -31,6 +31,7 @@ describe('Board', () => {
 		const { container } = render(Board, {
 			props: { game_data: make_game_data(), ...BOARD_TEXT_PROPS },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -38,6 +39,7 @@ describe('Board', () => {
 		const { container } = render(Board, {
 			props: { game_data: make_game_data({ active_color: 'green' }), ...BOARD_TEXT_PROPS },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -45,6 +47,7 @@ describe('Board', () => {
 		const { container } = render(Board, {
 			props: { game_data: make_game_data({ phase: 'gameover' }), ...BOARD_TEXT_PROPS },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -52,6 +55,7 @@ describe('Board', () => {
 		const { container } = render(Board, {
 			props: { game_data: make_game_data({ phase: 'showing', round: 3 }), ...BOARD_TEXT_PROPS },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -62,6 +66,7 @@ describe('Board', () => {
 				...BOARD_TEXT_PROPS,
 			},
 		})
+
 		expect(container).toBeTruthy()
 	})
 })
@@ -124,6 +129,7 @@ describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () =
 		const fz = BOARD_SOURCE.match(/const\s+FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u)
 		const ml = BOARD_SOURCE.match(/const\s+MULTILINE_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u)
 		const rd = BOARD_SOURCE.match(/const\s+ROUND_DIGIT_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u)
+
 		expect(fz).not.toBeNull()
 		expect(ml).not.toBeNull()
 		expect(rd).not.toBeNull()
@@ -161,6 +167,7 @@ describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () =
 		// Whitespace-normalized substring check avoids the long chain of `\s*` separators
 		// (SonarCloud rule typescript:S5852 flags such patterns as ReDoS candidates).
 		const normalized = BOARD_SOURCE.replace(/\s+/gu, ' ')
+
 		expect(normalized).toContain(
 			'current_line_height = $derived( is_multiline_center ? MULTILINE_LINE_HEIGHT : SINGLE_LINE_HEIGHT',
 		)

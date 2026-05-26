@@ -115,9 +115,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'unicorn/no-array-reverse': 'off',
 	// TODO #188 follow-up: tighten unknown-type return sites
 	'@typescript-eslint/no-unsafe-return': 'off',
-	// TODO #188 follow-up: add canonical blank lines between statements
-	'padding-line-between-statements': 'off',
-	'@stylistic/padding-line-between-statements': 'off',
 	// TODO #188 follow-up: convert `let` to `const` where never reassigned
 	'prefer-const': 'off',
 	// TODO #188 follow-up: simplify regex literals to their canonical form

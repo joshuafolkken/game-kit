@@ -47,6 +47,7 @@ describe('camera_shake', () => {
 		camera_shake.trigger(STRONG)
 		camera_shake.step(DELTA)
 		const expected = STRONG - STRONG * DECAY_RATE * DELTA
+
 		expect(camera_shake.intensity).toBeCloseTo(expected, 6)
 	})
 
@@ -58,16 +59,20 @@ describe('camera_shake', () => {
 
 	it('sample_position_offset stays within ±MAX_POSITION_OFFSET when active', () => {
 		camera_shake.trigger(STRONG)
+
 		for (let i = 0; i < 100; i++) {
 			const v = camera_shake.sample_position_offset()
+
 			expect(Math.abs(v)).toBeLessThanOrEqual(MAX_POSITION_OFFSET + Number.EPSILON)
 		}
 	})
 
 	it('sample_rotation_offset stays within ±MAX_ROTATION_OFFSET when active', () => {
 		camera_shake.trigger(STRONG)
+
 		for (let i = 0; i < 100; i++) {
 			const v = camera_shake.sample_rotation_offset()
+
 			expect(Math.abs(v)).toBeLessThanOrEqual(MAX_ROTATION_OFFSET + Number.EPSILON)
 		}
 	})

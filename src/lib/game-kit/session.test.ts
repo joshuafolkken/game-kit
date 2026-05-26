@@ -32,6 +32,7 @@ describe('create_session isolation', () => {
 	it('two instances do not share is_session_started state', () => {
 		const a = create_session()
 		const b = create_session()
+
 		a.start_session()
 		expect(a.is_session_started).toBe(true)
 		expect(b.is_session_started).toBe(false)

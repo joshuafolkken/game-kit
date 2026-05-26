@@ -12,11 +12,14 @@
 		if (!fps.is_fps_enabled) {
 			frame_count = 0
 			last_time = performance.now()
+
 			return
 		}
+
 		frame_count++
 		const now = performance.now()
 		const elapsed = now - last_time
+
 		if (elapsed >= FPS_UPDATE_INTERVAL_MS) {
 			fps.set_fps_text(String(Math.round((frame_count * MS_PER_SECOND) / elapsed)))
 			frame_count = 0

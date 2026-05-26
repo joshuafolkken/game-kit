@@ -11,6 +11,7 @@ function compute_fit_scale(
 	const available_width = view_width - SIDES * min_side_padding
 	if (available_width <= 0) return MIN_SCALE
 	const fit_scale = available_width / natural_span
+
 	return Math.min(MAX_SCALE, fit_scale)
 }
 

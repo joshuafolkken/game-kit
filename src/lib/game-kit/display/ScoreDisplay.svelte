@@ -58,6 +58,7 @@
 	function apply_anim(from: number, to: number, start_ms: number, now: number): number {
 		if (from === to) return to
 		const t = Math.min(1, (now - start_ms) / ANIM_DURATION_MS)
+
 		return Math.round(from + (to - from) * t)
 	}
 
@@ -72,6 +73,7 @@
 				score_from = displayed_score
 				score_anim_ms = now
 			}
+
 			score_to = score_data.current_score
 		}
 

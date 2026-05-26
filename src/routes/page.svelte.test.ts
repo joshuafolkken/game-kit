@@ -14,12 +14,14 @@ describe('Home page', () => {
 
 	it('does not render cyber-glow in normal mode', () => {
 		const { container } = render(Page)
+
 		expect(container.querySelector('[data-testid="cyber-glow"]')).toBeNull()
 	})
 
 	it('renders cyber-glow when cyber mode is active', () => {
 		game_state.toggle_alt()
 		const { container } = render(Page)
+
 		expect(container.querySelector('[data-testid="cyber-glow"]')).toBeTruthy()
 	})
 })

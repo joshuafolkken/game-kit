@@ -18,6 +18,7 @@ describe('CrtChromaticFilter.svelte — SVG defs structure', () => {
 		const offset_count = (CRT_CHROMATIC_FILTER_SOURCE.match(/<feOffset\b/gu) ?? []).length
 		const REQUIRED_CHANNEL_MATRICES = 3
 		const REQUIRED_OFFSETS = 2
+
 		expect(color_matrix_count).toBe(REQUIRED_CHANNEL_MATRICES)
 		expect(offset_count).toBe(REQUIRED_OFFSETS)
 	})
@@ -35,15 +36,18 @@ describe('CrtChromaticFilter.svelte — SVG defs structure', () => {
 		const b_match = CRT_CHROMATIC_FILTER_SOURCE.match(
 			/<feOffset[^>]*\sin="b_only"[^>]*\sdx="(-?\d+(?:\.\d+)?)"[^>]*\sdy="0"/u,
 		)
+
 		expect(r_match).toBeTruthy()
 		expect(b_match).toBeTruthy()
 		const r_dx_str = r_match?.[1]
 		const b_dx_str = b_match?.[1]
+
 		expect(r_dx_str).toBeDefined()
 		expect(b_dx_str).toBeDefined()
 		if (r_dx_str === undefined || b_dx_str === undefined) return
 		const r_dx = parseFloat(r_dx_str)
 		const b_dx = parseFloat(b_dx_str)
+
 		expect(r_dx).not.toBe(0)
 		expect(r_dx).toBe(-b_dx)
 	})
@@ -56,6 +60,7 @@ describe('CrtChromaticFilter.svelte — SVG defs structure', () => {
 			CRT_CHROMATIC_FILTER_SOURCE.match(/<feComposite[^>]*operator="arithmetic"/gu) ?? []
 		).length
 		const REQUIRED_COMPOSITES = 2
+
 		expect(composite_count).toBe(REQUIRED_COMPOSITES)
 		expect(CRT_CHROMATIC_FILTER_SOURCE).toMatch(/k1="0"\s+k2="1"\s+k3="1"\s+k4="0"/u)
 	})
@@ -63,6 +68,7 @@ describe('CrtChromaticFilter.svelte — SVG defs structure', () => {
 	it('renders the SVG <filter id="crt-chromatic"> into the DOM when mounted standalone', () => {
 		const { container } = render(CrtChromaticFilter)
 		const filter = container.querySelector('#crt-chromatic')
+
 		expect(filter).toBeTruthy()
 		expect(filter?.tagName.toLowerCase()).toBe('filter')
 	})
