@@ -57,7 +57,6 @@ type GameKitPkg = {
 	scripts: Record<string, string>
 	devDependencies: Record<string, string>
 	devEngines: unknown
-	packageManager: string
 }
 
 type GameNames = {
@@ -108,6 +107,14 @@ function read_game_kit_pkg(): GameKitPkg {
 	return JSON.parse(raw) as GameKitPkg
 }
 
+// `pnpm pack` strips the `packageManager` field from the published `package.json`,
+// so the kit cannot supply its own pin to scaffolded projects. Falling back to the
+// host pnpm gives an exact-semver value that Node v25 / pnpm 11 accept, while the
+// `devEngines.packageManager.version` range still expresses the floor declaratively.
+function detect_host_pnpm_version(): string {
+	return execSync('pnpm --version').toString().trim()
+}
+
 function pick_deps(all: Record<string, string>, keys: readonly string[]): Record<string, string> {
 	return Object.fromEntries(keys.map((k) => [k, all[k] ?? '*']))
 }
@@ -135,7 +142,7 @@ function build_package_json(pkg: GameKitPkg, game_name: string): object {
 		scripts: build_scripts(pkg),
 		dependencies: { '@joshuafolkken/game-kit': `^${pkg.version}` },
 		devDependencies: pick_deps(pkg.devDependencies, REQUIRED_DEV_DEPS),
-		packageManager: pkg.packageManager,
+		packageManager: `pnpm@${detect_host_pnpm_version()}`,
 		devEngines: pkg.devEngines,
 	}
 }
