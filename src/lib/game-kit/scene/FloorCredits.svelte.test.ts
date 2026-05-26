@@ -20,6 +20,7 @@ describe('FloorCredits', () => {
 				scroll_end_z: END_Z,
 			},
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -32,6 +33,7 @@ describe('FloorCredits', () => {
 				scroll_end_z: END_Z,
 			},
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -39,6 +41,7 @@ describe('FloorCredits', () => {
 		const { container } = render(FloorCredits, {
 			props: { is_alt: false, credits: '', scroll_start_z: START_Z, scroll_end_z: END_Z },
 		})
+
 		expect(container).toBeTruthy()
 	})
 })

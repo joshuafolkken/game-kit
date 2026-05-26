@@ -20,21 +20,25 @@ function create_osc_graph(freq: number, is_alt: boolean): OscGraph | null {
 	if (!ctx) return null
 	const osc = ctx.createOscillator()
 	const gain = ctx.createGain()
+
 	osc.connect(gain)
 	gain.connect(ctx.destination)
 	osc.frequency.setValueAtTime(freq, ctx.currentTime)
 	osc.type = is_alt ? CYBER_WAVE : NORMAL_WAVE
 	gain.gain.setValueAtTime(GAIN_VALUE, ctx.currentTime)
+
 	return { osc, gain, ctx }
 }
 
 function stop_tone(): void {
 	if (!active_osc) return
+
 	try {
 		active_osc.stop()
 	} catch {
 		// already stopped
 	}
+
 	active_osc = null
 }
 

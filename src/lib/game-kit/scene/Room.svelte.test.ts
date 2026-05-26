@@ -11,11 +11,13 @@ describe('Room', () => {
 		const { container } = render(Room, {
 			props: { ...COLORS, width: 10, depth: 10, height: 3 },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
 	it('renders with default dimensions (no width/depth/height)', () => {
 		const { container } = render(Room, { props: COLORS })
+
 		expect(container).toBeTruthy()
 	})
 
@@ -23,6 +25,7 @@ describe('Room', () => {
 		const { container } = render(Room, {
 			props: { ...COLORS, width: 20, depth: 15, height: 5 },
 		})
+
 		expect(container).toBeTruthy()
 	})
 })

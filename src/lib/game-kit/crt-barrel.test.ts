@@ -15,6 +15,7 @@ const WIDE_ASPECT = 16 / 9
 function distance_from_center(x: number, y: number): number {
 	const dx = x - CENTER_X
 	const dy = y - CENTER_Y
+
 	return Math.sqrt(dx * dx + dy * dy)
 }
 
@@ -43,6 +44,7 @@ describe('crt_barrel.apply_barrel_uv', () => {
 		for (const strength of [0, 0.1, BARREL_STRENGTH, 0.5]) {
 			for (const aspect of [SQUARE_ASPECT, WIDE_ASPECT, 9 / 16]) {
 				const out = crt_barrel.apply_barrel_uv({ x: CENTER_X, y: CENTER_Y }, strength, aspect)
+
 				expect(out.x).toBeCloseTo(CENTER_X, 10)
 				expect(out.y).toBeCloseTo(CENTER_Y, 10)
 			}
@@ -56,8 +58,10 @@ describe('crt_barrel.apply_barrel_uv', () => {
 			{ x: 0.25, y: 0.75 },
 			{ x: 0.1, y: 0.9 },
 		]
+
 		for (const uv of samples) {
 			const out = crt_barrel.apply_barrel_uv(uv, 0, SQUARE_ASPECT)
+
 			expect(out.x).toBeCloseTo(uv.x, 10)
 			expect(out.y).toBeCloseTo(uv.y, 10)
 		}
@@ -72,10 +76,12 @@ describe('crt_barrel.apply_barrel_uv', () => {
 			{ x: 0.2, y: 0.2 },
 			{ x: 0.8, y: 0.8 },
 		]
+
 		for (const uv of off_center_samples) {
 			const before = distance_from_center(uv.x, uv.y)
 			const after_uv = crt_barrel.apply_barrel_uv(uv, BARREL_STRENGTH, SQUARE_ASPECT)
 			const after = distance_from_center(after_uv.x, after_uv.y)
+
 			expect(after).toBeGreaterThan(before)
 		}
 	})
@@ -86,6 +92,7 @@ describe('crt_barrel.apply_barrel_uv', () => {
 			{ x: 0.1, y: 0.4 },
 			{ x: 0.25, y: 0.6 },
 		]
+
 		for (const uv of samples) {
 			const forward = crt_barrel.apply_barrel_uv(uv, BARREL_STRENGTH, SQUARE_ASPECT)
 			const opposite = crt_barrel.apply_barrel_uv(
@@ -93,6 +100,7 @@ describe('crt_barrel.apply_barrel_uv', () => {
 				BARREL_STRENGTH,
 				SQUARE_ASPECT,
 			)
+
 			expect(opposite.x).toBeCloseTo(1 - forward.x, 10)
 			expect(opposite.y).toBeCloseTo(1 - forward.y, 10)
 		}
@@ -106,6 +114,7 @@ describe('crt_barrel.apply_barrel_uv', () => {
 			{ x: 0.8, y: 0.1 },
 			{ x: 0.6, y: 0.9 },
 		]
+
 		for (const uv of samples) {
 			const out = crt_barrel.apply_barrel_uv(uv, BARREL_STRENGTH, SQUARE_ASPECT)
 			const in_dx = uv.x - CENTER_X
@@ -113,6 +122,7 @@ describe('crt_barrel.apply_barrel_uv', () => {
 			const out_dx = out.x - CENTER_X
 			const out_dy = out.y - CENTER_Y
 			const cross = in_dx * out_dy - in_dy * out_dx
+
 			expect(Math.abs(cross)).toBeLessThan(1e-10)
 		}
 	})
@@ -125,6 +135,7 @@ describe('crt_barrel.apply_barrel_uv', () => {
 		const wide_out = crt_barrel.apply_barrel_uv(corner, BARREL_STRENGTH, WIDE_ASPECT)
 		const square_dx = Math.abs(square_out.x - corner.x)
 		const wide_dx = Math.abs(wide_out.x - corner.x)
+
 		expect(wide_dx).toBeGreaterThan(square_dx)
 	})
 })

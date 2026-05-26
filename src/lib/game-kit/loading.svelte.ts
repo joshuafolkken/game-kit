@@ -23,6 +23,7 @@ type LoadingRefs = { hide_timer_id: ReturnType<typeof setTimeout> | null }
 function disconnect_observer(): void {
 	const scope = globalThis as Record<string, unknown>
 	const observer = scope[OBSERVER_GLOBAL_KEY] as LoadingObserver | undefined
+
 	if (observer && typeof observer.disconnect === 'function') {
 		observer.disconnect()
 		scope[OBSERVER_GLOBAL_KEY] = undefined
@@ -59,6 +60,7 @@ function reset_impl<T extends string>(
 		clearTimeout(refs.hide_timer_id)
 		refs.hide_timer_id = null
 	}
+
 	disconnect_observer()
 	s.is_visible = true
 	s.progress = INITIAL_PROGRESS
@@ -78,6 +80,7 @@ export function create_loading<T extends string>(initial_step: T) {
 		progress_value: 0,
 	})
 	const refs: LoadingRefs = { hide_timer_id: null }
+
 	return {
 		get is_visible() {
 			return s.is_visible

@@ -39,22 +39,26 @@ describe('GameScene', () => {
 
 	it('renders game-scene container', () => {
 		const { container } = render_scene()
+
 		expect(container.querySelector('[data-testid="game-scene"]')).toBeTruthy()
 	})
 
 	it('hides jump button before the session starts', () => {
 		const { container } = render_scene()
+
 		expect(container.querySelector('[data-testid="jump-btn"]')).toBeNull()
 	})
 
 	it('shows jump button with aria-label after session starts', () => {
 		const { container } = render_scene()
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		scene.click()
 		flushSync()
 		const btn = container.querySelector<HTMLElement>('[data-testid="jump-btn"]')
+
 		expect(btn).toBeTruthy()
 		expect(btn?.getAttribute('aria-label')).toBe(LABEL_JUMP)
 		expect(btn?.querySelector('svg')).toBeTruthy()
@@ -62,6 +66,7 @@ describe('GameScene', () => {
 
 	it('renders a canvas element', () => {
 		const { container } = render_scene()
+
 		expect(container.querySelector('canvas')).toBeTruthy()
 	})
 
@@ -88,6 +93,7 @@ describe('GameScene', () => {
 			},
 		})
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		scene.click()
@@ -102,6 +108,7 @@ describe('GameScene', () => {
 			},
 		})
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		scene.click()
@@ -114,6 +121,7 @@ describe('GameScene', () => {
 		const spy = vi.spyOn(audio, 'init_audio')
 		const { container } = render_scene()
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		scene.click()
@@ -127,6 +135,7 @@ describe('GameScene', () => {
 		const fullscreen_spy = vi.spyOn(fullscreen, 'request').mockResolvedValue()
 		const { container } = render_scene()
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		scene.click()
@@ -139,6 +148,7 @@ describe('GameScene', () => {
 		const audio_spy = vi.spyOn(audio, 'init_audio')
 		const { container } = render_scene()
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		scene.click()
@@ -150,6 +160,7 @@ describe('GameScene', () => {
 		const spy = vi.spyOn(fullscreen_switch_input, 'set_container')
 		const { container } = render_scene()
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		expect(spy).toHaveBeenCalledWith(scene)
 	})
@@ -157,6 +168,7 @@ describe('GameScene', () => {
 	it('sets session.is_session_started to true after first click', () => {
 		const { container } = render_scene()
 		const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		expect(session.is_session_started).toBe(false)
@@ -166,12 +178,14 @@ describe('GameScene', () => {
 
 	it('does not render cyber-glow when game_state.is_alt is false', () => {
 		const { container } = render_scene()
+
 		expect(container.querySelector('[data-testid="cyber-glow"]')).toBeNull()
 	})
 
 	it('renders cyber-glow when game_state.is_alt is true', () => {
 		game_state.toggle_alt()
 		const { container } = render_scene()
+
 		expect(container.querySelector('[data-testid="cyber-glow"]')).toBeTruthy()
 	})
 
@@ -179,6 +193,7 @@ describe('GameScene', () => {
 		it('pressing ESC while session is active calls reset_session', () => {
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			scene.click()
@@ -190,6 +205,7 @@ describe('GameScene', () => {
 		it('pressing Z while session is active calls reset_session', () => {
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			scene.click()
@@ -201,6 +217,7 @@ describe('GameScene', () => {
 		it('pressing ESC while session is not active does not start the game', () => {
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			expect(session.is_session_started).toBe(false)
@@ -213,6 +230,7 @@ describe('GameScene', () => {
 		it('pressing Enter starts the session', () => {
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			expect(session.is_session_started).toBe(false)
@@ -223,6 +241,7 @@ describe('GameScene', () => {
 		it('pressing Space does NOT start the session (reserved for jump input)', () => {
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			expect(session.is_session_started).toBe(false)
@@ -235,6 +254,7 @@ describe('GameScene', () => {
 		it('joystick zones are rendered before session starts so move/look work in overlay', () => {
 			vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
 			const { container } = render_scene()
+
 			expect(container.querySelectorAll('.joystick-zone')).toHaveLength(2)
 		})
 	})
@@ -245,6 +265,7 @@ describe('GameScene', () => {
 			vi.spyOn(fullscreen, 'request').mockResolvedValue()
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			scene.click()
@@ -256,6 +277,7 @@ describe('GameScene', () => {
 			vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(false)
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			scene.click()
@@ -266,6 +288,7 @@ describe('GameScene', () => {
 		it('does not show pause button before session starts', () => {
 			vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
 			const { container } = render_scene()
+
 			expect(container.querySelector('[data-testid="pause-btn"]')).toBeNull()
 		})
 
@@ -274,11 +297,13 @@ describe('GameScene', () => {
 			vi.spyOn(fullscreen, 'request').mockResolvedValue()
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			scene.click()
 			flushSync()
 			const pause_btn = container.querySelector<HTMLElement>('[data-testid="pause-btn"]')
+
 			expect(pause_btn).toBeTruthy()
 			if (!pause_btn) return
 			pause_btn.click()
@@ -291,14 +316,17 @@ describe('GameScene', () => {
 			vi.spyOn(fullscreen, 'request').mockResolvedValue()
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			if (!scene) return
 			scene.click()
 			flushSync()
 			const pause_btn = container.querySelector<HTMLElement>('[data-testid="pause-btn"]')
+
 			expect(pause_btn).toBeTruthy()
 			if (!pause_btn) return
 			const style = globalThis.getComputedStyle(pause_btn)
+
 			expect(style.bottom).toBe('16px')
 			expect(style.right).toBe('16px')
 		})
@@ -339,24 +367,29 @@ describe('GameScene', () => {
 	describe('CRT filter overlay — scanlines + vignette over the whole game screen', () => {
 		it('renders a CRT overlay element over the game container, regardless of session state', () => {
 			const { container } = render_scene()
+
 			expect(container.querySelector('[data-testid="crt-overlay"]')).toBeTruthy()
 		})
 
 		it('CRT overlay is a sibling of the Canvas so it covers the entire game screen', () => {
 			const { container } = render_scene()
 			const game_scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(game_scene).toBeTruthy()
 			if (!game_scene) return
 			const overlay = game_scene.querySelector<HTMLElement>('[data-testid="crt-overlay"]')
+
 			expect(overlay?.parentElement).toBe(game_scene)
 		})
 
 		it('CRT overlay does not block pointer events (UI underneath stays interactive)', () => {
 			const { container } = render_scene()
 			const overlay = container.querySelector<HTMLElement>('[data-testid="crt-overlay"]')
+
 			expect(overlay).toBeTruthy()
 			if (!overlay) return
 			const style = globalThis.getComputedStyle(overlay)
+
 			expect(style.pointerEvents).toBe('none')
 		})
 
@@ -400,6 +433,7 @@ describe('GameScene', () => {
 			expect(GAME_SCENE_SOURCE).not.toMatch(
 				/\.game-container\.crt-active\s+:global\(canvas\)[\s\S]*?hue-rotate/u,
 			)
+
 			// Negative: previous filter values must not be present on the canvas filter chain.
 			for (const prior of [
 				'contrast\\(1\\.08\\)',
@@ -456,6 +490,7 @@ describe('GameScene', () => {
 					),
 				)
 			}
+
 			// Negative: the prior 0.55 alpha must not be present in any corner-darkening position.
 			expect(GAME_SCENE_SOURCE).not.toMatch(
 				/radial-gradient\(\s*circle\s+at\s+(?:top|bottom)\s+(?:left|right),\s*rgba\(\s*0,\s*0,\s*0,\s*0\.55\s*\)/u,
@@ -528,6 +563,7 @@ describe('GameScene', () => {
 		it('renders the SVG <filter id="crt-chromatic"> into the DOM at mount', () => {
 			const { container } = render_scene()
 			const filter = container.querySelector('#crt-chromatic')
+
 			expect(filter).toBeTruthy()
 			expect(filter?.tagName.toLowerCase()).toBe('filter')
 		})
@@ -548,6 +584,7 @@ describe('GameScene', () => {
 			vi.spyOn(fullscreen, 'is_active', 'get').mockReturnValue(true)
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			expect(scene?.classList.contains('is-fullscreen')).toBe(true)
 		})
@@ -556,6 +593,7 @@ describe('GameScene', () => {
 			vi.spyOn(fullscreen, 'is_active', 'get').mockReturnValue(false)
 			const { container } = render_scene()
 			const scene = container.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 			expect(scene).toBeTruthy()
 			expect(scene?.classList.contains('is-fullscreen')).toBe(false)
 		})
@@ -637,6 +675,7 @@ describe('GameScene', () => {
 		it('keeps [role="status"] visually hidden before the session starts', () => {
 			const { container } = render_scene()
 			const status = container.querySelector<HTMLElement>('[role="status"]')
+
 			expect(status).toBeTruthy()
 			if (!status) return
 			expect(status.getBoundingClientRect().height).toBeLessThanOrEqual(
@@ -646,9 +685,11 @@ describe('GameScene', () => {
 
 		it('keeps [role="status"] visually hidden after session.start_session()', () => {
 			const { container } = render_scene()
+
 			session.start_session()
 			flushSync()
 			const status = container.querySelector<HTMLElement>('[role="status"]')
+
 			expect(status).toBeTruthy()
 			if (!status) return
 			expect(status.textContent).toBe(LABEL_GAME_STARTED)

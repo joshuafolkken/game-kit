@@ -39,11 +39,13 @@ function get_step_ms(len: number): number {
 	if (len <= 5) return STEP_MS_1_5
 	if (len <= 13) return STEP_MS_6_13
 	if (len <= 20) return STEP_MS_14_20
+
 	return STEP_MS_21_PLUS
 }
 
 function add_to_sequence(s: GameState, colors: ReadonlyArray<ButtonColor>): void {
 	const index = Math.floor(Math.random() * colors.length) // NOSONAR — game RNG, not security-sensitive
+
 	s.sequence.push(colors[index] ?? FALLBACK_COLOR)
 }
 
@@ -56,6 +58,7 @@ async function run_show(s: GameState, t: GameTimers, gen: number): Promise<void>
 	const step_ms = get_step_ms(s.sequence.length)
 	const on_ms = step_ms * ON_RATIO
 	const off_ms = step_ms * OFF_RATIO
+
 	for (const color of s.sequence) {
 		if (gen !== t.show_gen) return
 		s.active_color = color
@@ -65,6 +68,7 @@ async function run_show(s: GameState, t: GameTimers, gen: number): Promise<void>
 		s.active_color = null
 		await delay(off_ms)
 	}
+
 	if (gen !== t.show_gen) return
 	t.input_start_ms = Date.now()
 	s.phase = 'player_input'
@@ -130,9 +134,11 @@ function release_game(
 ): void {
 	game_audio.stop_tone()
 	const color = s.pressed_color
+
 	s.pressed_color = null
 	if (s.phase !== 'player_input') return
 	if (color === null) return
+
 	if (color === s.sequence[s.position]) {
 		handle_correct_release(s, t, score, colors)
 	} else {
@@ -224,6 +230,7 @@ export function create_game(score: ScoreInstance, config: GameConfig = {}) {
 		flash_intensity: 1,
 	})
 	const t: GameTimers = { show_gen: 0, flash_gen: 0, restart_timer: null, input_start_ms: 0 }
+
 	return make_game_api(s, t, score, colors)
 }
 

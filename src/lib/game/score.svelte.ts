@@ -18,6 +18,7 @@ function make_storage_keys(prefix: string): StorageKeys {
 		check: `${prefix}_high_score_check`,
 	}
 }
+
 type RoundData = { elapsed_ms: number; sequence_length: number; round: number }
 
 export function compute_check(value: number, round: number): number {
@@ -33,6 +34,7 @@ export function load_stored_data(keys: StorageKeys): { score: number; round: num
 		const is_valid_round = Number.isFinite(stored_round) && stored_round >= 0
 		const is_check_ok = compute_check(stored_score, stored_round) === stored_check
 		if (!is_valid_score || !is_valid_round || !is_check_ok) return { score: 0, round: 0 }
+
 		return { score: stored_score, round: stored_round }
 	} catch {
 		return { score: 0, round: 0 }
@@ -51,6 +53,7 @@ function save_high_score(value: number, round: number, keys: StorageKeys): void 
 
 export function calculate_time_coefficient(elapsed_ms: number, sequence_length: number): number {
 	const avg_s = elapsed_ms / 1000 / sequence_length
+
 	return Math.max(MIN_TIME_COEFF, 1 - avg_s * TIME_COEFF_DECAY)
 }
 
@@ -128,15 +131,18 @@ function migrate_legacy_score(keys: StorageKeys): { score: number; round: number
 	const legacy = load_stored_data(legacy_keys)
 	if (legacy.score === 0 && legacy.round === 0) return legacy
 	save_high_score(legacy.score, legacy.round, keys)
+
 	return legacy
 }
 
 export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX) {
 	const keys = make_storage_keys(key_prefix)
 	let loaded = load_stored_data(keys)
+
 	if (key_prefix === GAME_SCORE_KEY_PREFIX && loaded.score === 0 && loaded.round === 0) {
 		loaded = migrate_legacy_score(keys)
 	}
+
 	const s = $state<ScoreState>({
 		current_score: 0,
 		high_score: loaded.score,
@@ -144,6 +150,7 @@ export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX) {
 		is_new_high_score: false,
 		last_cleared_round: 0,
 	})
+
 	return make_score_api(s, keys)
 }
 

@@ -25,6 +25,7 @@ function apply_barrel_uv(uv: BarrelUv, strength: number, aspect: number): Barrel
 	const warp = 1 + strength * r2
 	const warped_x = (centered_x * warp) / aspect
 	const warped_y = centered_y * warp
+
 	return { x: warped_x + HALF, y: warped_y + HALF }
 }
 

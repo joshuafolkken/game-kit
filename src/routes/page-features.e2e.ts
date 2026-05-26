@@ -22,14 +22,19 @@ test('fullscreen is requested on touch-primary devices when start hint is clicke
 		() =>
 			new Promise<string>((resolve) => {
 				const scene = document.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 				if (!scene) {
 					resolve('no-scene')
+
 					return
 				}
+
 				scene.requestFullscreen = function (): Promise<void> {
 					resolve('game-scene')
+
 					return Promise.resolve()
 				}
+
 				scene.click()
 			}),
 	)
@@ -48,15 +53,21 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 		(wait_ms) =>
 			new Promise<boolean>((resolve) => {
 				const scene = document.querySelector<HTMLElement>('[data-testid="game-scene"]')
+
 				if (!scene) {
 					resolve(false)
+
 					return
 				}
+
 				let called = false
+
 				scene.requestFullscreen = function (): Promise<void> {
 					called = true
+
 					return Promise.resolve()
 				}
+
 				scene.click()
 				setTimeout(() => resolve(called), wait_ms)
 			}),
@@ -93,6 +104,7 @@ test('page has no critical or serious accessibility violations', async ({ page }
 	const violations = results.violations.filter(
 		(v) => v.impact === 'critical' || v.impact === 'serious',
 	)
+
 	expect(violations).toHaveLength(0)
 })
 
@@ -101,6 +113,7 @@ test('high score persists in localStorage across page reload', async ({ page }) 
 		(Math.imul(SAMPLE_HIGH_SCORE + 1, CHECK_SEED) ^
 			Math.imul(SAMPLE_HIGH_ROUND + 1, CHECK_SEED >>> 1)) >>>
 		0
+
 	await page.goto('/')
 	await page.evaluate(
 		([sk, rk, ck, score, round, check]) => {
@@ -126,6 +139,7 @@ test('high score persists in localStorage across page reload', async ({ page }) 
 		],
 		[HIGH_SCORE_STORAGE_KEY, HIGH_SCORE_ROUND_KEY, HIGH_SCORE_CHECK_KEY] as const,
 	)
+
 	expect(score_val).toBe(String(SAMPLE_HIGH_SCORE))
 	expect(round_val).toBe(String(SAMPLE_HIGH_ROUND))
 	expect(check_val).toBe(String(stored_check))
@@ -133,6 +147,7 @@ test('high score persists in localStorage across page reload', async ({ page }) 
 
 test('game scene loads without shadow-related WebGL errors', async ({ page }) => {
 	const errors: Array<string> = []
+
 	page.on('pageerror', (err) => errors.push(err.message))
 	await page.goto('/')
 	await expect(page.locator('[data-testid="loading-overlay"]')).toBeHidden({
@@ -141,6 +156,7 @@ test('game scene loads without shadow-related WebGL errors', async ({ page }) =>
 	const webgl_errors = errors.filter(
 		(e) => e.toLowerCase().includes('shadow') || e.toLowerCase().includes('webgl'),
 	)
+
 	expect(webgl_errors).toHaveLength(0)
 })
 
@@ -149,8 +165,10 @@ test('favicon link points to the game icon, not the Svelte logo', async ({ page 
 	const icon_href = await page.evaluate(() => {
 		const links = document.querySelectorAll<HTMLLinkElement>('link[rel="icon"]')
 		const last = links[links.length - 1]
+
 		return last?.getAttribute('href') ?? null
 	})
+
 	expect(icon_href).toBe('/icon.svg')
 })
 
@@ -159,14 +177,17 @@ test('loading overlay shows JOSHUA GAME as the game title', async ({ page }) => 
 	const game_title = await page.evaluate(() => {
 		const overlay = document.getElementById('static-loading-overlay')
 		const el = overlay?.querySelector('.game-title')
+
 		return el?.textContent ?? null
 	})
+
 	expect(game_title).toBe('JOSHUA GAME')
 })
 
 test('server HTML has game name placeholders replaced', async ({ page }) => {
 	const response = await page.request.get('/')
 	const html = await response.text()
+
 	expect(html).toContain('<title>Joshua Game</title>')
 	expect(html).toContain('>JOSHUA GAME<')
 	expect(html).not.toContain('__GAME_NAME__')
@@ -177,8 +198,10 @@ test('PWA manifest is linked in document head', async ({ page }) => {
 	await page.goto('/')
 	const manifest_href = await page.evaluate(() => {
 		const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]')
+
 		return link?.href ?? null
 	})
+
 	expect(manifest_href).not.toBeNull()
 })
 
@@ -187,7 +210,9 @@ test('service worker is ready after page load', async ({ page }) => {
 	const scope = await page.evaluate(async () => {
 		if (!('serviceWorker' in navigator)) return null
 		const reg = await navigator.serviceWorker.ready
+
 		return reg.scope
 	})
+
 	expect(scope).toBeTruthy()
 })

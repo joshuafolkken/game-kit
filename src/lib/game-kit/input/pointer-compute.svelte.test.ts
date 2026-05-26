@@ -5,7 +5,9 @@ import { make_pointer_compute } from './pointer-compute.js'
 function make_ctx() {
 	const v = new Vector2()
 	const raycaster = new Raycaster()
+
 	vi.spyOn(raycaster, 'setFromCamera')
+
 	return {
 		pointer: {
 			current: v,
@@ -28,6 +30,7 @@ function make_target(
 	rect_top: number = 0,
 ): HTMLElement {
 	const el = document.createElement('div')
+
 	Object.defineProperty(el, 'clientWidth', { get: () => client_w })
 	Object.defineProperty(el, 'clientHeight', { get: () => client_h })
 	el.getBoundingClientRect = (): DOMRect =>
@@ -42,6 +45,7 @@ function make_target(
 			y: rect_top,
 			toJSON: () => ({}),
 		}) as DOMRect
+
 	return el
 }
 
@@ -89,6 +93,7 @@ describe('make_pointer_compute', () => {
 		const camera = make_camera()
 		const compute = make_pointer_compute(camera)
 		const ctx = make_ctx()
+
 		ctx.pointer.current.set(0.5, 0.5)
 
 		compute(make_event(SKIP_X, SKIP_Y, make_target(0, 0)), ctx)
@@ -102,6 +107,7 @@ describe('make_pointer_compute', () => {
 		const camera = make_camera()
 		const compute = make_pointer_compute(camera)
 		const ctx = make_ctx()
+
 		ctx.pointer.current.set(0.5, 0.5)
 
 		compute(make_event(SKIP_X, SKIP_Y, null), ctx)

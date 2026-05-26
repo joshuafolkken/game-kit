@@ -148,8 +148,10 @@
 				ctx.renderer.setPixelRatio(ctx.dpr.current)
 				ctx.renderer.setSize(ctx.size.current.width, ctx.size.current.height)
 				ctx.renderer.render(ctx.scene, ctx.camera.current)
+
 				return
 			}
+
 			// Stage 1: render game + dither at low resolution.
 			lo_composer.setSize(ctx.size.current.width, ctx.size.current.height)
 			lo_composer.setPixelRatio(lo_dpr)
@@ -158,6 +160,7 @@
 			// hi_lo_ratio and guards against (0,0) reaching u_lo_resolution in the shader.
 			const lo_w = Math.max(1, Math.floor(ctx.size.current.width * lo_dpr))
 			const lo_h = Math.max(1, Math.floor(ctx.size.current.height * lo_dpr))
+
 			dither_uniforms.u_resolution.value.set(lo_w, lo_h)
 			upscale_uniforms.u_lo_resolution.value.set(lo_w, lo_h)
 			lo_composer.render(delta)
@@ -173,19 +176,23 @@
 			scanline_uniforms.u_resolution.value.copy(hi_drawing_buf)
 			// Scale scanline period so one cycle spans one virtual lo-res dot row.
 			const is_portrait = hi_drawing_buf.x < hi_drawing_buf.y
+
 			scanline_uniforms.u_scanline_axis.value.set(is_portrait ? 1 : 0, is_portrait ? 0 : 1)
+
 			if (lo_h > 0) {
 				const hi_lo_ratio = is_portrait ? hi_drawing_buf.x / lo_w : hi_drawing_buf.y / lo_h
 				const period = Math.max(
 					DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE,
 					Math.round(DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE * hi_lo_ratio),
 				)
+
 				scanline_uniforms.u_scanline_period.value = period
 				scanline_uniforms.u_bleed.value = Math.min(
 					SCANLINE_BLEED,
 					(SCANLINE_BLEED * period) / SCANLINE_BLEED_FULL_PERIOD,
 				)
 			}
+
 			barrel_uniforms.u_aspect.value =
 				hi_drawing_buf.y > 0 ? hi_drawing_buf.x / hi_drawing_buf.y : 1
 			hi_composer.render(delta)

@@ -20,6 +20,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		// forward at yaw=PI/2 rotates: fw_x = -sin(PI/2) = -1, fw_z = -cos(PI/2) = 0
 		// If the function used the pre-look yaw=0, velocity would be (0, 0, -MOVE_SPEED).
 		expect(result.velocity.x).toBeCloseTo(-MOVE_SPEED)
@@ -37,6 +38,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		// forward at yaw=0: velocity = (0, 0, -MOVE_SPEED)
 		expect(result.velocity.x).toBeCloseTo(0)
 		expect(result.velocity.z).toBeCloseTo(-MOVE_SPEED)
@@ -54,6 +56,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.delta_yaw).toBeCloseTo(joystick_look_x * LOOK_SPEED * DELTA)
 	})
 
@@ -69,6 +72,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.delta_pitch).toBeCloseTo(-joystick_look_y * LOOK_SPEED * DELTA)
 	})
 
@@ -83,6 +87,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.delta_pitch).toBeLessThan(0)
 	})
 
@@ -97,6 +102,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.look_consumed).toBe(true)
 	})
 
@@ -111,6 +117,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.look_consumed).toBe(true)
 	})
 
@@ -125,6 +132,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.look_consumed).toBe(false)
 	})
 
@@ -139,6 +147,7 @@ describe('player_step.compute_velocity_after_look', () => {
 			strafe: 0,
 			is_sprinting: true,
 		})
+
 		expect(result.velocity.z).toBeCloseTo(-MOVE_SPEED * player_speed.SPRINT_MULTIPLIER)
 	})
 })

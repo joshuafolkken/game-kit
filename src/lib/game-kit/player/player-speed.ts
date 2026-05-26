@@ -3,6 +3,7 @@ const SPRINT_MULTIPLIER = 2
 
 function get_move_speed(is_sprinting: boolean): number {
 	if (is_sprinting) return MOVE_SPEED * SPRINT_MULTIPLIER
+
 	return MOVE_SPEED
 }
 

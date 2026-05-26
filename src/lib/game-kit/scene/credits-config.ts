@@ -16,6 +16,7 @@ export function make_credits_scroll_bounds(
 ): { start_z: number; end_z: number } {
 	const height = line_count * CREDITS_FONT_SIZE * CREDITS_LINE_HEIGHT
 	const offset = half_depth + height / HALF_DIVISOR
+
 	return { start_z: offset, end_z: -offset }
 }
 
@@ -27,6 +28,7 @@ export function advance_scroll(
 	speed: number,
 ): number {
 	const next_z = current_z - speed * delta
+
 	return next_z < end_z ? start_z : next_z
 }
 

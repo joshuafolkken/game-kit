@@ -21,6 +21,7 @@ describe('game types', () => {
 			flash_colors: [],
 			flash_intensity: 1,
 		}
+
 		expect(data.phase).toBe('idle')
 		expect(data.pressed_color).toBe('green')
 	})

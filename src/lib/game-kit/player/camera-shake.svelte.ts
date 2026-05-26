@@ -15,6 +15,7 @@ function reset(): void {
 
 function sample(max: number): number {
 	if (intensity <= 0) return 0
+
 	return (Math.random() * 2 - 1) * max * intensity // NOSONAR — visual animation only
 }
 

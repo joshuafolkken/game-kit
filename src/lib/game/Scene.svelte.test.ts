@@ -55,6 +55,7 @@ vi.mock('$lib/game-kit/scene/room-config', () => ({ ROOM_W: 10, ROOM_D: 10, ROOM
 describe('Scene', () => {
 	it('renders without error', () => {
 		const { container } = render(Scene)
+
 		expect(container).toBeTruthy()
 	})
 

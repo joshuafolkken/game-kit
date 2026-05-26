@@ -25,6 +25,7 @@ describe('fullscreen', () => {
 
 	it('uses native requestFullscreen when available', async () => {
 		const spy = vi.spyOn(el, 'requestFullscreen').mockResolvedValue()
+
 		await fullscreen.request(el)
 		expect(spy).toHaveBeenCalledTimes(1)
 		expect(fullscreen.is_pseudo_fullscreen).toBe(false)
@@ -51,6 +52,7 @@ describe('fullscreen', () => {
 		expect(fullscreen.is_pseudo_fullscreen).toBe(true)
 
 		const spy = vi.fn().mockResolvedValue(undefined)
+
 		Object.defineProperty(el, 'requestFullscreen', { value: spy, configurable: true })
 		await fullscreen.request(el)
 		expect(spy).not.toHaveBeenCalled()
@@ -73,10 +75,12 @@ describe('fullscreen', () => {
 			Document.prototype,
 			'fullscreenElement',
 		)
+
 		Object.defineProperty(document, 'fullscreenElement', {
 			get: () => fake_element,
 			configurable: true,
 		})
+
 		try {
 			cleanup = fullscreen.setup_listeners()
 			expect(fullscreen.is_native_fullscreen).toBe(true)
@@ -92,6 +96,7 @@ describe('fullscreen', () => {
 	it('falls back to webkitRequestFullscreen when standard API is missing', async () => {
 		Object.defineProperty(el, 'requestFullscreen', { value: undefined, configurable: true })
 		const webkit_spy = vi.fn().mockResolvedValue(undefined)
+
 		Object.defineProperty(el, 'webkitRequestFullscreen', {
 			value: webkit_spy,
 			configurable: true,
@@ -107,6 +112,7 @@ describe('create_fullscreen isolation', () => {
 		const a = create_fullscreen()
 		const b = create_fullscreen()
 		const el = document.createElement('div')
+
 		Object.defineProperty(el, 'requestFullscreen', { value: undefined, configurable: true })
 		Object.defineProperty(el, 'webkitRequestFullscreen', { value: undefined, configurable: true })
 		await a.request(el)

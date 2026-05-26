@@ -14,6 +14,7 @@ describe('player_jump.step_jump', () => {
 			ground_y: GROUND_Y,
 		})
 		const expected_vel = player_jump.JUMP_VELOCITY - player_jump.JUMP_GRAVITY * DT
+
 		expect(result.new_vel_y).toBeCloseTo(expected_vel)
 		expect(result.jump_consumed).toBe(true)
 		expect(result.new_pos_y).toBeGreaterThan(GROUND_Y)
@@ -27,6 +28,7 @@ describe('player_jump.step_jump', () => {
 			is_jump_requested: false,
 			ground_y: GROUND_Y,
 		})
+
 		expect(result.jump_consumed).toBe(false)
 	})
 
@@ -38,6 +40,7 @@ describe('player_jump.step_jump', () => {
 			is_jump_requested: false,
 			ground_y: GROUND_Y,
 		})
+
 		expect(result.new_pos_y).toBe(GROUND_Y)
 		expect(result.new_vel_y).toBe(0)
 	})
@@ -51,6 +54,7 @@ describe('player_jump.step_jump', () => {
 			ground_y: GROUND_Y,
 		})
 		const expected_vel = 5 - player_jump.JUMP_GRAVITY * DT
+
 		expect(result.new_vel_y).toBeCloseTo(expected_vel)
 		expect(result.new_pos_y).toBeCloseTo(GROUND_Y + 1 + expected_vel * DT)
 	})
@@ -64,6 +68,7 @@ describe('player_jump.step_jump', () => {
 			ground_y: GROUND_Y,
 		})
 		const expected_vel = 2 - player_jump.JUMP_GRAVITY * DT
+
 		expect(result.new_vel_y).toBeCloseTo(expected_vel)
 		expect(result.jump_consumed).toBe(true)
 	})
@@ -76,6 +81,7 @@ describe('player_jump.step_jump', () => {
 			is_jump_requested: false,
 			ground_y: GROUND_Y,
 		})
+
 		expect(result.new_pos_y).toBe(GROUND_Y)
 		expect(result.new_vel_y).toBe(0)
 	})
