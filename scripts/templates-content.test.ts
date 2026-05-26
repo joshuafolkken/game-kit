@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const TEMPLATES_GAME_DIR = path.join(HERE, '..', 'templates', 'src', 'lib', 'game')
+const TEMPLATES_DIR = path.join(HERE, '..', 'templates')
+const TEMPLATES_GAME_DIR = path.join(TEMPLATES_DIR, 'src', 'lib', 'game')
 
 describe('templates/src/lib/game content shape (regression for #178)', () => {
 	it('does not ship a placeholder game-name.ts (game identity must flow from the generated game-config.ts)', () => {
@@ -26,5 +27,16 @@ describe('templates/src/lib/game content shape (regression for #178)', () => {
 		// that is not qualified by `game_config.` — catches mixed usage that the
 		// positive assertions above cannot detect on their own.
 		expect(credits_source).not.toMatch(/(?<!game_config\.)\bGAME_NAME(_DISPLAY|_UPPER)?\b/)
+	})
+})
+
+describe('templates/pnpm-workspace.yaml minimumReleaseAgeExclude (regression for #180)', () => {
+	it('includes @joshuafolkken/game-kit as a bare-name entry (without @version pin)', () => {
+		const yaml_source = readFileSync(path.join(TEMPLATES_DIR, 'pnpm-workspace.yaml'), 'utf8')
+		// pnpm honors bare-name entries for lockfile verification; version-pinned
+		// entries written by loose-mode resolution do NOT bypass the verify step.
+		expect(yaml_source).toMatch(/^\s*-\s*['"]?@joshuafolkken\/game-kit['"]?\s*$/m)
+		// Guard against accidental @version-pinned form sneaking in instead.
+		expect(yaml_source).not.toMatch(/^\s*-\s*['"]?@joshuafolkken\/game-kit@\d/m)
 	})
 })
