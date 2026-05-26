@@ -16,6 +16,8 @@ vi.mock('./jgame-paths.ts', () => ({
 }))
 
 const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
+const MOCK_PACKAGE_MANAGER =
+	'pnpm@11.3.0+sha512.2c403d6594527287672b1f7056343a1f7c3634036a67ffabfcc2b3d7595d843768f8787148d1b57cf7956c90606bbd192857c363af19e96d2d0ec9ec5741d215'
 
 const MOCK_PKG = {
 	version: '1.0.0',
@@ -27,6 +29,7 @@ const MOCK_PKG = {
 		vite: '^6.0.0',
 	},
 	devEngines: { packageManager: { name: 'pnpm', version: '>=11.0.0-0', onFail: 'error' } },
+	packageManager: MOCK_PACKAGE_MANAGER,
 }
 
 describe('jgame_init.generate_package_json', () => {
@@ -65,6 +68,17 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.scripts.dev).toBe('vite dev')
 		expect(result.scripts.jgame).toBe('jgame')
 		expect(result.scripts.josh).toBe('josh')
+	})
+
+	it('emits packageManager copied from the kit', async () => {
+		// Regression for #174: a scaffolded package.json that has only
+		// devEngines.packageManager (range) without a top-level packageManager
+		// (exact version + SHA) is rejected by Node v25 / pnpm 11 with
+		// "Invalid package manager specification (pnpm@>=11.0.0-0); expected
+		// a semver version", crashing the `pnpm install` step of `jgame init`.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+		expect(result.packageManager).toBe(MOCK_PACKAGE_MANAGER)
 	})
 
 	it('emits the canonical Cloudflare Worker preview script (not vite preview)', async () => {
