@@ -6,7 +6,7 @@ const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 type ChangeListener = (e: { matches: boolean }) => void
 
 function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean) => void } {
-	const listeners: ChangeListener[] = []
+	const listeners: Array<ChangeListener> = []
 	return {
 		matches: initial,
 		addEventListener(_: string, fn: EventListenerOrEventListenerObject): void {

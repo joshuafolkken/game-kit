@@ -164,7 +164,7 @@ describe('input', () => {
 	})
 
 	it('synthesizes pointerdown on canvas when left mousedown fires during drag', () => {
-		const received: string[] = []
+		const received: Array<string> = []
 		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
@@ -175,7 +175,7 @@ describe('input', () => {
 	})
 
 	it('synthesizes pointerup on canvas when left mouseup fires during drag', () => {
-		const received: string[] = []
+		const received: Array<string> = []
 		canvas_el.addEventListener('pointerup', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
@@ -186,7 +186,7 @@ describe('input', () => {
 	})
 
 	it('does not synthesize pointer events when not dragging', () => {
-		const received: string[] = []
+		const received: Array<string> = []
 		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
@@ -196,7 +196,7 @@ describe('input', () => {
 	})
 
 	it('does not synthesize pointer events for right mousedown during drag', () => {
-		const received: string[] = []
+		const received: Array<string> = []
 		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)

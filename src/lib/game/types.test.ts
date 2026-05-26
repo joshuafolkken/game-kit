@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ButtonColor, GameBoardData } from './types'
 
-const ALL_BUTTON_COLORS: ButtonColor[] = ['green', 'red', 'yellow', 'blue']
+const ALL_BUTTON_COLORS: Array<ButtonColor> = ['green', 'red', 'yellow', 'blue']
 
 describe('game types', () => {
 	it('ButtonColor covers all four expected colors', () => {

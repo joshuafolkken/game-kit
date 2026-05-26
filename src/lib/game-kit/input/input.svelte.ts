@@ -131,7 +131,7 @@ function on_key_impl(s: InputState, e: KeyboardEvent, is_down: boolean): void {
 	if (e.key.startsWith('Arrow')) e.preventDefault()
 }
 
-function make_drag_override_specs(s: InputState): ListenerSpec[] {
+function make_drag_override_specs(s: InputState): Array<ListenerSpec> {
 	const handler = (e: Event): void => override_offset_during_drag_impl(s, e)
 	return [
 		{ target: document, type: 'pointerdown', handler, options: CAPTURE },
@@ -141,7 +141,7 @@ function make_drag_override_specs(s: InputState): ListenerSpec[] {
 	]
 }
 
-function make_listener_specs(s: InputState, refs: InputRefs): readonly ListenerSpec[] {
+function make_listener_specs(s: InputState, refs: InputRefs): ReadonlyArray<ListenerSpec> {
 	return [
 		{ target: document, type: 'mousedown', handler: (e) => on_mouse_down_impl(s, e as MouseEvent) },
 		{ target: document, type: 'mousemove', handler: (e) => on_mouse_move_impl(s, e as MouseEvent) },

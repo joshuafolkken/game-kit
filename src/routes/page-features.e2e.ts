@@ -132,7 +132,7 @@ test('high score persists in localStorage across page reload', async ({ page }) 
 })
 
 test('game scene loads without shadow-related WebGL errors', async ({ page }) => {
-	const errors: string[] = []
+	const errors: Array<string> = []
 	page.on('pageerror', (err) => errors.push(err.message))
 	await page.goto('/')
 	await expect(page.locator('[data-testid="loading-overlay"]')).toBeHidden({

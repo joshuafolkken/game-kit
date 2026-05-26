@@ -3,7 +3,7 @@ import { game_audio } from '$lib/game/audio'
 import type { ButtonColor } from '$lib/game/types'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-const ALL_COLORS: ButtonColor[] = ['green', 'red', 'yellow', 'blue']
+const ALL_COLORS: Array<ButtonColor> = ['green', 'red', 'yellow', 'blue']
 
 function make_mock_ctx() {
 	const gain_node = {

@@ -14,7 +14,7 @@ const FLASH_INTENSITY_FINALE = 4
 const FLASH_INTENSITY_RESET = 1
 
 export type FlashState = {
-	flash_colors: ButtonColor[]
+	flash_colors: Array<ButtonColor>
 	flash_intensity: number
 }
 
@@ -26,7 +26,7 @@ function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function play_all_tones(colors: readonly ButtonColor[], duration_ms: number): void {
+function play_all_tones(colors: ReadonlyArray<ButtonColor>, duration_ms: number): void {
 	const is_alt = game_state.is_alt
 	for (const color of colors) game_audio.play_tone(color, duration_ms, is_alt)
 }
@@ -40,7 +40,7 @@ export function cancel_flash(s: FlashState, t: FlashTimers): void {
 async function flash_burst(
 	s: FlashState,
 	t: FlashTimers,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 	gen: number,
 ): Promise<void> {
 	for (let i = 0; i < FLASH_BURST_CYCLES; i++) {
@@ -59,7 +59,7 @@ async function flash_burst(
 async function flash_cascade(
 	s: FlashState,
 	t: FlashTimers,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 	gen: number,
 ): Promise<void> {
 	for (const color of colors) {
@@ -81,7 +81,7 @@ async function flash_cascade(
 async function flash_finale(
 	s: FlashState,
 	t: FlashTimers,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 	gen: number,
 ): Promise<void> {
 	if (t.flash_gen !== gen) return
@@ -97,7 +97,7 @@ async function flash_finale(
 export async function run_victory_flash(
 	s: FlashState,
 	t: FlashTimers,
-	colors: readonly ButtonColor[],
+	colors: ReadonlyArray<ButtonColor>,
 	gen: number,
 ): Promise<void> {
 	await flash_burst(s, t, colors, gen)

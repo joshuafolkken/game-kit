@@ -5,7 +5,7 @@ export type ListenerSpec = {
 	options?: AddEventListenerOptions
 }
 
-export function create_listener_manager(specs: readonly ListenerSpec[]) {
+export function create_listener_manager(specs: ReadonlyArray<ListenerSpec>) {
 	let cleanup_fn: (() => void) | null = null
 	return {
 		get is_active(): boolean {

@@ -1,5 +1,10 @@
 export type SwitchIconType = 'cyber' | 'fullscreen' | 'fps' | 'crt'
-export const SWITCH_ICON_TYPES: readonly SwitchIconType[] = ['cyber', 'fullscreen', 'fps', 'crt']
+export const SWITCH_ICON_TYPES: ReadonlyArray<SwitchIconType> = [
+	'cyber',
+	'fullscreen',
+	'fps',
+	'crt',
+]
 
 export const FPS_SWITCH_LABEL = 'FPS'
 export const FULLSCREEN_SWITCH_LABEL = 'FULLSCREEN'
