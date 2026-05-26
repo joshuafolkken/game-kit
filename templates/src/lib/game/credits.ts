@@ -1,7 +1,7 @@
-import { GAME_NAME, GAME_NAME_DISPLAY } from './game-name'
+import { game_config } from '$lib/game-config'
 
 export const CREDITS_LINES = [
-	GAME_NAME,
+	game_config.GAME_NAME_UPPER,
 	'CREDITS',
 	'',
 	'',
@@ -50,7 +50,7 @@ export const CREDITS_LINES = [
 	'GAME CONCEPT',
 	'',
 	'',
-	`${GAME_NAME_DISPLAY} is inspired by the`,
+	`${game_config.GAME_NAME_DISPLAY} is inspired by the`,
 	'Classic Electronic Memory Game',
 	'originally designed by',
 	'Ralph H. Baer',
