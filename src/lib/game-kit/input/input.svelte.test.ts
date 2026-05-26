@@ -278,20 +278,20 @@ describe('input', () => {
 
 	it('clamps pitch at max during right drag', () => {
 		start_right_drag()
-		dispatch_mouse('mousemove', { movementX: 0, movementY: -100000 })
+		dispatch_mouse('mousemove', { movementX: 0, movementY: -100_000 })
 		expect(input.pitch).toBeGreaterThan(0)
 		expect(input.pitch).toBeLessThan(Math.PI / 2)
 	})
 
 	it('clamps pitch at min during right drag', () => {
 		start_right_drag()
-		dispatch_mouse('mousemove', { movementX: 0, movementY: 100000 })
+		dispatch_mouse('mousemove', { movementX: 0, movementY: 100_000 })
 		expect(input.pitch).toBeLessThan(0)
 		expect(input.pitch).toBeGreaterThan(-Math.PI / 2)
 	})
 
 	it('clamps pitch at max during wheel', () => {
-		dispatch_wheel({ deltaX: 0, deltaY: 100000 })
+		dispatch_wheel({ deltaX: 0, deltaY: 100_000 })
 		expect(input.pitch).toBeGreaterThan(0)
 		expect(input.pitch).toBeLessThan(Math.PI / 2)
 	})
