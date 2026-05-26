@@ -215,7 +215,9 @@ function make_game_api(
 	}
 }
 
-type GameConfig = { colors?: ReadonlyArray<ButtonColor> }
+interface GameConfig {
+	colors?: ReadonlyArray<ButtonColor>
+}
 
 export function create_game(score: ScoreInstance, config: GameConfig = {}) {
 	const colors = config.colors ?? DEFAULT_COLORS

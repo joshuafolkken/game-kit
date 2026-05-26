@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
 
 const { version } = JSON.parse(
-	readFileSync(new URL('../../package.json', import.meta.url), 'utf-8'),
+	readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
 ) as { version: string }
 
 const LOADING_OVERLAY_TIMEOUT_MS = 8000

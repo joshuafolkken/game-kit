@@ -12,7 +12,11 @@ const CYBER_WAVE: OscillatorType = 'square'
 
 let active_osc: OscillatorNode | null = null
 
-type OscGraph = { osc: OscillatorNode; gain: GainNode; ctx: AudioContext }
+interface OscGraph {
+	osc: OscillatorNode
+	gain: GainNode
+	ctx: AudioContext
+}
 
 function create_osc_graph(freq: number, is_alt: boolean): OscGraph | null {
 	audio.init_audio()

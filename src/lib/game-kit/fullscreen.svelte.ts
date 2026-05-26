@@ -11,7 +11,10 @@ declare global {
 	}
 }
 
-type FullscreenState = { is_pseudo_fullscreen: boolean; is_native_fullscreen: boolean }
+interface FullscreenState {
+	is_pseudo_fullscreen: boolean
+	is_native_fullscreen: boolean
+}
 
 function get_native_fullscreen_element(): Element | null {
 	return document.fullscreenElement ?? document.webkitFullscreenElement ?? null

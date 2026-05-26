@@ -34,8 +34,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'sonarjs/no-duplicate-string': 'off',
 	// TODO #188 follow-up: align identifier names with snake_case / boolean prefix rules
 	'@typescript-eslint/naming-convention': 'off',
-	// TODO #188 follow-up: prefer `type` over `interface` consistently
-	'@typescript-eslint/consistent-type-definitions': 'off',
 	// TODO #188 follow-up: configure import/extensions allowList for Three.js .js deep imports + package.json + SvelteKit hooks.server (rule auto-fix is no-op; needs allowList in rule config — deferred for human review)
 	'import/extensions': 'off',
 	// TODO #188 follow-up: rename files to PascalCase for Svelte components / `.svelte.ts`
@@ -66,10 +64,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'@typescript-eslint/no-unsafe-call': 'off',
 	// TODO #188 follow-up: consolidate duplicate imports per module
 	'no-duplicate-imports': 'off',
-	// TODO #188 follow-up: replace getElementById with querySelector
-	'unicorn/prefer-query-selector': 'off',
-	// TODO #188 follow-up: normalize text-encoding identifier casing (`utf8` vs `utf-8`)
-	'unicorn/text-encoding-identifier-case': 'off',
 	// TODO #188 follow-up: drop `async` from functions with no `await`
 	'require-await': 'off',
 	'@typescript-eslint/require-await': 'off',

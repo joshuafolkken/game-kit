@@ -10,10 +10,19 @@ const WHEEL_SENSITIVITY = 0.004
 const MAX_PITCH = Math.PI / 2 - 0.01
 const RIGHT_MOUSE_BUTTON = 2
 
-type Keys = { w: boolean; a: boolean; s: boolean; d: boolean }
-type Vec2 = { x: number; y: number }
+interface Keys {
+	w: boolean
+	a: boolean
+	s: boolean
+	d: boolean
+}
 
-type InputState = {
+interface Vec2 {
+	x: number
+	y: number
+}
+
+interface InputState {
 	is_dragging_look: boolean
 	drag_start_x: number
 	drag_start_y: number
@@ -23,7 +32,10 @@ type InputState = {
 	is_sprinting: boolean
 	is_jump_requested: boolean
 }
-type InputRefs = { canvas_el: HTMLCanvasElement | null }
+
+interface InputRefs {
+	canvas_el: HTMLCanvasElement | null
+}
 
 const KEY_MAP: Record<string, keyof Keys> = {
 	w: 'w',

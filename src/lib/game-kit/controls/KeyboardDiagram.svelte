@@ -7,7 +7,7 @@
 
 	const { label_move, label_jump, label_return }: Props = $props()
 
-	type LetterKey = {
+	interface LetterKey {
 		class_name: string
 		rect_x: number
 		rect_y: number
@@ -26,7 +26,7 @@
 		{ class_name: 'key-d', rect_x: 106, rect_y: 46, text_x: 126, text_y: 62, label: 'D' },
 	] as const
 
-	type ReturnKey = {
+	interface ReturnKey {
 		class_name: string
 		rect_x: number
 		text_x: number

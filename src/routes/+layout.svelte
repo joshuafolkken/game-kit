@@ -21,12 +21,12 @@
 	loading.set_step('initializing')
 
 	$effect(() => {
-		const el = document.getElementById(LOADING_STATUS_ID)
+		const el = document.querySelector(`#${LOADING_STATUS_ID}`)
 		if (el) el.textContent = loading.status_text
 	})
 
 	$effect(() => {
-		const overlay = document.getElementById(OVERLAY_ELEMENT_ID)
+		const overlay = document.querySelector(`#${OVERLAY_ELEMENT_ID}`)
 		if (overlay) overlay.classList.toggle(OVERLAY_HIDDEN_CLASS, !loading.is_visible)
 	})
 
