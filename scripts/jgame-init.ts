@@ -57,6 +57,7 @@ type GameKitPkg = {
 	scripts: Record<string, string>
 	devDependencies: Record<string, string>
 	devEngines: unknown
+	packageManager: string
 }
 
 type GameNames = {
@@ -134,6 +135,7 @@ function build_package_json(pkg: GameKitPkg, game_name: string): object {
 		scripts: build_scripts(pkg),
 		dependencies: { '@joshuafolkken/game-kit': `^${pkg.version}` },
 		devDependencies: pick_deps(pkg.devDependencies, REQUIRED_DEV_DEPS),
+		packageManager: pkg.packageManager,
 		devEngines: pkg.devEngines,
 	}
 }
