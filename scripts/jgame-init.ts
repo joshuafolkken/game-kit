@@ -27,7 +27,11 @@ const USER_TSCONFIG = {
 	},
 }
 
+// `eslint`, `prettier`, and the prettier plugins are devDeps of @joshuafolkken/kit
+// so they are NOT installed transitively for consumers — they must be direct
+// devDeps of the scaffolded project for the binaries / plugin resolution to work.
 const REQUIRED_DEV_DEPS = [
+	'@ianvs/prettier-plugin-sort-imports',
 	'@joshuafolkken/kit',
 	'@sveltejs/adapter-cloudflare',
 	'@sveltejs/kit',
@@ -40,6 +44,11 @@ const REQUIRED_DEV_DEPS = [
 	'@types/node',
 	'@types/three',
 	'@vite-pwa/sveltekit',
+	'cspell',
+	'eslint',
+	'prettier',
+	'prettier-plugin-svelte',
+	'prettier-plugin-tailwindcss',
 	'svelte',
 	'svelte-check',
 	'tailwindcss',
@@ -228,6 +237,9 @@ function run(game_name_raw?: string): void {
 	write_tsconfig(project_dir)
 	execSync('git init', opts)
 	execSync('pnpm install', opts)
+	// `josh sync` early-returns when destination files are missing, so eslint.config.js
+	// and prettier.config.js never get scaffolded; `josh init` is the canonical creator.
+	execSync('pnpm josh init --type sveltekit', opts)
 	execSync('pnpm josh sync', opts)
 	console.info(build_done_msg(names.kebab))
 }
