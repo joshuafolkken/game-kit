@@ -1,7 +1,7 @@
 const JUMP_VELOCITY = 4
 const JUMP_GRAVITY = 12
 
-type JumpInput = {
+interface JumpInput {
 	vel_y: number
 	pos_y: number
 	delta: number
@@ -9,7 +9,7 @@ type JumpInput = {
 	ground_y: number
 }
 
-type JumpResult = {
+interface JumpResult {
 	new_pos_y: number
 	new_vel_y: number
 	jump_consumed: boolean

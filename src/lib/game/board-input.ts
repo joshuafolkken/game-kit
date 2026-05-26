@@ -2,7 +2,7 @@ import { pointer_button } from '$lib/game-kit/input/pointer-button'
 import { session } from '$lib/game-kit/session.svelte'
 import type { ButtonColor } from './types'
 
-type BoardCallbacks = {
+interface BoardCallbacks {
 	on_press: (color: ButtonColor) => void
 	on_release: () => void
 	on_start: () => void

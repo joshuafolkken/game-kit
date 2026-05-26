@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-const APP_HTML = readFileSync('src/app.html', 'utf-8')
+const APP_HTML = readFileSync('src/app.html', 'utf8')
 
 describe('app.html — mobile safe-area / PWA fullscreen meta tags', () => {
 	it('viewport meta declares viewport-fit=cover so env(safe-area-inset-*) becomes non-zero on iOS', () => {

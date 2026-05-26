@@ -175,7 +175,7 @@ test('favicon link points to the game icon, not the Svelte logo', async ({ page 
 test('loading overlay shows JOSHUA GAME as the game title', async ({ page }) => {
 	await page.goto('/')
 	const game_title = await page.evaluate(() => {
-		const overlay = document.getElementById('static-loading-overlay')
+		const overlay = document.querySelector('#static-loading-overlay')
 		const el = overlay?.querySelector('.game-title')
 
 		return el?.textContent ?? null
