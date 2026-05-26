@@ -12,7 +12,7 @@ const ROUND_5 = 5
 const SEQ_1 = 1
 const SEQ_5 = 5
 const ELAPSED_0 = 0
-const ELAPSED_5S = 5_000
+const ELAPSED_5S = 5000
 const ELAPSED_10S = 10_000
 const ELAPSED_100S = 100_000
 
@@ -51,8 +51,8 @@ describe('score', () => {
 
 	describe('calculate_round_score', () => {
 		it('returns BASE_SCORE * round for zero elapsed time', () => {
-			expect(score.calculate_round_score(ELAPSED_0, SEQ_1, ROUND_1)).toBe(1_000)
-			expect(score.calculate_round_score(ELAPSED_0, SEQ_5, ROUND_5)).toBe(5_000)
+			expect(score.calculate_round_score(ELAPSED_0, SEQ_1, ROUND_1)).toBe(1000)
+			expect(score.calculate_round_score(ELAPSED_0, SEQ_5, ROUND_5)).toBe(5000)
 		})
 
 		it('scales with round number', () => {
@@ -79,7 +79,7 @@ describe('score', () => {
 		})
 
 		it('formats numbers at 1000 with comma', () => {
-			expect(score.format_score(1_000)).toBe('1,000')
+			expect(score.format_score(1000)).toBe('1,000')
 		})
 
 		it('formats large numbers with multiple commas', () => {
@@ -94,9 +94,9 @@ describe('score', () => {
 	describe('add_round_score', () => {
 		it('accumulates current_score after each round', () => {
 			score.add_round_score(ELAPSED_0, SEQ_1, ROUND_1)
-			expect(score.current_score).toBe(1_000)
+			expect(score.current_score).toBe(1000)
 			score.add_round_score(ELAPSED_0, SEQ_1, ROUND_1)
-			expect(score.current_score).toBe(2_000)
+			expect(score.current_score).toBe(2000)
 		})
 
 		it('updates high_score when current_score exceeds it', () => {
@@ -196,15 +196,15 @@ describe('compute_check', () => {
 	})
 
 	it('is deterministic — same inputs produce same output', () => {
-		expect(compute_check(1_000, 3)).toBe(compute_check(1_000, 3))
+		expect(compute_check(1000, 3)).toBe(compute_check(1000, 3))
 	})
 
 	it('produces different values when score differs', () => {
-		expect(compute_check(1_000, 3)).not.toBe(compute_check(2_000, 3))
+		expect(compute_check(1000, 3)).not.toBe(compute_check(2000, 3))
 	})
 
 	it('produces different values when round differs', () => {
-		expect(compute_check(1_000, 3)).not.toBe(compute_check(1_000, 4))
+		expect(compute_check(1000, 3)).not.toBe(compute_check(1000, 4))
 	})
 })
 
@@ -219,7 +219,7 @@ describe('load_stored_data', () => {
 	})
 
 	it('returns correct values when data is valid', () => {
-		const stored_score = 5_000
+		const stored_score = 5000
 		const stored_round = 3
 		const stored_check = compute_check(stored_score, stored_round)
 		vi.stubGlobal('localStorage', {
@@ -258,7 +258,7 @@ describe('load_stored_data', () => {
 
 	it('uses keys from the provided StorageKeys object', () => {
 		const custom_keys: StorageKeys = { score: 'test_s', round: 'test_r', check: 'test_c' }
-		const stored_score = 1_000
+		const stored_score = 1000
 		const stored_round = 1
 		const stored_check = compute_check(stored_score, stored_round)
 		vi.stubGlobal('localStorage', {
@@ -292,7 +292,7 @@ describe('create_score isolation', () => {
 })
 
 describe('legacy simon_* migration', () => {
-	const LEGACY_SCORE = 7_500
+	const LEGACY_SCORE = 7500
 	const LEGACY_ROUND = 8
 	const LEGACY_KEYS = {
 		score: 'simon_high_score',
@@ -348,7 +348,7 @@ describe('legacy simon_* migration', () => {
 	})
 
 	it('does not overwrite existing game_* data with legacy values', () => {
-		const new_score = 2_000
+		const new_score = 2000
 		const new_round = 3
 		const new_check = compute_check(new_score, new_round)
 		const legacy_check = compute_check(LEGACY_SCORE, LEGACY_ROUND)

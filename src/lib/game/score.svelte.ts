@@ -1,7 +1,7 @@
-const BASE_SCORE = 1_000
+const BASE_SCORE = 1000
 const TIME_COEFF_DECAY = 0.1
 const MIN_TIME_COEFF = 0.1
-const CHECK_SEED = 0x9e3779b9
+const CHECK_SEED = 0x9e_37_79_b9
 const SCORE_FORMATTER = new Intl.NumberFormat('en-US')
 
 export const GAME_SCORE_KEY_PREFIX = 'game'
