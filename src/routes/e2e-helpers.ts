@@ -10,7 +10,7 @@ export async function stub_touch_primary(page: Page, is_touch: boolean): Promise
 			globalThis.matchMedia = function patched(input: string): MediaQueryList {
 				if (input === query) {
 					return {
-						matches: matches as boolean,
+						matches,
 						media: input,
 						onchange: null,
 						addEventListener() {},

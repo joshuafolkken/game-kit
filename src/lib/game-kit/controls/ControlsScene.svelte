@@ -74,20 +74,20 @@
 		is_touch: boolean
 	}
 
-	let { hint_text, is_touch }: Props = $props()
+	const { hint_text, is_touch }: Props = $props()
 
 	const { size } = useThrelte()
 
 	// Font is driven by CRT state — CRT ON pairs the retro pixel font with the scanline
 	// aesthetic; CRT OFF switches to the modern Orbitron font.
-	let should_use_alt_font = $derived(!crt.is_crt_enabled)
-	let current_font = $derived(fonts.get_font(should_use_alt_font))
-	let current_font_size_mul = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
-	let viewport_aspect = $derived($size.width / $size.height)
-	let view_width_at_plane = $derived(TOUCH_VIEW_HEIGHT_AT_PLANE * viewport_aspect)
-	let touch_world_width = $derived(view_width_at_plane * TOUCH_WIDTH_RATIO)
-	let touch_world_height = $derived(touch_world_width / TOUCH_SVG_ASPECT)
-	let pc_scale = $derived(
+	const should_use_alt_font = $derived(!crt.is_crt_enabled)
+	const current_font = $derived(fonts.get_font(should_use_alt_font))
+	const current_font_size_mul = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
+	const viewport_aspect = $derived($size.width / $size.height)
+	const view_width_at_plane = $derived(TOUCH_VIEW_HEIGHT_AT_PLANE * viewport_aspect)
+	const touch_world_width = $derived(view_width_at_plane * TOUCH_WIDTH_RATIO)
+	const touch_world_height = $derived(touch_world_width / TOUCH_SVG_ASPECT)
+	const pc_scale = $derived(
 		compute_fit_scale(view_width_at_plane, PC_NATURAL_SPAN, PC_MIN_SIDE_PADDING),
 	)
 

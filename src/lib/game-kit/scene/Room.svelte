@@ -15,7 +15,7 @@
 		ceiling_color: string
 	}
 
-	let {
+	const {
 		width = DEFAULT_W,
 		depth = DEFAULT_D,
 		height = DEFAULT_H,
@@ -23,9 +23,9 @@
 		wall_color,
 		ceiling_color,
 	}: Props = $props()
-	let half_w = $derived(width / HALF_DIVISOR)
-	let half_d = $derived(depth / HALF_DIVISOR)
-	let half_h = $derived(height / HALF_DIVISOR)
+	const half_w = $derived(width / HALF_DIVISOR)
+	const half_d = $derived(depth / HALF_DIVISOR)
+	const half_h = $derived(height / HALF_DIVISOR)
 </script>
 
 <!-- Floor -->

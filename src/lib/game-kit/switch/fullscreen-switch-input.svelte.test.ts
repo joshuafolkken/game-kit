@@ -12,7 +12,7 @@ describe('fullscreen_switch_input', () => {
 		session.reset_session()
 		cleanup_fullscreen = fullscreen.setup_listeners()
 		container = document.createElement('div')
-		document.body.appendChild(container)
+		document.body.append(container)
 		fullscreen_switch_input.set_container(container)
 		vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {})
 	})

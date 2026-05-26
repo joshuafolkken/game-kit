@@ -34,19 +34,18 @@ function end_right_drag(): void {
 function make_zero_rect_target(): HTMLElement {
 	const target = document.createElement('div')
 
-	document.body.appendChild(target)
-	target.getBoundingClientRect = (): DOMRect =>
-		({
-			left: 0,
-			top: 0,
-			right: 800,
-			bottom: 600,
-			width: 800,
-			height: 600,
-			x: 0,
-			y: 0,
-			toJSON: () => ({}),
-		}) as DOMRect
+	document.body.append(target)
+	target.getBoundingClientRect = (): DOMRect => ({
+		left: 0,
+		top: 0,
+		right: 800,
+		bottom: 600,
+		width: 800,
+		height: 600,
+		x: 0,
+		y: 0,
+		toJSON: () => ({}),
+	})
 
 	return target
 }
@@ -71,7 +70,7 @@ describe('input', () => {
 
 	beforeEach(() => {
 		canvas_el = document.createElement('canvas')
-		document.body.appendChild(canvas_el)
+		document.body.append(canvas_el)
 		cleanup = input.setup_listeners(canvas_el)
 	})
 
@@ -224,7 +223,7 @@ describe('input', () => {
 	it('right mouse down requests pointer lock on event target', () => {
 		const target = document.createElement('div')
 
-		document.body.appendChild(target)
+		document.body.append(target)
 		const spy = vi.spyOn(target, 'requestPointerLock').mockResolvedValue()
 
 		dispatch_mouse_with_target('mousedown', { button: RIGHT_BUTTON }, target)

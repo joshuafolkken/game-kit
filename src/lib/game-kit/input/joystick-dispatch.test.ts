@@ -12,6 +12,7 @@ const RECT_TOP = 200
 
 class FakeEvent {
 	type: string
+
 	constructor(type: string) {
 		this.type = type
 	}

@@ -61,6 +61,7 @@ describe('game audio', () => {
 			'AudioContext',
 			class {
 				readonly state: AudioContextState = 'running'
+
 				constructor() {
 					instance_count += 1
 				}

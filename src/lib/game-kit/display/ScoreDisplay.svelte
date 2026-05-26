@@ -42,7 +42,7 @@
 		label_current: string
 	}
 
-	let { score_data, is_alt, position_z, label_high_score, label_round, label_current }: Props =
+	const { score_data, is_alt, position_z, label_high_score, label_round, label_current }: Props =
 		$props()
 
 	let displayed_score = $state(0)
@@ -90,24 +90,24 @@
 	useTask(tick)
 
 	// Font is driven by CRT state via fonts.get_active_*; is_alt only drives the palette.
-	let current_font = $derived(fonts.get_active_font())
-	let font_size_multiplier = $derived(fonts.get_active_font_size_multiplier())
-	let panel_color = $derived(is_alt ? CYBER_PANEL_COLOR : RETRO_PANEL_COLOR)
-	let panel_emissive = $derived(is_alt ? CYBER_PANEL_EMISSIVE : RETRO_PANEL_EMISSIVE)
-	let panel_emissive_intensity = $derived(
+	const current_font = $derived(fonts.get_active_font())
+	const font_size_multiplier = $derived(fonts.get_active_font_size_multiplier())
+	const panel_color = $derived(is_alt ? CYBER_PANEL_COLOR : RETRO_PANEL_COLOR)
+	const panel_emissive = $derived(is_alt ? CYBER_PANEL_EMISSIVE : RETRO_PANEL_EMISSIVE)
+	const panel_emissive_intensity = $derived(
 		is_alt ? CYBER_PANEL_EMISSIVE_INTENSITY : RETRO_PANEL_EMISSIVE_INTENSITY,
 	)
-	let label_color = $derived(is_alt ? CYBER_LABEL_COLOR : RETRO_LABEL_COLOR)
-	let value_color = $derived(is_alt ? CYBER_VALUE_COLOR : RETRO_VALUE_COLOR)
-	let label_font_size = $derived(LABEL_FONT_SIZE * font_size_multiplier)
-	let value_font_size = $derived(VALUE_FONT_SIZE * font_size_multiplier)
-	let round_font_size = $derived(ROUND_VALUE_FONT_SIZE * font_size_multiplier)
+	const label_color = $derived(is_alt ? CYBER_LABEL_COLOR : RETRO_LABEL_COLOR)
+	const value_color = $derived(is_alt ? CYBER_VALUE_COLOR : RETRO_VALUE_COLOR)
+	const label_font_size = $derived(LABEL_FONT_SIZE * font_size_multiplier)
+	const value_font_size = $derived(VALUE_FONT_SIZE * font_size_multiplier)
+	const round_font_size = $derived(ROUND_VALUE_FONT_SIZE * font_size_multiplier)
 
-	let hi_value_color = $derived(get_hi_value_color(is_alt, score_data.is_new_high_score))
-	let hi_score_text = $derived(score_data.format_score(displayed_hi))
-	let current_score_text = $derived(score_data.format_score(displayed_score))
-	let hi_round_text = $derived(String(score_data.high_score_round))
-	let round_text = $derived(String(score_data.last_cleared_round))
+	const hi_value_color = $derived(get_hi_value_color(is_alt, score_data.is_new_high_score))
+	const hi_score_text = $derived(score_data.format_score(displayed_hi))
+	const current_score_text = $derived(score_data.format_score(displayed_score))
+	const hi_round_text = $derived(String(score_data.high_score_round))
+	const round_text = $derived(String(score_data.last_cleared_round))
 </script>
 
 <T.Group position={[0, DISPLAY_Y, position_z]} rotation.x={PANEL_TILT_X}>

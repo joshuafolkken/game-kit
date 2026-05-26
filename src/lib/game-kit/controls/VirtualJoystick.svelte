@@ -9,7 +9,7 @@
 		show_jump?: boolean
 	}
 
-	let { label_jump, show_jump = true }: Props = $props()
+	const { label_jump, show_jump = true }: Props = $props()
 
 	let move_zone: HTMLElement
 	let look_zone: HTMLElement
@@ -192,7 +192,7 @@
 	}
 
 	onMount(() => {
-		if (!('ontouchstart' in window)) return
+		if (!('ontouchstart' in globalThis)) return
 		move_zone.addEventListener('touchstart', on_move_start, { passive: false })
 		look_zone.addEventListener('touchstart', on_look_start, { passive: false })
 		document.addEventListener('touchmove', on_touch_move, { passive: false })

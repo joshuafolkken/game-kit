@@ -112,10 +112,22 @@ function override_offset_during_drag_impl(s: InputState, event: Event): void {
 
 function on_left_mouse_for_synth_impl(s: InputState, e: MouseEvent, refs: InputRefs): void {
 	if (!s.is_dragging_look || e.button !== 0) return
-	if (e.type === 'mousedown')
-		dispatch_synthetic_pointer('pointerdown', s.drag_start_x, s.drag_start_y, refs.canvas_el)
-	else if (e.type === 'mouseup')
-		dispatch_synthetic_pointer('pointerup', s.drag_start_x, s.drag_start_y, refs.canvas_el)
+
+	switch (e.type) {
+		case 'mousedown': {
+			dispatch_synthetic_pointer('pointerdown', s.drag_start_x, s.drag_start_y, refs.canvas_el)
+			break
+		}
+
+		case 'mouseup': {
+			{
+				dispatch_synthetic_pointer('pointerup', s.drag_start_x, s.drag_start_y, refs.canvas_el)
+				// No default
+			}
+
+			break
+		}
+	}
 }
 
 function on_key_impl(s: InputState, e: KeyboardEvent, is_down: boolean): void {

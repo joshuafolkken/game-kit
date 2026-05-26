@@ -50,7 +50,7 @@
 
 	const BUTTON_CONFIGS = [
 		{
-			color: 'green' as ButtonColor,
+			color: 'green',
 			rotation: 0,
 			lit_color: '#00ff00',
 			dim_color: '#003300',
@@ -58,7 +58,7 @@
 			cyber_dim_color: '#005533',
 		},
 		{
-			color: 'red' as ButtonColor,
+			color: 'red',
 			rotation: Math.PI / 2,
 			lit_color: '#ff2222',
 			dim_color: '#330000',
@@ -66,7 +66,7 @@
 			cyber_dim_color: '#550022',
 		},
 		{
-			color: 'yellow' as ButtonColor,
+			color: 'yellow',
 			rotation: Math.PI,
 			lit_color: '#ffff00',
 			dim_color: '#333300',
@@ -74,7 +74,7 @@
 			cyber_dim_color: '#555500',
 		},
 		{
-			color: 'blue' as ButtonColor,
+			color: 'blue',
 			rotation: -Math.PI / 2,
 			lit_color: '#2266ff',
 			dim_color: '#001133',
@@ -83,7 +83,7 @@
 		},
 	] as const satisfies ReadonlyArray<ButtonConfig>
 
-	let { game_data, is_alt, text_gameover, text_start }: Props = $props()
+	const { game_data, is_alt, text_gameover, text_start }: Props = $props()
 
 	function is_lit(color: ButtonColor): boolean {
 		return (
@@ -115,19 +115,19 @@
 		return FONT_SIZE
 	}
 
-	let is_multiline_center = $derived(game_data.phase === 'gameover')
-	let center_text = $derived(get_center_text())
-	let emissive_intensity = $derived(
+	const is_multiline_center = $derived(game_data.phase === 'gameover')
+	const center_text = $derived(get_center_text())
+	const emissive_intensity = $derived(
 		(is_alt ? CYBER_EMISSIVE_INTENSITY : EMISSIVE_INTENSITY) * game_data.flash_intensity,
 	)
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
-	let should_use_alt_font = $derived(!crt.is_crt_enabled)
-	let current_font = $derived(fonts.get_font(should_use_alt_font))
-	let center_base_font_size = $derived(get_center_base_font_size())
-	let current_font_size = $derived(
+	const should_use_alt_font = $derived(!crt.is_crt_enabled)
+	const current_font = $derived(fonts.get_font(should_use_alt_font))
+	const center_base_font_size = $derived(get_center_base_font_size())
+	const current_font_size = $derived(
 		center_base_font_size * fonts.get_font_size_multiplier(should_use_alt_font),
 	)
-	let current_line_height = $derived(
+	const current_line_height = $derived(
 		is_multiline_center ? MULTILINE_LINE_HEIGHT : SINGLE_LINE_HEIGHT,
 	)
 </script>

@@ -84,13 +84,13 @@ describe('ScoreDisplay', () => {
 describe('ScoreDisplay font selection — driven by CRT-aware fonts helpers, not by is_alt (CYBER)', () => {
 	it('current_font uses fonts.get_active_font() (no caller-supplied flag)', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_active_font\(\s*\)\s*\)/u,
+			/(?:let|const)\s+current_font\s*=\s*\$derived\(\s*fonts\.get_active_font\(\s*\)\s*\)/u,
 		)
 	})
 
 	it('font_size_multiplier uses fonts.get_active_font_size_multiplier()', () => {
 		expect(SCORE_DISPLAY_SOURCE).toMatch(
-			/let\s+font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_active_font_size_multiplier\(\s*\)\s*\)/u,
+			/(?:let|const)\s+font_size_multiplier\s*=\s*\$derived\(\s*fonts\.get_active_font_size_multiplier\(\s*\)\s*\)/u,
 		)
 	})
 
@@ -106,7 +106,9 @@ describe('ScoreDisplay font selection — driven by CRT-aware fonts helpers, not
 	})
 
 	it('keeps is_alt prop driving palette decisions (panel/label/value colors)', () => {
-		expect(SCORE_DISPLAY_SOURCE).toMatch(/let\s+panel_color\s*=\s*\$derived\(\s*is_alt\s*\?/u)
+		expect(SCORE_DISPLAY_SOURCE).toMatch(
+			/(?:let|const)\s+panel_color\s*=\s*\$derived\(\s*is_alt\s*\?/u,
+		)
 	})
 
 	it('does not pass is_alt into any fonts helper (font axis is CRT, not CYBER)', () => {

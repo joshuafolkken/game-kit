@@ -28,8 +28,8 @@ function setup_threlte_dom(): { dom: HTMLDivElement; canvas: HTMLCanvasElement }
 	const dom = document.createElement('div')
 	const canvas = document.createElement('canvas')
 
-	dom.appendChild(canvas)
-	document.body.appendChild(dom)
+	dom.append(canvas)
+	document.body.append(dom)
 
 	return { dom, canvas }
 }

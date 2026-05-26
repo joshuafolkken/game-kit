@@ -74,13 +74,13 @@ describe('Board', () => {
 describe('Board font selection — driven by CRT, not CYBER (is_alt)', () => {
 	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
 		expect(BOARD_SOURCE).toMatch(
-			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
+			/(?:let|const)\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
 	})
 
 	it('current_font and current_font_size use should_use_alt_font (not is_alt)', () => {
 		expect(BOARD_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/u,
+			/(?:let|const)\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/u,
 		)
 		expect(BOARD_SOURCE).toMatch(/fonts\.get_font_size_multiplier\(\s*should_use_alt_font\s*\)/u)
 	})
@@ -166,7 +166,7 @@ describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () =
 		expect(BOARD_SOURCE).toMatch(/<Text[\s\S]*lineHeight=\{current_line_height\}[\s\S]*\/>/u)
 		// Whitespace-normalized substring check avoids the long chain of `\s*` separators
 		// (SonarCloud rule typescript:S5852 flags such patterns as ReDoS candidates).
-		const normalized = BOARD_SOURCE.replace(/\s+/gu, ' ')
+		const normalized = BOARD_SOURCE.replaceAll(/\s+/gu, ' ')
 
 		expect(normalized).toContain(
 			'current_line_height = $derived( is_multiline_center ? MULTILINE_LINE_HEIGHT : SINGLE_LINE_HEIGHT',
@@ -177,7 +177,7 @@ describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () =
 describe('templates Board mirrors the CRT-driven font behavior', () => {
 	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
 		expect(TEMPLATE_BOARD_SOURCE).toMatch(
-			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
+			/(?:let|const)\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
 	})
 

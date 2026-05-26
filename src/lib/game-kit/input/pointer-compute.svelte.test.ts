@@ -23,28 +23,22 @@ function make_camera() {
 	return { current: new PerspectiveCamera() }
 }
 
-function make_target(
-	client_w: number,
-	client_h: number,
-	rect_left: number = 0,
-	rect_top: number = 0,
-): HTMLElement {
+function make_target(client_w: number, client_h: number, rect_left = 0, rect_top = 0): HTMLElement {
 	const el = document.createElement('div')
 
 	Object.defineProperty(el, 'clientWidth', { get: () => client_w })
 	Object.defineProperty(el, 'clientHeight', { get: () => client_h })
-	el.getBoundingClientRect = (): DOMRect =>
-		({
-			left: rect_left,
-			top: rect_top,
-			right: rect_left + client_w,
-			bottom: rect_top + client_h,
-			width: client_w,
-			height: client_h,
-			x: rect_left,
-			y: rect_top,
-			toJSON: () => ({}),
-		}) as DOMRect
+	el.getBoundingClientRect = (): DOMRect => ({
+		left: rect_left,
+		top: rect_top,
+		right: rect_left + client_w,
+		bottom: rect_top + client_h,
+		width: client_w,
+		height: client_h,
+		x: rect_left,
+		y: rect_top,
+		toJSON: () => ({}),
+	})
 
 	return el
 }

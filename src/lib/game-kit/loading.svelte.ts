@@ -8,7 +8,7 @@ const INITIAL_PROGRESS = '0%'
 const READY_PROGRESS_VALUE = 100
 
 interface LoadingObserver {
-	disconnect(): void
+	disconnect: () => void
 }
 
 type LoadingState<T extends string> = {

@@ -68,11 +68,12 @@ function create_bayer_texture(): DataTexture {
 	const cells = BAYER_SIZE_VALUE * BAYER_SIZE_VALUE
 	const data = new Float32Array(cells)
 
-	BAYER_MATRIX.forEach((row, y) => {
-		row.forEach((value, x) => {
+	for (const [y, row] of BAYER_MATRIX.entries()) {
+		for (const [x, value] of row.entries()) {
 			data[y * BAYER_SIZE_VALUE + x] = value / cells
-		})
-	})
+		}
+	}
+
 	const texture = new DataTexture(data, BAYER_SIZE_VALUE, BAYER_SIZE_VALUE, RedFormat, FloatType)
 
 	texture.minFilter = NearestFilter
@@ -95,13 +96,13 @@ function compute_scanline_factor(
 	coord: number,
 	period: number,
 	dark_factor: number,
-	sharpness: number = 1,
+	sharpness = 1,
 ): number {
 	const HALF = 0.5
 	const TWO_PI = 2 * Math.PI
 	const phase = ((coord % period) + period) % period
 	const wave_cos = HALF * (1 - Math.cos((TWO_PI * phase) / period))
-	const wave = Math.pow(wave_cos, sharpness)
+	const wave = wave_cos ** sharpness
 
 	return dark_factor + wave * (1 - dark_factor)
 }
