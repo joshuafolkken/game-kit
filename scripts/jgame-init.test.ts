@@ -189,7 +189,12 @@ describe('jgame_init.generate_game_config', () => {
 describe('jgame_init.run', () => {
 	beforeEach(async () => {
 		const { readFileSync } = await import('node:fs')
+		const { execSync } = await import('node:child_process')
 		vi.mocked(readFileSync).mockReturnValue(JSON.stringify(MOCK_PKG))
+		vi.mocked(execSync).mockImplementation((command: string | Uint8Array) => {
+			if (command === 'pnpm --version') return Buffer.from(`${MOCK_HOST_PNPM_VERSION}\n`)
+			return Buffer.from('')
+		})
 		vi.spyOn(console, 'info').mockImplementation(() => {})
 		vi.spyOn(console, 'error').mockImplementation(() => {})
 		vi.spyOn(process, 'exit').mockImplementation(() => {
