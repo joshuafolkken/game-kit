@@ -5,7 +5,7 @@
 		label_return: string
 	}
 
-	let { label_move, label_jump, label_return }: Props = $props()
+	const { label_move, label_jump, label_return }: Props = $props()
 
 	type LetterKey = {
 		class_name: string

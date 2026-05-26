@@ -37,7 +37,7 @@
 		if (bar) bar.value = loading.progress_value
 	})
 
-	let { children } = $props()
+	const { children } = $props()
 </script>
 
 <svelte:head>

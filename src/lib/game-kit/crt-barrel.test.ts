@@ -16,7 +16,7 @@ function distance_from_center(x: number, y: number): number {
 	const dx = x - CENTER_X
 	const dy = y - CENTER_Y
 
-	return Math.sqrt(dx * dx + dy * dy)
+	return Math.hypot(dx, dy)
 }
 
 describe('crt-barrel constants', () => {
@@ -69,10 +69,10 @@ describe('crt_barrel.apply_barrel_uv', () => {
 
 	it('pushes off-center UVs OUTWARD (distance from center grows) when strength > 0', () => {
 		const off_center_samples: ReadonlyArray<BarrelUv> = [
-			{ x: 0.0, y: 0.5 },
-			{ x: 1.0, y: 0.5 },
-			{ x: 0.5, y: 0.0 },
-			{ x: 0.5, y: 1.0 },
+			{ x: 0, y: 0.5 },
+			{ x: 1, y: 0.5 },
+			{ x: 0.5, y: 0 },
+			{ x: 0.5, y: 1 },
 			{ x: 0.2, y: 0.2 },
 			{ x: 0.8, y: 0.8 },
 		]

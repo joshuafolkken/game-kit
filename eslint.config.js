@@ -115,66 +115,19 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'unicorn/no-array-reverse': 'off',
 	// TODO #188 follow-up: tighten unknown-type return sites
 	'@typescript-eslint/no-unsafe-return': 'off',
-	// TODO #188 follow-up: convert `let` to `const` where never reassigned
-	'prefer-const': 'off',
-	// TODO #188 follow-up: simplify regex literals to their canonical form
-	'unicorn/better-regex': 'off',
 	// TODO #188 follow-up: prefer RegExp.exec over String.match where suitable
 	'@typescript-eslint/prefer-regexp-exec': 'off',
-	// TODO #188 follow-up: prefer spread over Array.from / apply
-	'unicorn/prefer-spread': 'off',
 	// TODO #188 follow-up: mark promise-returning functions explicitly async
 	'@typescript-eslint/promise-function-async': 'off',
-	// TODO #188 follow-up: use String.raw for backslash-heavy literals
-	'unicorn/prefer-string-raw': 'off',
-	// TODO #188 follow-up: use === -1 / !== -1 consistently for indexOf checks
-	'unicorn/consistent-existence-index-check': 'off',
-	// TODO #188 follow-up: prefer Element.append over Element.appendChild
-	'unicorn/prefer-dom-node-append': 'off',
-	// TODO #188 follow-up: drop unnecessary type assertions
-	'@typescript-eslint/no-unnecessary-type-assertion': 'off',
-	// TODO #188 follow-up: prefer arrow callbacks where `this` binding is not needed
+	// PR-6 left these specific rules disabled: they auto-fix in dangerous ways verified earlier in this series.
+	// TODO #188 follow-up: `prefer-arrow-callback` rewrites `function () {}` to `() => {}` which breaks `new`-constructibility (Audio mock regression seen in pre-merge baseline)
 	'prefer-arrow-callback': 'off',
-	// TODO #188 follow-up: drop zero fractions (`1.0` → `1`)
-	'unicorn/no-zero-fractions': 'off',
-	// TODO #188 follow-up: drop redundant `undefined` arguments / values
+	// TODO #188 follow-up: `unicorn/no-useless-undefined` strips required-by-signature undefined args (broke vi.stubGlobal / mockResolvedValue calls in pre-merge baseline)
 	'unicorn/no-useless-undefined': 'off',
-	// TODO #188 follow-up: add braces to single-statement if/for/while
-	curly: 'off',
-	// TODO #188 follow-up: prefer Array#for-of over Array#forEach
-	'unicorn/no-array-for-each': 'off',
-	// TODO #188 follow-up: drop inferrable type annotations
-	'@typescript-eslint/no-inferrable-types': 'off',
-	// TODO #188 follow-up: prefer property access over bracket access for valid identifiers
+	// TODO #188 follow-up: `dot-notation` converts bracket-access to dot-access, but TS index-signature types REQUIRE bracket access (broke u_res access in crt-dither test in pre-merge baseline)
 	'dot-notation': 'off',
-	// TODO #188 follow-up: use Number.* instead of global parseInt / isNaN
-	'unicorn/prefer-number-properties': 'off',
-	// TODO #188 follow-up: add blank lines between class members
-	'lines-between-class-members': 'off',
-	// TODO #188 follow-up: lowercase hex literals consistently
+	// TODO #188 follow-up: `unicorn/number-literal-case` wants uppercase hex digits (0x9E) but prettier normalizes them to lowercase (0x9e), creating an unresolvable lint↔format conflict. Configure prettier or move the hex literal to a non-formatted location to re-enable.
 	'unicorn/number-literal-case': 'off',
-	// TODO #188 follow-up: consolidate import specifiers per module
-	'unicorn/require-module-specifiers': 'off',
-	// TODO #188 follow-up: prefer `import type` for type-only imports
-	'@typescript-eslint/consistent-type-imports': 'off',
-	// TODO #188 follow-up: use `globalThis` instead of `window` / `self`
-	'unicorn/prefer-global-this': 'off',
-	// TODO #188 follow-up: use Math.* modern APIs (e.g. Math.cbrt, Math.log2)
-	'unicorn/prefer-modern-math-apis': 'off',
-	// TODO #188 follow-up: use `**` operator instead of Math.pow
-	'prefer-exponentiation-operator': 'off',
-	// TODO #188 follow-up: prefer switch over long if/else chains
-	'unicorn/prefer-switch': 'off',
-	// TODO #188 follow-up: standardize method-signature shorthand vs property style
-	'@typescript-eslint/method-signature-style': 'off',
-	// TODO #188 follow-up: drop redundant default-assignment patterns
-	'@typescript-eslint/no-useless-default-assignment': 'off',
-	// TODO #188 follow-up: prefer String#replaceAll over String#replace with /g
-	'unicorn/prefer-string-replace-all': 'off',
-	// TODO #188 follow-up: prefer template literals over string concatenation
-	'prefer-template': 'off',
-	// TODO #188 follow-up: prefer Array#at over [length - 1]
-	'unicorn/prefer-at': 'off',
 }
 
 // `scripts/` and `templates/` are not included in any tsconfig project here:

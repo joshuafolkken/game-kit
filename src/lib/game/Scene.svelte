@@ -14,7 +14,7 @@
 	const { start_z: CREDITS_SCROLL_START_Z, end_z: CREDITS_SCROLL_END_Z } =
 		make_credits_scroll_bounds(CREDITS_LINE_COUNT, HALF_D)
 
-	let score_data = $derived({
+	const score_data = $derived({
 		high_score: score.high_score,
 		current_score: score.current_score,
 		is_new_high_score: score.is_new_high_score,
@@ -22,7 +22,7 @@
 		last_cleared_round: score.last_cleared_round,
 		format_score: score.format_score,
 	})
-	let game_data = $derived({
+	const game_data = $derived({
 		active_color: game.active_color,
 		pressed_color: game.pressed_color,
 		phase: game.phase,
@@ -31,7 +31,7 @@
 		flash_intensity: game.flash_intensity,
 	})
 
-	let is_alt = $derived(game_state.is_alt)
+	const is_alt = $derived(game_state.is_alt)
 	const scene_messages: SceneObjectsMessages = {
 		game_title: messages.game_title,
 		alt_switch_label: messages.cyber_switch_label,

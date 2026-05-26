@@ -52,7 +52,7 @@
 		label_pause: string
 	}
 
-	let {
+	const {
 		children,
 		hint_text = '',
 		on_start,
@@ -65,7 +65,7 @@
 	let container: HTMLElement
 	let container_width = $state(0)
 	let container_height = $state(0)
-	let pixel_dpr = $derived(
+	const pixel_dpr = $derived(
 		compute_pixel_dpr(
 			container_width,
 			container_height,
@@ -78,22 +78,22 @@
 	// lo_dpr is the low-res rendering scale passed to CrtDitherPass for Stage 1
 	// (game scene + dither). The canvas itself runs at dpr=1 so Stage 2 (scanlines
 	// + barrel) can operate at full CSS resolution for smooth CRT curves.
-	let lo_dpr = $derived(pixel_dpr)
-	let is_dragging_look = $derived(input.is_dragging_look)
-	let drag_start_x = $derived(input.drag_start_x)
-	let drag_start_y = $derived(input.drag_start_y)
-	let is_pseudo_fullscreen = $derived(fullscreen.is_pseudo_fullscreen)
-	let is_fullscreen_active = $derived(fullscreen.is_active)
-	let is_started = $derived(session.is_session_started)
-	let is_touch = $derived(device.is_touch_primary)
-	let game_status = $derived(is_started ? label_game_started : '')
-	let is_alt = $derived(game_state.is_alt)
-	let is_crt_enabled = $derived(crt.is_crt_enabled)
+	const lo_dpr = $derived(pixel_dpr)
+	const is_dragging_look = $derived(input.is_dragging_look)
+	const drag_start_x = $derived(input.drag_start_x)
+	const drag_start_y = $derived(input.drag_start_y)
+	const is_pseudo_fullscreen = $derived(fullscreen.is_pseudo_fullscreen)
+	const is_fullscreen_active = $derived(fullscreen.is_active)
+	const is_started = $derived(session.is_session_started)
+	const is_touch = $derived(device.is_touch_primary)
+	const game_status = $derived(is_started ? label_game_started : '')
+	const is_alt = $derived(game_state.is_alt)
+	const is_crt_enabled = $derived(crt.is_crt_enabled)
 	// AA is intentionally derived from is_touch only — not is_crt_enabled. Toggling RETRO must
 	// not change the WebGL antialias setting, because that requires remounting <Canvas>, which
 	// resets the player position. When RETRO is on the CRT post-process (dither + barrel)
 	// overwrites the framebuffer with low-res pixels, so always-on AA is visually transparent.
-	let is_aa_enabled = $derived(should_use_antialias(is_touch))
+	const is_aa_enabled = $derived(should_use_antialias(is_touch))
 
 	function start_game(): void {
 		if (session.is_session_started) return
@@ -132,8 +132,11 @@
 		loading.set_step('loading_assets')
 		fullscreen_switch_input.set_container(container)
 		const canvas_el = container.querySelector<HTMLCanvasElement>('canvas')
-		if (!canvas_el)
+
+		if (!canvas_el) {
 			console.warn('[GameScene] No <canvas> found at mount — synthetic pointer events disabled')
+		}
+
 		const cleanup_input = input.setup_listeners(canvas_el)
 		const cleanup_fullscreen = fullscreen.setup_listeners()
 

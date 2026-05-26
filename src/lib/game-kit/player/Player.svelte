@@ -14,14 +14,14 @@
 	const NEAR_PLANE = 0.1
 	const FAR_PLANE = 50
 	const JOYSTICK_LOOK_SPEED = 2
-	const GAMEOVER_SHAKE_STRENGTH = 1.0
+	const GAMEOVER_SHAKE_STRENGTH = 1
 	const KEYBOARD_AXIS_FRACTION = 0.5
 
 	interface Props {
 		is_gameover: boolean
 	}
 
-	let { is_gameover }: Props = $props()
+	const { is_gameover }: Props = $props()
 
 	let pos_x = $state(SPAWN_X)
 	let pos_y = $state(SPAWN_Y)

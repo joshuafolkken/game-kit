@@ -26,7 +26,7 @@ describe('JumpIcon', () => {
 
 	it('uses original Jump C coordinates (bottom solid, top animated)', () => {
 		const { container } = render(JumpIcon)
-		const polylines = Array.from(container.querySelectorAll('polyline'))
+		const polylines = [...container.querySelectorAll('polyline')]
 
 		expect(polylines[0]?.getAttribute('points')).toBe('8,27 20,15 32,27')
 		expect(polylines[1]?.getAttribute('points')).toBe('8,19 20,7 32,19')

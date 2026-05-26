@@ -18,7 +18,7 @@
 		aria_label?: string
 	}
 
-	let { size = DEFAULT_SIZE, aria_label = DEFAULT_ARIA_LABEL }: Props = $props()
+	const { size = DEFAULT_SIZE, aria_label = DEFAULT_ARIA_LABEL }: Props = $props()
 	const filter_id = generate_filter_id()
 </script>
 

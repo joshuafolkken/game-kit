@@ -353,7 +353,7 @@ describe('GameScene', () => {
 		})
 
 		it('passes lo_dpr={pixel_dpr} to CrtDitherPass for the low-res game render stage', () => {
-			expect(GAME_SCENE_SOURCE).toContain('let lo_dpr = $derived(pixel_dpr)')
+			expect(GAME_SCENE_SOURCE).toMatch(/(?:let|const)\s+lo_dpr\s*=\s*\$derived\(pixel_dpr\)/u)
 			expect(GAME_SCENE_SOURCE).toContain('<CrtDitherPass {lo_dpr}')
 		})
 
@@ -407,10 +407,10 @@ describe('GameScene', () => {
 
 		it('GameScene no longer owns DOTS_PER_SCANLINE / device_pixel_ratio / scanline-derived state', () => {
 			expect(GAME_SCENE_SOURCE).not.toMatch(/const\s+DOTS_PER_SCANLINE\s*=/u)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+device_pixel_ratio\s*=\s*\$state\(/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/(?:let|const)\s+device_pixel_ratio\s*=\s*\$state\(/u)
 			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_period_css/u)
 			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/u)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+is_portrait\s*=\s*\$derived/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/(?:let|const)\s+is_portrait\s*=\s*\$derived/u)
 		})
 
 		it('does not overlay a phosphor mask (RGB sub-pixel stripes) — kept off intentionally', () => {
@@ -436,13 +436,13 @@ describe('GameScene', () => {
 
 			// Negative: previous filter values must not be present on the canvas filter chain.
 			for (const prior of [
-				'contrast\\(1\\.08\\)',
-				'saturate\\(1\\.1\\)',
-				'brightness\\(1\\.15\\)',
+				String.raw`contrast\(1\.08\)`,
+				String.raw`saturate\(1\.1\)`,
+				String.raw`brightness\(1\.15\)`,
 			]) {
 				expect(GAME_SCENE_SOURCE).not.toMatch(
 					new RegExp(
-						`\\.game-container\\.crt-active\\s+:global\\(canvas\\)\\s*\\{[\\s\\S]*?filter:[^;]*${prior}`,
+						String.raw`\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*${prior}`,
 						'u',
 					),
 				)
@@ -482,10 +482,15 @@ describe('GameScene', () => {
 			// flooded the periphery. We dropped corners to 0.4 so the screen edges stay
 			// readable while the curvature illusion still reads. Value-pin to catch
 			// regressions in either direction (back to 0.55 = too dark; to 0.25 = no curvature).
-			for (const corner of ['top\\s+left', 'top\\s+right', 'bottom\\s+left', 'bottom\\s+right']) {
+			for (const corner of [
+				String.raw`top\s+left`,
+				String.raw`top\s+right`,
+				String.raw`bottom\s+left`,
+				String.raw`bottom\s+right`,
+			]) {
 				expect(GAME_SCENE_SOURCE).toMatch(
 					new RegExp(
-						`radial-gradient\\(\\s*circle\\s+at\\s+${corner},\\s*rgba\\(\\s*0,\\s*0,\\s*0,\\s*0\\.4\\s*\\)`,
+						String.raw`radial-gradient\(\s*circle\s+at\s+${corner},\s*rgba\(\s*0,\s*0,\s*0,\s*0\.4\s*\)`,
 						'u',
 					),
 				)
@@ -572,7 +577,7 @@ describe('GameScene', () => {
 	describe('safe-area drawing when fullscreen is engaged (Issue #80)', () => {
 		it('derives is_fullscreen_active from fullscreen.is_active', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/let\s+is_fullscreen_active\s*=\s*\$derived\(\s*fullscreen\.is_active\s*\)/u,
+				/(?:let|const)\s+is_fullscreen_active\s*=\s*\$derived\(\s*fullscreen\.is_active\s*\)/u,
 			)
 		})
 
@@ -644,7 +649,7 @@ describe('GameScene', () => {
 			// Always-on AA on desktop is masked by the CRT post-process when RETRO is on, so we
 			// only need is_touch as the input.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/let\s+is_aa_enabled\s*=\s*\$derived\(\s*should_use_antialias\(\s*is_touch\s*\)\s*\)/u,
+				/(?:let|const)\s+is_aa_enabled\s*=\s*\$derived\(\s*should_use_antialias\(\s*is_touch\s*\)\s*\)/u,
 			)
 		})
 

@@ -17,8 +17,10 @@ export function create_listener_manager(specs: ReadonlyArray<ListenerSpec>) {
 			for (const spec of specs) spec.target.addEventListener(spec.type, spec.handler, spec.options)
 
 			cleanup_fn = function cleanup(): void {
-				for (const spec of specs)
+				for (const spec of specs) {
 					spec.target.removeEventListener(spec.type, spec.handler, spec.options)
+				}
+
 				cleanup_fn = null
 				on_cleanup?.()
 			}

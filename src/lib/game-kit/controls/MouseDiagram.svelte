@@ -4,7 +4,7 @@
 		label_look: string
 	}
 
-	let { label_action, label_look }: Props = $props()
+	const { label_action, label_look }: Props = $props()
 </script>
 
 <svg

@@ -53,7 +53,7 @@ function dispatch_pointer_up(
 	is_primary: boolean,
 	x: number,
 	y: number,
-	is_tap: boolean = true,
+	is_tap = true,
 ): void {
 	const ctx = get_dispatch_ctx(x, y)
 	if (!ctx) return

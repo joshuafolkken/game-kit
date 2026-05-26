@@ -22,7 +22,7 @@ describe('KeyboardDiagram', () => {
 
 	it('does not render a visible move label text', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const texts = Array.from(container.querySelectorAll('text'))
+		const texts = [...container.querySelectorAll('text')]
 		const move_label = texts.find((t) => t.textContent?.trim() === PROPS.label_move)
 
 		expect(move_label).toBeUndefined()
@@ -30,7 +30,7 @@ describe('KeyboardDiagram', () => {
 
 	it('renders ESC text centered in its key (dominant-baseline central)', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const texts = Array.from(container.querySelectorAll('text'))
+		const texts = [...container.querySelectorAll('text')]
 		const esc = texts.find((t) => t.textContent?.trim() === 'ESC')
 
 		expect(esc).toBeTruthy()
@@ -47,7 +47,7 @@ describe('KeyboardDiagram', () => {
 
 	it('uses Orbitron font for key labels', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const texts = Array.from(container.querySelectorAll('text'))
+		const texts = [...container.querySelectorAll('text')]
 		const has_orbitron = texts.every((t) => t.getAttribute('font-family')?.includes('Orbitron'))
 
 		expect(has_orbitron).toBe(true)
@@ -55,7 +55,7 @@ describe('KeyboardDiagram', () => {
 
 	it('spacebar uses double chevron (two 3-point polylines, no straight line)', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const polylines = Array.from(container.querySelectorAll('.key-space polyline'))
+		const polylines = [...container.querySelectorAll('.key-space polyline')]
 
 		expect(polylines).toHaveLength(2)
 
@@ -68,7 +68,7 @@ describe('KeyboardDiagram', () => {
 
 	it('spacebar chevron is text-sized (total span <= 13 units, similar to WASD font-size)', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const polylines = Array.from(container.querySelectorAll('.key-space polyline'))
+		const polylines = [...container.querySelectorAll('.key-space polyline')]
 		const all_y_values = polylines.flatMap(
 			(p) =>
 				p

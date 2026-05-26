@@ -49,13 +49,13 @@ describe('FloorCredits', () => {
 describe('FloorCredits font selection — driven by CRT, not CYBER (is_alt)', () => {
 	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
 		expect(FLOOR_CREDITS_SOURCE).toMatch(
-			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
+			/(?:let|const)\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
 	})
 
 	it('current_font passes should_use_alt_font into fonts.get_font (not is_alt)', () => {
 		expect(FLOOR_CREDITS_SOURCE).toMatch(
-			/let\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/u,
+			/(?:let|const)\s+current_font\s*=\s*\$derived\(\s*fonts\.get_font\(\s*should_use_alt_font\s*\)\s*\)/u,
 		)
 	})
 
@@ -66,7 +66,7 @@ describe('FloorCredits font selection — driven by CRT, not CYBER (is_alt)', ()
 	})
 
 	it('keeps is_alt prop driving the credits color (CYBER vs normal)', () => {
-		expect(FLOOR_CREDITS_SOURCE).toMatch(/let\s+color\s*=\s*\$derived\(\s*is_alt\s*\?/u)
+		expect(FLOOR_CREDITS_SOURCE).toMatch(/(?:let|const)\s+color\s*=\s*\$derived\(\s*is_alt\s*\?/u)
 	})
 
 	it('does not pass is_alt directly into fonts helpers', () => {

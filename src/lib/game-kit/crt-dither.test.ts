@@ -193,7 +193,7 @@ describe('BAYER_MATRIX', () => {
 
 describe('crt_dither.quantize_with_dither_2d', () => {
 	const MID_GREY = 0.5
-	const VERY_DARK = 0.0
+	const VERY_DARK = 0
 	const BAYER_LOW = 0 / SQUARED_BAYER_SIZE
 	const BAYER_HIGH = MAX_BAYER_VALUE / SQUARED_BAYER_SIZE
 
@@ -287,13 +287,14 @@ describe('crt_dither.create_bayer_texture', () => {
 		const tex = crt_dither.create_bayer_texture()
 		const data = tex.image.data as Float32Array
 
-		BAYER_MATRIX.forEach((row, y) => {
-			row.forEach((source, x) => {
+		for (const [y, row] of BAYER_MATRIX.entries()) {
+			for (const [x, source] of row.entries()) {
 				const expected = source / SQUARED_BAYER_SIZE
 
 				expect(data[y * BAYER_SIZE + x]).toBeCloseTo(expected, 6)
-			})
-		})
+			}
+		}
+
 		tex.dispose()
 	})
 })

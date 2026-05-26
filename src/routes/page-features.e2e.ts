@@ -164,7 +164,7 @@ test('favicon link points to the game icon, not the Svelte logo', async ({ page 
 	await page.goto('/')
 	const icon_href = await page.evaluate(() => {
 		const links = document.querySelectorAll<HTMLLinkElement>('link[rel="icon"]')
-		const last = links[links.length - 1]
+		const last = [...links].at(-1)
 
 		return last?.getAttribute('href') ?? null
 	})

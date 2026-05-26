@@ -72,7 +72,7 @@
 		panel_text?: string | undefined
 	}
 
-	let {
+	const {
 		position_x,
 		is_active,
 		icon_type,
@@ -82,31 +82,33 @@
 		onclick,
 		colors,
 		geometry = {},
-		panel_text = undefined,
+		panel_text,
 	}: Props = $props()
 
-	let geom: Required<SwitchGeometry> = $derived({ ...DEFAULT_SWITCH_GEOMETRY, ...geometry })
-	let border_pos = $derived(geom.panel_size / 2 - geom.border_thickness / 2)
-	let corner_geom: CornerGeom = $derived({
+	const geom: Required<SwitchGeometry> = $derived({ ...DEFAULT_SWITCH_GEOMETRY, ...geometry })
+	const border_pos = $derived(geom.panel_size / 2 - geom.border_thickness / 2)
+	const corner_geom: CornerGeom = $derived({
 		arm: geom.corner_arm,
 		thickness: geom.corner_thickness,
 		pos: geom.corner_pos,
 		arm_center: geom.corner_pos - geom.corner_arm / 2,
 	})
-	let corner_bars = $derived(
+	const corner_bars = $derived(
 		CORNER_SIGNS.flatMap(function (sx) {
 			return CORNER_SIGNS.flatMap(function (sy) {
 				return [make_bar(sx, sy, 'h', corner_geom), make_bar(sx, sy, 'v', corner_geom)]
 			})
 		}),
 	)
-	let hit_area_w = $derived(geom.panel_size + HIT_AREA_PADDING)
-	let hit_area_h = $derived(geom.panel_size + HIT_AREA_PADDING)
+	const hit_area_w = $derived(geom.panel_size + HIT_AREA_PADDING)
+	const hit_area_h = $derived(geom.panel_size + HIT_AREA_PADDING)
 
-	let resolved = $derived(resolve_switch_colors(colors, is_active))
-	let panel_opacity = $derived(is_active ? geom.panel_opacity_active : geom.panel_opacity_inactive)
-	let current_font_size = $derived(geom.label_font_size * font_size_multiplier)
-	let current_panel_text_font_size = $derived(geom.panel_text_font_size * font_size_multiplier)
+	const resolved = $derived(resolve_switch_colors(colors, is_active))
+	const panel_opacity = $derived(
+		is_active ? geom.panel_opacity_active : geom.panel_opacity_inactive,
+	)
+	const current_font_size = $derived(geom.label_font_size * font_size_multiplier)
+	const current_panel_text_font_size = $derived(geom.panel_text_font_size * font_size_multiplier)
 
 	// MeshStandardMaterial for panel_text so the digits emit light at the same color and
 	// intensity as the border frame ("枠"). Troika Text's default MeshBasicMaterial has

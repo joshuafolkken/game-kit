@@ -8,7 +8,7 @@ describe('fullscreen', () => {
 	beforeEach(() => {
 		cleanup = fullscreen.setup_listeners()
 		el = document.createElement('div')
-		document.body.appendChild(el)
+		document.body.append(el)
 	})
 
 	afterEach(() => {

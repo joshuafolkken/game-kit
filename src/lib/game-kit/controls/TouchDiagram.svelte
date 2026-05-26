@@ -5,7 +5,7 @@
 		label_action: string
 	}
 
-	let { label_move, label_look, label_action }: Props = $props()
+	const { label_move, label_look, label_action }: Props = $props()
 </script>
 
 {#snippet swipe_gesture(animation_class: string)}
