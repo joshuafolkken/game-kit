@@ -131,8 +131,8 @@ describe('crt_barrel.apply_barrel_uv', () => {
 
 describe('BARREL shader sources', () => {
 	it('vertex shader exposes v_uv and computes gl_Position', () => {
-		expect(BARREL_VERTEX_SHADER).toMatch(/varying\s+vec2\s+v_uv/)
-		expect(BARREL_VERTEX_SHADER).toMatch(/gl_Position\s*=/)
+		expect(BARREL_VERTEX_SHADER).toMatch(/varying\s+vec2\s+v_uv/u)
+		expect(BARREL_VERTEX_SHADER).toMatch(/gl_Position\s*=/u)
 	})
 
 	it('fragment shader declares every required uniform', () => {
@@ -149,8 +149,8 @@ describe('BARREL shader sources', () => {
 	})
 
 	it('fragment shader applies aspect correction (centered.x *= u_aspect ... centered.x /= u_aspect)', () => {
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/centered\.x\s*\*=\s*u_aspect/)
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/centered\.x\s*\/=\s*u_aspect/)
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/centered\.x\s*\*=\s*u_aspect/u)
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/centered\.x\s*\/=\s*u_aspect/u)
 	})
 
 	it('fragment shader masks out-of-bounds samples to black (visible-mask multiply, branchless)', () => {
@@ -158,10 +158,10 @@ describe('BARREL shader sources', () => {
 		// background — the visible mask multiplies those texels by 0 so the frame stays clean.
 		expect(BARREL_FRAGMENT_SHADER).toContain('step(vec2(0.0), sample_uv)')
 		expect(BARREL_FRAGMENT_SHADER).toContain('step(sample_uv, vec2(1.0))')
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/sampled\s*\*\s*visible/)
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/sampled\s*\*\s*visible/u)
 	})
 
 	it('fragment shader applies a quadratic warp (1.0 + u_strength * r2)', () => {
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/1\.0\s*\+\s*u_strength\s*\*\s*r2/)
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/1\.0\s*\+\s*u_strength\s*\*\s*r2/u)
 	})
 })

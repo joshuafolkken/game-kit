@@ -71,13 +71,13 @@ describe('GameScene', () => {
 		// component is wired up with the {#if !is_started} guard so the controls
 		// overlay disappears once the session starts.
 		expect(GAME_SCENE_SOURCE).toMatch(
-			/import\s+ControlsScene\s+from\s+'\$lib\/game-kit\/controls\/ControlsScene\.svelte'/,
+			/import\s+ControlsScene\s+from\s+'\$lib\/game-kit\/controls\/ControlsScene\.svelte'/u,
 		)
-		expect(GAME_SCENE_SOURCE).toMatch(/\{#if\s+!is_started\}[\s\S]*<ControlsScene[\s\S]*\{\/if\}/)
+		expect(GAME_SCENE_SOURCE).toMatch(/\{#if\s+!is_started\}[\s\S]*<ControlsScene[\s\S]*\{\/if\}/u)
 	})
 
 	it('passes hint_text and is_touch into <ControlsScene />', () => {
-		expect(GAME_SCENE_SOURCE).toMatch(/<ControlsScene\s+\{hint_text\}\s+\{is_touch\}\s*\/>/)
+		expect(GAME_SCENE_SOURCE).toMatch(/<ControlsScene\s+\{hint_text\}\s+\{is_touch\}\s*\/>/u)
 	})
 
 	it('calls on_start callback when user first clicks', () => {
@@ -307,7 +307,7 @@ describe('GameScene', () => {
 	describe('dynamic pixel DPR — dot count stays consistent on narrow viewports', () => {
 		it('imports compute_pixel_dpr from the pixel-dpr helper', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/import\s*\{\s*compute_pixel_dpr\s*\}\s*from\s*'\$lib\/game-kit\/pixel-dpr'/,
+				/import\s*\{\s*compute_pixel_dpr\s*\}\s*from\s*'\$lib\/game-kit\/pixel-dpr'/u,
 			)
 		})
 
@@ -330,9 +330,9 @@ describe('GameScene', () => {
 		})
 
 		it('defines shorter-edge-based DPR constants: TARGET_SHORT_EDGE_PIXELS=256 and MIN_SHORT_EDGE_PIXELS=128', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/const\s+TARGET_SHORT_EDGE_PIXELS\s*=\s*256/)
-			expect(GAME_SCENE_SOURCE).toMatch(/const\s+MIN_SHORT_EDGE_PIXELS\s*=\s*128/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/TARGET_LONG_EDGE_PIXELS/)
+			expect(GAME_SCENE_SOURCE).toMatch(/const\s+TARGET_SHORT_EDGE_PIXELS\s*=\s*256/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/const\s+MIN_SHORT_EDGE_PIXELS\s*=\s*128/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/TARGET_LONG_EDGE_PIXELS/u)
 		})
 	})
 
@@ -368,23 +368,23 @@ describe('GameScene', () => {
 		})
 
 		it('.crt-overlay still carries static glass-face cues (vignette + highlight)', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{/)
-			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*ellipse\s+at\s+center/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*ellipse\s+at\s+center/u)
 		})
 
 		it('GameScene no longer owns DOTS_PER_SCANLINE / device_pixel_ratio / scanline-derived state', () => {
-			expect(GAME_SCENE_SOURCE).not.toMatch(/const\s+DOTS_PER_SCANLINE\s*=/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+device_pixel_ratio\s*=\s*\$state\(/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_period_css/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+is_portrait\s*=\s*\$derived/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/const\s+DOTS_PER_SCANLINE\s*=/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+device_pixel_ratio\s*=\s*\$state\(/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_period_css/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/let\s+is_portrait\s*=\s*\$derived/u)
 		})
 
 		it('does not overlay a phosphor mask (RGB sub-pixel stripes) — kept off intentionally', () => {
-			expect(GAME_SCENE_SOURCE).not.toMatch(/repeating-linear-gradient\(\s*90deg/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*255,\s*0,\s*0/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*255,\s*0/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*0,\s*255/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/repeating-linear-gradient\(\s*90deg/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*255,\s*0,\s*0/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*255,\s*0/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*0,\s*255/u)
 		})
 
 		it('applies a CRT vibrance filter to the canvas under .crt-active (lowered contrast + boosted saturation, no hue shift)', () => {
@@ -395,10 +395,10 @@ describe('GameScene', () => {
 			// back to prior tunings is caught.
 			// Filter is now gated on .crt-active so toggling CRT off removes all post-processing.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.9\)\s+saturate\(1\.8\)\s+brightness\(1\.1\)\s+url\(#crt-chromatic\)/,
+				/\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.9\)\s+saturate\(1\.8\)\s+brightness\(1\.1\)\s+url\(#crt-chromatic\)/u,
 			)
 			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/\.game-container\.crt-active\s+:global\(canvas\)[\s\S]*?hue-rotate/,
+				/\.game-container\.crt-active\s+:global\(canvas\)[\s\S]*?hue-rotate/u,
 			)
 			// Negative: previous filter values must not be present on the canvas filter chain.
 			for (const prior of [
@@ -409,6 +409,7 @@ describe('GameScene', () => {
 				expect(GAME_SCENE_SOURCE).not.toMatch(
 					new RegExp(
 						`\\.game-container\\.crt-active\\s+:global\\(canvas\\)\\s*\\{[\\s\\S]*?filter:[^;]*${prior}`,
+						'u',
 					),
 				)
 			}
@@ -417,8 +418,8 @@ describe('GameScene', () => {
 
 	describe('CRT scanline orientation — driven by the shader, not CSS', () => {
 		it('GameScene no longer owns scanline-orientation logic (moved to CrtDitherPass)', () => {
-			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/--scanline-angle/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/--scanline-angle/u)
 			expect(GAME_SCENE_SOURCE).not.toContain('repeating-linear-gradient')
 		})
 	})
@@ -426,19 +427,19 @@ describe('GameScene', () => {
 	describe('CRT curvature — rounded corners + corner darkening + glass-dome highlight', () => {
 		it('applies a border-radius to the canvas to simulate the CRT screen shape', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s*:global\(canvas\)\s*\{[\s\S]*?border-radius:\s*clamp\(/,
+				/\.game-container\s*:global\(canvas\)\s*\{[\s\S]*?border-radius:\s*clamp\(/u,
 			)
 		})
 
 		it('applies the same border-radius to .crt-overlay so scanlines clip on the same curve', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{[\s\S]*?border-radius:\s*clamp\(/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{[\s\S]*?border-radius:\s*clamp\(/u)
 		})
 
 		it('adds four corner darkening radial-gradients to fake CRT curvature', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+left/)
-			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+right/)
-			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+left/)
-			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+right/)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+left/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+right/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+left/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+right/u)
 		})
 
 		it('uses alpha 0.4 for the four corner darkening gradients (lightened from 0.55 for legibility)', () => {
@@ -451,24 +452,25 @@ describe('GameScene', () => {
 				expect(GAME_SCENE_SOURCE).toMatch(
 					new RegExp(
 						`radial-gradient\\(\\s*circle\\s+at\\s+${corner},\\s*rgba\\(\\s*0,\\s*0,\\s*0,\\s*0\\.4\\s*\\)`,
+						'u',
 					),
 				)
 			}
 			// Negative: the prior 0.55 alpha must not be present in any corner-darkening position.
 			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/radial-gradient\(\s*circle\s+at\s+(?:top|bottom)\s+(?:left|right),\s*rgba\(\s*0,\s*0,\s*0,\s*0\.55\s*\)/,
+				/radial-gradient\(\s*circle\s+at\s+(?:top|bottom)\s+(?:left|right),\s*rgba\(\s*0,\s*0,\s*0,\s*0\.55\s*\)/u,
 			)
 		})
 
 		it('adds a glass-dome highlight (light radial gradient in the upper-left quadrant)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/radial-gradient\(\s*ellipse\s+\d+%\s+\d+%\s+at\s+\d+%\s+\d+%,[\s\S]*?rgba\(\s*255,\s*255,\s*255/,
+				/radial-gradient\(\s*ellipse\s+\d+%\s+\d+%\s+at\s+\d+%\s+\d+%,[\s\S]*?rgba\(\s*255,\s*255,\s*255/u,
 			)
 		})
 
 		it('keeps the center vignette alongside the curvature layers (scanlines now in shader)', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%/,
+				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%/u,
 			)
 			expect(GAME_SCENE_SOURCE).not.toContain('repeating-linear-gradient')
 		})
@@ -479,11 +481,11 @@ describe('GameScene', () => {
 			// 0.3 to lift the screen-edge brightness. Pinning the value catches drift in
 			// either direction.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.3\s*\)\s+100%\s*\)/,
+				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.3\s*\)\s+100%\s*\)/u,
 			)
 			// Negative: prior 0.45 alpha must not be at the vignette's outer stop.
 			expect(GAME_SCENE_SOURCE).not.toMatch(
-				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.45\s*\)/,
+				/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.45\s*\)/u,
 			)
 		})
 	})
@@ -491,26 +493,26 @@ describe('GameScene', () => {
 	describe('CRT color quantization + Bayer dithering (WebGL post-process)', () => {
 		it('imports CrtDitherPass and renders it inside <Canvas>', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/import\s+CrtDitherPass\s+from\s+'\$lib\/game-kit\/CrtDitherPass\.svelte'/,
+				/import\s+CrtDitherPass\s+from\s+'\$lib\/game-kit\/CrtDitherPass\.svelte'/u,
 			)
-			expect(GAME_SCENE_SOURCE).toMatch(/<Canvas[\s\S]*<CrtDitherPass[^/]*\/>[\s\S]*<\/Canvas>/)
+			expect(GAME_SCENE_SOURCE).toMatch(/<Canvas[\s\S]*<CrtDitherPass[^/]*\/>[\s\S]*<\/Canvas>/u)
 		})
 
 		it('no longer references the legacy SVG palette filter (replaced by GPU post-process)', () => {
-			expect(GAME_SCENE_SOURCE).not.toMatch(/<filter\s+id="crt-palette"/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/feComponentTransfer/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/url\(#crt-palette\)/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/\.crt-filter-defs\s*\{/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/<filter\s+id="crt-palette"/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/feComponentTransfer/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/url\(#crt-palette\)/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/\.crt-filter-defs\s*\{/u)
 		})
 	})
 
 	describe('CRT chromatic aberration — wiring into GameScene', () => {
 		it('imports <CrtChromaticFilter /> and renders it conditionally when CRT is enabled', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/import\s+CrtChromaticFilter\s+from\s+'\$lib\/game-kit\/CrtChromaticFilter\.svelte'/,
+				/import\s+CrtChromaticFilter\s+from\s+'\$lib\/game-kit\/CrtChromaticFilter\.svelte'/u,
 			)
-			expect(GAME_SCENE_SOURCE).toMatch(/<CrtChromaticFilter\s*\/>/)
-			expect(GAME_SCENE_SOURCE).toMatch(/\{#if\s+is_crt_enabled\}[\s\S]*<CrtChromaticFilter/)
+			expect(GAME_SCENE_SOURCE).toMatch(/<CrtChromaticFilter\s*\/>/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/\{#if\s+is_crt_enabled\}[\s\S]*<CrtChromaticFilter/u)
 		})
 
 		it('applies the chromatic filter to the canvas via CSS filter chain under .crt-active', () => {
@@ -519,7 +521,7 @@ describe('GameScene', () => {
 			// connects GameScene's <canvas> to the externally-defined filter.
 			// Filter is now gated on .crt-active so toggling CRT off removes all post-processing.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\.crt-active\s*:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*url\(#crt-chromatic\)/,
+				/\.game-container\.crt-active\s*:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*url\(#crt-chromatic\)/u,
 			)
 		})
 
@@ -534,12 +536,12 @@ describe('GameScene', () => {
 	describe('safe-area drawing when fullscreen is engaged (Issue #80)', () => {
 		it('derives is_fullscreen_active from fullscreen.is_active', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/let\s+is_fullscreen_active\s*=\s*\$derived\(\s*fullscreen\.is_active\s*\)/,
+				/let\s+is_fullscreen_active\s*=\s*\$derived\(\s*fullscreen\.is_active\s*\)/u,
 			)
 		})
 
 		it('binds class:is-fullscreen on the game-container using is_fullscreen_active', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/class:is-fullscreen=\{is_fullscreen_active\}/)
+			expect(GAME_SCENE_SOURCE).toMatch(/class:is-fullscreen=\{is_fullscreen_active\}/u)
 		})
 
 		it('applies the is-fullscreen class when fullscreen.is_active is true', () => {
@@ -560,33 +562,33 @@ describe('GameScene', () => {
 
 		it('default .game-container reserves safe-area-inset padding on all four sides', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s*\{[\s\S]*?padding-top:\s*env\(safe-area-inset-top/,
+				/\.game-container\s*\{[\s\S]*?padding-top:\s*env\(safe-area-inset-top/u,
 			)
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s*\{[\s\S]*?padding-right:\s*env\(safe-area-inset-right/,
+				/\.game-container\s*\{[\s\S]*?padding-right:\s*env\(safe-area-inset-right/u,
 			)
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s*\{[\s\S]*?padding-bottom:\s*env\(safe-area-inset-bottom/,
+				/\.game-container\s*\{[\s\S]*?padding-bottom:\s*env\(safe-area-inset-bottom/u,
 			)
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.game-container\s*\{[\s\S]*?padding-left:\s*env\(safe-area-inset-left/,
+				/\.game-container\s*\{[\s\S]*?padding-left:\s*env\(safe-area-inset-left/u,
 			)
 		})
 
 		it('.game-container uses box-sizing: border-box so the safe-area padding does not bloat the box', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/\.game-container\s*\{[\s\S]*?box-sizing:\s*border-box/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.game-container\s*\{[\s\S]*?box-sizing:\s*border-box/u)
 		})
 
 		it('.game-container.is-fullscreen drops the safe-area padding so content extends edge-to-edge', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/\.game-container\.is-fullscreen\s*\{[\s\S]*?padding:\s*0/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.game-container\.is-fullscreen\s*\{[\s\S]*?padding:\s*0/u)
 		})
 
 		it('.pause-btn offset includes env(safe-area-inset-*) so the button stays clear of OS UI even in fullscreen', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.pause-btn\s*\{[\s\S]*?bottom:\s*calc\([^)]*env\(safe-area-inset-bottom/,
+				/\.pause-btn\s*\{[\s\S]*?bottom:\s*calc\([^)]*env\(safe-area-inset-bottom/u,
 			)
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.pause-btn\s*\{[\s\S]*?right:\s*calc\([^)]*env\(safe-area-inset-right/,
+				/\.pause-btn\s*\{[\s\S]*?right:\s*calc\([^)]*env\(safe-area-inset-right/u,
 			)
 		})
 	})
@@ -594,7 +596,7 @@ describe('GameScene', () => {
 	describe('antialiasing — enabled on desktop when RETRO mode is off (Issue #116)', () => {
 		it('imports should_use_antialias from the antialias helper', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/import\s*\{\s*should_use_antialias\s*\}\s*from\s*'\$lib\/game-kit\/antialias'/,
+				/import\s*\{\s*should_use_antialias\s*\}\s*from\s*'\$lib\/game-kit\/antialias'/u,
 			)
 		})
 
@@ -604,7 +606,7 @@ describe('GameScene', () => {
 			// Always-on AA on desktop is masked by the CRT post-process when RETRO is on, so we
 			// only need is_touch as the input.
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/let\s+is_aa_enabled\s*=\s*\$derived\(\s*should_use_antialias\(\s*is_touch\s*\)\s*\)/,
+				/let\s+is_aa_enabled\s*=\s*\$derived\(\s*should_use_antialias\(\s*is_touch\s*\)\s*\)/u,
 			)
 		})
 
@@ -612,20 +614,20 @@ describe('GameScene', () => {
 			// Negative pin: a `{#key is_aa_enabled}` or `{#key is_crt_enabled}` wrapper would
 			// destroy and recreate the WebGL context on toggle, resetting player position and
 			// scene state. Keep the Canvas mounted for the lifetime of the GameScene.
-			expect(GAME_SCENE_SOURCE).not.toMatch(/\{#key\s+is_aa_enabled\}/)
-			expect(GAME_SCENE_SOURCE).not.toMatch(/\{#key\s+is_crt_enabled\}/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/\{#key\s+is_aa_enabled\}/u)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/\{#key\s+is_crt_enabled\}/u)
 		})
 
 		it('passes the antialias flag into the renderer factory via createRenderer', () => {
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/createRenderer=\{\s*create_renderer_factory\(\s*is_aa_enabled\s*\)\s*\}/,
+				/createRenderer=\{\s*create_renderer_factory\(\s*is_aa_enabled\s*\)\s*\}/u,
 			)
 		})
 
 		it('no longer hardcodes antialias: false on the WebGLRenderer call', () => {
 			// Negative pin: a future regression that re-introduces the hardcoded `antialias: false`
 			// literal would silently break the desktop-RETRO-off path.
-			expect(GAME_SCENE_SOURCE).not.toMatch(/antialias:\s*false/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/antialias:\s*false/u)
 		})
 	})
 
@@ -660,22 +662,22 @@ describe('GameScene', () => {
 			// component without an explicit `@source "../../node_modules/.../dist/**/*.svelte"`
 			// would not generate the `sr-only` utility, and the live-region would fall back to
 			// display: block and render as a ~24px visible band at the top of the viewport.
-			expect(GAME_SCENE_SOURCE).not.toMatch(/class="sr-only"/)
+			expect(GAME_SCENE_SOURCE).not.toMatch(/class="sr-only"/u)
 		})
 
 		it('defines a scoped .visually-hidden style using the standard hiding scaffolding', () => {
 			// Standard visually-hidden pattern: 1px box, overflow hidden, clip rect, no white-space wrap.
-			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?position:\s*absolute/)
-			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?width:\s*1px/)
-			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?height:\s*1px/)
-			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?overflow:\s*hidden/)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?position:\s*absolute/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?width:\s*1px/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?height:\s*1px/u)
+			expect(GAME_SCENE_SOURCE).toMatch(/\.visually-hidden\s*\{[\s\S]*?overflow:\s*hidden/u)
 			expect(GAME_SCENE_SOURCE).toMatch(
-				/\.visually-hidden\s*\{[\s\S]*?clip:\s*rect\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/,
+				/\.visually-hidden\s*\{[\s\S]*?clip:\s*rect\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/u,
 			)
 		})
 
 		it('applies the scoped visually-hidden class to the [role="status"] element', () => {
-			expect(GAME_SCENE_SOURCE).toMatch(/<div\s+role="status"\s+class="visually-hidden">/)
+			expect(GAME_SCENE_SOURCE).toMatch(/<div\s+role="status"\s+class="visually-hidden">/u)
 		})
 	})
 })
