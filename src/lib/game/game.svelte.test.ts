@@ -32,6 +32,7 @@ function wrong_color(color: ButtonColor): ButtonColor {
 function seq_at(i: number): ButtonColor {
 	const color = game.sequence[i]
 	if (!color) throw new Error(`sequence index ${String(i)} out of range`)
+
 	return color
 }
 
@@ -98,6 +99,7 @@ describe('game FSM', () => {
 		game.start()
 		await vi.runAllTimersAsync()
 		const final_color = seq_at(0)
+
 		game.press(final_color)
 		await vi.advanceTimersByTimeAsync(RESTART_DELAY_MS * 2)
 		expect(game.phase).toBe('player_input')
@@ -121,6 +123,7 @@ describe('game FSM', () => {
 		await vi.runAllTimersAsync()
 		game.press(seq_at(0))
 		const spy = vi.spyOn(game_audio, 'start_tone')
+
 		game.press('green')
 		game.press('red')
 		expect(spy).not.toHaveBeenCalled()
@@ -155,6 +158,7 @@ describe('game FSM', () => {
 		game.release()
 		await vi.runAllTimersAsync() // drain round 2 show
 		const first_color = seq_at(0)
+
 		game.press(first_color) // first of two correct presses
 		game.release()
 		expect(game.position).toBe(1)
@@ -172,6 +176,7 @@ describe('game FSM', () => {
 
 	it('wrong press + release plays error tone for ERROR_BEEP_MS', async () => {
 		const spy = vi.spyOn(game_audio, 'play_error_tone')
+
 		game.start()
 		await vi.runAllTimersAsync()
 		game.press(wrong_color(seq_at(0)))
@@ -189,6 +194,7 @@ describe('game FSM', () => {
 		game.start()
 		await vi.runAllTimersAsync()
 		const color = seq_at(0)
+
 		game.press(color)
 		expect(game.pressed_color).toBe(color)
 		await vi.advanceTimersByTimeAsync(TONE_MS + 10)
@@ -219,6 +225,7 @@ describe('game FSM', () => {
 		game.start()
 		await vi.runAllTimersAsync()
 		const wrong = wrong_color(seq_at(0))
+
 		game.press(wrong)
 		expect(game.pressed_color).toBe(wrong)
 		game.reset()
@@ -270,9 +277,11 @@ describe('game FSM', () => {
 
 	it('press() starts tone for pressed color', async () => {
 		const spy = vi.spyOn(game_audio, 'start_tone')
+
 		game.start()
 		await vi.runAllTimersAsync()
 		const color = seq_at(0)
+
 		game.press(color)
 		expect(spy).toHaveBeenCalledWith(color, false)
 	})
@@ -280,12 +289,14 @@ describe('game FSM', () => {
 	it('press() does not start tone when not in player_input phase', () => {
 		game.start() // phase = showing
 		const spy = vi.spyOn(game_audio, 'start_tone')
+
 		game.press('green')
 		expect(spy).not.toHaveBeenCalled()
 	})
 
 	it('release() stops the tone', async () => {
 		const spy = vi.spyOn(game_audio, 'stop_tone')
+
 		game.start()
 		await vi.runAllTimersAsync()
 		game.press(seq_at(0))
@@ -386,12 +397,14 @@ describe('victory flash', () => {
 
 	it('play_tone is called for all colors during burst stage', async () => {
 		const spy = vi.spyOn(game_audio, 'play_tone')
+
 		game.start()
 		await vi.runAllTimersAsync()
 		spy.mockClear()
 		game.press(seq_at(0))
 		game.release()
 		const called_colors = spy.mock.calls.map((c) => c[0])
+
 		expect(called_colors).toContain('green')
 		expect(called_colors).toContain('red')
 		expect(called_colors).toContain('yellow')
@@ -403,6 +416,7 @@ describe('victory flash', () => {
 			FLASH_BURST_CYCLES * (FLASH_BURST_ON_MS + FLASH_BURST_OFF_MS) +
 			ALL_COLORS.length * (FLASH_CASCADE_FWD_MS + FLASH_CASCADE_REV_MS) +
 			FLASH_FINALE_MS
+
 		game.start()
 		await vi.runAllTimersAsync()
 		game.press(seq_at(0))
@@ -451,6 +465,7 @@ describe('create_game isolation', () => {
 		const score_b = create_score()
 		const a = create_game(score_a)
 		const b = create_game(score_b)
+
 		a.start()
 		expect(a.phase).toBe('showing')
 		expect(b.phase).toBe('idle')
@@ -462,6 +477,7 @@ describe('create_game isolation', () => {
 		const score_b = create_score()
 		const a = create_game(score_a)
 		const b = create_game(score_b)
+
 		a.start()
 		expect(a.sequence).toHaveLength(1)
 		expect(b.sequence).toHaveLength(0)
@@ -472,11 +488,14 @@ describe('create_game isolation', () => {
 		const score_c = create_score()
 		const custom_colors: Array<ButtonColor> = ['green', 'blue']
 		const c = create_game(score_c, { colors: custom_colors })
+
 		c.start()
+
 		for (let i = 0; i < 20; i++) {
 			c.reset()
 			c.start()
 		}
+
 		const used = new Set(c.sequence)
 		for (const color of used) expect(custom_colors).toContain(color)
 		c.reset()

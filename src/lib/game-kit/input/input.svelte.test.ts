@@ -10,13 +10,16 @@ function dispatch_mouse(type: string, init: MouseEventInit): void {
 
 function dispatch_mouse_with_target(type: string, init: MouseEventInit, target: HTMLElement): void {
 	const evt = new MouseEvent(type, init)
+
 	Object.defineProperty(evt, 'target', { value: target })
 	document.dispatchEvent(evt)
 }
 
 function dispatch_wheel(init: WheelEventInit): WheelEvent {
 	const evt = new WheelEvent('wheel', { ...init, cancelable: true })
+
 	document.dispatchEvent(evt)
+
 	return evt
 }
 
@@ -30,6 +33,7 @@ function end_right_drag(): void {
 
 function make_zero_rect_target(): HTMLElement {
 	const target = document.createElement('div')
+
 	document.body.appendChild(target)
 	target.getBoundingClientRect = (): DOMRect =>
 		({
@@ -43,6 +47,7 @@ function make_zero_rect_target(): HTMLElement {
 			y: 0,
 			toJSON: () => ({}),
 		}) as DOMRect
+
 	return target
 }
 
@@ -52,9 +57,11 @@ function make_pointer_event_with_offsets(
 	offset_y: number,
 ): PointerEvent {
 	const evt = new PointerEvent('pointerdown', { button: 0, bubbles: true })
+
 	Object.defineProperty(evt, 'target', { value: target })
 	Object.defineProperty(evt, 'offsetX', { value: offset_x, configurable: true })
 	Object.defineProperty(evt, 'offsetY', { value: offset_y, configurable: true })
+
 	return evt
 }
 
@@ -142,10 +149,12 @@ describe('input', () => {
 
 	it('during drag, capture-phase pointerdown overrides offsetX/Y to drag-start coords', () => {
 		const target = make_zero_rect_target()
+
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		expect(input.is_dragging_look).toBe(true)
 
 		const evt = make_pointer_event_with_offsets(target, 999, 999)
+
 		target.dispatchEvent(evt)
 
 		expect(evt.offsetX).toBe(200)
@@ -156,6 +165,7 @@ describe('input', () => {
 	it('without drag, capture-phase listener leaves offsetX/Y untouched', () => {
 		const target = make_zero_rect_target()
 		const evt = make_pointer_event_with_offsets(target, 999, 999)
+
 		target.dispatchEvent(evt)
 
 		expect(evt.offsetX).toBe(999)
@@ -165,6 +175,7 @@ describe('input', () => {
 
 	it('synthesizes pointerdown on canvas when left mousedown fires during drag', () => {
 		const received: Array<string> = []
+
 		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
@@ -176,6 +187,7 @@ describe('input', () => {
 
 	it('synthesizes pointerup on canvas when left mouseup fires during drag', () => {
 		const received: Array<string> = []
+
 		canvas_el.addEventListener('pointerup', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
@@ -187,6 +199,7 @@ describe('input', () => {
 
 	it('does not synthesize pointer events when not dragging', () => {
 		const received: Array<string> = []
+
 		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
@@ -197,19 +210,23 @@ describe('input', () => {
 
 	it('does not synthesize pointer events for right mousedown during drag', () => {
 		const received: Array<string> = []
+
 		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		const start_count = received.length
+
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON })
 		expect(received.length).toBe(start_count)
 	})
 
 	it('right mouse down requests pointer lock on event target', () => {
 		const target = document.createElement('div')
+
 		document.body.appendChild(target)
 		const spy = vi.spyOn(target, 'requestPointerLock').mockResolvedValue()
+
 		dispatch_mouse_with_target('mousedown', { button: RIGHT_BUTTON }, target)
 		expect(spy).toHaveBeenCalledTimes(1)
 		target.remove()
@@ -218,6 +235,7 @@ describe('input', () => {
 	it('right mouse up exits pointer lock when locked', () => {
 		vi.spyOn(Document.prototype, 'pointerLockElement', 'get').mockReturnValue(document.body)
 		const spy = vi.spyOn(Document.prototype, 'exitPointerLock').mockImplementation(() => {})
+
 		dispatch_mouse('mouseup', { button: RIGHT_BUTTON })
 		expect(spy).toHaveBeenCalledTimes(1)
 	})
@@ -225,6 +243,7 @@ describe('input', () => {
 	it('right mouse up does not call exitPointerLock when not locked', () => {
 		vi.spyOn(Document.prototype, 'pointerLockElement', 'get').mockReturnValue(null)
 		const spy = vi.spyOn(Document.prototype, 'exitPointerLock').mockImplementation(() => {})
+
 		dispatch_mouse('mouseup', { button: RIGHT_BUTTON })
 		expect(spy).not.toHaveBeenCalled()
 	})
@@ -267,11 +286,13 @@ describe('input', () => {
 
 	it('wheel event preventDefault is called', () => {
 		const evt = dispatch_wheel({ deltaX: 10, deltaY: 0 })
+
 		expect(evt.defaultPrevented).toBe(true)
 	})
 
 	it('contextmenu preventDefault is called', () => {
 		const evt = new MouseEvent('contextmenu', { cancelable: true })
+
 		document.dispatchEvent(evt)
 		expect(evt.defaultPrevented).toBe(true)
 	})
@@ -358,6 +379,7 @@ describe('input', () => {
 
 	it('prevents default on arrow keys to stop page scroll', () => {
 		const evt = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true })
+
 		document.dispatchEvent(evt)
 		expect(evt.defaultPrevented).toBe(true)
 		expect(input.keys.w).toBe(true)
@@ -365,6 +387,7 @@ describe('input', () => {
 
 	it('does not prevent default on letter keys', () => {
 		const evt = new KeyboardEvent('keydown', { key: 'w', cancelable: true })
+
 		document.dispatchEvent(evt)
 		expect(evt.defaultPrevented).toBe(false)
 	})
@@ -378,6 +401,7 @@ describe('input', () => {
 
 	it('setup_listeners is idempotent when called twice', () => {
 		const second_cleanup = input.setup_listeners(canvas_el)
+
 		expect(second_cleanup).toBe(cleanup)
 	})
 
@@ -436,6 +460,7 @@ describe('create_input isolation', () => {
 	it('two instances do not share yaw state', () => {
 		const a = create_input()
 		const b = create_input()
+
 		a.apply_look_delta(-0.5, 0)
 		expect(a.yaw).toBe(0.5)
 		expect(b.yaw).toBe(0)
@@ -446,6 +471,7 @@ describe('create_input isolation', () => {
 		const b = create_input()
 		const cleanup_a = a.setup_listeners(null)
 		const cleanup_b = b.setup_listeners(null)
+
 		cleanup_a()
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }))
 		expect(a.keys.w).toBe(false)

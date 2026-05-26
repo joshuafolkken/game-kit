@@ -104,6 +104,7 @@ describe('SceneObjects', () => {
 	it('renders without error with a game_board snippet', () => {
 		const game_board = createRawSnippet(() => ({ render: () => '<span></span>' }))
 		const { container } = render(SceneObjects, { props: make_props(game_board) })
+
 		expect(container).toBeTruthy()
 	})
 
@@ -112,12 +113,14 @@ describe('SceneObjects', () => {
 			render: () => '<span data-testid="board-slot"></span>',
 		}))
 		const { container } = render(SceneObjects, { props: make_props(game_board) })
+
 		expect(container.querySelector('[data-testid="board-slot"]')).toBeTruthy()
 	})
 
 	it('renders with default props without error', () => {
 		const game_board = createRawSnippet(() => ({ render: () => '<span></span>' }))
 		const { container } = render(SceneObjects, { props: make_props(game_board) })
+
 		expect(container).toBeTruthy()
 	})
 })

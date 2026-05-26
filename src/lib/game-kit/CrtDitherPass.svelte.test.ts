@@ -54,6 +54,7 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		const render_idx = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(render_pass)')
 		const output_idx = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(output_pass)')
 		const dither_idx = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(dither_pass)')
+
 		expect(render_idx).toBeGreaterThan(-1)
 		expect(output_idx).toBeGreaterThan(-1)
 		expect(dither_idx).toBeGreaterThan(-1)
@@ -66,6 +67,7 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		const upscale_idx = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(upscale_pass)')
 		const scanline_idx = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(scanline_pass)')
 		const barrel_idx = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(barrel_pass)')
+
 		expect(upscale_idx).toBeGreaterThan(-1)
 		expect(scanline_idx).toBeGreaterThan(-1)
 		expect(barrel_idx).toBeGreaterThan(-1)

@@ -140,6 +140,7 @@ describe('create_loading isolation', () => {
 		vi.useFakeTimers()
 		const a = create_loading<DefaultLoadingStep>('downloading')
 		const b = create_loading<DefaultLoadingStep>('downloading')
+
 		a.mark_ready()
 		vi.advanceTimersByTime(MIN_DISPLAY_MS)
 		expect(a.is_visible).toBe(false)
@@ -150,6 +151,7 @@ describe('create_loading isolation', () => {
 	it('two instances do not share current_step state', () => {
 		const a = create_loading<DefaultLoadingStep>('downloading')
 		const b = create_loading<DefaultLoadingStep>('downloading')
+
 		a.configure({ downloading: 'd', initializing: 'i', loading_assets: 'l', ready: 'r' })
 		b.configure({ downloading: 'd', initializing: 'i', loading_assets: 'l', ready: 'r' })
 		a.set_step('initializing')

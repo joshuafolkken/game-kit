@@ -35,6 +35,7 @@
 
 	function make_bar(sx: CornerSign, sy: CornerSign, axis: BarAxis, g: CornerGeom): CornerBar {
 		const is_h = axis === 'h'
+
 		return {
 			key: `${axis}${sx}${sy}`,
 			px: sx * (is_h ? g.arm_center : g.pos),

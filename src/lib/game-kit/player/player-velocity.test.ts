@@ -13,6 +13,7 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.x).toBeCloseTo(0)
 		expect(result.y).toBe(0)
 		expect(result.z).toBeCloseTo(0)
@@ -25,6 +26,7 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.x).toBeCloseTo(0)
 		expect(result.z).toBeCloseTo(-NORMAL_SPEED)
 		expect(result.y).toBe(0)
@@ -37,6 +39,7 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: 1,
 			is_sprinting: false,
 		})
+
 		expect(result.x).toBeCloseTo(NORMAL_SPEED)
 		expect(result.z).toBeCloseTo(0)
 	})
@@ -49,6 +52,7 @@ describe('player_velocity.compute_velocity', () => {
 			is_sprinting: false,
 		})
 		const len = Math.hypot(result.x, result.z)
+
 		expect(len).toBeCloseTo(NORMAL_SPEED)
 	})
 
@@ -59,6 +63,7 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.z).toBeCloseTo(-0.5 * NORMAL_SPEED)
 	})
 
@@ -69,6 +74,7 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: 0,
 			is_sprinting: true,
 		})
+
 		expect(result.z).toBeCloseTo(-SPRINT_SPEED)
 	})
 
@@ -79,6 +85,7 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: 0,
 			is_sprinting: false,
 		})
+
 		expect(result.x).toBeCloseTo(-NORMAL_SPEED)
 		expect(result.z).toBeCloseTo(0)
 	})
@@ -90,6 +97,7 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: -0.5,
 			is_sprinting: true,
 		})
+
 		expect(result.y).toBe(0)
 	})
 })

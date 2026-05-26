@@ -8,6 +8,7 @@ function init_audio(): void {
 
 function get_audio_context(): AudioContext | null {
 	if (ctx?.state === 'suspended') void ctx.resume().catch(() => {})
+
 	return ctx
 }
 

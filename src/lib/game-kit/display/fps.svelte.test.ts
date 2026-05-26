@@ -56,6 +56,7 @@ describe('create_fps isolation', () => {
 	it('two instances do not share is_fps_enabled state', () => {
 		const a = create_fps()
 		const b = create_fps()
+
 		a.toggle()
 		expect(a.is_fps_enabled).toBe(false)
 		expect(b.is_fps_enabled).toBe(true)
@@ -64,6 +65,7 @@ describe('create_fps isolation', () => {
 	it('two instances do not share current_fps_text state', () => {
 		const a = create_fps()
 		const b = create_fps()
+
 		a.set_fps_text('30')
 		expect(a.current_fps_text).toBe('30')
 		expect(b.current_fps_text).toBe('---')

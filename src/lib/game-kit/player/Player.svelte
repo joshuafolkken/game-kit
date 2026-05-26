@@ -43,6 +43,7 @@
 		const kb_len = Math.hypot(kb_f, kb_s)
 		const norm_f = kb_len > 1 ? kb_f / kb_len : kb_f
 		const norm_s = kb_len > 1 ? kb_s / kb_len : kb_s
+
 		return {
 			forward: norm_f * KEYBOARD_AXIS_FRACTION + input.joystick_move.y,
 			strafe: norm_s * KEYBOARD_AXIS_FRACTION + input.joystick_move.x,
@@ -53,6 +54,7 @@
 		const raw_x = pos_x + vel_x * delta
 		const raw_z = pos_z + vel_z * delta
 		const clamped = player_bounds.clamp_to_room(raw_x, raw_z)
+
 		pos_x = clamped.x
 		pos_z = clamped.z
 	}
@@ -91,10 +93,12 @@
 			strafe,
 			is_sprinting: input.is_sprinting,
 		})
+
 		if (result.look_consumed) {
 			input.apply_look_delta(result.delta_yaw, result.delta_pitch)
 			input.set_joystick_look(0, 0)
 		}
+
 		apply_movement(result.velocity.x, result.velocity.z, delta)
 		apply_jump_step(delta)
 		update_shake(delta)

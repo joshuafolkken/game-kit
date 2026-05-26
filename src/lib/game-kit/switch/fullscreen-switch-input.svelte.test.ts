@@ -27,6 +27,7 @@ describe('fullscreen_switch_input', () => {
 	it('does nothing when session is not started', () => {
 		const request_spy = vi.spyOn(fullscreen, 'request').mockResolvedValue()
 		const exit_spy = vi.spyOn(fullscreen, 'exit').mockResolvedValue()
+
 		fullscreen_switch_input.on_click()
 		expect(request_spy).not.toHaveBeenCalled()
 		expect(exit_spy).not.toHaveBeenCalled()
@@ -36,6 +37,7 @@ describe('fullscreen_switch_input', () => {
 		fullscreen_switch_input.set_container(null)
 		session.start_session()
 		const request_spy = vi.spyOn(fullscreen, 'request').mockResolvedValue()
+
 		fullscreen_switch_input.on_click()
 		expect(request_spy).not.toHaveBeenCalled()
 	})
@@ -43,6 +45,7 @@ describe('fullscreen_switch_input', () => {
 	it('requests fullscreen when inactive', () => {
 		session.start_session()
 		const request_spy = vi.spyOn(fullscreen, 'request').mockResolvedValue()
+
 		fullscreen_switch_input.on_click()
 		expect(request_spy).toHaveBeenCalledWith(container)
 	})
@@ -51,6 +54,7 @@ describe('fullscreen_switch_input', () => {
 		session.start_session()
 		vi.spyOn(fullscreen, 'is_active', 'get').mockReturnValue(true)
 		const exit_spy = vi.spyOn(fullscreen, 'exit').mockResolvedValue()
+
 		fullscreen_switch_input.on_click()
 		expect(exit_spy).toHaveBeenCalledTimes(1)
 	})
@@ -58,6 +62,7 @@ describe('fullscreen_switch_input', () => {
 	it('plays switch click sound when session is started and container is set', () => {
 		session.start_session()
 		const sound_spy = vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {})
+
 		vi.spyOn(fullscreen, 'request').mockResolvedValue()
 		fullscreen_switch_input.on_click()
 		expect(sound_spy).toHaveBeenCalledTimes(1)
@@ -65,6 +70,7 @@ describe('fullscreen_switch_input', () => {
 
 	it('does not play sound when session is not started', () => {
 		const spy = vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {})
+
 		fullscreen_switch_input.on_click()
 		expect(spy).not.toHaveBeenCalled()
 	})
@@ -73,6 +79,7 @@ describe('fullscreen_switch_input', () => {
 		fullscreen_switch_input.set_container(null)
 		session.start_session()
 		const spy = vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {})
+
 		fullscreen_switch_input.on_click()
 		expect(spy).not.toHaveBeenCalled()
 	})

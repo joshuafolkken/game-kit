@@ -4,6 +4,7 @@ declare global {
 	interface Element {
 		webkitRequestFullscreen?: () => Promise<void> | void
 	}
+
 	interface Document {
 		webkitFullscreenElement?: Element | null
 		webkitExitFullscreen?: () => Promise<void> | void
@@ -19,8 +20,10 @@ function get_native_fullscreen_element(): Element | null {
 async function call_native_request(el: HTMLElement): Promise<boolean> {
 	const fn = el.requestFullscreen ?? el.webkitRequestFullscreen
 	if (typeof fn !== 'function') return false
+
 	try {
 		await fn.call(el)
+
 		return true
 	} catch {
 		return false
@@ -30,6 +33,7 @@ async function call_native_request(el: HTMLElement): Promise<boolean> {
 async function call_native_exit(): Promise<void> {
 	const fn = document.exitFullscreen ?? document.webkitExitFullscreen
 	if (typeof fn !== 'function') return
+
 	try {
 		await fn.call(document)
 	} catch {
@@ -51,8 +55,10 @@ async function request_fullscreen(s: FullscreenState, el: HTMLElement): Promise<
 async function exit_fullscreen(s: FullscreenState): Promise<void> {
 	if (s.is_pseudo_fullscreen) {
 		s.is_pseudo_fullscreen = false
+
 		return
 	}
+
 	if (s.is_native_fullscreen) await call_native_exit()
 }
 
@@ -60,17 +66,21 @@ export function create_fullscreen() {
 	const s = $state<FullscreenState>({ is_pseudo_fullscreen: false, is_native_fullscreen: false })
 	const handler = (): void => update_native_flag(s)
 	let manager: ListenerManager | null = null
+
 	function setup_listeners(): () => void {
 		const m = (manager ??= create_listener_manager([
 			{ target: document, type: 'fullscreenchange', handler },
 			{ target: document, type: 'webkitfullscreenchange', handler },
 		]))
+
 		update_native_flag(s)
+
 		return m.setup((): void => {
 			s.is_native_fullscreen = false
 			s.is_pseudo_fullscreen = false
 		})
 	}
+
 	return {
 		get is_pseudo_fullscreen() {
 			return s.is_pseudo_fullscreen

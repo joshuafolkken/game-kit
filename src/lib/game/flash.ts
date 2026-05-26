@@ -69,6 +69,7 @@ async function flash_cascade(
 		game_audio.play_tone(color, FLASH_CASCADE_FWD_MS, game_state.is_alt)
 		await delay(FLASH_CASCADE_FWD_MS)
 	}
+
 	for (const color of [...colors].reverse()) {
 		if (t.flash_gen !== gen) return
 		s.flash_colors = [color]

@@ -23,6 +23,7 @@ const TEST_COLORS: SwitchColors = {
 describe('resolve_switch_colors', () => {
 	it('returns active values when is_active is true', () => {
 		const result = resolve_switch_colors(TEST_COLORS, true)
+
 		expect(result.current_color).toBe('#aaa')
 		expect(result.housing_color).toBe('#ccc')
 		expect(result.housing_emissive).toBe(0.4)
@@ -32,6 +33,7 @@ describe('resolve_switch_colors', () => {
 
 	it('returns inactive values when is_active is false', () => {
 		const result = resolve_switch_colors(TEST_COLORS, false)
+
 		expect(result.current_color).toBe('#bbb')
 		expect(result.housing_color).toBe('#ddd')
 		expect(result.housing_emissive).toBe(0.1)
@@ -51,6 +53,7 @@ describe('CYBER_SWITCH_COLORS', () => {
 
 	it('resolves correctly when active', () => {
 		const result = resolve_switch_colors(CYBER_SWITCH_COLORS, true)
+
 		expect(result.current_color).toBe('#ff00ff')
 		expect(result.housing_color).toBe('#120022')
 		expect(result.housing_emissive).toBe(0.4)
@@ -60,6 +63,7 @@ describe('CYBER_SWITCH_COLORS', () => {
 
 	it('resolves correctly when inactive', () => {
 		const result = resolve_switch_colors(CYBER_SWITCH_COLORS, false)
+
 		expect(result.current_color).toBe('#00aaff')
 		expect(result.housing_color).toBe('#001122')
 		expect(result.housing_emissive).toBe(0.15)
@@ -79,6 +83,7 @@ describe('FULLSCREEN_SWITCH_COLORS', () => {
 
 	it('resolves correctly when active', () => {
 		const result = resolve_switch_colors(FULLSCREEN_SWITCH_COLORS, true)
+
 		expect(result.current_color).toBe('#00ff88')
 		expect(result.housing_emissive).toBe(0.4)
 		expect(result.ring_emissive).toBe(4)
@@ -87,6 +92,7 @@ describe('FULLSCREEN_SWITCH_COLORS', () => {
 
 	it('resolves correctly when inactive', () => {
 		const result = resolve_switch_colors(FULLSCREEN_SWITCH_COLORS, false)
+
 		expect(result.current_color).toBe('#006644')
 		expect(result.housing_emissive).toBe(0.05)
 		expect(result.ring_emissive).toBe(0.3)
@@ -105,6 +111,7 @@ describe('FPS_SWITCH_COLORS', () => {
 
 	it('resolves correctly when active', () => {
 		const result = resolve_switch_colors(FPS_SWITCH_COLORS, true)
+
 		expect(result.current_color).toBe('#ffdd00')
 		expect(result.housing_emissive).toBe(0.4)
 		expect(result.ring_emissive).toBe(4)
@@ -113,6 +120,7 @@ describe('FPS_SWITCH_COLORS', () => {
 
 	it('resolves correctly when inactive', () => {
 		const result = resolve_switch_colors(FPS_SWITCH_COLORS, false)
+
 		expect(result.current_color).toBe('#665500')
 		expect(result.housing_emissive).toBe(0.05)
 		expect(result.ring_emissive).toBe(0.3)

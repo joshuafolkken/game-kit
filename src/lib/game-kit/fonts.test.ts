@@ -92,8 +92,10 @@ describe('fonts CRT-aware helpers — driven by crt.is_crt_enabled, not by calle
 
 	it('get_active_font tracks CRT state across toggles (no stale capture)', () => {
 		const initial = fonts.get_active_font()
+
 		crt.toggle()
 		const toggled = fonts.get_active_font()
+
 		expect(toggled).not.toBe(initial)
 	})
 })

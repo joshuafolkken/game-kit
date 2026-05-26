@@ -18,12 +18,14 @@ describe('create_switch_input', () => {
 
 	it('does not call action when session is not started', () => {
 		const sw = create_switch_input({ action })
+
 		sw.on_click()
 		expect(action).not.toHaveBeenCalled()
 	})
 
 	it('calls action once session has started', () => {
 		const sw = create_switch_input({ action })
+
 		session.start_session()
 		sw.on_click()
 		expect(action).toHaveBeenCalledTimes(1)
@@ -31,6 +33,7 @@ describe('create_switch_input', () => {
 
 	it('calls action on each click after session started', () => {
 		const sw = create_switch_input({ action })
+
 		session.start_session()
 		sw.on_click()
 		sw.on_click()
@@ -39,6 +42,7 @@ describe('create_switch_input', () => {
 
 	it('plays switch click sound when session is started', () => {
 		const sw = create_switch_input({ action })
+
 		session.start_session()
 		sw.on_click()
 		expect(switch_audio.play_switch_click).toHaveBeenCalledTimes(1)
@@ -46,12 +50,14 @@ describe('create_switch_input', () => {
 
 	it('does not play sound when session is not started', () => {
 		const sw = create_switch_input({ action })
+
 		sw.on_click()
 		expect(switch_audio.play_switch_click).not.toHaveBeenCalled()
 	})
 
 	it('does not call action when guard returns false', () => {
 		const sw = create_switch_input({ action, guard: () => false })
+
 		session.start_session()
 		sw.on_click()
 		expect(action).not.toHaveBeenCalled()
@@ -59,6 +65,7 @@ describe('create_switch_input', () => {
 
 	it('does not play sound when guard returns false', () => {
 		const sw = create_switch_input({ action, guard: () => false })
+
 		session.start_session()
 		sw.on_click()
 		expect(switch_audio.play_switch_click).not.toHaveBeenCalled()
@@ -66,6 +73,7 @@ describe('create_switch_input', () => {
 
 	it('calls action when guard returns true', () => {
 		const sw = create_switch_input({ action, guard: () => true })
+
 		session.start_session()
 		sw.on_click()
 		expect(action).toHaveBeenCalledTimes(1)
@@ -73,6 +81,7 @@ describe('create_switch_input', () => {
 
 	it('calls action when no guard is provided', () => {
 		const sw = create_switch_input({ action })
+
 		session.start_session()
 		sw.on_click()
 		expect(action).toHaveBeenCalledTimes(1)

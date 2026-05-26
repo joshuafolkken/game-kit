@@ -30,6 +30,7 @@ function compute_velocity_after_look(step_input: StepInput): StepResult {
 		is_sprinting: step_input.is_sprinting,
 	})
 	const look_consumed = step_input.joystick_look_x !== 0 || step_input.joystick_look_y !== 0
+
 	return { velocity, delta_yaw, delta_pitch, look_consumed }
 }
 

@@ -33,6 +33,7 @@ describe('ScoreDisplay', () => {
 		const { container } = render(ScoreDisplay, {
 			props: { score_data: make_score_data(), is_alt: false, position_z: -4.65, ...LABEL_PROPS },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -40,6 +41,7 @@ describe('ScoreDisplay', () => {
 		const { container } = render(ScoreDisplay, {
 			props: { score_data: make_score_data(), is_alt: true, position_z: -4.65, ...LABEL_PROPS },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -60,6 +62,7 @@ describe('ScoreDisplay', () => {
 				...LABEL_PROPS,
 			},
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -73,6 +76,7 @@ describe('ScoreDisplay', () => {
 				...LABEL_PROPS,
 			},
 		})
+
 		expect(container).toBeTruthy()
 	})
 })

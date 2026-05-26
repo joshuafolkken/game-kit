@@ -28,6 +28,7 @@ const BASE_PROPS = {
 describe('Switch', () => {
 	it('renders cyber icon without geometry override', () => {
 		const { container } = render(Switch, { props: BASE_PROPS })
+
 		expect(container).toBeTruthy()
 	})
 
@@ -35,6 +36,7 @@ describe('Switch', () => {
 		const { container } = render(Switch, {
 			props: { ...BASE_PROPS, icon_type: 'fullscreen' as const },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -42,6 +44,7 @@ describe('Switch', () => {
 		const { container } = render(Switch, {
 			props: { ...BASE_PROPS, icon_type: 'crt' as const },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -49,6 +52,7 @@ describe('Switch', () => {
 		const { container } = render(Switch, {
 			props: { ...BASE_PROPS, is_active: true },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -57,6 +61,7 @@ describe('Switch', () => {
 		const { container } = render(Switch, {
 			props: { ...BASE_PROPS, geometry },
 		})
+
 		expect(container).toBeTruthy()
 	})
 
@@ -95,6 +100,7 @@ describe('Switch', () => {
 			active_light_intensity: ACTIVE_LIGHT_INTENSITY,
 		}
 		const { container } = render(Switch, { props: { ...BASE_PROPS, geometry } })
+
 		expect(container).toBeTruthy()
 	})
 })

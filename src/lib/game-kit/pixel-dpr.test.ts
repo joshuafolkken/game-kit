@@ -20,6 +20,7 @@ describe('compute_pixel_dpr — SHORTER-based target with SHORTER-based floor', 
 		)
 		const shorter = Math.min(viewport_w, viewport_h)
 		const buffer_short = shorter * dpr
+
 		expect(buffer_short).toBeCloseTo(TARGET_SHORT, 6)
 	})
 
@@ -35,6 +36,7 @@ describe('compute_pixel_dpr — SHORTER-based target with SHORTER-based floor', 
 			MAX_DPR,
 			FALLBACK,
 		)
+
 		expect(dpr).toBe(MAX_DPR)
 	})
 
@@ -50,8 +52,10 @@ describe('compute_pixel_dpr — SHORTER-based target with SHORTER-based floor', 
 			MAX_DPR,
 			FALLBACK,
 		)
+
 		expect(dpr).toBeGreaterThan(MAX_DPR)
 		const buffer_short = Math.min(viewport_w, viewport_h) * dpr
+
 		expect(buffer_short).toBeCloseTo(MIN_SHORT, 6)
 	})
 
@@ -64,9 +68,11 @@ describe('compute_pixel_dpr — SHORTER-based target with SHORTER-based floor', 
 			{ w: 200, h: 400 },
 			{ w: 80, h: 160 },
 		]
+
 		for (const { w, h } of cases) {
 			const dpr = compute_pixel_dpr(w, h, TARGET_SHORT, MIN_SHORT, MAX_DPR, FALLBACK)
 			const shorter_buffer = Math.min(w, h) * dpr
+
 			expect(shorter_buffer).toBeGreaterThanOrEqual(MIN_SHORT - 1e-9)
 		}
 	})
@@ -82,6 +88,7 @@ describe('compute_pixel_dpr — SHORTER-based target with SHORTER-based floor', 
 			MAX_DPR,
 			FALLBACK,
 		)
+
 		expect(dpr).toBeCloseTo(TARGET_SHORT / viewport_w, 10)
 	})
 

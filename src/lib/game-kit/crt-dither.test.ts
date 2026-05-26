@@ -29,6 +29,7 @@ describe('crt-dither constants', () => {
 
 	it('exposes COLOR_LEVELS = { r: 8, g: 8, b: 4 } (8×8×4 = 256 unique colors, VGA 3-3-2)', () => {
 		const VGA_332_TOTAL_COLORS = 256
+
 		expect(COLOR_LEVELS).toEqual({ r: 8, g: 8, b: 4 })
 		expect(COLOR_LEVELS.r * COLOR_LEVELS.g * COLOR_LEVELS.b).toBe(VGA_332_TOTAL_COLORS)
 	})
@@ -104,6 +105,7 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 	it('returns a smooth intermediate value at phase = period/4 (no hard step)', () => {
 		// Hard-step would return SCANLINE_DARK here; cosine (sharpness=1) returns mid-value.
 		const mid = SCANLINE_DARK + 0.5 * (1 - SCANLINE_DARK)
+
 		expect(
 			crt_dither.compute_scanline_factor(QUARTER_PERIOD, PERIOD, SCANLINE_DARK, 1),
 		).toBeCloseTo(mid, 6)
@@ -117,6 +119,7 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 			SCANLINE_DARK,
 			SCANLINE_SHARPNESS,
 		)
+
 		expect(sharpness_thin).toBeGreaterThan(sharpness_1)
 	})
 
@@ -132,6 +135,7 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 	it('always stays within [SCANLINE_DARK, 1.0] for all phases', () => {
 		for (let t = 0; t <= PERIOD; t += PERIOD / 20) {
 			const v = crt_dither.compute_scanline_factor(t, PERIOD, SCANLINE_DARK)
+
 			expect(v).toBeGreaterThanOrEqual(SCANLINE_DARK - 1e-10)
 			expect(v).toBeLessThanOrEqual(1 + 1e-10)
 		}
@@ -140,6 +144,7 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 	it('repeats every period units', () => {
 		for (let i = 0; i < 5; i++) {
 			const base = i * PERIOD
+
 			expect(crt_dither.compute_scanline_factor(base, PERIOD, SCANLINE_DARK)).toBeCloseTo(
 				SCANLINE_DARK,
 				10,
@@ -164,6 +169,7 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 describe('BAYER_MATRIX', () => {
 	it(`is a ${BAYER_SIZE}×${BAYER_SIZE} matrix`, () => {
 		expect(BAYER_MATRIX).toHaveLength(BAYER_SIZE)
+
 		for (const row of BAYER_MATRIX) {
 			expect(row).toHaveLength(BAYER_SIZE)
 		}
@@ -171,6 +177,7 @@ describe('BAYER_MATRIX', () => {
 
 	it(`contains every integer 0..${MAX_BAYER_VALUE} exactly once (proper Bayer ordering)`, () => {
 		const seen = new Set<number>()
+
 		for (const row of BAYER_MATRIX) {
 			for (const value of row) {
 				expect(Number.isInteger(value)).toBe(true)
@@ -179,6 +186,7 @@ describe('BAYER_MATRIX', () => {
 				seen.add(value)
 			}
 		}
+
 		expect(seen.size).toBe(SQUARED_BAYER_SIZE)
 	})
 })
@@ -194,6 +202,7 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 			for (let bi = 0; bi < SQUARED_BAYER_SIZE; bi++) {
 				const bayer = bi / SQUARED_BAYER_SIZE
 				const out = crt_dither.quantize_with_dither_2d(VERY_DARK, bayer, levels, BLACK_FLOOR)
+
 				expect(out).toBeGreaterThanOrEqual(BLACK_FLOOR)
 			}
 		}
@@ -204,6 +213,7 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 			for (let bi = 0; bi < SQUARED_BAYER_SIZE; bi++) {
 				const bayer = bi / SQUARED_BAYER_SIZE
 				const out = crt_dither.quantize_with_dither_2d(1, bayer, levels, BLACK_FLOOR)
+
 				expect(out).toBeLessThanOrEqual(1)
 			}
 		}
@@ -218,15 +228,18 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 			COLOR_LEVELS.r,
 			BLACK_FLOOR,
 		)
+
 		expect(low).not.toBe(high)
 	})
 
 	it('lands on one of N quantization steps for bright inputs (above the black floor)', () => {
 		const BRIGHT_INPUT = 0.7
+
 		for (const levels of [COLOR_LEVELS.r, COLOR_LEVELS.g, COLOR_LEVELS.b]) {
 			const out = crt_dither.quantize_with_dither_2d(BRIGHT_INPUT, BAYER_HIGH, levels, BLACK_FLOOR)
 			const step = 1 / (levels - 1)
 			const nearest_step = Math.round(out / step) * step
+
 			expect(Math.abs(out - nearest_step)).toBeLessThan(1e-6)
 		}
 	})
@@ -237,16 +250,21 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 		// fails this guard at the COLOR_LEVELS change point.
 		function distinct_outputs(levels: number): number {
 			const seen = new Set<number>()
+
 			for (let v = 0; v <= 100; v++) {
 				const channel = v / 100
 				const out = crt_dither.quantize_with_dither_2d(channel, BAYER_HIGH, levels, BLACK_FLOOR)
+
 				seen.add(Math.round(out * 1000))
 			}
+
 			return seen.size
 		}
+
 		const red = distinct_outputs(COLOR_LEVELS.r)
 		const green = distinct_outputs(COLOR_LEVELS.g)
 		const blue = distinct_outputs(COLOR_LEVELS.b)
+
 		expect(green).toBe(red)
 		expect(blue).toBeLessThan(red)
 	})
@@ -255,9 +273,11 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 describe('crt_dither.create_bayer_texture', () => {
 	it(`returns a DataTexture sized ${BAYER_SIZE}×${BAYER_SIZE} with non-zero data`, () => {
 		const tex = crt_dither.create_bayer_texture()
+
 		expect(tex.image.width).toBe(BAYER_SIZE)
 		expect(tex.image.height).toBe(BAYER_SIZE)
 		const data = tex.image.data as Float32Array
+
 		expect(data).toHaveLength(SQUARED_BAYER_SIZE)
 		expect(data.some((value) => value > 0)).toBe(true)
 		tex.dispose()
@@ -266,9 +286,11 @@ describe('crt_dither.create_bayer_texture', () => {
 	it(`stores normalized values in [0, 1) matching BAYER_MATRIX / ${SQUARED_BAYER_SIZE}`, () => {
 		const tex = crt_dither.create_bayer_texture()
 		const data = tex.image.data as Float32Array
+
 		BAYER_MATRIX.forEach((row, y) => {
 			row.forEach((source, x) => {
 				const expected = source / SQUARED_BAYER_SIZE
+
 				expect(data[y * BAYER_SIZE + x]).toBeCloseTo(expected, 6)
 			})
 		})
@@ -307,6 +329,7 @@ describe('DITHER shader sources', () => {
 		const fragment = DITHER_FRAGMENT_SHADER
 		const dither_offset_index = fragment.indexOf('vec3(threshold) * dither_step')
 		const quantize_index = fragment.indexOf('floor(color * u_color_levels)')
+
 		expect(dither_offset_index).toBeGreaterThan(-1)
 		expect(quantize_index).toBeGreaterThan(-1)
 		expect(dither_offset_index).toBeLessThan(quantize_index)
@@ -335,6 +358,7 @@ describe('UPSCALE shader source', () => {
 	it('samples all 4 axis-aligned neighbours for the dot-blend', () => {
 		// 1 center + 4 neighbours = at least 5 texture2D calls
 		const sample_count = (UPSCALE_FRAGMENT_SHADER.match(/texture2D\(\s*u_lo_tex/gu) ?? []).length
+
 		expect(sample_count).toBeGreaterThanOrEqual(5)
 	})
 
@@ -377,6 +401,7 @@ describe('SCANLINE shader source', () => {
 		expect(SCANLINE_FRAGMENT_SHADER).toContain('u_bleed')
 		// Two neighbor samples offset along the scanline axis
 		const samples = (SCANLINE_FRAGMENT_SHADER.match(/texture2D\(\s*tDiffuse/gu) ?? []).length
+
 		expect(samples).toBeGreaterThanOrEqual(3)
 		// Bleed attenuates with (1 - wave) so dark bands get max glow, bright bands get none
 		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/\(\s*1\.0\s*-\s*wave\s*\)/u)
@@ -397,6 +422,7 @@ describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
 	function get_uniform_vec2(pass: ShaderPass): Vector2 {
 		const slot = pass.uniforms['u_res']
 		if (!slot) throw new Error('u_res uniform missing on pass')
+
 		return slot.value as Vector2
 	}
 
@@ -407,12 +433,15 @@ describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
 			vertexShader: TRIVIAL_VERTEX_SHADER,
 			fragmentShader: TRIVIAL_FRAGMENT_SHADER,
 		})
+
 		expect(pass.uniforms['u_res']).not.toBe(local.u_res)
 		expect(get_uniform_vec2(pass)).not.toBe(local.u_res.value)
 		const NEW_WIDTH = 320
 		const NEW_HEIGHT = 240
+
 		local.u_res.value.set(NEW_WIDTH, NEW_HEIGHT)
 		const cloned = get_uniform_vec2(pass)
+
 		expect(cloned.x).toBe(1)
 		expect(cloned.y).toBe(1)
 	})
@@ -425,12 +454,15 @@ describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
 			fragmentShader: TRIVIAL_FRAGMENT_SHADER,
 		})
 		const pass = new ShaderPass(material)
+
 		expect(pass.uniforms['u_res']).toBe(local.u_res)
 		expect(get_uniform_vec2(pass)).toBe(local.u_res.value)
 		const NEW_WIDTH = 320
 		const NEW_HEIGHT = 240
+
 		local.u_res.value.set(NEW_WIDTH, NEW_HEIGHT)
 		const live = get_uniform_vec2(pass)
+
 		expect(live.x).toBe(NEW_WIDTH)
 		expect(live.y).toBe(NEW_HEIGHT)
 	})

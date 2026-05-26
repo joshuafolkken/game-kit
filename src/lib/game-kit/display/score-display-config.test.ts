@@ -83,6 +83,7 @@ describe('layout geometry', () => {
 		const tilted_half_height = (PANEL_H / HALF_DIVISOR) * Math.cos(PANEL_TILT_X)
 		const scoreboard_bottom_y = DISPLAY_Y - tilted_half_height
 		const edge_gap = scoreboard_bottom_y - board_top_y
+
 		expect(edge_gap).toBeGreaterThan(0)
 		expect(Math.abs(edge_gap - EXPECTED_EDGE_GAP)).toBeLessThan(EDGE_GAP_TOLERANCE)
 	})
@@ -232,6 +233,7 @@ describe('ANIM_DURATION_MS', () => {
 	it('ends at the victory flash finale start (count-up stops when the 4 lamps light up)', () => {
 		const burst_total = FLASH_BURST_CYCLES * (FLASH_BURST_ON_MS + FLASH_BURST_OFF_MS)
 		const cascade_total = BUTTON_COUNT * (FLASH_CASCADE_FWD_MS + FLASH_CASCADE_REV_MS)
+
 		expect(ANIM_DURATION_MS).toBe(burst_total + cascade_total)
 	})
 })

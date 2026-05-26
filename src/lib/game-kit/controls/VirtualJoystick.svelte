@@ -37,6 +37,7 @@
 		for (const t of list) {
 			if (t.identifier === id) return t
 		}
+
 		return undefined
 	}
 
@@ -83,6 +84,7 @@
 	function apply_dead_zone(raw: number): number {
 		const abs = Math.abs(raw)
 		if (abs < MOVE_DEAD_ZONE) return 0
+
 		return Math.sign(raw) * clamp((abs - MOVE_DEAD_ZONE) / (MOVE_MAX_DIST - MOVE_DEAD_ZONE), 0, 1)
 	}
 
@@ -90,6 +92,7 @@
 		if (Math.hypot(t.clientX - move_start_x, t.clientY - move_start_y) > TAP_DRAG_THRESHOLD) {
 			move_did_drag = true
 		}
+
 		input.set_joystick_move(
 			apply_dead_zone(t.clientX - move_start_x),
 			apply_dead_zone(move_start_y - t.clientY),
@@ -100,9 +103,11 @@
 		if (Math.hypot(t.clientX - look_start_x, t.clientY - look_start_y) > TAP_DRAG_THRESHOLD) {
 			look_did_drag = true
 		}
+
 		const sensitivity = look_is_first_move
 			? TOUCH_LOOK_SENSITIVITY * FIRST_MOVE_SENSITIVITY_FRACTION
 			: TOUCH_LOOK_SENSITIVITY
+
 		look_is_first_move = false
 		input.apply_look_delta(
 			(t.clientX - look_last_x) * sensitivity,
@@ -117,6 +122,7 @@
 			const t = find_touch(e.changedTouches, move_touch_id)
 			if (t) apply_move_touch(t)
 		}
+
 		if (look_touch_id !== null) {
 			const t = find_touch(e.changedTouches, look_touch_id)
 			if (t) apply_look_touch(t)
@@ -157,6 +163,7 @@
 				move_start_y,
 			)
 		}
+
 		if (id === look_touch_id) {
 			look_touch_id = null
 			joystick_dispatch.dispatch_pointer_cancel(
@@ -191,6 +198,7 @@
 		document.addEventListener('touchmove', on_touch_move, { passive: false })
 		document.addEventListener('touchend', on_touch_end)
 		document.addEventListener('touchcancel', on_touch_cancel)
+
 		return () => {
 			move_zone.removeEventListener('touchstart', on_move_start)
 			look_zone.removeEventListener('touchstart', on_look_start)
