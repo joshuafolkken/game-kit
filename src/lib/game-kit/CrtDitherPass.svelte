@@ -23,7 +23,7 @@
 	} from '$lib/game-kit/crt-dither'
 	import { crt } from '$lib/game-kit/crt.svelte'
 	import { onDestroy } from 'svelte'
-	import { NearestFilter, ShaderMaterial, Texture, Vector2, Vector3 } from 'three'
+	import { NearestFilter, ShaderMaterial, Vector2, Vector3, type Texture } from 'three'
 	import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 	import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 	import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
@@ -32,7 +32,7 @@
 	interface Props {
 		lo_dpr: number
 	}
-	let { lo_dpr }: Props = $props()
+	const { lo_dpr }: Props = $props()
 
 	const ctx = useThrelte()
 

@@ -41,7 +41,7 @@ describe('TouchDiagram', () => {
 
 	it('does not render any visible label text', () => {
 		const { container } = render(TouchDiagram, { props: PROPS })
-		const texts = Array.from(container.querySelectorAll('text'))
+		const texts = [...container.querySelectorAll('text')]
 
 		expect(texts).toHaveLength(0)
 	})

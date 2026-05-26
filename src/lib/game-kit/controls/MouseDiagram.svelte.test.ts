@@ -13,7 +13,7 @@ describe('MouseDiagram', () => {
 
 	it('does not render visible action label text', () => {
 		const { container } = render(MouseDiagram, { props: PROPS })
-		const texts = Array.from(container.querySelectorAll('text'))
+		const texts = [...container.querySelectorAll('text')]
 		const action = texts.find((t) => t.textContent?.trim() === PROPS.label_action)
 
 		expect(action).toBeUndefined()
@@ -21,7 +21,7 @@ describe('MouseDiagram', () => {
 
 	it('does not render visible look label text', () => {
 		const { container } = render(MouseDiagram, { props: PROPS })
-		const texts = Array.from(container.querySelectorAll('text'))
+		const texts = [...container.querySelectorAll('text')]
 		const look = texts.find((t) => t.textContent?.trim() === PROPS.label_look)
 
 		expect(look).toBeUndefined()
@@ -29,7 +29,7 @@ describe('MouseDiagram', () => {
 
 	it('does not render scroll wheel', () => {
 		const { container } = render(MouseDiagram, { props: PROPS })
-		const rects = Array.from(container.querySelectorAll('rect'))
+		const rects = [...container.querySelectorAll('rect')]
 		const wheel = rects.find(
 			(r) => r.getAttribute('rx') === '5' && r.getAttribute('width') === '10',
 		)
@@ -51,7 +51,7 @@ describe('MouseDiagram', () => {
 
 	it('all stroke-widths are <= 1 to match keyboard visual stroke width', () => {
 		const { container } = render(MouseDiagram, { props: PROPS })
-		const stroked = Array.from(container.querySelectorAll('[stroke-width]'))
+		const stroked = [...container.querySelectorAll('[stroke-width]')]
 
 		expect(stroked.length).toBeGreaterThan(0)
 

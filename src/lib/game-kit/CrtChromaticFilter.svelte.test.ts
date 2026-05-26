@@ -45,8 +45,8 @@ describe('CrtChromaticFilter.svelte — SVG defs structure', () => {
 		expect(r_dx_str).toBeDefined()
 		expect(b_dx_str).toBeDefined()
 		if (r_dx_str === undefined || b_dx_str === undefined) return
-		const r_dx = parseFloat(r_dx_str)
-		const b_dx = parseFloat(b_dx_str)
+		const r_dx = Number.parseFloat(r_dx_str)
+		const b_dx = Number.parseFloat(b_dx_str)
 
 		expect(r_dx).not.toBe(0)
 		expect(r_dx).toBe(-b_dx)

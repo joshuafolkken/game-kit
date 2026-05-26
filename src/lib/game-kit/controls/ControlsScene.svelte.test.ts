@@ -8,20 +8,20 @@ const DEFAULT_RENDER_ORDER_VALUE = 0
 
 function find_mesh_open_tag(source: string, position_marker: string): string {
 	const start_index = source.indexOf(position_marker)
-	if (start_index < 0) throw new Error(`mesh with marker "${position_marker}" not found`)
+	if (start_index === -1) throw new Error(`mesh with marker "${position_marker}" not found`)
 	const block_start = source.lastIndexOf('<T.Mesh', start_index)
 	const block_end = source.indexOf('>', start_index)
-	if (block_start < 0 || block_end < 0) throw new Error(`mesh open tag not bounded`)
+	if (block_start === -1 || block_end === -1) throw new Error(`mesh open tag not bounded`)
 
 	return source.slice(block_start, block_end + 1)
 }
 
 function find_mesh_full_block(source: string, position_marker: string): string {
 	const start_index = source.indexOf(position_marker)
-	if (start_index < 0) throw new Error(`mesh with marker "${position_marker}" not found`)
+	if (start_index === -1) throw new Error(`mesh with marker "${position_marker}" not found`)
 	const block_start = source.lastIndexOf('<T.Mesh', start_index)
 	const block_end = source.indexOf('</T.Mesh>', start_index)
-	if (block_start < 0 || block_end < 0) throw new Error(`mesh full block not bounded`)
+	if (block_start === -1 || block_end === -1) throw new Error(`mesh full block not bounded`)
 
 	return source.slice(block_start, block_end)
 }
@@ -35,10 +35,10 @@ function find_mesh_blocks_by_render_order(
 
 	while (cursor < source.length) {
 		const order_index = source.indexOf(render_order_token, cursor)
-		if (order_index < 0) break
+		if (order_index === -1) break
 		const block_start = source.lastIndexOf('<T.Mesh', order_index)
 		const block_end = source.indexOf('</T.Mesh>', order_index)
-		if (block_start < 0 || block_end < 0) break
+		if (block_start === -1 || block_end === -1) break
 		blocks.push(source.slice(block_start, block_end))
 		cursor = block_end + 1
 	}
@@ -283,7 +283,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 
 	it('derives should_use_alt_font from !crt.is_crt_enabled — font swaps with CRT, not CYBER', () => {
 		expect(SOURCE).toMatch(
-			/let\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
+			/(?:let|const)\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
 		expect(SOURCE).toMatch(
 			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
@@ -340,7 +340,7 @@ describe('ControlsScene texture loading — leak-safe blob URLs and unhandled re
 })
 
 function extract_const_number(source: string, name: string): number {
-	const re = new RegExp(`const\\s+${name}\\s*=\\s*(-?\\d+(?:\\.\\d+)?)`, 'u')
+	const re = new RegExp(String.raw`const\s+${name}\s*=\s*(-?\d+(?:\.\d+)?)`, 'u')
 	const match = source.match(re)
 	if (!match) throw new Error(`constant ${name} not found in source`)
 

@@ -24,12 +24,12 @@
 		scroll_end_z: number
 	}
 
-	let { is_alt, credits, scroll_start_z, scroll_end_z }: Props = $props()
+	const { is_alt, credits, scroll_start_z, scroll_end_z }: Props = $props()
 
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
-	let should_use_alt_font = $derived(!crt.is_crt_enabled)
-	let current_font = $derived(fonts.get_font(should_use_alt_font))
-	let color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
+	const should_use_alt_font = $derived(!crt.is_crt_enabled)
+	const current_font = $derived(fonts.get_font(should_use_alt_font))
+	const color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
 	let scroll_z = $state(untrack(() => scroll_start_z))
 
 	function tick(delta: number): void {
