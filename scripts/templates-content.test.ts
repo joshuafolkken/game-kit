@@ -22,5 +22,9 @@ describe('templates/src/lib/game content shape (regression for #178)', () => {
 		const credits_source = readFileSync(path.join(TEMPLATES_GAME_DIR, 'credits.ts'), 'utf8')
 		expect(credits_source).toContain('game_config.GAME_NAME_UPPER')
 		expect(credits_source).toContain('game_config.GAME_NAME_DISPLAY')
+		// Reject any bare GAME_NAME / GAME_NAME_DISPLAY / GAME_NAME_UPPER token
+		// that is not qualified by `game_config.` — catches mixed usage that the
+		// positive assertions above cannot detect on their own.
+		expect(credits_source).not.toMatch(/(?<!game_config\.)\bGAME_NAME(_DISPLAY|_UPPER)?\b/)
 	})
 })
