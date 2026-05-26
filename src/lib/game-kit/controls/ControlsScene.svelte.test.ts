@@ -24,8 +24,11 @@ function find_mesh_full_block(source: string, position_marker: string): string {
 	return source.slice(block_start, block_end)
 }
 
-function find_mesh_blocks_by_render_order(source: string, render_order_token: string): string[] {
-	const blocks: string[] = []
+function find_mesh_blocks_by_render_order(
+	source: string,
+	render_order_token: string,
+): Array<string> {
+	const blocks: Array<string> = []
 	let cursor = 0
 	while (cursor < source.length) {
 		const order_index = source.indexOf(render_order_token, cursor)

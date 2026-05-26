@@ -57,7 +57,7 @@ export const COLOR_LEVELS = { r: 8, g: 8, b: 4 } as const
 // 4×4 ordered (Bayer) dither matrix. Values 0..15 — every cell unique. The coarser
 // 4×4 pattern (vs 8×8) gives a chunkier, more visible cross-hatch — closer to the
 // Mega Drive / PC-98 era texture-dithering look.
-export const BAYER_MATRIX: readonly (readonly number[])[] = [
+export const BAYER_MATRIX: ReadonlyArray<ReadonlyArray<number>> = [
 	[0, 8, 2, 10],
 	[12, 4, 14, 6],
 	[3, 11, 1, 9],
