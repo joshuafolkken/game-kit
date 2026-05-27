@@ -126,9 +126,9 @@ describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () =
 	})
 
 	it('center font sizes follow the intended hierarchy: ROUND_DIGIT > MULTILINE > FONT_SIZE', () => {
-		const fz = BOARD_SOURCE.match(/const\s+FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u)
-		const ml = BOARD_SOURCE.match(/const\s+MULTILINE_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u)
-		const rd = BOARD_SOURCE.match(/const\s+ROUND_DIGIT_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u)
+		const fz = /const\s+FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u.exec(BOARD_SOURCE)
+		const ml = /const\s+MULTILINE_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u.exec(BOARD_SOURCE)
+		const rd = /const\s+ROUND_DIGIT_FONT_SIZE\s*=\s*(-?\d+(?:\.\d+)?)/u.exec(BOARD_SOURCE)
 
 		expect(fz).not.toBeNull()
 		expect(ml).not.toBeNull()

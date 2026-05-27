@@ -18,7 +18,6 @@ function configure(cbs: BoardCallbacks): void {
 	board_callbacks = cbs
 }
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 function on_button_pointer_down(e: { nativeEvent: { button: number } }, color: ButtonColor): void {
 	if (!session.is_session_started) return
 	if (!pointer_button.is_left_click(e)) return

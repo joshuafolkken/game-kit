@@ -22,7 +22,6 @@ function make_fake_dom(): { dom: HTMLElement; dispatched: Array<string> } {
 	const dispatched: Array<string> = []
 	const dom = {
 		getBoundingClientRect: () => ({ left: RECT_LEFT, top: RECT_TOP }),
-		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		dispatchEvent: (e: FakeEvent) => {
 			dispatched.push(e.type)
 
