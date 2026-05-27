@@ -22,7 +22,6 @@ const LAYER_B_DISABLES = {
 	'import/exports-last': 'off',
 	'no-restricted-syntax': 'off',
 	'@typescript-eslint/no-magic-numbers': 'off',
-	'@typescript-eslint/no-confusing-void-expression': 'off',
 	'max-lines-per-function': 'off',
 	'@typescript-eslint/naming-convention': 'off',
 	'max-statements': 'off',
@@ -30,14 +29,12 @@ const LAYER_B_DISABLES = {
 	'@typescript-eslint/no-empty-function': 'off',
 	'sonarjs/no-duplicate-string': 'off',
 	'@typescript-eslint/explicit-module-boundary-types': 'off',
-	'@typescript-eslint/promise-function-async': 'off',
 	'sonarjs/cognitive-complexity': 'off',
 	'@typescript-eslint/restrict-template-expressions': 'off',
 	'@typescript-eslint/no-unnecessary-condition': 'off',
 	'no-bitwise': 'off',
 	complexity: 'off',
 	'@typescript-eslint/consistent-type-assertions': 'off',
-	'prefer-destructuring': 'off',
 	'no-duplicate-imports': 'off',
 	'max-params': 'off',
 	'sonarjs/pseudo-random': 'off',
@@ -45,7 +42,6 @@ const LAYER_B_DISABLES = {
 	'no-multi-assign': 'off',
 	'no-console': 'off',
 	'max-lines': 'off',
-	'unicorn/prefer-add-event-listener': 'off',
 	'sonarjs/no-use-of-empty-return-value': 'off',
 	'unicorn/consistent-function-scoping': 'off',
 	'@typescript-eslint/no-unsafe-call': 'off',
@@ -58,7 +54,6 @@ const LAYER_B_DISABLES = {
 	'default-case': 'off',
 	'unicorn/no-array-reverse': 'off',
 	'unicorn/prevent-abbreviations': 'off',
-	'import/no-default-export': 'off',
 }
 
 // `scripts/` and `templates/` are not in any tsconfig project here:

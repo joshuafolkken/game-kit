@@ -19,8 +19,8 @@ test('fullscreen is requested on touch-primary devices when start hint is clicke
 	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
 
 	const fullscreen_target = await page.evaluate(
-		() =>
-			new Promise<string>((resolve) => {
+		async () =>
+			await new Promise<string>((resolve) => {
 				const scene = document.querySelector<HTMLElement>('[data-testid="game-scene"]')
 
 				if (!scene) {
@@ -29,6 +29,7 @@ test('fullscreen is requested on touch-primary devices when start hint is clicke
 					return
 				}
 
+				// eslint-disable-next-line @typescript-eslint/promise-function-async -- test mock simulates a Promise<void>-returning DOM API
 				scene.requestFullscreen = function (): Promise<void> {
 					resolve('game-scene')
 
@@ -50,8 +51,8 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
 
 	const was_called = await page.evaluate(
-		(wait_ms) =>
-			new Promise<boolean>((resolve) => {
+		async (wait_ms) =>
+			await new Promise<boolean>((resolve) => {
 				const scene = document.querySelector<HTMLElement>('[data-testid="game-scene"]')
 
 				if (!scene) {
@@ -62,6 +63,7 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 
 				let called = false
 
+				// eslint-disable-next-line @typescript-eslint/promise-function-async -- test mock simulates a Promise<void>-returning DOM API
 				scene.requestFullscreen = function (): Promise<void> {
 					called = true
 
@@ -69,7 +71,9 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 				}
 
 				scene.click()
-				setTimeout(() => resolve(called), wait_ms)
+				setTimeout(() => {
+					resolve(called)
+				}, wait_ms)
 			}),
 		FULLSCREEN_NOT_CALLED_WAIT_MS,
 	)

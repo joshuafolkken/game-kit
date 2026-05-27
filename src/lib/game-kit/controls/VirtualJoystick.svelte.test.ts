@@ -115,6 +115,7 @@ describe('VirtualJoystick', () => {
 
 describe('VirtualJoystick touch handlers', () => {
 	beforeEach(() => {
+		// eslint-disable-next-line unicorn/prefer-add-event-listener -- direct property assignment is the standard pattern for stubbing a touch-detection sentinel
 		;(globalThis as typeof globalThis & { ontouchstart: null }).ontouchstart = null
 	})
 

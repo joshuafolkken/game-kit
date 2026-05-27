@@ -141,10 +141,15 @@
 	{#each BUTTON_CONFIGS as button (button.color)}
 		<T.Group rotation.z={button.rotation}>
 			<T.Mesh
-				onpointerdown={(e: { nativeEvent: { button: number } }) =>
-					game_board_input.on_button_pointer_down(e, button.color)}
-				onpointerup={() => game_board_input.on_button_release()}
-				onpointerleave={() => game_board_input.on_button_release()}
+				onpointerdown={(e: { nativeEvent: { button: number } }) => {
+					game_board_input.on_button_pointer_down(e, button.color)
+				}}
+				onpointerup={() => {
+					game_board_input.on_button_release()
+				}}
+				onpointerleave={() => {
+					game_board_input.on_button_release()
+				}}
 			>
 				<T.RingGeometry
 					args={[INNER_RADIUS, OUTER_RADIUS, THETA_SEGMENTS, 1, THETA_START, THETA_LENGTH]}
@@ -161,7 +166,11 @@
 		</T.Group>
 	{/each}
 
-	<T.Mesh onclick={() => game_board_input.on_center_click()}>
+	<T.Mesh
+		onclick={() => {
+			game_board_input.on_center_click()
+		}}
+	>
 		<T.CircleGeometry args={[CENTER_RADIUS, CIRCLE_SEGMENTS]} />
 		<T.MeshStandardMaterial color="#222222" roughness={0.5} />
 	</T.Mesh>

@@ -67,7 +67,11 @@ async function exit_fullscreen(s: FullscreenState): Promise<void> {
 
 export function create_fullscreen() {
 	const s = $state<FullscreenState>({ is_pseudo_fullscreen: false, is_native_fullscreen: false })
-	const handler = (): void => update_native_flag(s)
+
+	const handler = (): void => {
+		update_native_flag(s)
+	}
+
 	let manager: ListenerManager | null = null
 
 	function setup_listeners(): () => void {
@@ -94,7 +98,9 @@ export function create_fullscreen() {
 		get is_active() {
 			return s.is_native_fullscreen || s.is_pseudo_fullscreen
 		},
+		// eslint-disable-next-line @typescript-eslint/promise-function-async -- thin pass-through; async wrapper would add a needless microtask
 		request: (element: HTMLElement): Promise<void> => request_fullscreen(s, element),
+		// eslint-disable-next-line @typescript-eslint/promise-function-async -- thin pass-through; async wrapper would add a needless microtask
 		exit: (): Promise<void> => exit_fullscreen(s),
 		setup_listeners,
 	}

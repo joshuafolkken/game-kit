@@ -16,7 +16,7 @@ interface JumpResult {
 }
 
 function step_jump(jump_input: JumpInput): JumpResult {
-	let vel_y = jump_input.vel_y
+	let { vel_y } = jump_input
 	let jump_consumed = false
 
 	if (jump_input.is_jump_requested) {
