@@ -32,8 +32,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'sonarjs/no-duplicate-string': 'off',
 	// TODO #188 follow-up: align identifier names with snake_case / boolean prefix rules
 	'@typescript-eslint/naming-convention': 'off',
-	// TODO #188 follow-up: configure import/extensions allowList for Three.js .js deep imports + package.json + SvelteKit hooks.server (rule auto-fix is no-op; needs allowList in rule config — deferred for human review)
-	'import/extensions': 'off',
 	// TODO #188 follow-up: rename files to PascalCase for Svelte components / `.svelte.ts`
 	'unicorn/filename-case': 'off',
 	// TODO #188 follow-up: add explicit return types to exported functions
@@ -131,8 +129,29 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 // templates so they can be linted from this repo).
 const PR1_TEMPORARY_FILE_IGNORES = ['scripts/**', 'templates/**']
 
+// Explicit per-extension overrides for `import/extensions` (PR-10 of #188).
+// The base rule mode is `'never'` (drop extensions) but these legitimate cases
+// require / benefit from keeping the extension visible:
+// - `.js` — Three.js deep imports (`three/examples/jsm/postprocessing/*.js`)
+//   require the explicit `.js` per the package's exports map
+// - `.json` — JSON imports (e.g. `../package.json`) need the extension so the
+//   module resolver classifies them as JSON, not TypeScript
+// - `.opus` — Vite resolves asset URLs by extension; dropping it breaks the
+//   bundler's import-to-URL transformation
+const IMPORT_EXTENSIONS_OVERRIDES = {
+	'import/extensions': [
+		'error',
+		'never',
+		{ js: 'always', json: 'always', opus: 'always', svelte: 'always' },
+	],
+}
+
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
 	svelte_config: svelteConfig,
-}).concat({ ignores: PR1_TEMPORARY_FILE_IGNORES }, { rules: PR1_TEMPORARY_RULE_DISABLES })
+}).concat(
+	{ ignores: PR1_TEMPORARY_FILE_IGNORES },
+	{ rules: PR1_TEMPORARY_RULE_DISABLES },
+	{ rules: IMPORT_EXTENSIONS_OVERRIDES },
+)
