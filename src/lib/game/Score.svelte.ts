@@ -30,6 +30,7 @@ interface RoundData {
 }
 
 export function compute_check(value: number, round: number): number {
+	// eslint-disable-next-line no-bitwise -- score-tamper-check hash; bitwise XOR and unsigned-shift are intentional
 	return (Math.imul(value + 1, CHECK_SEED) ^ Math.imul(round + 1, CHECK_SEED >>> 1)) >>> 0
 }
 
