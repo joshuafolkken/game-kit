@@ -49,7 +49,9 @@
 
 	function on_move_start(e: TouchEvent): void {
 		if (move_touch_id !== null) return
-		const [t] = e.changedTouches
+		// `e.changedTouches.item(0)` not destructuring: TouchList is not reliably
+		// iterable on iOS Safari (no guaranteed [Symbol.iterator]). CodeRabbit #204.
+		const t = e.changedTouches.item(0)
 		if (!t) return
 		move_touch_id = t.identifier
 		move_start_x = t.clientX
@@ -66,7 +68,8 @@
 	function on_look_start(e: TouchEvent): void {
 		if (look_touch_id !== null) return
 		if (e.target instanceof HTMLButtonElement) return
-		const [t] = e.changedTouches
+		// `e.changedTouches.item(0)` not destructuring (TouchList is not reliably iterable on iOS Safari). CodeRabbit #204.
+		const t = e.changedTouches.item(0)
 		if (!t) return
 		look_touch_id = t.identifier
 		look_last_x = t.clientX
