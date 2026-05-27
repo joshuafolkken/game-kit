@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.84.0",
+	"version": "0.85.0",
 	"keywords": [
 		"svelte"
 	],
@@ -54,8 +54,8 @@
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",
-		"@threlte/core": "^8.5.15",
-		"@threlte/extras": "^9.20.0",
+		"@threlte/core": "^8.5.16",
+		"@threlte/extras": "^9.20.1",
 		"@types/node": "^25.9.1",
 		"@types/three": "^0.184.1",
 		"@vite-pwa/sveltekit": "^1.1.0",
@@ -79,7 +79,7 @@
 		"tailwindcss": "^4.3.0",
 		"three": "^0.184.0",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.59.4",
+		"typescript-eslint": "^8.60.0",
 		"vite": "^8.0.14",
 		"vite-plugin-pwa": "^1.3.0",
 		"vitest": "^4.1.7",

@@ -42,8 +42,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'@typescript-eslint/explicit-function-return-type': 'off',
 	// TODO #188 follow-up: simplify unnecessary nullish / boolean conditions
 	'@typescript-eslint/no-unnecessary-condition': 'off',
-	// TODO #188 follow-up: initialize all declared variables
-	'init-declarations': 'off',
 	// TODO #188 follow-up: tighten template-literal expression types
 	'@typescript-eslint/restrict-template-expressions': 'off',
 	// TODO #188 follow-up: add explicit return types at module boundaries

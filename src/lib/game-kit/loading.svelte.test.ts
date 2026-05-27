@@ -29,6 +29,7 @@ describe('OBSERVER_GLOBAL_KEY', () => {
 })
 
 describe('loading', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let observer_disconnect: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
