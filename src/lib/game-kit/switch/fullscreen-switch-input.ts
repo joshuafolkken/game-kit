@@ -3,8 +3,8 @@ import { create_switch_input } from '$lib/game-kit/switch/switch-input'
 
 let container: HTMLElement | null = null
 
-function set_container(el: HTMLElement | null): void {
-	container = el
+function set_container(element: HTMLElement | null): void {
+	container = element
 }
 
 const { on_click } = create_switch_input({

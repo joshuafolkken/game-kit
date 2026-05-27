@@ -7,10 +7,10 @@ const { version } = JSON.parse(
 	readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 ) as { version: string }
 
-type ResolveFn = (event: RequestEvent, opts?: ResolveOptions) => Promise<Response>
+type ResolveFunction = (event: RequestEvent, options?: ResolveOptions) => Promise<Response>
 
-function make_resolve(): ResolveFn {
-	return vi.fn<ResolveFn>().mockResolvedValue(new Response(null, { status: 200 }))
+function make_resolve(): ResolveFunction {
+	return vi.fn<ResolveFunction>().mockResolvedValue(new Response(null, { status: 200 }))
 }
 
 describe('inject_game_name', () => {
@@ -100,8 +100,8 @@ describe('handle', () => {
 	it('still injects app version via transformPageChunk', async () => {
 		// eslint-disable-next-line init-declarations -- assigned inside `handle` mock by transformPageChunk capture
 		let captured_transform: ResolveOptions['transformPageChunk'] | undefined
-		const resolve = vi.fn<ResolveFn>().mockImplementation((_event, opts) => {
-			captured_transform = opts?.transformPageChunk
+		const resolve = vi.fn<ResolveFunction>().mockImplementation((_event, options) => {
+			captured_transform = options?.transformPageChunk
 
 			return Promise.resolve(new Response(null, { status: 200 }))
 		})

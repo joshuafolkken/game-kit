@@ -21,8 +21,8 @@
 	loading.set_step('initializing')
 
 	$effect(() => {
-		const el = document.querySelector(`#${LOADING_STATUS_ID}`)
-		if (el) el.textContent = loading.status_text
+		const element = document.querySelector(`#${LOADING_STATUS_ID}`)
+		if (element) element.textContent = loading.status_text
 	})
 
 	$effect(() => {

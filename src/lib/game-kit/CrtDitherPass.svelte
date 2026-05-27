@@ -34,18 +34,18 @@
 	}
 	const { lo_dpr }: Props = $props()
 
-	const ctx = useThrelte()
+	const context = useThrelte()
 
 	// Take over the render loop so the scene is composited through our two-stage
 	// CRT pipeline instead of Threlte's default direct-to-canvas render.
-	ctx.autoRender.set(false)
+	context.autoRender.set(false)
 
 	// ── Stage 1: low-resolution composer ─────────────────────────────────────────
 	// Renders the 3D scene + OutputPass + Bayer dither at `lo_dpr` (e.g. 0.3×).
 	// This produces the chunky "dot art" pixel grid at ~256px short-edge resolution.
 	// NearestFilter keeps the dithered dots crisp when the upscale pass samples them.
 	const bayer_texture = crt_dither.create_bayer_texture()
-	const lo_composer = new EffectComposer(ctx.renderer)
+	const lo_composer = new EffectComposer(context.renderer)
 	lo_composer.renderTarget1.texture.minFilter = NearestFilter
 	lo_composer.renderTarget1.texture.magFilter = NearestFilter
 	lo_composer.renderTarget2.texture.minFilter = NearestFilter
@@ -54,7 +54,7 @@
 	// its output lives in lo_composer.readBuffer for the hi-composer's upscale pass.
 	lo_composer.renderToScreen = false
 
-	const render_pass = new RenderPass(ctx.scene, ctx.camera.current)
+	const render_pass = new RenderPass(context.scene, context.camera.current)
 
 	// See existing file comment on why we use ShaderMaterial + ShaderPass instead of
 	// a plain {uniforms,...} object — keeps u_resolution references live across resizes.
@@ -132,34 +132,34 @@
 	})
 	const barrel_pass = new ShaderPass(barrel_material)
 
-	const hi_composer = new EffectComposer(ctx.renderer)
+	const hi_composer = new EffectComposer(context.renderer)
 	hi_composer.addPass(upscale_pass)
 	hi_composer.addPass(scanline_pass)
 	hi_composer.addPass(barrel_pass)
 
 	$effect(() => {
-		render_pass.camera = ctx.camera.current
+		render_pass.camera = context.camera.current
 	})
 
 	const hi_drawing_buf = new Vector2()
 	useTask(
 		(delta) => {
 			if (!crt.is_crt_enabled) {
-				ctx.renderer.setPixelRatio(ctx.dpr.current)
-				ctx.renderer.setSize(ctx.size.current.width, ctx.size.current.height)
-				ctx.renderer.render(ctx.scene, ctx.camera.current)
+				context.renderer.setPixelRatio(context.dpr.current)
+				context.renderer.setSize(context.size.current.width, context.size.current.height)
+				context.renderer.render(context.scene, context.camera.current)
 
 				return
 			}
 
 			// Stage 1: render game + dither at low resolution.
-			lo_composer.setSize(ctx.size.current.width, ctx.size.current.height)
+			lo_composer.setSize(context.size.current.width, context.size.current.height)
 			lo_composer.setPixelRatio(lo_dpr)
 			// Clamp to at least 1 so neither dimension is 0 on the first frame
 			// or on very small viewports — prevents divide-by-zero in the portrait
 			// hi_lo_ratio and guards against (0,0) reaching u_lo_resolution in the shader.
-			const lo_w = Math.max(1, Math.floor(ctx.size.current.width * lo_dpr))
-			const lo_h = Math.max(1, Math.floor(ctx.size.current.height * lo_dpr))
+			const lo_w = Math.max(1, Math.floor(context.size.current.width * lo_dpr))
+			const lo_h = Math.max(1, Math.floor(context.size.current.height * lo_dpr))
 
 			dither_uniforms.u_resolution.value.set(lo_w, lo_h)
 			upscale_uniforms.u_lo_resolution.value.set(lo_w, lo_h)
@@ -170,9 +170,9 @@
 			upscale_uniforms.u_lo_tex.value = lo_composer.readBuffer.texture
 
 			// Stage 2: CRT effects at full canvas resolution.
-			hi_composer.setSize(ctx.size.current.width, ctx.size.current.height)
-			hi_composer.setPixelRatio(ctx.dpr.current)
-			ctx.renderer.getDrawingBufferSize(hi_drawing_buf)
+			hi_composer.setSize(context.size.current.width, context.size.current.height)
+			hi_composer.setPixelRatio(context.dpr.current)
+			context.renderer.getDrawingBufferSize(hi_drawing_buf)
 			scanline_uniforms.u_resolution.value.copy(hi_drawing_buf)
 			// Scale scanline period so one cycle spans one virtual lo-res dot row.
 			const is_portrait = hi_drawing_buf.x < hi_drawing_buf.y
@@ -197,11 +197,11 @@
 				hi_drawing_buf.y > 0 ? hi_drawing_buf.x / hi_drawing_buf.y : 1
 			hi_composer.render(delta)
 		},
-		{ stage: ctx.renderStage, autoInvalidate: false },
+		{ stage: context.renderStage, autoInvalidate: false },
 	)
 
 	onDestroy(() => {
-		ctx.autoRender.set(true)
+		context.autoRender.set(true)
 		lo_composer.dispose()
 		hi_composer.dispose()
 		bayer_texture.dispose()

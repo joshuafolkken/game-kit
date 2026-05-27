@@ -12,8 +12,6 @@ import svelteConfig from './svelte.config.js'
 const PR1_TEMPORARY_RULE_DISABLES = {
 	// TODO #188 follow-up: rename short identifiers
 	'id-length': 'off',
-	// TODO #188 follow-up: rename abbreviated identifiers
-	'unicorn/prevent-abbreviations': 'off',
 	// TODO #188 follow-up: replace `null` with `undefined` (Three.js uniforms / DOM contracts need per-case review; deferred until reviewer is awake)
 	'unicorn/no-null': 'off',
 	// TODO #188 follow-up: split oversize functions

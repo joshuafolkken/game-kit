@@ -93,12 +93,12 @@
 		)
 	}
 
-	function btn_lit(btn: ButtonConfig): string {
-		return is_alt ? btn.cyber_lit_color : btn.lit_color
+	function button_lit(button: ButtonConfig): string {
+		return is_alt ? button.cyber_lit_color : button.lit_color
 	}
 
-	function btn_dim(btn: ButtonConfig): string {
-		return is_alt ? btn.cyber_dim_color : btn.dim_color
+	function button_dim(button: ButtonConfig): string {
+		return is_alt ? button.cyber_dim_color : button.dim_color
 	}
 
 	function get_center_text(): string {
@@ -138,20 +138,21 @@
 		<T.MeshStandardMaterial color="#111111" roughness={0.8} />
 	</T.Mesh>
 
-	{#each BUTTON_CONFIGS as btn (btn.color)}
-		<T.Group rotation.z={btn.rotation}>
+	{#each BUTTON_CONFIGS as button (button.color)}
+		<T.Group rotation.z={button.rotation}>
 			<T.Mesh
-				onpointerdown={(e: { nativeEvent: { button: number } }) =>
-					game_board_input.on_button_pointer_down(e, btn.color)}
+				onpointerdown={// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
+				(e: { nativeEvent: { button: number } }) =>
+					game_board_input.on_button_pointer_down(e, button.color)}
 				onpointerup={() => game_board_input.on_button_release()}
 				onpointerleave={() => game_board_input.on_button_release()}
 			>
 				<T.RingGeometry
 					args={[INNER_RADIUS, OUTER_RADIUS, THETA_SEGMENTS, 1, THETA_START, THETA_LENGTH]}
 				/>
-				{@const lit = btn_lit(btn)}
-				{@const dim = btn_dim(btn)}
-				{@const active = is_lit(btn.color)}
+				{@const lit = button_lit(button)}
+				{@const dim = button_dim(button)}
+				{@const active = is_lit(button.color)}
 				<T.MeshStandardMaterial
 					color={active ? lit : dim}
 					emissive={active ? lit : '#000000'}

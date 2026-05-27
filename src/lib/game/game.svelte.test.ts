@@ -29,9 +29,9 @@ function wrong_color(color: ButtonColor): ButtonColor {
 	return ALL_COLORS.find((c) => c !== color) ?? 'red'
 }
 
-function seq_at(i: number): ButtonColor {
-	const color = game.sequence[i]
-	if (!color) throw new Error(`sequence index ${String(i)} out of range`)
+function seq_at(index: number): ButtonColor {
+	const color = game.sequence[index]
+	if (!color) throw new Error(`sequence index ${String(index)} out of range`)
 
 	return color
 }
@@ -491,7 +491,7 @@ describe('create_game isolation', () => {
 
 		c.start()
 
-		for (let i = 0; i < 20; i++) {
+		for (let index = 0; index < 20; index++) {
 			c.reset()
 			c.start()
 		}

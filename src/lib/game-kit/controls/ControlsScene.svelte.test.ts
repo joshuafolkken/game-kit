@@ -312,27 +312,27 @@ describe('ControlsScene viewport reactivity — sizes update on window resize', 
 
 describe('ControlsScene texture loading — leak-safe blob URLs and unhandled rejections', () => {
 	it('svg_to_texture revokes the object URL in a finally block (no leak on failure)', () => {
-		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
+		const function_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
 
-		expect(fn_match).not.toBeNull()
-		const body = fn_match?.[0] ?? ''
+		expect(function_match).not.toBeNull()
+		const body = function_match?.[0] ?? ''
 
 		expect(body).toMatch(/\}\s*finally\s*\{[\s\S]*URL\.revokeObjectURL\(url\)[\s\S]*\}/u)
 	})
 
 	it('svg_to_texture does not call URL.revokeObjectURL outside the finally block', () => {
-		const fn_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
-		const body = fn_match?.[0] ?? ''
+		const function_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
+		const body = function_match?.[0] ?? ''
 		const revoke_count = (body.match(/URL\.revokeObjectURL\(/gu) ?? []).length
 
 		expect(revoke_count).toBe(1)
 	})
 
 	it('load_textures catches Promise.all rejection to avoid unhandled rejection', () => {
-		const fn_match = SOURCE.match(/async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/u)
+		const function_match = SOURCE.match(/async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/u)
 
-		expect(fn_match).not.toBeNull()
-		const body = fn_match?.[0] ?? ''
+		expect(function_match).not.toBeNull()
+		const body = function_match?.[0] ?? ''
 
 		expect(body).toMatch(/try\s*\{[\s\S]*await Promise\.all/u)
 		expect(body).toMatch(/\}\s*catch\s*\([^)]*\)\s*\{/u)

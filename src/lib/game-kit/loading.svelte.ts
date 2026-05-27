@@ -19,7 +19,7 @@ interface LoadingState<T extends string> {
 	progress_value: number
 }
 
-interface LoadingRefs {
+interface LoadingReferences {
 	hide_timer_id: ReturnType<typeof setTimeout> | null
 }
 
@@ -42,26 +42,29 @@ function set_step_impl<T extends string>(
 	s.status_text = messages[step] ?? ''
 }
 
-function mark_ready_impl<T extends string>(s: LoadingState<T>, refs: LoadingRefs): void {
-	if (refs.hide_timer_id !== null) return
+function mark_ready_impl<T extends string>(
+	s: LoadingState<T>,
+	references: LoadingReferences,
+): void {
+	if (references.hide_timer_id !== null) return
 	disconnect_observer()
 	s.progress = READY_PROGRESS
 	s.progress_value = READY_PROGRESS_VALUE
-	refs.hide_timer_id = setTimeout(function on_min_display_elapsed(): void {
+	references.hide_timer_id = setTimeout(function on_min_display_elapsed(): void {
 		s.is_visible = false
-		refs.hide_timer_id = null
+		references.hide_timer_id = null
 	}, MIN_DISPLAY_MS)
 }
 
 function reset_impl<T extends string>(
 	s: LoadingState<T>,
-	refs: LoadingRefs,
+	references: LoadingReferences,
 	messages: Partial<Record<T, string>>,
 	initial_step: T,
 ): void {
-	if (refs.hide_timer_id !== null) {
-		clearTimeout(refs.hide_timer_id)
-		refs.hide_timer_id = null
+	if (references.hide_timer_id !== null) {
+		clearTimeout(references.hide_timer_id)
+		references.hide_timer_id = null
 	}
 
 	disconnect_observer()
@@ -82,7 +85,7 @@ export function create_loading<T extends string>(initial_step: T) {
 		progress: INITIAL_PROGRESS,
 		progress_value: 0,
 	})
-	const refs: LoadingRefs = { hide_timer_id: null }
+	const references: LoadingReferences = { hide_timer_id: null }
 
 	return {
 		get is_visible() {
@@ -104,8 +107,8 @@ export function create_loading<T extends string>(initial_step: T) {
 			step_messages = messages
 		},
 		set_step: (step: T): void => set_step_impl(s, step_messages, step),
-		mark_ready: (): void => mark_ready_impl(s, refs),
-		reset: (): void => reset_impl(s, refs, step_messages, initial_step),
+		mark_ready: (): void => mark_ready_impl(s, references),
+		reset: (): void => reset_impl(s, references, step_messages, initial_step),
 	}
 }
 

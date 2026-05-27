@@ -105,17 +105,17 @@ describe('score', () => {
 		})
 
 		it('updates high_score when current_score exceeds it', () => {
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 2)
-			expect(score.high_score).toBeGreaterThan(prev_high)
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 2)
+			expect(score.high_score).toBeGreaterThan(previous_high)
 			expect(score.high_score).toBe(score.current_score)
 		})
 
 		it('does not update high_score when current_score stays below it', () => {
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 2)
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 2)
 			const established = score.high_score
 
 			score.reset()
@@ -125,9 +125,9 @@ describe('score', () => {
 
 		it('sets is_new_high_score to true when current_score exceeds high_score', () => {
 			expect(score.is_new_high_score).toBe(false)
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 2)
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 2)
 			expect(score.is_new_high_score).toBe(true)
 		})
 	})
@@ -140,18 +140,18 @@ describe('score', () => {
 		})
 
 		it('resets is_new_high_score to false', () => {
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 2)
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 2)
 			expect(score.is_new_high_score).toBe(true)
 			score.reset()
 			expect(score.is_new_high_score).toBe(false)
 		})
 
 		it('preserves high_score across reset', () => {
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 2)
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 2)
 			const new_high = score.high_score
 
 			score.reset()
@@ -178,26 +178,26 @@ describe('score', () => {
 
 	describe('high_score_round', () => {
 		it('is updated to the round when a new high score is set', () => {
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 2)
-			expect(score.high_score_round).toBe(prev_high + 2)
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 2)
+			expect(score.high_score_round).toBe(previous_high + 2)
 		})
 
 		it('is preserved across reset', () => {
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 2)
-			const expected_round = prev_high + 2
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 2)
+			const expected_round = previous_high + 2
 
 			score.reset()
 			expect(score.high_score_round).toBe(expected_round)
 		})
 
 		it('is not updated when current score stays below high score', () => {
-			const prev_high = score.high_score
+			const previous_high = score.high_score
 
-			score.add_round_score(ELAPSED_0, SEQ_1, prev_high + 5)
+			score.add_round_score(ELAPSED_0, SEQ_1, previous_high + 5)
 			const saved_round = score.high_score_round
 
 			score.reset()

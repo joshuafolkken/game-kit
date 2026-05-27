@@ -87,7 +87,7 @@ const MOCK_MESSAGES = {
 
 const MOCK_SCORE_DISPLAY_Z = -4.65
 
-function make_props(game_board: ReturnType<typeof createRawSnippet>) {
+function make_properties(game_board: ReturnType<typeof createRawSnippet>) {
 	return {
 		game_board,
 		score_data: MOCK_SCORE_DATA,
@@ -103,7 +103,7 @@ function make_props(game_board: ReturnType<typeof createRawSnippet>) {
 describe('SceneObjects', () => {
 	it('renders without error with a game_board snippet', () => {
 		const game_board = createRawSnippet(() => ({ render: () => '<span></span>' }))
-		const { container } = render(SceneObjects, { props: make_props(game_board) })
+		const { container } = render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container).toBeTruthy()
 	})
@@ -112,14 +112,14 @@ describe('SceneObjects', () => {
 		const game_board = createRawSnippet(() => ({
 			render: () => '<span data-testid="board-slot"></span>',
 		}))
-		const { container } = render(SceneObjects, { props: make_props(game_board) })
+		const { container } = render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container.querySelector('[data-testid="board-slot"]')).toBeTruthy()
 	})
 
 	it('renders with default props without error', () => {
 		const game_board = createRawSnippet(() => ({ render: () => '<span></span>' }))
-		const { container } = render(SceneObjects, { props: make_props(game_board) })
+		const { container } = render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container).toBeTruthy()
 	})

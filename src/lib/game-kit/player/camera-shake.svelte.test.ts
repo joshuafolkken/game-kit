@@ -53,14 +53,14 @@ describe('camera_shake', () => {
 
 	it('step reduces intensity to zero after sustained time', () => {
 		camera_shake.trigger(STRONG)
-		for (let i = 0; i < 200; i++) camera_shake.step(DELTA)
+		for (let index = 0; index < 200; index++) camera_shake.step(DELTA)
 		expect(camera_shake.intensity).toBe(0)
 	})
 
 	it('sample_position_offset stays within ±MAX_POSITION_OFFSET when active', () => {
 		camera_shake.trigger(STRONG)
 
-		for (let i = 0; i < 100; i++) {
+		for (let index = 0; index < 100; index++) {
 			const v = camera_shake.sample_position_offset()
 
 			expect(Math.abs(v)).toBeLessThanOrEqual(MAX_POSITION_OFFSET + Number.EPSILON)
@@ -70,7 +70,7 @@ describe('camera_shake', () => {
 	it('sample_rotation_offset stays within ±MAX_ROTATION_OFFSET when active', () => {
 		camera_shake.trigger(STRONG)
 
-		for (let i = 0; i < 100; i++) {
+		for (let index = 0; index < 100; index++) {
 			const v = camera_shake.sample_rotation_offset()
 
 			expect(Math.abs(v)).toBeLessThanOrEqual(MAX_ROTATION_OFFSET + Number.EPSILON)

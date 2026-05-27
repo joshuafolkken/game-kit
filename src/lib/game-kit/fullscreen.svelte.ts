@@ -20,12 +20,12 @@ function get_native_fullscreen_element(): Element | null {
 	return document.fullscreenElement ?? document.webkitFullscreenElement ?? null
 }
 
-async function call_native_request(el: HTMLElement): Promise<boolean> {
-	const fn = el.requestFullscreen ?? el.webkitRequestFullscreen
-	if (typeof fn !== 'function') return false
+async function call_native_request(element: HTMLElement): Promise<boolean> {
+	const function_ = element.requestFullscreen ?? element.webkitRequestFullscreen
+	if (typeof function_ !== 'function') return false
 
 	try {
-		await fn.call(el)
+		await function_.call(element)
 
 		return true
 	} catch {
@@ -34,11 +34,11 @@ async function call_native_request(el: HTMLElement): Promise<boolean> {
 }
 
 async function call_native_exit(): Promise<void> {
-	const fn = document.exitFullscreen ?? document.webkitExitFullscreen
-	if (typeof fn !== 'function') return
+	const function_ = document.exitFullscreen ?? document.webkitExitFullscreen
+	if (typeof function_ !== 'function') return
 
 	try {
-		await fn.call(document)
+		await function_.call(document)
 	} catch {
 		/* ignore */
 	}
@@ -49,9 +49,9 @@ function update_native_flag(s: FullscreenState): void {
 	if (s.is_native_fullscreen) s.is_pseudo_fullscreen = false
 }
 
-async function request_fullscreen(s: FullscreenState, el: HTMLElement): Promise<void> {
+async function request_fullscreen(s: FullscreenState, element: HTMLElement): Promise<void> {
 	if (s.is_native_fullscreen || s.is_pseudo_fullscreen) return
-	const did_succeed = await call_native_request(el)
+	const did_succeed = await call_native_request(element)
 	if (!did_succeed) s.is_pseudo_fullscreen = true
 }
 
@@ -94,7 +94,7 @@ export function create_fullscreen() {
 		get is_active() {
 			return s.is_native_fullscreen || s.is_pseudo_fullscreen
 		},
-		request: (el: HTMLElement): Promise<void> => request_fullscreen(s, el),
+		request: (element: HTMLElement): Promise<void> => request_fullscreen(s, element),
 		exit: (): Promise<void> => exit_fullscreen(s),
 		setup_listeners,
 	}
