@@ -181,10 +181,10 @@
 
 			canvas.width = tex_w
 			canvas.height = tex_h
-			const ctx_2d = canvas.getContext('2d')
-			if (!ctx_2d) throw new Error('canvas 2d context unavailable')
-			ctx_2d.clearRect(0, 0, tex_w, tex_h)
-			ctx_2d.drawImage(img, 0, 0, tex_w, tex_h)
+			const context_2d = canvas.getContext('2d')
+			if (!context_2d) throw new Error('canvas 2d context unavailable')
+			context_2d.clearRect(0, 0, tex_w, tex_h)
+			context_2d.drawImage(img, 0, 0, tex_w, tex_h)
 			const tex = new CanvasTexture(canvas)
 
 			tex.minFilter = NearestFilter

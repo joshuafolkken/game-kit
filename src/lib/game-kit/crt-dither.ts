@@ -113,7 +113,7 @@ function quantize_with_dither_2d(
 	channel: number,
 	bayer_norm: number,
 	levels: number,
-	floor_val: number,
+	floor_value: number,
 ): number {
 	const HALF = 0.5
 	const threshold = bayer_norm - HALF
@@ -122,7 +122,7 @@ function quantize_with_dither_2d(
 	const quantized = Math.floor(dithered * levels) / (levels - 1)
 	const clamped = Math.min(1, Math.max(0, quantized))
 
-	return Math.max(clamped, floor_val)
+	return Math.max(clamped, floor_value)
 }
 
 export const DITHER_VERTEX_SHADER = /* glsl */ `

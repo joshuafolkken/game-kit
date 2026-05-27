@@ -9,18 +9,18 @@ function dispatch_mouse(type: string, init: MouseEventInit): void {
 }
 
 function dispatch_mouse_with_target(type: string, init: MouseEventInit, target: HTMLElement): void {
-	const evt = new MouseEvent(type, init)
+	const event_ = new MouseEvent(type, init)
 
-	Object.defineProperty(evt, 'target', { value: target })
-	document.dispatchEvent(evt)
+	Object.defineProperty(event_, 'target', { value: target })
+	document.dispatchEvent(event_)
 }
 
 function dispatch_wheel(init: WheelEventInit): WheelEvent {
-	const evt = new WheelEvent('wheel', { ...init, cancelable: true })
+	const event_ = new WheelEvent('wheel', { ...init, cancelable: true })
 
-	document.dispatchEvent(evt)
+	document.dispatchEvent(event_)
 
-	return evt
+	return event_
 }
 
 function start_right_drag(): void {
@@ -55,30 +55,30 @@ function make_pointer_event_with_offsets(
 	offset_x: number,
 	offset_y: number,
 ): PointerEvent {
-	const evt = new PointerEvent('pointerdown', { button: 0, bubbles: true })
+	const event_ = new PointerEvent('pointerdown', { button: 0, bubbles: true })
 
-	Object.defineProperty(evt, 'target', { value: target })
-	Object.defineProperty(evt, 'offsetX', { value: offset_x, configurable: true })
-	Object.defineProperty(evt, 'offsetY', { value: offset_y, configurable: true })
+	Object.defineProperty(event_, 'target', { value: target })
+	Object.defineProperty(event_, 'offsetX', { value: offset_x, configurable: true })
+	Object.defineProperty(event_, 'offsetY', { value: offset_y, configurable: true })
 
-	return evt
+	return event_
 }
 
 describe('input', () => {
 	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let cleanup: () => void
 	// eslint-disable-next-line init-declarations -- assigned by beforeEach
-	let canvas_el: HTMLCanvasElement
+	let canvas_element: HTMLCanvasElement
 
 	beforeEach(() => {
-		canvas_el = document.createElement('canvas')
-		document.body.append(canvas_el)
-		cleanup = input.setup_listeners(canvas_el)
+		canvas_element = document.createElement('canvas')
+		document.body.append(canvas_element)
+		cleanup = input.setup_listeners(canvas_element)
 	})
 
 	afterEach(() => {
 		cleanup()
-		canvas_el.remove()
+		canvas_element.remove()
 		vi.restoreAllMocks()
 	})
 
@@ -154,30 +154,31 @@ describe('input', () => {
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		expect(input.is_dragging_look).toBe(true)
 
-		const evt = make_pointer_event_with_offsets(target, 999, 999)
+		const event_ = make_pointer_event_with_offsets(target, 999, 999)
 
-		target.dispatchEvent(evt)
+		target.dispatchEvent(event_)
 
-		expect(evt.offsetX).toBe(200)
-		expect(evt.offsetY).toBe(150)
+		expect(event_.offsetX).toBe(200)
+		expect(event_.offsetY).toBe(150)
 		target.remove()
 	})
 
 	it('without drag, capture-phase listener leaves offsetX/Y untouched', () => {
 		const target = make_zero_rect_target()
-		const evt = make_pointer_event_with_offsets(target, 999, 999)
+		const event_ = make_pointer_event_with_offsets(target, 999, 999)
 
-		target.dispatchEvent(evt)
+		target.dispatchEvent(event_)
 
-		expect(evt.offsetX).toBe(999)
-		expect(evt.offsetY).toBe(999)
+		expect(event_.offsetX).toBe(999)
+		expect(event_.offsetY).toBe(999)
 		target.remove()
 	})
 
 	it('synthesizes pointerdown on canvas when left mousedown fires during drag', () => {
 		const received: Array<string> = []
 
-		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
+		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
+		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
@@ -189,7 +190,8 @@ describe('input', () => {
 	it('synthesizes pointerup on canvas when left mouseup fires during drag', () => {
 		const received: Array<string> = []
 
-		canvas_el.addEventListener('pointerup', (e: PointerEvent) =>
+		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
+		canvas_element.addEventListener('pointerup', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
@@ -201,7 +203,8 @@ describe('input', () => {
 	it('does not synthesize pointer events when not dragging', () => {
 		const received: Array<string> = []
 
-		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
+		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
+		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
 		dispatch_mouse('mousedown', { button: LEFT_BUTTON })
@@ -212,7 +215,8 @@ describe('input', () => {
 	it('does not synthesize pointer events for right mousedown during drag', () => {
 		const received: Array<string> = []
 
-		canvas_el.addEventListener('pointerdown', (e: PointerEvent) =>
+		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
+		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
 			received.push(`${e.type}:${e.button}`),
 		)
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
@@ -286,16 +290,16 @@ describe('input', () => {
 	})
 
 	it('wheel event preventDefault is called', () => {
-		const evt = dispatch_wheel({ deltaX: 10, deltaY: 0 })
+		const event_ = dispatch_wheel({ deltaX: 10, deltaY: 0 })
 
-		expect(evt.defaultPrevented).toBe(true)
+		expect(event_.defaultPrevented).toBe(true)
 	})
 
 	it('contextmenu preventDefault is called', () => {
-		const evt = new MouseEvent('contextmenu', { cancelable: true })
+		const event_ = new MouseEvent('contextmenu', { cancelable: true })
 
-		document.dispatchEvent(evt)
-		expect(evt.defaultPrevented).toBe(true)
+		document.dispatchEvent(event_)
+		expect(event_.defaultPrevented).toBe(true)
 	})
 
 	it('clamps pitch at max during right drag', () => {
@@ -379,18 +383,18 @@ describe('input', () => {
 	})
 
 	it('prevents default on arrow keys to stop page scroll', () => {
-		const evt = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true })
+		const event_ = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true })
 
-		document.dispatchEvent(evt)
-		expect(evt.defaultPrevented).toBe(true)
+		document.dispatchEvent(event_)
+		expect(event_.defaultPrevented).toBe(true)
 		expect(input.keys.w).toBe(true)
 	})
 
 	it('does not prevent default on letter keys', () => {
-		const evt = new KeyboardEvent('keydown', { key: 'w', cancelable: true })
+		const event_ = new KeyboardEvent('keydown', { key: 'w', cancelable: true })
 
-		document.dispatchEvent(evt)
-		expect(evt.defaultPrevented).toBe(false)
+		document.dispatchEvent(event_)
+		expect(event_.defaultPrevented).toBe(false)
 	})
 
 	it('resets keys on window blur to prevent stuck movement', () => {
@@ -401,7 +405,7 @@ describe('input', () => {
 	})
 
 	it('setup_listeners is idempotent when called twice', () => {
-		const second_cleanup = input.setup_listeners(canvas_el)
+		const second_cleanup = input.setup_listeners(canvas_element)
 
 		expect(second_cleanup).toBe(cleanup)
 	})
@@ -416,7 +420,7 @@ describe('input', () => {
 		expect(input.keys.w).toBe(false)
 		expect(input.joystick_move.x).toBe(0)
 		expect(input.joystick_look.x).toBe(0)
-		cleanup = input.setup_listeners(canvas_el)
+		cleanup = input.setup_listeners(canvas_element)
 	})
 
 	it('Shift keydown sets is_sprinting true', () => {

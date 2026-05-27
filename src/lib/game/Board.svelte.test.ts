@@ -92,8 +92,8 @@ describe('Board font selection — driven by CRT, not CYBER (is_alt)', () => {
 	})
 
 	it('keeps is_alt prop driving button palette (lit/dim color helpers)', () => {
-		expect(BOARD_SOURCE).toMatch(/return\s+is_alt\s*\?\s*btn\.cyber_lit_color/u)
-		expect(BOARD_SOURCE).toMatch(/return\s+is_alt\s*\?\s*btn\.cyber_dim_color/u)
+		expect(BOARD_SOURCE).toMatch(/return\s+is_alt\s*\?\s*button\.cyber_lit_color/u)
+		expect(BOARD_SOURCE).toMatch(/return\s+is_alt\s*\?\s*button\.cyber_dim_color/u)
 	})
 
 	it('does not pass is_alt directly into fonts helpers', () => {

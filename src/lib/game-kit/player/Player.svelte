@@ -40,9 +40,9 @@
 	function get_axis_input(): { forward: number; strafe: number } {
 		const kb_f = (input.keys.w ? 1 : 0) - (input.keys.s ? 1 : 0)
 		const kb_s = (input.keys.d ? 1 : 0) - (input.keys.a ? 1 : 0)
-		const kb_len = Math.hypot(kb_f, kb_s)
-		const norm_f = kb_len > 1 ? kb_f / kb_len : kb_f
-		const norm_s = kb_len > 1 ? kb_s / kb_len : kb_s
+		const kb_length = Math.hypot(kb_f, kb_s)
+		const norm_f = kb_length > 1 ? kb_f / kb_length : kb_f
+		const norm_s = kb_length > 1 ? kb_s / kb_length : kb_s
 
 		return {
 			forward: norm_f * KEYBOARD_AXIS_FRACTION + input.joystick_move.y,

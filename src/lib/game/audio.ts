@@ -20,18 +20,18 @@ interface OscGraph {
 
 function create_osc_graph(freq: number, is_alt: boolean): OscGraph | null {
 	audio.init_audio()
-	const ctx = audio.get_audio_context()
-	if (!ctx) return null
-	const osc = ctx.createOscillator()
-	const gain = ctx.createGain()
+	const context = audio.get_audio_context()
+	if (!context) return null
+	const osc = context.createOscillator()
+	const gain = context.createGain()
 
 	osc.connect(gain)
-	gain.connect(ctx.destination)
-	osc.frequency.setValueAtTime(freq, ctx.currentTime)
+	gain.connect(context.destination)
+	osc.frequency.setValueAtTime(freq, context.currentTime)
 	osc.type = is_alt ? CYBER_WAVE : NORMAL_WAVE
-	gain.gain.setValueAtTime(GAIN_VALUE, ctx.currentTime)
+	gain.gain.setValueAtTime(GAIN_VALUE, context.currentTime)
 
-	return { osc, gain, ctx }
+	return { osc, gain, ctx: context }
 }
 
 function stop_tone(): void {

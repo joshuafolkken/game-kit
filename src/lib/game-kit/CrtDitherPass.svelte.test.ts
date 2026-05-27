@@ -40,39 +40,39 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 	})
 
 	it('disables Threlte default auto-render so the composer drives the frame', () => {
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/ctx\.autoRender\.set\(\s*false\s*\)/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/context\.autoRender\.set\(\s*false\s*\)/u)
 	})
 
 	it('renders both composers in a useTask scheduled on ctx.renderStage', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*lo_composer\.render\(/u)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*hi_composer\.render\(/u)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/stage:\s*ctx\.renderStage/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/stage:\s*context\.renderStage/u)
 	})
 
 	it('Stage 1 adds passes in order: RenderPass → OutputPass → ShaderPass(dither)', () => {
 		// OutputPass applies sRGB conversion + AgX tonemap before dither/quantize.
-		const render_idx = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(render_pass)')
-		const output_idx = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(output_pass)')
-		const dither_idx = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(dither_pass)')
+		const render_index = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(render_pass)')
+		const output_index = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(output_pass)')
+		const dither_index = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(dither_pass)')
 
-		expect(render_idx).toBeGreaterThan(-1)
-		expect(output_idx).toBeGreaterThan(-1)
-		expect(dither_idx).toBeGreaterThan(-1)
-		expect(render_idx).toBeLessThan(output_idx)
-		expect(output_idx).toBeLessThan(dither_idx)
+		expect(render_index).toBeGreaterThan(-1)
+		expect(output_index).toBeGreaterThan(-1)
+		expect(dither_index).toBeGreaterThan(-1)
+		expect(render_index).toBeLessThan(output_index)
+		expect(output_index).toBeLessThan(dither_index)
 	})
 
 	it('Stage 2 adds passes in order: upscale → scanline → barrel', () => {
 		// Scanlines before barrel so they warp with the screen curvature.
-		const upscale_idx = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(upscale_pass)')
-		const scanline_idx = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(scanline_pass)')
-		const barrel_idx = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(barrel_pass)')
+		const upscale_index = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(upscale_pass)')
+		const scanline_index = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(scanline_pass)')
+		const barrel_index = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(barrel_pass)')
 
-		expect(upscale_idx).toBeGreaterThan(-1)
-		expect(scanline_idx).toBeGreaterThan(-1)
-		expect(barrel_idx).toBeGreaterThan(-1)
-		expect(upscale_idx).toBeLessThan(scanline_idx)
-		expect(scanline_idx).toBeLessThan(barrel_idx)
+		expect(upscale_index).toBeGreaterThan(-1)
+		expect(scanline_index).toBeGreaterThan(-1)
+		expect(barrel_index).toBeGreaterThan(-1)
+		expect(upscale_index).toBeLessThan(scanline_index)
+		expect(scanline_index).toBeLessThan(barrel_index)
 	})
 
 	it('syncs lo_composer and hi_composer sizes inside the render task (not $effect)', () => {
@@ -81,7 +81,7 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setSize(')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setPixelRatio(lo_dpr)')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setSize(')
-		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setPixelRatio(ctx.dpr.current)')
+		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setPixelRatio(context.dpr.current)')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('dither_uniforms.u_resolution.value.set(')
 		// Negative: must NOT compute u_resolution from CSS × DPR (old bug).
 		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/u_resolution\.value\.set\(\s*width\s*\*\s*dpr/u)
@@ -134,7 +134,7 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt\.svelte'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('crt.is_crt_enabled')
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/ctx\.renderer\.render\(ctx\.scene,\s*ctx\.camera\.current\)/u,
+			/context\.renderer\.render\(context\.scene,\s*context\.camera\.current\)/u,
 		)
 	})
 
@@ -160,6 +160,8 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/hi_composer\.dispose\(\)/u)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/bayer_texture\.dispose\(\)/u)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/onDestroy\([\s\S]*ctx\.autoRender\.set\(\s*true\s*\)/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/onDestroy\([\s\S]*context\.autoRender\.set\(\s*true\s*\)/u,
+		)
 	})
 })

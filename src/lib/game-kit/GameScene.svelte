@@ -132,13 +132,13 @@
 	onMount(() => {
 		loading.set_step('loading_assets')
 		fullscreen_switch_input.set_container(container)
-		const canvas_el = container.querySelector<HTMLCanvasElement>('canvas')
+		const canvas_element = container.querySelector<HTMLCanvasElement>('canvas')
 
-		if (!canvas_el) {
+		if (!canvas_element) {
 			console.warn('[GameScene] No <canvas> found at mount — synthetic pointer events disabled')
 		}
 
-		const cleanup_input = input.setup_listeners(canvas_el)
+		const cleanup_input = input.setup_listeners(canvas_element)
 		const cleanup_fullscreen = fullscreen.setup_listeners()
 
 		return function cleanup(): void {

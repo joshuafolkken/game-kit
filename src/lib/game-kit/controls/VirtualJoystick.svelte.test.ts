@@ -44,11 +44,11 @@ describe('VirtualJoystick', () => {
 
 	it('jump button has aria-label and svg icon instead of visible text', () => {
 		const { container } = render_joystick()
-		const btn = container.querySelector<HTMLElement>('[data-testid="jump-btn"]')
+		const button = container.querySelector<HTMLElement>('[data-testid="jump-btn"]')
 
-		expect(btn?.getAttribute('aria-label')).toBe(LABEL_JUMP)
-		expect(btn?.querySelector('svg')).toBeTruthy()
-		expect(btn?.textContent?.trim()).toBe('')
+		expect(button?.getAttribute('aria-label')).toBe(LABEL_JUMP)
+		expect(button?.querySelector('svg')).toBeTruthy()
+		expect(button?.textContent?.trim()).toBe('')
 	})
 
 	it('joystick-zone does not capture pointer events on non-touch devices', () => {
@@ -99,11 +99,11 @@ describe('VirtualJoystick', () => {
 
 	it('jump button matches pause button styling (size, background, border, color)', () => {
 		const { container } = render_joystick()
-		const btn = container.querySelector<HTMLElement>('[data-testid="jump-btn"]')
+		const button = container.querySelector<HTMLElement>('[data-testid="jump-btn"]')
 
-		expect(btn).toBeTruthy()
-		if (!btn) return
-		const style = getComputedStyle(btn)
+		expect(button).toBeTruthy()
+		if (!button) return
+		const style = getComputedStyle(button)
 
 		expect(style.width).toBe('44px')
 		expect(style.height).toBe('44px')
@@ -526,14 +526,14 @@ describe('VirtualJoystick touch handlers', () => {
 		dom.addEventListener('pointerdown', spy)
 
 		const { container } = render_joystick()
-		const jump_btn = container.querySelector<HTMLButtonElement>('[data-testid="jump-btn"]')
+		const jump_button = container.querySelector<HTMLButtonElement>('[data-testid="jump-btn"]')
 
-		expect(jump_btn).toBeTruthy()
-		if (!jump_btn) return
+		expect(jump_button).toBeTruthy()
+		if (!jump_button) return
 
-		const t = make_touch(2, 300, 200, jump_btn)
+		const t = make_touch(2, 300, 200, jump_button)
 
-		fire('touchstart', jump_btn, [t], [t])
+		fire('touchstart', jump_button, [t], [t])
 
 		expect(spy).not.toHaveBeenCalled()
 		dom.remove()
@@ -542,14 +542,14 @@ describe('VirtualJoystick touch handlers', () => {
 	it('touchstart on jump button calls trigger_jump', () => {
 		const spy = vi.spyOn(input, 'trigger_jump')
 		const { container } = render_joystick()
-		const jump_btn = container.querySelector<HTMLButtonElement>('[data-testid="jump-btn"]')
+		const jump_button = container.querySelector<HTMLButtonElement>('[data-testid="jump-btn"]')
 
-		expect(jump_btn).toBeTruthy()
-		if (!jump_btn) return
+		expect(jump_button).toBeTruthy()
+		if (!jump_button) return
 
-		const t = make_touch(3, 300, 400, jump_btn)
+		const t = make_touch(3, 300, 400, jump_button)
 
-		fire('touchstart', jump_btn, [t], [t])
+		fire('touchstart', jump_button, [t], [t])
 
 		expect(spy).toHaveBeenCalledOnce()
 	})
@@ -558,19 +558,19 @@ describe('VirtualJoystick touch handlers', () => {
 		const spy = vi.spyOn(input, 'trigger_jump')
 		const { container } = render_joystick()
 		const look_zone = container.querySelectorAll('.joystick-zone').item(1)
-		const jump_btn = container.querySelector<HTMLButtonElement>('[data-testid="jump-btn"]')
+		const jump_button = container.querySelector<HTMLButtonElement>('[data-testid="jump-btn"]')
 
 		expect(look_zone).toBeTruthy()
-		expect(jump_btn).toBeTruthy()
-		if (!look_zone || !jump_btn) return
+		expect(jump_button).toBeTruthy()
+		if (!look_zone || !jump_button) return
 
 		const look_touch = make_touch(1, 300, 200, look_zone)
 
 		fire('touchstart', look_zone, [look_touch], [look_touch])
 
-		const jump_touch = make_touch(2, 300, 400, jump_btn)
+		const jump_touch = make_touch(2, 300, 400, jump_button)
 
-		fire('touchstart', jump_btn, [jump_touch], [look_touch, jump_touch])
+		fire('touchstart', jump_button, [jump_touch], [look_touch, jump_touch])
 
 		expect(spy).toHaveBeenCalledOnce()
 	})

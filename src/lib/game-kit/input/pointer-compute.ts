@@ -3,22 +3,22 @@ import type { Camera, Vector2 } from 'three'
 
 const NDC_SCALE = 2
 
-interface CameraRef {
+interface CameraReference {
 	current: Camera
 }
 
-interface PointerRef {
+interface PointerReference {
 	current: Vector2
-	update: (fn: (p: Vector2) => Vector2) => void
+	update: (function_: (p: Vector2) => Vector2) => void
 }
 
-interface RaycasterRef {
+interface RaycasterReference {
 	setFromCamera: (pointer: Vector2, camera: Camera) => void
 }
 
-interface ComputeCtx {
-	pointer: PointerRef
-	raycaster: RaycasterRef
+interface ComputeContext {
+	pointer: PointerReference
+	raycaster: RaycasterReference
 }
 
 function is_valid_target(target: EventTarget | null): target is HTMLElement {
@@ -32,18 +32,18 @@ function compute_target_offset(event: DomEvent, target: HTMLElement): { x: numbe
 }
 
 export function make_pointer_compute(
-	camera: CameraRef,
-): (event: DomEvent, ctx: ComputeCtx) => void {
-	return function compute_pointer(event: DomEvent, ctx: ComputeCtx): void {
+	camera: CameraReference,
+): (event: DomEvent, context: ComputeContext) => void {
+	return function compute_pointer(event: DomEvent, context: ComputeContext): void {
 		if (!is_valid_target(event.target)) return
 		const { clientWidth: w, clientHeight: h } = event.target
 		const { x, y } = compute_target_offset(event, event.target)
 
-		ctx.pointer.update((p) => {
+		context.pointer.update((p) => {
 			p.set((x / w) * NDC_SCALE - 1, -(y / h) * NDC_SCALE + 1)
 
 			return p
 		})
-		ctx.raycaster.setFromCamera(ctx.pointer.current, camera.current)
+		context.raycaster.setFromCamera(context.pointer.current, camera.current)
 	}
 }

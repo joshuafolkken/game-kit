@@ -35,10 +35,10 @@ function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function get_step_ms(len: number): number {
-	if (len <= 5) return STEP_MS_1_5
-	if (len <= 13) return STEP_MS_6_13
-	if (len <= 20) return STEP_MS_14_20
+function get_step_ms(length_: number): number {
+	if (length_ <= 5) return STEP_MS_1_5
+	if (length_ <= 13) return STEP_MS_6_13
+	if (length_ <= 20) return STEP_MS_14_20
 
 	return STEP_MS_21_PLUS
 }
