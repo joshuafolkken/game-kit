@@ -113,10 +113,12 @@ test('page has no critical or serious accessibility violations', async ({ page }
 })
 
 test('high score persists in localStorage across page reload', async ({ page }) => {
+	/* eslint-disable no-bitwise -- score-tamper-check hash; mirrors src/lib/game/Score.svelte.ts compute_check */
 	const stored_check =
 		(Math.imul(SAMPLE_HIGH_SCORE + 1, CHECK_SEED) ^
 			Math.imul(SAMPLE_HIGH_ROUND + 1, CHECK_SEED >>> 1)) >>>
 		0
+	/* eslint-enable no-bitwise */
 
 	await page.goto('/')
 	await page.evaluate(

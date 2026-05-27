@@ -68,6 +68,7 @@ describe('make_pointer_compute', () => {
 
 		expect(context.pointer.current.x).toBeCloseTo(CENTER)
 		expect(context.pointer.current.y).toBeCloseTo(CENTER)
+		// eslint-disable-next-line @typescript-eslint/unbound-method -- vitest spy assertion; the .toHaveBeenCalled matcher handles `this` correctly
 		expect(context.raycaster.setFromCamera).toHaveBeenCalledWith(
 			context.pointer.current,
 			camera.current,
@@ -97,6 +98,7 @@ describe('make_pointer_compute', () => {
 
 		expect(context.pointer.current.x).toBe(0.5)
 		expect(context.pointer.current.y).toBe(0.5)
+		// eslint-disable-next-line @typescript-eslint/unbound-method -- vitest spy assertion; the .toHaveBeenCalled matcher handles `this` correctly
 		expect(context.raycaster.setFromCamera).not.toHaveBeenCalled()
 	})
 
@@ -111,6 +113,7 @@ describe('make_pointer_compute', () => {
 
 		expect(context.pointer.current.x).toBe(0.5)
 		expect(context.pointer.current.y).toBe(0.5)
+		// eslint-disable-next-line @typescript-eslint/unbound-method -- vitest spy assertion; the .toHaveBeenCalled matcher handles `this` correctly
 		expect(context.raycaster.setFromCamera).not.toHaveBeenCalled()
 	})
 })

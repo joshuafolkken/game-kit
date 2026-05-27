@@ -9,6 +9,7 @@ export async function stub_touch_primary(page: Page, is_touch: boolean): Promise
 
 			globalThis.matchMedia = function patched(input: string): MediaQueryList {
 				if (input === query) {
+					// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- partial-mock pattern; literal would need every MediaQueryList field
 					return {
 						matches,
 						media: input,

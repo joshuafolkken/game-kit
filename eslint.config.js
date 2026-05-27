@@ -36,12 +36,8 @@ const LAYER_B_DISABLES = {
 	'sonarjs/cognitive-complexity': 'off',
 	'@typescript-eslint/restrict-template-expressions': 'off',
 	'@typescript-eslint/no-unnecessary-condition': 'off',
-	'no-bitwise': 'off',
 	complexity: 'off',
-	'@typescript-eslint/consistent-type-assertions': 'off',
-	'@typescript-eslint/unbound-method': 'off',
 	'max-lines': 'off',
-	'unicorn/prevent-abbreviations': 'off',
 }
 
 // `scripts/` and `templates/` are not in any tsconfig project here:
@@ -51,8 +47,37 @@ const LAYER_B_DISABLES = {
 // Tracked as Layer C follow-up (add a scripts tsconfig; restructure templates).
 const FILE_IGNORES = ['scripts/**', 'templates/**']
 
+// Kit 0.189 ships `unicorn/prevent-abbreviations` allowList inside SVELTE_FILE_PATTERNS.svelte,
+// but plain `.ts` files (non-Svelte) don't inherit it. Re-apply the same allowList project-wide
+// so idiomatic short names (e, el, ctx, btn, idx, etc.) don't fire in CLI helpers, hash utilities,
+// or e2e tests. Also adds `e2e` so Playwright filename convention (page.e2e.ts) doesn't get
+// expanded to absurd `page.error2error.ts`.
+const PREVENT_ABBREVIATIONS_OVERRIDE = {
+	'unicorn/prevent-abbreviations': [
+		'error',
+		{
+			allowList: {
+				Props: true,
+				e: true,
+				e2e: true,
+				el: true,
+				ctx: true,
+				btn: true,
+				idx: true,
+				opts: true,
+				params: true,
+				args: true,
+			},
+		},
+	],
+}
+
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
 	svelte_config: svelteConfig,
-}).concat({ ignores: FILE_IGNORES }, { rules: LAYER_B_DISABLES })
+}).concat(
+	{ ignores: FILE_IGNORES },
+	{ rules: LAYER_B_DISABLES },
+	{ rules: PREVENT_ABBREVIATIONS_OVERRIDE },
+)
