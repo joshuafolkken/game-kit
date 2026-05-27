@@ -36,7 +36,9 @@ describe('switch_audio.play_switch_click', () => {
 		const { switch_audio } = await import('./switch-audio.js')
 
 		switch_audio.init(MOCK_URL)
-		expect(() => switch_audio.play_switch_click()).not.toThrow()
+		expect(() => {
+			switch_audio.play_switch_click()
+		}).not.toThrow()
 	})
 
 	it('calls play on the audio element', async () => {

@@ -101,6 +101,7 @@ describe('handle', () => {
 	it('still injects app version via transformPageChunk', async () => {
 		// eslint-disable-next-line init-declarations -- assigned inside `handle` mock by transformPageChunk capture
 		let captured_transform: ResolveOptions['transformPageChunk'] | undefined
+		// eslint-disable-next-line @typescript-eslint/promise-function-async -- thin synchronous Promise.resolve wrapper; async would add a needless microtask before the test inspection
 		const resolve = vi.fn<ResolveFunction>().mockImplementation((_event, options) => {
 			captured_transform = options?.transformPageChunk
 

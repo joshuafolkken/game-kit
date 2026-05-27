@@ -2,7 +2,7 @@ import { player_speed } from '$lib/game-kit/player/player-speed'
 import { player_step } from '$lib/game-kit/player/player-step'
 import { describe, expect, it } from 'vitest'
 
-const MOVE_SPEED = player_speed.MOVE_SPEED
+const { MOVE_SPEED } = player_speed
 const LOOK_SPEED = 2
 const DELTA = 1 / 60
 

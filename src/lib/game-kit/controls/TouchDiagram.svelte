@@ -50,9 +50,11 @@
 >
 	<div class="frame" data-testid="touch-diagram-frame">
 		<div class="half">
+			<!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
 			{@render swipe_gesture('move-gesture')}
 		</div>
 		<div class="half">
+			<!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
 			{@render swipe_gesture('look-gesture')}
 		</div>
 	</div>

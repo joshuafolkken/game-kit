@@ -26,6 +26,8 @@ describe('override_event_offset', () => {
 		const event = new Event('pointermove')
 
 		Object.defineProperty(event, 'offsetX', { value: 0, configurable: false })
-		expect(() => override_event_offset(event, OFFSET_X, OFFSET_Y)).not.toThrow()
+		expect(() => {
+			override_event_offset(event, OFFSET_X, OFFSET_Y)
+		}).not.toThrow()
 	})
 })

@@ -176,7 +176,9 @@ function on_key_impl(s: InputState, e: KeyboardEvent, is_down: boolean): void {
 }
 
 function make_drag_override_specs(s: InputState): Array<ListenerSpec> {
-	const handler = (e: Event): void => override_offset_during_drag_impl(s, e)
+	const handler = (e: Event): void => {
+		override_offset_during_drag_impl(s, e)
+	}
 
 	return [
 		{ target: document, type: 'pointerdown', handler, options: CAPTURE },
@@ -191,25 +193,49 @@ function make_listener_specs(
 	references: InputReferences,
 ): ReadonlyArray<ListenerSpec> {
 	return [
-		{ target: document, type: 'mousedown', handler: (e) => on_mouse_down_impl(s, e as MouseEvent) },
-		{ target: document, type: 'mousemove', handler: (e) => on_mouse_move_impl(s, e as MouseEvent) },
-		{ target: document, type: 'mouseup', handler: (e) => on_mouse_up_impl(s, e as MouseEvent) },
 		{
 			target: document,
 			type: 'mousedown',
-			handler: (e) => on_left_mouse_for_synth_impl(s, e as MouseEvent, references),
+			handler: (e) => {
+				on_mouse_down_impl(s, e as MouseEvent)
+			},
+		},
+		{
+			target: document,
+			type: 'mousemove',
+			handler: (e) => {
+				on_mouse_move_impl(s, e as MouseEvent)
+			},
+		},
+		{
+			target: document,
+			type: 'mouseup',
+			handler: (e) => {
+				on_mouse_up_impl(s, e as MouseEvent)
+			},
+		},
+		{
+			target: document,
+			type: 'mousedown',
+			handler: (e) => {
+				on_left_mouse_for_synth_impl(s, e as MouseEvent, references)
+			},
 			options: CAPTURE,
 		},
 		{
 			target: document,
 			type: 'mouseup',
-			handler: (e) => on_left_mouse_for_synth_impl(s, e as MouseEvent, references),
+			handler: (e) => {
+				on_left_mouse_for_synth_impl(s, e as MouseEvent, references)
+			},
 			options: CAPTURE,
 		},
 		{
 			target: document,
 			type: 'wheel',
-			handler: (e) => on_wheel_impl(s, e as WheelEvent),
+			handler: (e) => {
+				on_wheel_impl(s, e as WheelEvent)
+			},
 			options: PASSIVE_FALSE,
 		},
 		{
@@ -219,11 +245,35 @@ function make_listener_specs(
 				e.preventDefault()
 			},
 		},
-		{ target: document, type: 'pointerlockchange', handler: () => on_pointer_lock_change_impl(s) },
+		{
+			target: document,
+			type: 'pointerlockchange',
+			handler: () => {
+				on_pointer_lock_change_impl(s)
+			},
+		},
 		...make_drag_override_specs(s),
-		{ target: document, type: 'keydown', handler: (e) => on_key_impl(s, e as KeyboardEvent, true) },
-		{ target: document, type: 'keyup', handler: (e) => on_key_impl(s, e as KeyboardEvent, false) },
-		{ target: globalThis, type: 'blur', handler: () => reset_transient_input(s) },
+		{
+			target: document,
+			type: 'keydown',
+			handler: (e) => {
+				on_key_impl(s, e as KeyboardEvent, true)
+			},
+		},
+		{
+			target: document,
+			type: 'keyup',
+			handler: (e) => {
+				on_key_impl(s, e as KeyboardEvent, false)
+			},
+		},
+		{
+			target: globalThis,
+			type: 'blur',
+			handler: () => {
+				reset_transient_input(s)
+			},
+		},
 	]
 }
 

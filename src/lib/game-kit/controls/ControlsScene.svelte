@@ -174,8 +174,14 @@
 
 			img.src = url
 			await new Promise<void>(function wait(resolve, reject): void {
-				img.onload = (): void => resolve()
-				img.onerror = (): void => reject(new Error('svg load failed'))
+				img.addEventListener('load', (): void => {
+					resolve()
+				})
+
+				// eslint-disable-next-line unicorn/prefer-add-event-listener -- mirrors the load handler symmetry; both are local to this Image() instance
+				img.onerror = (): void => {
+					reject(new Error('svg load failed'))
+				}
 			})
 			const canvas = document.createElement('canvas')
 

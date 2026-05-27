@@ -22,12 +22,12 @@ export interface FlashTimers {
 	flash_gen: number
 }
 
-function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms))
+async function delay(ms: number): Promise<void> {
+	await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function play_all_tones(colors: ReadonlyArray<ButtonColor>, duration_ms: number): void {
-	const is_alt = game_state.is_alt
+	const { is_alt } = game_state
 	for (const color of colors) game_audio.play_tone(color, duration_ms, is_alt)
 }
 
