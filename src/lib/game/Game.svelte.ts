@@ -31,8 +31,8 @@ type GameTimers = {
 	input_start_ms: number
 } & FlashTimers
 
-function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms))
+async function delay(ms: number): Promise<void> {
+	await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function get_step_ms(length_: number): number {
@@ -93,7 +93,9 @@ function schedule_next_round(
 	cancel_flash(s, t)
 	s.phase = 'showing'
 	void run_victory_flash(s, t, colors, t.flash_gen)
-	t.restart_timer = setTimeout(() => start_next_round(s, t, colors), RESTART_DELAY_MS)
+	t.restart_timer = setTimeout(() => {
+		start_next_round(s, t, colors)
+	}, RESTART_DELAY_MS)
 }
 
 function handle_correct_release(

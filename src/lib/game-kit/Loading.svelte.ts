@@ -106,9 +106,15 @@ export function create_loading<T extends string>(initial_step: T) {
 		configure: (messages: Record<T, string>): void => {
 			step_messages = messages
 		},
-		set_step: (step: T): void => set_step_impl(s, step_messages, step),
-		mark_ready: (): void => mark_ready_impl(s, references),
-		reset: (): void => reset_impl(s, references, step_messages, initial_step),
+		set_step: (step: T): void => {
+			set_step_impl(s, step_messages, step)
+		},
+		mark_ready: (): void => {
+			mark_ready_impl(s, references)
+		},
+		reset: (): void => {
+			reset_impl(s, references, step_messages, initial_step)
+		},
 	}
 }
 

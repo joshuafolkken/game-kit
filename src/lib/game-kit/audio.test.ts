@@ -6,7 +6,9 @@ afterEach(() => {
 })
 
 function make_audio_context_ctor(state: AudioContextState) {
-	const resume = vi.fn().mockImplementation(() => Promise.resolve())
+	const resume = vi.fn().mockImplementation(async () => {
+		await Promise.resolve()
+	})
 
 	return {
 		ctor: class {

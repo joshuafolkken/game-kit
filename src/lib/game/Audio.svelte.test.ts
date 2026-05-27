@@ -32,25 +32,35 @@ function make_mock_context() {
 
 describe('game audio', () => {
 	it.each(ALL_COLORS)('play_tone does not throw for %s', (color) => {
-		expect(() => game_audio.play_tone(color, 100, false)).not.toThrow()
+		expect(() => {
+			game_audio.play_tone(color, 100, false)
+		}).not.toThrow()
 	})
 
 	it('play_error_tone does not throw', () => {
-		expect(() => game_audio.play_error_tone(100, false)).not.toThrow()
+		expect(() => {
+			game_audio.play_error_tone(100, false)
+		}).not.toThrow()
 	})
 
 	it.each(ALL_COLORS)('start_tone does not throw for %s', (color) => {
-		expect(() => game_audio.start_tone(color, false)).not.toThrow()
+		expect(() => {
+			game_audio.start_tone(color, false)
+		}).not.toThrow()
 	})
 
 	it('stop_tone does not throw when no tone is playing', () => {
-		expect(() => game_audio.stop_tone()).not.toThrow()
+		expect(() => {
+			game_audio.stop_tone()
+		}).not.toThrow()
 	})
 })
 
 describe('game audio cyber mode', () => {
 	it.each(ALL_COLORS)('play_tone does not throw for %s in cyber mode', (color) => {
-		expect(() => game_audio.play_tone(color, 100, true)).not.toThrow()
+		expect(() => {
+			game_audio.play_tone(color, 100, true)
+		}).not.toThrow()
 	})
 })
 
