@@ -1,4 +1,4 @@
-import { session } from '$lib/game-kit/session.svelte'
+import { session } from '$lib/game-kit/Session.svelte'
 import { switch_audio } from '$lib/game-kit/switch/switch-audio'
 
 interface SwitchInputConfig {

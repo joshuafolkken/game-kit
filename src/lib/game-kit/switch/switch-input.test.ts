@@ -1,4 +1,4 @@
-import { session } from '$lib/game-kit/session.svelte'
+import { session } from '$lib/game-kit/Session.svelte'
 import { switch_audio } from '$lib/game-kit/switch/switch-audio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { create_switch_input } from './switch-input'

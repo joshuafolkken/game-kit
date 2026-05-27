@@ -4,7 +4,7 @@ import {
 	load_stored_data,
 	score,
 	type StorageKeys,
-} from '$lib/game/score.svelte'
+} from '$lib/game/Score.svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const ROUND_1 = 1

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { input } from '$lib/game-kit/input/input.svelte'
+	import { input } from '$lib/game-kit/input/Input.svelte'
 	import { joystick_dispatch } from '$lib/game-kit/input/joystick-dispatch'
 	import { onMount } from 'svelte'
 	import JumpIcon from './JumpIcon.svelte'

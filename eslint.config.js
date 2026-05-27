@@ -32,8 +32,6 @@ const PR1_TEMPORARY_RULE_DISABLES = {
 	'sonarjs/no-duplicate-string': 'off',
 	// TODO #188 follow-up: align identifier names with snake_case / boolean prefix rules
 	'@typescript-eslint/naming-convention': 'off',
-	// TODO #188 follow-up: rename files to PascalCase for Svelte components / `.svelte.ts`
-	'unicorn/filename-case': 'off',
 	// TODO #188 follow-up: add explicit return types to exported functions
 	'@typescript-eslint/explicit-function-return-type': 'off',
 	// TODO #188 follow-up: simplify unnecessary nullish / boolean conditions
@@ -146,6 +144,17 @@ const IMPORT_EXTENSIONS_OVERRIDES = {
 	],
 }
 
+// Kit's `SVELTE_FILE_PATTERNS.svelte` covers `**/*.svelte` and `**/*.svelte.ts`
+// (both PascalCase per CLAUDE.md) but does NOT include `**/*.svelte.test.ts`
+// (Vitest co-located test files paired with .svelte components). Without this
+// extra block, `unicorn/filename-case` would fall back to its kebab-case default
+// for .ts files and demand `Board.svelte.test.ts → board.svelte.test.ts`, which
+// contradicts the convention of mirroring the paired component's name.
+const SVELTE_TEST_FILENAME_OVERRIDE = {
+	files: ['**/*.svelte.test.ts', '**/*.svelte.spec.ts'],
+	rules: { 'unicorn/filename-case': ['error', { case: 'pascalCase' }] },
+}
+
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
@@ -154,4 +163,5 @@ export default create_sveltekit_config({
 	{ ignores: PR1_TEMPORARY_FILE_IGNORES },
 	{ rules: PR1_TEMPORARY_RULE_DISABLES },
 	{ rules: IMPORT_EXTENSIONS_OVERRIDES },
+	SVELTE_TEST_FILENAME_OVERRIDE,
 )

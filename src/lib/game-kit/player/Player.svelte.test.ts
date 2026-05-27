@@ -1,4 +1,4 @@
-import { camera_shake } from '$lib/game-kit/player/camera-shake.svelte'
+import { camera_shake } from '$lib/game-kit/player/CameraShake.svelte'
 import { player_step } from '$lib/game-kit/player/player-step'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
@@ -28,7 +28,7 @@ vi.mock('@threlte/core', () => ({
 		tick_holder.fn = function_
 	}),
 }))
-vi.mock('$lib/game-kit/input/input.svelte', () => ({ input: mock_input }))
+vi.mock('$lib/game-kit/input/Input.svelte', () => ({ input: mock_input }))
 vi.mock('$lib/game-kit/player/player-bounds', () => ({
 	player_bounds: { clamp_to_room: vi.fn((x: number, z: number) => ({ x, z })) },
 }))
@@ -47,7 +47,7 @@ vi.mock('$lib/game-kit/player/player-step', () => ({
 		})),
 	},
 }))
-vi.mock('$lib/game-kit/player/camera-shake.svelte', () => ({
+vi.mock('$lib/game-kit/player/CameraShake.svelte', () => ({
 	camera_shake: {
 		trigger: vi.fn(),
 		step: vi.fn(),

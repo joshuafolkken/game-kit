@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
 	import { Text } from '@threlte/extras'
-	import { crt } from '$lib/game-kit/crt.svelte'
+	import { crt } from '$lib/game-kit/Crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
 	import { BACKING_RADIUS, BOARD_LABEL_Z, BOARD_Y, BOARD_Z } from './board-config'
 	import { game_board_input } from './board-input'

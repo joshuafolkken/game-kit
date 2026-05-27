@@ -1,4 +1,4 @@
-import { session } from '$lib/game-kit/session.svelte'
+import { session } from '$lib/game-kit/Session.svelte'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { game_board_input } from './board-input'
 import type { ButtonColor } from './types'

@@ -13,9 +13,9 @@ export { default as TouchDiagram } from './game-kit/controls/TouchDiagram.svelte
 export { default as VirtualJoystick } from './game-kit/controls/VirtualJoystick.svelte'
 export { default as Player } from './game-kit/player/Player.svelte'
 
-export { session, create_session, type SessionInstance } from './game-kit/session.svelte'
-export { game_state, create_game_state, type GameStateInstance } from './game-kit/state.svelte'
-export { input, create_input, type InputInstance } from './game-kit/input/input.svelte'
+export { session, create_session, type SessionInstance } from './game-kit/Session.svelte'
+export { game_state, create_game_state, type GameStateInstance } from './game-kit/State.svelte'
+export { input, create_input, type InputInstance } from './game-kit/input/Input.svelte'
 export {
 	loading,
 	create_loading,
@@ -25,17 +25,17 @@ export {
 	OBSERVER_GLOBAL_KEY,
 	type DefaultLoadingStep,
 	type LoadingInstance,
-} from './game-kit/loading.svelte'
+} from './game-kit/Loading.svelte'
 export {
 	fullscreen,
 	create_fullscreen,
 	type FullscreenInstance,
-} from './game-kit/fullscreen.svelte'
-export { fps, create_fps, type FpsInstance } from './game-kit/display/fps.svelte'
-export { crt, create_crt, type CrtInstance } from './game-kit/crt.svelte'
-export { device, create_device, type DeviceInstance } from './game-kit/device.svelte'
+} from './game-kit/Fullscreen.svelte'
+export { fps, create_fps, type FpsInstance } from './game-kit/display/Fps.svelte'
+export { crt, create_crt, type CrtInstance } from './game-kit/Crt.svelte'
+export { device, create_device, type DeviceInstance } from './game-kit/Device.svelte'
 
-export { camera_shake } from './game-kit/player/camera-shake.svelte'
+export { camera_shake } from './game-kit/player/CameraShake.svelte'
 export { player_bounds } from './game-kit/player/player-bounds'
 export { player_jump } from './game-kit/player/player-jump'
 export { player_speed } from './game-kit/player/player-speed'

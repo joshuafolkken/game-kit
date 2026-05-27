@@ -1,4 +1,4 @@
-import { input } from '$lib/game-kit/input/input.svelte'
+import { input } from '$lib/game-kit/input/Input.svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import VirtualJoystick from './VirtualJoystick.svelte'

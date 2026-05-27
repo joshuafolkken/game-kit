@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { create_game_state, game_state } from './state.svelte'
+import { create_game_state, game_state } from './State.svelte'
 
 describe('game_state', () => {
 	beforeEach(() => {
