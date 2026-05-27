@@ -15,6 +15,10 @@ const LAYER_B_DISABLES = {
 	// `dot-notation` converts bracket access to dot access, but TS index-signature
 	// types REQUIRE bracket access. Always disabled.
 	'dot-notation': 'off',
+	// `sonarjs/no-use-of-empty-return-value` fires on Svelte `{@render snippet()}` —
+	// the rule treats the snippet call as a value-consuming expression, but `@render`
+	// is a template directive. Per-line disables on every snippet site is noisier.
+	'sonarjs/no-use-of-empty-return-value': 'off',
 
 	// === Layer C follow-up (high-volume manual refactor) ===
 	'id-length': 'off',
@@ -35,24 +39,8 @@ const LAYER_B_DISABLES = {
 	'no-bitwise': 'off',
 	complexity: 'off',
 	'@typescript-eslint/consistent-type-assertions': 'off',
-	'no-duplicate-imports': 'off',
-	'max-params': 'off',
-	'sonarjs/pseudo-random': 'off',
 	'@typescript-eslint/unbound-method': 'off',
-	'no-multi-assign': 'off',
-	'no-console': 'off',
 	'max-lines': 'off',
-	'sonarjs/no-use-of-empty-return-value': 'off',
-	'unicorn/consistent-function-scoping': 'off',
-	'@typescript-eslint/no-unsafe-call': 'off',
-	'sonarjs/no-commented-code': 'off',
-	'@typescript-eslint/no-restricted-imports': 'off',
-	'require-atomic-updates': 'off',
-	'promise/prefer-await-to-then': 'off',
-	'consistent-return': 'off',
-	'no-plusplus': 'off',
-	'default-case': 'off',
-	'unicorn/no-array-reverse': 'off',
 	'unicorn/prevent-abbreviations': 'off',
 }
 

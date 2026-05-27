@@ -16,8 +16,7 @@
 	import { session } from '$lib/game-kit/Session.svelte'
 	import { game_state } from '$lib/game-kit/State.svelte'
 	import { fullscreen_switch_input } from '$lib/game-kit/switch/fullscreen-switch-input'
-	import type { Snippet } from 'svelte'
-	import { onMount } from 'svelte'
+	import { onMount, type Snippet } from 'svelte'
 	import { WebGLRenderer } from 'three'
 
 	// DPR is calibrated so the shorter buffer edge targets TARGET_SHORT_EDGE_PIXELS for
@@ -135,6 +134,7 @@
 		const canvas_element = container.querySelector<HTMLCanvasElement>('canvas')
 
 		if (!canvas_element) {
+			// eslint-disable-next-line no-console -- console.warn is the standard diagnostic channel for missing-DOM warnings; not a candidate for a logger
 			console.warn('[GameScene] No <canvas> found at mount — synthetic pointer events disabled')
 		}
 

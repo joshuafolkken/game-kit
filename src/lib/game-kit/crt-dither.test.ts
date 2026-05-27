@@ -248,6 +248,7 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 		// VGA 3-3-2 gives blue half the levels of red/green (8/8/4). Lock in that asymmetry
 		// here so any accidental return to uniform per-channel levels (e.g. { r: 16, g: 16, b: 16 })
 		// fails this guard at the COLOR_LEVELS change point.
+		// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper scoped to this assertion block for clarity
 		function distinct_outputs(levels: number): number {
 			const seen = new Set<number>()
 
@@ -420,6 +421,7 @@ describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
 	const TRIVIAL_VERTEX_SHADER = 'void main(){ gl_Position = vec4(position, 1.0); }'
 	const TRIVIAL_FRAGMENT_SHADER = 'void main(){ gl_FragColor = vec4(1.0); }'
 
+	// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper scoped to the ShaderPass describe block
 	function get_uniform_vec2(pass: ShaderPass): Vector2 {
 		const slot = pass.uniforms['u_res']
 		if (!slot) throw new Error('u_res uniform missing on pass')

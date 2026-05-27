@@ -1,5 +1,6 @@
 import type { Handle } from '@sveltejs/kit'
 import { GAME_NAME, GAME_NAME_DISPLAY } from '$lib/game/game-name'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- reading own package.json version is the standard SvelteKit pattern for app-version injection
 import { version } from '../package.json'
 
 const APP_VERSION_PLACEHOLDER = '__APP_VERSION__'

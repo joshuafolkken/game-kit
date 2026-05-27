@@ -141,16 +141,12 @@ function on_left_mouse_for_synth_impl(
 		}
 
 		case 'mouseup': {
-			{
-				dispatch_synthetic_pointer(
-					'pointerup',
-					s.drag_start_x,
-					s.drag_start_y,
-					references.canvas_el,
-				)
-				// No default
-			}
+			dispatch_synthetic_pointer('pointerup', s.drag_start_x, s.drag_start_y, references.canvas_el)
+			break
+		}
 
+		default: {
+			// No-op for unhandled event types (the function is wired to mousedown/mouseup only).
 			break
 		}
 	}
@@ -322,6 +318,7 @@ function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputRefe
 			return jl
 		},
 		setup_listeners: (canvas_element: HTMLCanvasElement | null): (() => void) => {
+			// eslint-disable-next-line no-multi-assign -- idiomatic lazy-init `??=` pattern
 			const m = (manager ??= create_listener_manager(make_listener_specs(s, references)))
 			if (!m.is_active || canvas_element !== null) references.canvas_el = canvas_element
 

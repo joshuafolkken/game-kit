@@ -52,6 +52,7 @@ function dispatch_pointer_down(
 	context.dom.dispatchEvent(down_event)
 }
 
+// eslint-disable-next-line max-params -- coordinate-rich pointer dispatch; object-arg shape adds noise at call sites
 function dispatch_pointer_up(
 	pointer_id: number,
 	is_primary: boolean,
