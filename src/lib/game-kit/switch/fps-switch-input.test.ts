@@ -1,5 +1,5 @@
-import { fps } from '$lib/game-kit/display/Fps.svelte.js'
-import { session } from '$lib/game-kit/Session.svelte.js'
+import { fps } from '$lib/game-kit/display/Fps.svelte'
+import { session } from '$lib/game-kit/Session.svelte'
 import { switch_audio } from '$lib/game-kit/switch/switch-audio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fps_switch_input } from './fps-switch-input.js'

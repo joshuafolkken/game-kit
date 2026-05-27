@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { create_fps, fps } from './Fps.svelte.js'
+import { create_fps, fps } from './Fps.svelte'
 
 it('starts with fps enabled', () => {
 	expect(fps.is_fps_enabled).toBe(true)

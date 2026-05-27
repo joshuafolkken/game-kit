@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { create_crt, crt } from './Crt.svelte.js'
+import { create_crt, crt } from './Crt.svelte'
 
 it('starts with CRT enabled', () => {
 	expect(crt.is_crt_enabled).toBe(true)
