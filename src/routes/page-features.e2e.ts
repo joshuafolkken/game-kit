@@ -1,4 +1,3 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations -- short name is conventional here
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { stub_touch_primary } from './e2e-helpers'
@@ -155,7 +154,6 @@ test('game scene loads without shadow-related WebGL errors', async ({ page }) =>
 		timeout: LOADING_OVERLAY_TIMEOUT_MS,
 	})
 	const webgl_errors = errors.filter(
-		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		(e) => e.toLowerCase().includes('shadow') || e.toLowerCase().includes('webgl'),
 	)
 

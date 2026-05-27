@@ -1,4 +1,3 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations -- short name is conventional here
 import { expect, test } from '@playwright/test'
 
 test('has expected h1', async ({ page }) => {

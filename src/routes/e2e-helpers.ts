@@ -1,4 +1,3 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations -- short name is conventional here
 import type { Page } from '@playwright/test'
 
 const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'

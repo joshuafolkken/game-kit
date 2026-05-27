@@ -47,7 +47,6 @@
 		return Math.max(min, Math.min(max, v))
 	}
 
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	function on_move_start(e: TouchEvent): void {
 		if (move_touch_id !== null) return
 		const t = e.changedTouches[0]
@@ -64,7 +63,6 @@
 		)
 	}
 
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	function on_look_start(e: TouchEvent): void {
 		if (look_touch_id !== null) return
 		if (e.target instanceof HTMLButtonElement) return
@@ -121,7 +119,6 @@
 		look_last_y = t.clientY
 	}
 
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	function on_touch_move(e: TouchEvent): void {
 		if (move_touch_id !== null) {
 			const t = find_touch(e.changedTouches, move_touch_id)
@@ -180,7 +177,6 @@
 		}
 	}
 
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	function on_touch_end(e: TouchEvent): void {
 		for (const touch of e.changedTouches) {
 			if (touch.identifier === move_touch_id) on_move_touch_end(touch.identifier)
@@ -188,12 +184,10 @@
 		}
 	}
 
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	function on_touch_cancel(e: TouchEvent): void {
 		for (const touch of e.changedTouches) cancel_touch_by_id(touch.identifier)
 	}
 
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	function on_jump_touch_start(e: TouchEvent): void {
 		e.preventDefault()
 		input.trigger_jump()

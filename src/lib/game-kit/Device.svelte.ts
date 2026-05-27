@@ -4,7 +4,6 @@ export function create_device() {
 	const mql = globalThis.matchMedia?.(TOUCH_PRIMARY_QUERY) ?? null
 	let is_touch = $state(mql?.matches ?? false)
 
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	mql?.addEventListener('change', (e: MediaQueryListEvent) => {
 		is_touch = e.matches
 	})
