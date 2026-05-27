@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { create_switch_input } from './switch-input'
 
 describe('create_switch_input', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let action: ReturnType<typeof vi.fn<() => void>>
 
 	beforeEach(() => {

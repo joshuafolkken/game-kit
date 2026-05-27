@@ -62,6 +62,7 @@
 		label_pause,
 	}: Props = $props()
 
+	// eslint-disable-next-line init-declarations -- assigned by Svelte bind:this
 	let container: HTMLElement
 	let container_width = $state(0)
 	let container_height = $state(0)

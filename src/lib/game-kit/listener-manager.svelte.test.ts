@@ -2,8 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { create_listener_manager, type ListenerSpec } from './listener-manager'
 
 describe('create_listener_manager', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let target: EventTarget
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let spy: ReturnType<typeof vi.fn>
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let spec: ListenerSpec
 
 	beforeEach(() => {

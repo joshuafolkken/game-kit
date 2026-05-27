@@ -98,6 +98,7 @@ describe('handle', () => {
 	})
 
 	it('still injects app version via transformPageChunk', async () => {
+		// eslint-disable-next-line init-declarations -- assigned inside `handle` mock by transformPageChunk capture
 		let captured_transform: ResolveOptions['transformPageChunk'] | undefined
 		const resolve = vi.fn<ResolveFn>().mockImplementation((_event, opts) => {
 			captured_transform = opts?.transformPageChunk

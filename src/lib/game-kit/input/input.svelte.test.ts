@@ -65,7 +65,9 @@ function make_pointer_event_with_offsets(
 }
 
 describe('input', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let cleanup: () => void
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let canvas_el: HTMLCanvasElement
 
 	beforeEach(() => {

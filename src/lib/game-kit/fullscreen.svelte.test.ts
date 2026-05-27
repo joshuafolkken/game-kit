@@ -2,7 +2,9 @@ import { create_fullscreen, fullscreen } from '$lib/game-kit/fullscreen.svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('fullscreen', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let cleanup: () => void
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let el: HTMLElement
 
 	beforeEach(() => {

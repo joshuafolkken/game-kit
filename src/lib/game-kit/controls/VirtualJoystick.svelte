@@ -11,7 +11,9 @@
 
 	const { label_jump, show_jump = true }: Props = $props()
 
+	// eslint-disable-next-line init-declarations -- assigned by Svelte bind:this
 	let move_zone: HTMLElement
+	// eslint-disable-next-line init-declarations -- assigned by Svelte bind:this
 	let look_zone: HTMLElement
 
 	const MOVE_MAX_DIST = 40
