@@ -3,7 +3,7 @@ import {
 	DECAY_RATE,
 	MAX_POSITION_OFFSET,
 	MAX_ROTATION_OFFSET,
-} from '$lib/game-kit/player/camera-shake.svelte'
+} from '$lib/game-kit/player/CameraShake.svelte'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 const STRONG = 1

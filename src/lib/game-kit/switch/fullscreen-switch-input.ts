@@ -1,4 +1,4 @@
-import { fullscreen } from '$lib/game-kit/fullscreen.svelte'
+import { fullscreen } from '$lib/game-kit/Fullscreen.svelte'
 import { create_switch_input } from '$lib/game-kit/switch/switch-input'
 
 let container: HTMLElement | null = null

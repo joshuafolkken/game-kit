@@ -3,13 +3,13 @@
 	import { HALF_D } from '$lib/game-kit/scene/room-config'
 	import type { SceneObjectsMessages } from '$lib/game-kit/scene/scene-objects-messages'
 	import SceneObjects from '$lib/game-kit/scene/SceneObjects.svelte'
-	import { game_state } from '$lib/game-kit/state.svelte'
+	import { game_state } from '$lib/game-kit/State.svelte'
 	import { SCORE_DISPLAY_Z } from '$lib/game/board-config'
 	import Board from '$lib/game/Board.svelte'
 	import { CREDITS_LINE_COUNT, CREDITS_TEXT } from '$lib/game/credits'
-	import { game } from '$lib/game/game.svelte'
+	import { game } from '$lib/game/Game.svelte'
 	import { messages } from '$lib/game/messages'
-	import { score } from '$lib/game/score.svelte'
+	import { score } from '$lib/game/Score.svelte'
 
 	const { start_z: CREDITS_SCROLL_START_Z, end_z: CREDITS_SCROLL_END_Z } =
 		make_credits_scroll_bounds(CREDITS_LINE_COUNT, HALF_D)

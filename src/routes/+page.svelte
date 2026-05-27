@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { device } from '$lib/game-kit/device.svelte'
+	import { device } from '$lib/game-kit/Device.svelte'
 	import GameScene from '$lib/game-kit/GameScene.svelte'
 	import { game_board_input } from '$lib/game/board-input'
-	import { game } from '$lib/game/game.svelte'
+	import { game } from '$lib/game/Game.svelte'
 	import { messages } from '$lib/game/messages'
 	import Scene from '$lib/game/Scene.svelte'
 

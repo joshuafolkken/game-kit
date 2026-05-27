@@ -15,8 +15,8 @@ import {
 	ON_RATIO,
 	RESTART_DELAY_MS,
 	STEP_MS_1_5,
-} from '$lib/game/game.svelte'
-import { create_score, score } from '$lib/game/score.svelte'
+} from '$lib/game/Game.svelte'
+import { create_score, score } from '$lib/game/Score.svelte'
 import type { ButtonColor } from '$lib/game/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useTask } from '@threlte/core'
-	import { fps } from '$lib/game-kit/display/fps.svelte'
+	import { fps } from '$lib/game-kit/display/Fps.svelte'
 
 	const FPS_UPDATE_INTERVAL_MS = 1000
 	const MS_PER_SECOND = 1000

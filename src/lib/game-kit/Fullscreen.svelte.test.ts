@@ -1,4 +1,4 @@
-import { create_fullscreen, fullscreen } from '$lib/game-kit/fullscreen.svelte'
+import { create_fullscreen, fullscreen } from '$lib/game-kit/Fullscreen.svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('fullscreen', () => {

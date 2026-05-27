@@ -286,7 +286,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 			/(?:let|const)\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
 		expect(SOURCE).toMatch(
-			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/Crt\.svelte'/u,
 		)
 		expect(SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/u)
 	})

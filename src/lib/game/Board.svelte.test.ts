@@ -85,9 +85,9 @@ describe('Board font selection — driven by CRT, not CYBER (is_alt)', () => {
 		expect(BOARD_SOURCE).toMatch(/fonts\.get_font_size_multiplier\(\s*should_use_alt_font\s*\)/u)
 	})
 
-	it('imports crt from $lib/game-kit/crt.svelte', () => {
+	it('imports crt from $lib/game-kit/Crt.svelte', () => {
 		expect(BOARD_SOURCE).toMatch(
-			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/Crt\.svelte'/u,
 		)
 	})
 

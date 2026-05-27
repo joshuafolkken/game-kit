@@ -59,9 +59,9 @@ describe('FloorCredits font selection — driven by CRT, not CYBER (is_alt)', ()
 		)
 	})
 
-	it('imports crt from $lib/game-kit/crt.svelte', () => {
+	it('imports crt from $lib/game-kit/Crt.svelte', () => {
 		expect(FLOOR_CREDITS_SOURCE).toMatch(
-			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/Crt\.svelte'/u,
 		)
 	})
 

@@ -1,4 +1,4 @@
-import { create_input, input } from '$lib/game-kit/input/input.svelte'
+import { create_input, input } from '$lib/game-kit/input/Input.svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const RIGHT_BUTTON = 2

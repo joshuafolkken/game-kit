@@ -1,5 +1,5 @@
-import { fullscreen } from '$lib/game-kit/fullscreen.svelte'
-import { session } from '$lib/game-kit/session.svelte'
+import { fullscreen } from '$lib/game-kit/Fullscreen.svelte'
+import { session } from '$lib/game-kit/Session.svelte'
 import { switch_audio } from '$lib/game-kit/switch/switch-audio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fullscreen_switch_input } from './fullscreen-switch-input'

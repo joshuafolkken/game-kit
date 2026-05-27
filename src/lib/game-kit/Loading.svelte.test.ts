@@ -4,7 +4,7 @@ import {
 	MIN_DISPLAY_MS,
 	OBSERVER_GLOBAL_KEY,
 	type DefaultLoadingStep,
-} from '$lib/game-kit/loading.svelte'
+} from '$lib/game-kit/Loading.svelte'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const STEP_MESSAGES: Record<DefaultLoadingStep, string> = {

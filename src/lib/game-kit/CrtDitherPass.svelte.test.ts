@@ -131,7 +131,7 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 	})
 
 	it('imports crt store and bypasses the CRT pipeline when CRT is disabled', () => {
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt\.svelte'/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/Crt\.svelte'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('crt.is_crt_enabled')
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/context\.renderer\.render\(context\.scene,\s*context\.camera\.current\)/u,

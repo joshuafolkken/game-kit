@@ -1,5 +1,5 @@
-import { crt } from '$lib/game-kit/crt.svelte.js'
-import { session } from '$lib/game-kit/session.svelte.js'
+import { crt } from '$lib/game-kit/Crt.svelte'
+import { session } from '$lib/game-kit/Session.svelte'
 import { switch_audio } from '$lib/game-kit/switch/switch-audio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { crt_switch_input } from './crt-switch-input.js'
