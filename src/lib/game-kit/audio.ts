@@ -1,15 +1,15 @@
-let ctx: AudioContext | null = null
+let context: AudioContext | null = null
 
 function init_audio(): void {
-	if (!ctx && typeof AudioContext !== 'undefined') {
-		ctx = new AudioContext()
+	if (!context && typeof AudioContext !== 'undefined') {
+		context = new AudioContext()
 	}
 }
 
 function get_audio_context(): AudioContext | null {
-	if (ctx?.state === 'suspended') void ctx.resume().catch(() => {})
+	if (context?.state === 'suspended') void context.resume().catch(() => {})
 
-	return ctx
+	return context
 }
 
 export const audio = { init_audio, get_audio_context }

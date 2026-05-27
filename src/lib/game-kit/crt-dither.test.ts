@@ -142,8 +142,8 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 	})
 
 	it('repeats every period units', () => {
-		for (let i = 0; i < 5; i++) {
-			const base = i * PERIOD
+		for (let index = 0; index < 5; index++) {
+			const base = index * PERIOD
 
 			expect(crt_dither.compute_scanline_factor(base, PERIOD, SCANLINE_DARK)).toBeCloseTo(
 				SCANLINE_DARK,

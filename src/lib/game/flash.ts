@@ -43,7 +43,7 @@ async function flash_burst(
 	colors: ReadonlyArray<ButtonColor>,
 	gen: number,
 ): Promise<void> {
-	for (let i = 0; i < FLASH_BURST_CYCLES; i++) {
+	for (let index = 0; index < FLASH_BURST_CYCLES; index++) {
 		if (t.flash_gen !== gen) return
 		s.flash_colors = [...colors]
 		s.flash_intensity = FLASH_INTENSITY_BURST

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 
+// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 type ChangeListener = (e: { matches: boolean }) => void
 
 function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean) => void } {
@@ -10,12 +11,12 @@ function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean)
 
 	return {
 		matches: initial,
-		addEventListener(_: string, fn: EventListenerOrEventListenerObject): void {
-			listeners.push(fn as unknown as ChangeListener)
+		addEventListener(_: string, function_: EventListenerOrEventListenerObject): void {
+			listeners.push(function_ as unknown as ChangeListener)
 		},
 		removeEventListener(): void {},
 		_fire(v: boolean): void {
-			for (const fn of listeners) fn({ matches: v })
+			for (const function_ of listeners) function_({ matches: v })
 		},
 	} as unknown as MediaQueryList & { _fire: (v: boolean) => void }
 }

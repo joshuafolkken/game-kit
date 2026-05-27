@@ -57,11 +57,11 @@ describe('GameScene', () => {
 		if (!scene) return
 		scene.click()
 		flushSync()
-		const btn = container.querySelector<HTMLElement>('[data-testid="jump-btn"]')
+		const button = container.querySelector<HTMLElement>('[data-testid="jump-btn"]')
 
-		expect(btn).toBeTruthy()
-		expect(btn?.getAttribute('aria-label')).toBe(LABEL_JUMP)
-		expect(btn?.querySelector('svg')).toBeTruthy()
+		expect(button).toBeTruthy()
+		expect(button?.getAttribute('aria-label')).toBe(LABEL_JUMP)
+		expect(button?.querySelector('svg')).toBeTruthy()
 	})
 
 	it('renders a canvas element', () => {
@@ -302,11 +302,11 @@ describe('GameScene', () => {
 			if (!scene) return
 			scene.click()
 			flushSync()
-			const pause_btn = container.querySelector<HTMLElement>('[data-testid="pause-btn"]')
+			const pause_button = container.querySelector<HTMLElement>('[data-testid="pause-btn"]')
 
-			expect(pause_btn).toBeTruthy()
-			if (!pause_btn) return
-			pause_btn.click()
+			expect(pause_button).toBeTruthy()
+			if (!pause_button) return
+			pause_button.click()
 			flushSync()
 			expect(session.is_session_started).toBe(false)
 		})
@@ -321,11 +321,11 @@ describe('GameScene', () => {
 			if (!scene) return
 			scene.click()
 			flushSync()
-			const pause_btn = container.querySelector<HTMLElement>('[data-testid="pause-btn"]')
+			const pause_button = container.querySelector<HTMLElement>('[data-testid="pause-btn"]')
 
-			expect(pause_btn).toBeTruthy()
-			if (!pause_btn) return
-			const style = globalThis.getComputedStyle(pause_btn)
+			expect(pause_button).toBeTruthy()
+			if (!pause_button) return
+			const style = globalThis.getComputedStyle(pause_button)
 
 			expect(style.bottom).toBe('16px')
 			expect(style.right).toBe('16px')

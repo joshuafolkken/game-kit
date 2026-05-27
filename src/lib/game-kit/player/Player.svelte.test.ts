@@ -24,8 +24,8 @@ const { tick_holder, mock_input } = vi.hoisted(() => ({
 
 vi.mock('@threlte/core', () => ({
 	T: {},
-	useTask: vi.fn((fn: (delta: number) => void) => {
-		tick_holder.fn = fn
+	useTask: vi.fn((function_: (delta: number) => void) => {
+		tick_holder.fn = function_
 	}),
 }))
 vi.mock('$lib/game-kit/input/input.svelte', () => ({ input: mock_input }))

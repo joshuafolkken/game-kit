@@ -1,3 +1,4 @@
+// eslint-disable-next-line unicorn/prevent-abbreviations -- short name is conventional here
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { stub_touch_primary } from './e2e-helpers'
@@ -131,7 +132,7 @@ test('high score persists in localStorage across page reload', async ({ page }) 
 		] as const,
 	)
 	await page.goto('/')
-	const [score_val, round_val, check_val] = await page.evaluate(
+	const [score_value, round_value, check_value] = await page.evaluate(
 		([sk, rk, ck]) => [
 			localStorage.getItem(sk),
 			localStorage.getItem(rk),
@@ -140,20 +141,21 @@ test('high score persists in localStorage across page reload', async ({ page }) 
 		[HIGH_SCORE_STORAGE_KEY, HIGH_SCORE_ROUND_KEY, HIGH_SCORE_CHECK_KEY] as const,
 	)
 
-	expect(score_val).toBe(String(SAMPLE_HIGH_SCORE))
-	expect(round_val).toBe(String(SAMPLE_HIGH_ROUND))
-	expect(check_val).toBe(String(stored_check))
+	expect(score_value).toBe(String(SAMPLE_HIGH_SCORE))
+	expect(round_value).toBe(String(SAMPLE_HIGH_ROUND))
+	expect(check_value).toBe(String(stored_check))
 })
 
 test('game scene loads without shadow-related WebGL errors', async ({ page }) => {
 	const errors: Array<string> = []
 
-	page.on('pageerror', (err) => errors.push(err.message))
+	page.on('pageerror', (error) => errors.push(error.message))
 	await page.goto('/')
 	await expect(page.locator('[data-testid="loading-overlay"]')).toBeHidden({
 		timeout: LOADING_OVERLAY_TIMEOUT_MS,
 	})
 	const webgl_errors = errors.filter(
+		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		(e) => e.toLowerCase().includes('shadow') || e.toLowerCase().includes('webgl'),
 	)
 
@@ -176,9 +178,9 @@ test('loading overlay shows JOSHUA GAME as the game title', async ({ page }) => 
 	await page.goto('/')
 	const game_title = await page.evaluate(() => {
 		const overlay = document.querySelector('#static-loading-overlay')
-		const el = overlay?.querySelector('.game-title')
+		const element = overlay?.querySelector('.game-title')
 
-		return el?.textContent ?? null
+		return element?.textContent ?? null
 	})
 
 	expect(game_title).toBe('JOSHUA GAME')

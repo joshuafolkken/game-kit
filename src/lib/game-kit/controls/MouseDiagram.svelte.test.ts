@@ -55,8 +55,8 @@ describe('MouseDiagram', () => {
 
 		expect(stroked.length).toBeGreaterThan(0)
 
-		for (const el of stroked) {
-			expect(Number(el.getAttribute('stroke-width'))).toBeLessThanOrEqual(1)
+		for (const element of stroked) {
+			expect(Number(element.getAttribute('stroke-width'))).toBeLessThanOrEqual(1)
 		}
 	})
 })
