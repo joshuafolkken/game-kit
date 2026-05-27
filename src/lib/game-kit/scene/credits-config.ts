@@ -20,6 +20,7 @@ export function make_credits_scroll_bounds(
 	return { start_z: offset, end_z: -offset }
 }
 
+// eslint-disable-next-line max-params -- scrolling math signature with 5 numeric params; object-arg shape adds noise at call sites
 export function advance_scroll(
 	current_z: number,
 	delta: number,

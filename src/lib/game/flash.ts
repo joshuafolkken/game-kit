@@ -70,7 +70,7 @@ async function flash_cascade(
 		await delay(FLASH_CASCADE_FWD_MS)
 	}
 
-	for (const color of [...colors].reverse()) {
+	for (const color of colors.toReversed()) {
 		if (t.flash_gen !== gen) return
 		s.flash_colors = [color]
 		s.flash_intensity = FLASH_INTENSITY_BURST

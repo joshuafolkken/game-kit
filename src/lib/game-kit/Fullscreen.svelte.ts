@@ -52,6 +52,7 @@ function update_native_flag(s: FullscreenState): void {
 async function request_fullscreen(s: FullscreenState, element: HTMLElement): Promise<void> {
 	if (s.is_native_fullscreen || s.is_pseudo_fullscreen) return
 	const did_succeed = await call_native_request(element)
+	// eslint-disable-next-line require-atomic-updates -- `s.is_pseudo_fullscreen` is read once at entry, awaited, then assigned. There is no concurrent caller (single-user fullscreen state machine).
 	if (!did_succeed) s.is_pseudo_fullscreen = true
 }
 
@@ -75,6 +76,7 @@ export function create_fullscreen() {
 	let manager: ListenerManager | null = null
 
 	function setup_listeners(): () => void {
+		// eslint-disable-next-line no-multi-assign -- `(manager ??= ...)` is the idiomatic lazy-init pattern
 		const m = (manager ??= create_listener_manager([
 			{ target: document, type: 'fullscreenchange', handler },
 			{ target: document, type: 'webkitfullscreenchange', handler },

@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
 	import { Text } from '@threlte/extras'
-	import { resolve_switch_colors } from '$lib/game-kit/switch/switch-colors'
-	import type { SwitchColors } from '$lib/game-kit/switch/switch-colors'
-	import type { SwitchGeometry, SwitchIconType } from '$lib/game-kit/switch/switch-config'
+	import { resolve_switch_colors, type SwitchColors } from '$lib/game-kit/switch/switch-colors'
 	import {
 		DEFAULT_SWITCH_GEOMETRY,
 		FPS_BAR_1_H,
@@ -11,6 +9,8 @@
 		FPS_BAR_3_H,
 		FPS_BAR_BASE_Y,
 		FPS_BAR_X_STEP,
+		type SwitchGeometry,
+		type SwitchIconType,
 	} from '$lib/game-kit/switch/switch-config'
 	import { onDestroy } from 'svelte'
 	import { MeshStandardMaterial } from 'three'

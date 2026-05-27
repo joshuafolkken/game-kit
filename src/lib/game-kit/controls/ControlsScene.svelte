@@ -225,6 +225,7 @@
 				mouse_tex = ms
 				touch_tex = tc
 			} catch (error) {
+				// eslint-disable-next-line no-console -- console.warn is the standard diagnostic channel for non-fatal asset load failures
 				console.warn('[ControlsScene] failed to load control hint textures', error)
 			}
 		})()

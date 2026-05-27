@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- testing parity between src/ and templates/; intentional cross-tree read
 import TEMPLATE_BOARD_SOURCE from '../../../templates/src/lib/game/Board.svelte?raw'
 import Board from './Board.svelte'
 import BOARD_SOURCE from './Board.svelte?raw'

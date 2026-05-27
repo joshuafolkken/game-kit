@@ -44,7 +44,8 @@ function get_step_ms(length_: number): number {
 }
 
 function add_to_sequence(s: GameState, colors: ReadonlyArray<ButtonColor>): void {
-	const index = Math.floor(Math.random() * colors.length) // NOSONAR — game RNG, not security-sensitive
+	// eslint-disable-next-line sonarjs/pseudo-random -- game RNG; not security-sensitive
+	const index = Math.floor(Math.random() * colors.length)
 
 	s.sequence.push(colors[index] ?? FALLBACK_COLOR)
 }

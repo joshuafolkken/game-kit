@@ -16,6 +16,7 @@
 			return
 		}
 
+		// eslint-disable-next-line no-plusplus -- frame counter in render loop; `+= 1` is busier here
 		frame_count++
 		const now = performance.now()
 		const elapsed = now - last_time

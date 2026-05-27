@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-params -- viewport-rendering math signature with 6 numeric tuning params; object-arg shape adds noise at call sites
 function compute_pixel_dpr(
 	viewport_w: number,
 	viewport_h: number,

@@ -43,4 +43,5 @@
 <svelte:head>
 	<title>{messages.game_title}</title>
 </svelte:head>
+<!-- eslint-disable-next-line @typescript-eslint/no-unsafe-call -->
 {@render children()}

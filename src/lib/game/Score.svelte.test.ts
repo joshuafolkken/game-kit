@@ -333,6 +333,7 @@ describe('legacy simon_* migration', () => {
 		vi.unstubAllGlobals()
 	})
 
+	// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper scoped to the migration describe block
 	function stub_legacy_only(store: Record<string, string>): { set_calls: Array<[string, string]> } {
 		const set_calls: Array<[string, string]> = []
 

@@ -104,6 +104,7 @@ describe('GameScene', () => {
 		let call_count = 0
 		const { container } = render_scene({
 			on_start: () => {
+				// eslint-disable-next-line no-plusplus -- idiomatic counter increment inside a test callback
 				call_count++
 			},
 		})

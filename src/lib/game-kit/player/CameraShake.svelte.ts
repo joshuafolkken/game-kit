@@ -16,7 +16,8 @@ function reset(): void {
 function sample(max: number): number {
 	if (intensity <= 0) return 0
 
-	return (Math.random() * 2 - 1) * max * intensity // NOSONAR — visual animation only
+	// eslint-disable-next-line sonarjs/pseudo-random -- visual camera shake; not security-sensitive
+	return (Math.random() * 2 - 1) * max * intensity
 }
 
 function step(delta: number): void {
