@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { RequestEvent, ResolveOptions } from '@sveltejs/kit'
 import { describe, expect, it, vi } from 'vitest'
+// eslint-disable-next-line import/extensions -- `hooks.server` is a SvelteKit-mandated multi-part filename, not an extension
 import { handle, inject_game_name, inject_version } from './hooks.server'
 
 const { version } = JSON.parse(
