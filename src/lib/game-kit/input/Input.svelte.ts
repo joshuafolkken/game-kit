@@ -84,7 +84,6 @@ function dispatch_synthetic_pointer(
 	canvas_element.dispatchEvent(synth)
 }
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 function on_mouse_down_impl(s: InputState, e: MouseEvent): void {
 	if (e.button !== RIGHT_MOUSE_BUTTON) return
 	s.drag_start_x = e.clientX
@@ -93,14 +92,12 @@ function on_mouse_down_impl(s: InputState, e: MouseEvent): void {
 	if (e.target instanceof HTMLElement) void e.target.requestPointerLock?.()
 }
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 function on_mouse_up_impl(s: InputState, e: MouseEvent): void {
 	if (e.button !== RIGHT_MOUSE_BUTTON) return
 	s.is_dragging_look = false
 	if (document.pointerLockElement) document.exitPointerLock()
 }
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 function on_mouse_move_impl(s: InputState, e: MouseEvent): void {
 	if (!s.is_dragging_look) return
 	s.yaw -= e.movementX * MOUSE_SENSITIVITY
@@ -111,7 +108,6 @@ function on_pointer_lock_change_impl(s: InputState): void {
 	if (!document.pointerLockElement) s.is_dragging_look = false
 }
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 function on_wheel_impl(s: InputState, e: WheelEvent): void {
 	e.preventDefault()
 	s.yaw += e.deltaX * WHEEL_SENSITIVITY
@@ -128,7 +124,6 @@ function override_offset_during_drag_impl(s: InputState, event: Event): void {
 
 function on_left_mouse_for_synth_impl(
 	s: InputState,
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	e: MouseEvent,
 	references: InputReferences,
 ): void {
@@ -161,7 +156,6 @@ function on_left_mouse_for_synth_impl(
 	}
 }
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 function on_key_impl(s: InputState, e: KeyboardEvent, is_down: boolean): void {
 	if (e.key === 'Shift') {
 		s.is_sprinting = is_down
@@ -182,7 +176,6 @@ function on_key_impl(s: InputState, e: KeyboardEvent, is_down: boolean): void {
 }
 
 function make_drag_override_specs(s: InputState): Array<ListenerSpec> {
-	// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 	const handler = (e: Event): void => override_offset_during_drag_impl(s, e)
 
 	return [
@@ -198,46 +191,37 @@ function make_listener_specs(
 	references: InputReferences,
 ): ReadonlyArray<ListenerSpec> {
 	return [
-		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		{ target: document, type: 'mousedown', handler: (e) => on_mouse_down_impl(s, e as MouseEvent) },
-		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		{ target: document, type: 'mousemove', handler: (e) => on_mouse_move_impl(s, e as MouseEvent) },
-		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		{ target: document, type: 'mouseup', handler: (e) => on_mouse_up_impl(s, e as MouseEvent) },
 		{
 			target: document,
 			type: 'mousedown',
-			// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 			handler: (e) => on_left_mouse_for_synth_impl(s, e as MouseEvent, references),
 			options: CAPTURE,
 		},
 		{
 			target: document,
 			type: 'mouseup',
-			// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 			handler: (e) => on_left_mouse_for_synth_impl(s, e as MouseEvent, references),
 			options: CAPTURE,
 		},
 		{
 			target: document,
 			type: 'wheel',
-			// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 			handler: (e) => on_wheel_impl(s, e as WheelEvent),
 			options: PASSIVE_FALSE,
 		},
 		{
 			target: document,
 			type: 'contextmenu',
-			// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 			handler: (e) => {
 				e.preventDefault()
 			},
 		},
 		{ target: document, type: 'pointerlockchange', handler: () => on_pointer_lock_change_impl(s) },
 		...make_drag_override_specs(s),
-		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		{ target: document, type: 'keydown', handler: (e) => on_key_impl(s, e as KeyboardEvent, true) },
-		// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 		{ target: document, type: 'keyup', handler: (e) => on_key_impl(s, e as KeyboardEvent, false) },
 		{ target: globalThis, type: 'blur', handler: () => reset_transient_input(s) },
 	]

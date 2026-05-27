@@ -141,8 +141,7 @@
 	{#each BUTTON_CONFIGS as button (button.color)}
 		<T.Group rotation.z={button.rotation}>
 			<T.Mesh
-				onpointerdown={// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
-				(e: { nativeEvent: { button: number } }) =>
+				onpointerdown={(e: { nativeEvent: { button: number } }) =>
 					game_board_input.on_button_pointer_down(e, button.color)}
 				onpointerup={() => game_board_input.on_button_release()}
 				onpointerleave={() => game_board_input.on_button_release()}

@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- idiomatic event-handler parameter name
 type ChangeListener = (e: { matches: boolean }) => void
 
 function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean) => void } {

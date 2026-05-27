@@ -30,11 +30,11 @@ describe('CrtChromaticFilter.svelte — SVG defs structure', () => {
 		// retune. The structural property — R and B offset in opposite directions by
 		// the same horizontal amount — is what actually defines the effect, so assert
 		// that instead.
-		const r_match = CRT_CHROMATIC_FILTER_SOURCE.match(
-			/<feOffset[^>]*\sin="r_only"[^>]*\sdx="(-?\d+(?:\.\d+)?)"[^>]*\sdy="0"/u,
+		const r_match = /<feOffset[^>]*\sin="r_only"[^>]*\sdx="(-?\d+(?:\.\d+)?)"[^>]*\sdy="0"/u.exec(
+			CRT_CHROMATIC_FILTER_SOURCE,
 		)
-		const b_match = CRT_CHROMATIC_FILTER_SOURCE.match(
-			/<feOffset[^>]*\sin="b_only"[^>]*\sdx="(-?\d+(?:\.\d+)?)"[^>]*\sdy="0"/u,
+		const b_match = /<feOffset[^>]*\sin="b_only"[^>]*\sdx="(-?\d+(?:\.\d+)?)"[^>]*\sdy="0"/u.exec(
+			CRT_CHROMATIC_FILTER_SOURCE,
 		)
 
 		expect(r_match).toBeTruthy()

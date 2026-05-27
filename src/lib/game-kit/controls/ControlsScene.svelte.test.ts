@@ -189,7 +189,7 @@ describe('ControlsScene PC icon fit — keyboard and mouse must not overflow the
 
 describe('ControlsScene keyboard letters — overlaid as Threlte Text using the theme font', () => {
 	it('keyboard SVG contains only key boxes (no <text> elements) — letters are overlaid as Threlte Text', () => {
-		const svg_match = SOURCE.match(/const\s+KEYBOARD_SVG\s*=\s*`([\s\S]*?)`/u)
+		const svg_match = /const\s+KEYBOARD_SVG\s*=\s*`([\s\S]*?)`/u.exec(SOURCE)
 
 		expect(svg_match).not.toBeNull()
 		const svg_body = svg_match?.[1] ?? ''
@@ -201,7 +201,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 
 	it('KEYBOARD_LETTERS array enumerates all 7 letter overlays (W, A, S, D, ESC, /, Z)', () => {
 		expect(SOURCE).toMatch(/const\s+KEYBOARD_LETTERS\s*:\s*ReadonlyArray<KeyboardLetter>\s*=/u)
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
+		const letter_match = /const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u.exec(SOURCE)
 
 		expect(letter_match).not.toBeNull()
 		const block = letter_match?.[0] ?? ''
@@ -218,7 +218,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 	it('WASD letters are pinned to vsize 16 — kept large for readability', () => {
 		// Reason: vsize is the only signal of intentional visual sizing; without pinning,
 		// silent drift during unrelated edits could shrink the keys back.
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
+		const letter_match = /const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u.exec(SOURCE)
 		const block = letter_match?.[0] ?? ''
 
 		expect(block).toMatch(/text:\s*'W'[^}]*vsize:\s*16/u)
@@ -230,7 +230,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 	it('WASD letter vy values are pinned to the lowered key positions (W=38, A/S/D=82)', () => {
 		// Reason: the WASD rows were moved down so the ASD-to-space gap matches the
 		// space-to-ESC gap. The letter vy values must follow the rect centers.
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
+		const letter_match = /const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u.exec(SOURCE)
 		const block = letter_match?.[0] ?? ''
 
 		expect(block).toMatch(/text:\s*'W'[^}]*vy:\s*38/u)
@@ -243,7 +243,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 		// Reason: ESC has 3 glyphs versus the single-glyph WASD/Z keys, so it is sized
 		// smaller than 16 to avoid horizontal overflow within the key rect. Pinning the
 		// literal value prevents accidental regression to the previous tiny size.
-		const letter_match = SOURCE.match(/const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u)
+		const letter_match = /const\s+KEYBOARD_LETTERS[\s\S]*?\n\t\]/u.exec(SOURCE)
 		const block = letter_match?.[0] ?? ''
 
 		expect(block).toMatch(/text:\s*'ESC'[^}]*vsize:\s*12/u)
@@ -262,7 +262,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 	})
 
 	it('letter Text uses font={current_font} so it matches the hint text font exactly', () => {
-		const each_block = SOURCE.match(/\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u)
+		const each_block = /\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u.exec(SOURCE)
 
 		expect(each_block).not.toBeNull()
 		const block = each_block?.[0] ?? ''
@@ -312,7 +312,7 @@ describe('ControlsScene viewport reactivity — sizes update on window resize', 
 
 describe('ControlsScene texture loading — leak-safe blob URLs and unhandled rejections', () => {
 	it('svg_to_texture revokes the object URL in a finally block (no leak on failure)', () => {
-		const function_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
+		const function_match = /async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u.exec(SOURCE)
 
 		expect(function_match).not.toBeNull()
 		const body = function_match?.[0] ?? ''
@@ -321,7 +321,7 @@ describe('ControlsScene texture loading — leak-safe blob URLs and unhandled re
 	})
 
 	it('svg_to_texture does not call URL.revokeObjectURL outside the finally block', () => {
-		const function_match = SOURCE.match(/async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u)
+		const function_match = /async\s+function\s+svg_to_texture\([\s\S]*?\n\t\}/u.exec(SOURCE)
 		const body = function_match?.[0] ?? ''
 		const revoke_count = (body.match(/URL\.revokeObjectURL\(/gu) ?? []).length
 
@@ -329,7 +329,7 @@ describe('ControlsScene texture loading — leak-safe blob URLs and unhandled re
 	})
 
 	it('load_textures catches Promise.all rejection to avoid unhandled rejection', () => {
-		const function_match = SOURCE.match(/async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/u)
+		const function_match = /async\s+function\s+load_textures\([\s\S]*?\}\)\(\)/u.exec(SOURCE)
 
 		expect(function_match).not.toBeNull()
 		const body = function_match?.[0] ?? ''
@@ -341,7 +341,7 @@ describe('ControlsScene texture loading — leak-safe blob URLs and unhandled re
 
 function extract_const_number(source: string, name: string): number {
 	const re = new RegExp(String.raw`const\s+${name}\s*=\s*(-?\d+(?:\.\d+)?)`, 'u')
-	const match = source.match(re)
+	const match = re.exec(source)
 	if (!match) throw new Error(`constant ${name} not found in source`)
 
 	return Number(match[1])
@@ -501,7 +501,7 @@ const TOUCH_SVG_GESTURE_GROUP_COUNT = 2
 
 describe('ControlsScene touch SVG gesture centering — illustration vertically centered within frame', () => {
 	it('both gesture group y-translations center the bounding box within the frame rect', () => {
-		const svg_match = SOURCE.match(/const\s+TOUCH_SVG\s*=\s*`([\s\S]*?)`/u)
+		const svg_match = /const\s+TOUCH_SVG\s*=\s*`([\s\S]*?)`/u.exec(SOURCE)
 
 		expect(svg_match).not.toBeNull()
 		const svg_body = svg_match?.[1] ?? ''
