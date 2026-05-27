@@ -3,8 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const MOCK_URL = 'mock-click.opus'
 
 describe('switch_audio.play_switch_click', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let play_mock: ReturnType<typeof vi.fn>
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let audio_ctor: ReturnType<typeof vi.fn>
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let shared_instance: { currentTime: number; play: ReturnType<typeof vi.fn> }
 
 	beforeEach(() => {

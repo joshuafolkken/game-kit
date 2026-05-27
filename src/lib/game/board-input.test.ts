@@ -7,8 +7,11 @@ const LEFT_BUTTON = 0
 const RIGHT_BUTTON = 2
 
 describe('game_board_input', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let press_mock: ReturnType<typeof vi.fn<(color: ButtonColor) => void>>
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let release_mock: ReturnType<typeof vi.fn<() => void>>
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let start_mock: ReturnType<typeof vi.fn<() => void>>
 
 	beforeEach(() => {

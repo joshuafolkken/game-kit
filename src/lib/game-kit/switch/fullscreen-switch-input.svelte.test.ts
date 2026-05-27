@@ -5,7 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fullscreen_switch_input } from './fullscreen-switch-input'
 
 describe('fullscreen_switch_input', () => {
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let container: HTMLElement
+	// eslint-disable-next-line init-declarations -- assigned by beforeEach
 	let cleanup_fullscreen: () => void
 
 	beforeEach(() => {
