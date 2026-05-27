@@ -1,8 +1,8 @@
 <script lang="ts">
 	import './layout.css'
 	import click_url from '$lib/assets/sound/dragon-studio-distorted-electronic-click-472367.opus'
-	import { loading, OVERLAY_ELEMENT_ID, OVERLAY_HIDDEN_CLASS } from '$lib/game-kit/loading.svelte'
-	import { game_state } from '$lib/game-kit/state.svelte'
+	import { loading, OVERLAY_ELEMENT_ID, OVERLAY_HIDDEN_CLASS } from '$lib/game-kit/Loading.svelte'
+	import { game_state } from '$lib/game-kit/State.svelte'
 	import { switch_audio } from '$lib/game-kit/switch/switch-audio'
 	import { messages } from '$lib/game/messages'
 

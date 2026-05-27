@@ -21,8 +21,8 @@ vi.mock('$lib/game-kit/display/ScoreDisplay.svelte', () => ({
 }))
 vi.mock('$lib/game-kit/switch/Switch.svelte', () => ({ default: function Switch() {} }))
 vi.mock('./FloorCredits.svelte', () => ({ default: function FloorCredits() {} }))
-vi.mock('$lib/game-kit/fullscreen.svelte', () => ({ fullscreen: { is_active: false } }))
-vi.mock('$lib/game-kit/state.svelte', () => ({ game_state: { is_alt: false } }))
+vi.mock('$lib/game-kit/Fullscreen.svelte', () => ({ fullscreen: { is_active: false } }))
+vi.mock('$lib/game-kit/State.svelte', () => ({ game_state: { is_alt: false } }))
 vi.mock('$lib/game-kit/input/pointer-compute.js', () => ({
 	make_pointer_compute: vi.fn(() => vi.fn()),
 }))
@@ -58,10 +58,10 @@ vi.mock('$lib/game-kit/switch/fullscreen-switch-input', () => ({
 vi.mock('$lib/game-kit/switch/fps-switch-input', () => ({
 	fps_switch_input: { on_click: vi.fn() },
 }))
-vi.mock('$lib/game-kit/crt.svelte', () => ({
+vi.mock('$lib/game-kit/Crt.svelte', () => ({
 	crt: { is_crt_enabled: true, toggle: vi.fn() },
 }))
-vi.mock('$lib/game-kit/display/fps.svelte', () => ({
+vi.mock('$lib/game-kit/display/Fps.svelte', () => ({
 	fps: { is_fps_enabled: true, current_fps_text: '---', toggle: vi.fn() },
 }))
 vi.mock('$lib/game-kit/display/FpsDisplay.svelte', () => ({ default: function FpsDisplay() {} }))
@@ -144,9 +144,9 @@ describe('SceneObjects font selection — driven by CRT, not CYBER (is_alt)', ()
 		)
 	})
 
-	it('imports crt from $lib/game-kit/crt.svelte so the derived can read is_crt_enabled', () => {
+	it('imports crt from $lib/game-kit/Crt.svelte so the derived can read is_crt_enabled', () => {
 		expect(SCENE_OBJECTS_SOURCE).toMatch(
-			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/crt\.svelte'/u,
+			/import\s*\{[^}]*\bcrt\b[^}]*\}\s*from\s*'\$lib\/game-kit\/Crt\.svelte'/u,
 		)
 	})
 

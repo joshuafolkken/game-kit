@@ -1,5 +1,5 @@
-import { session } from '$lib/game-kit/session.svelte'
-import { game_state } from '$lib/game-kit/state.svelte'
+import { session } from '$lib/game-kit/Session.svelte'
+import { game_state } from '$lib/game-kit/State.svelte'
 import { switch_audio } from '$lib/game-kit/switch/switch-audio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { alt_switch_input } from './alt-switch-input'

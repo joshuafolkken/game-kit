@@ -1,7 +1,7 @@
-import { game_state } from '$lib/game-kit/state.svelte'
+import { game_state } from '$lib/game-kit/State.svelte'
 import { game_audio } from './audio'
 import { cancel_flash, run_victory_flash, type FlashState, type FlashTimers } from './flash'
-import { score as default_score, type ScoreInstance } from './score.svelte'
+import { score as default_score, type ScoreInstance } from './Score.svelte'
 import type { ButtonColor, GamePhase } from './types'
 
 export const STEP_MS_1_5 = 500

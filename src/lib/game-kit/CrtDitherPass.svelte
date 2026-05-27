@@ -21,7 +21,7 @@
 		SCANLINE_SHARPNESS,
 		UPSCALE_FRAGMENT_SHADER,
 	} from '$lib/game-kit/crt-dither'
-	import { crt } from '$lib/game-kit/crt.svelte'
+	import { crt } from '$lib/game-kit/Crt.svelte'
 	import { onDestroy } from 'svelte'
 	import { NearestFilter, ShaderMaterial, Vector2, Vector3, type Texture } from 'three'
 	import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'

@@ -1,4 +1,4 @@
-import { crt } from './crt.svelte'
+import { crt } from './Crt.svelte'
 
 const FONT_RETRO = '/fonts/PressStart2P.ttf'
 const FONT_ALT = '/fonts/Orbitron.ttf'

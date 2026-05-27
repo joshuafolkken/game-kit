@@ -1,6 +1,6 @@
 import { make_credits_scroll_bounds } from '$lib/game-kit/scene/credits-config'
 import { messages } from '$lib/game/messages'
-import { score } from '$lib/game/score.svelte'
+import { score } from '$lib/game/Score.svelte'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import Scene from './Scene.svelte'
@@ -10,7 +10,7 @@ vi.mock('$lib/game/Board.svelte', () => ({ default: function Board() {} }))
 vi.mock('$lib/game/board-config', () => ({
 	SCORE_DISPLAY_Z: -4.65,
 }))
-vi.mock('$lib/game-kit/state.svelte', () => ({ game_state: { is_alt: false } }))
+vi.mock('$lib/game-kit/State.svelte', () => ({ game_state: { is_alt: false } }))
 vi.mock('$lib/game/messages', () => ({
 	messages: {
 		game_title: 'JOSHUA GAME',
@@ -23,7 +23,7 @@ vi.mock('$lib/game/messages', () => ({
 		game_start: 'START',
 	},
 }))
-vi.mock('$lib/game/game.svelte', () => ({
+vi.mock('$lib/game/Game.svelte', () => ({
 	game: {
 		active_color: null,
 		pressed_color: null,
@@ -33,7 +33,7 @@ vi.mock('$lib/game/game.svelte', () => ({
 		flash_intensity: 1,
 	},
 }))
-vi.mock('$lib/game/score.svelte', () => ({
+vi.mock('$lib/game/Score.svelte', () => ({
 	score: {
 		high_score: 42,
 		current_score: 7,

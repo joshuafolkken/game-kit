@@ -2,7 +2,7 @@
 	import { T, useThrelte } from '@threlte/core'
 	import { Text } from '@threlte/extras'
 	import { compute_fit_scale } from '$lib/game-kit/controls/controls-fit'
-	import { crt } from '$lib/game-kit/crt.svelte'
+	import { crt } from '$lib/game-kit/Crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
 	import { onMount } from 'svelte'
 	import { BackSide, CanvasTexture, DoubleSide, FrontSide, NearestFilter } from 'three'

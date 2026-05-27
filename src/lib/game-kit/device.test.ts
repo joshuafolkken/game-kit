@@ -1,4 +1,4 @@
-import { create_device } from '$lib/game-kit/device.svelte'
+import { create_device } from '$lib/game-kit/Device.svelte'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'

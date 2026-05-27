@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { crt } from './crt.svelte'
+import { crt } from './Crt.svelte'
 import { fonts } from './fonts'
 
 const RETRO_MULTIPLIER = 0.8

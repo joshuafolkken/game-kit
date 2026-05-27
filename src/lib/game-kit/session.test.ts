@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { create_session, session } from './session.svelte'
+import { create_session, session } from './Session.svelte'
 
 describe('session', () => {
 	beforeEach(() => {

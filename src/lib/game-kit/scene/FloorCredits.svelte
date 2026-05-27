@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useTask } from '@threlte/core'
 	import { Text } from '@threlte/extras'
-	import { crt } from '$lib/game-kit/crt.svelte'
+	import { crt } from '$lib/game-kit/Crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
 	import { untrack } from 'svelte'
 	import {
