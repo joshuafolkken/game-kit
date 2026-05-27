@@ -77,26 +77,8 @@ const LAYER_B_DISABLES = {
 // Tracked as Layer C follow-up (add a scripts tsconfig; restructure templates).
 const FILE_IGNORES = ['scripts/**', 'templates/**']
 
-// kit#424 workaround: `.svelte.test.ts` files are matched by SVELTE_FILE_PATTERNS.svelte
-// in kit 0.188.0, which adds `projectService: true`. Kit's base config also sets
-// `project: './tsconfig.json'`, and ESLint flat-config merges parserOptions — so the
-// combined options trip typescript-eslint's "Enabling 'project' does nothing when
-// 'projectService' is enabled" guard, which surfaces as a Parsing error and blocks
-// further lint output for those files. Until kit#424 lands, override the parserOptions
-// to use a stand-alone `project` (matching kit's base) — drops projectService entirely.
-const KIT_424_WORKAROUND = {
-	files: ['**/*.svelte.test.ts', '**/*.svelte.spec.ts'],
-	languageOptions: {
-		parserOptions: {
-			projectService: false,
-			project: './tsconfig.json',
-			extraFileExtensions: [],
-		},
-	},
-}
-
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
 	svelte_config: svelteConfig,
-}).concat({ ignores: FILE_IGNORES }, KIT_424_WORKAROUND, { rules: LAYER_B_DISABLES })
+}).concat({ ignores: FILE_IGNORES }, { rules: LAYER_B_DISABLES })
