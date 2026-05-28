@@ -5,8 +5,16 @@ import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import Scene from './Scene.svelte'
 
-vi.mock('$lib/game-kit/scene/SceneObjects.svelte', () => ({ default: function SceneObjects() {} }))
-vi.mock('$lib/game/Board.svelte', () => ({ default: function Board() {} }))
+vi.mock('$lib/game-kit/scene/SceneObjects.svelte', () => ({
+	default: function SceneObjects() {
+		/* no-op */
+	},
+}))
+vi.mock('$lib/game/Board.svelte', () => ({
+	default: function Board() {
+		/* no-op */
+	},
+}))
 vi.mock('$lib/game/board-config', () => ({
 	SCORE_DISPLAY_Z: -4.65,
 }))

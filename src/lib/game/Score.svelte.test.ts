@@ -231,7 +231,12 @@ describe('load_stored_data', () => {
 	})
 
 	it('returns {score: 0, round: 0} when nothing is stored', () => {
-		vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {} })
+		vi.stubGlobal('localStorage', {
+			getItem: () => null,
+			setItem: () => {
+				/* no-op */
+			},
+		})
 		expect(load_stored_data(DEFAULT_KEYS)).toEqual({ score: 0, round: 0 })
 	})
 
@@ -248,7 +253,9 @@ describe('load_stored_data', () => {
 
 				return null
 			},
-			setItem: () => {},
+			setItem: () => {
+				/* no-op */
+			},
 		})
 		expect(load_stored_data(DEFAULT_KEYS)).toEqual({ score: stored_score, round: stored_round })
 	})
@@ -262,7 +269,9 @@ describe('load_stored_data', () => {
 
 				return null
 			},
-			setItem: () => {},
+			setItem: () => {
+				/* no-op */
+			},
 		})
 		expect(load_stored_data(DEFAULT_KEYS)).toEqual({ score: 0, round: 0 })
 	})
@@ -290,7 +299,9 @@ describe('load_stored_data', () => {
 
 				return null
 			},
-			setItem: () => {},
+			setItem: () => {
+				/* no-op */
+			},
 		})
 		expect(load_stored_data(custom_keys)).toEqual({ score: stored_score, round: stored_round })
 	})
@@ -309,7 +320,12 @@ describe('create_score isolation', () => {
 	it('custom key prefix stores to different keys than default', () => {
 		const custom = create_score('test')
 
-		vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {} })
+		vi.stubGlobal('localStorage', {
+			getItem: () => null,
+			setItem: () => {
+				/* no-op */
+			},
+		})
 		expect(custom.high_score).toBe(0)
 		vi.unstubAllGlobals()
 	})

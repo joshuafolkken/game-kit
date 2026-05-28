@@ -7,7 +7,11 @@ import BOARD_SOURCE from './Board.svelte?raw'
 import type { GameBoardData } from './types'
 
 vi.mock('@threlte/core', () => ({ T: {}, useTask: vi.fn() }))
-vi.mock('@threlte/extras', () => ({ Text: function Text() {} }))
+vi.mock('@threlte/extras', () => ({
+	Text: function Text() {
+		/* no-op */
+	},
+}))
 
 function make_game_data(overrides: Partial<GameBoardData> = {}): GameBoardData {
 	return {
