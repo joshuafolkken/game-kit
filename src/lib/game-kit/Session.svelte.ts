@@ -1,4 +1,10 @@
-export function create_session() {
+interface Session {
+	readonly is_session_started: boolean
+	start_session: () => void
+	reset_session: () => void
+}
+
+export function create_session(): Session {
 	let is_session_started = $state(false)
 
 	function start_session(): void {

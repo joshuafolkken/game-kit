@@ -1,6 +1,13 @@
 const DEFAULT_IS_ALT = false
 
-export function create_game_state() {
+interface GameStateApi {
+	readonly is_alt: boolean
+	reset_mode: () => void
+	toggle_alt: () => void
+	set_alt: (value: boolean) => void
+}
+
+export function create_game_state(): GameStateApi {
 	let is_alt = $state(DEFAULT_IS_ALT)
 
 	function reset_mode(): void {

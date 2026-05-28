@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const ALL_COLORS: Array<ButtonColor> = ['green', 'red', 'yellow', 'blue']
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- test mock factory; the AudioContext stub shape is an internal test detail
 function make_mock_context() {
 	const gain_node = {
 		gain: {

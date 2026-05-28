@@ -1,4 +1,9 @@
-export function create_crt() {
+interface Crt {
+	readonly is_crt_enabled: boolean
+	toggle: () => void
+}
+
+export function create_crt(): Crt {
 	let is_crt_enabled = $state(true)
 
 	function toggle(): void {

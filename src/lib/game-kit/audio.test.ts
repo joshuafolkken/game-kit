@@ -5,6 +5,7 @@ afterEach(() => {
 	vi.resetModules()
 })
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- test mock factory; the AudioContext stub shape is an internal test detail
 function make_audio_context_ctor(state: AudioContextState) {
 	const resume = vi.fn().mockImplementation(async () => {
 		await Promise.resolve()

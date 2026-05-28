@@ -1,6 +1,10 @@
 const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 
-export function create_device() {
+interface Device {
+	readonly is_touch_primary: boolean
+}
+
+export function create_device(): Device {
 	const mql = globalThis.matchMedia?.(TOUCH_PRIMARY_QUERY) ?? null
 	let is_touch = $state(mql?.matches ?? false)
 

@@ -15,7 +15,7 @@ const LABEL_GAME = 'Joshua Game'
 const LABEL_GAME_STARTED = 'Game started'
 const LABEL_PAUSE = 'Pause'
 
-function render_scene(extra: Record<string, unknown> = {}) {
+function render_scene(extra: Record<string, unknown> = {}): ReturnType<typeof render> {
 	return render(GameScene, {
 		props: {
 			label_jump: LABEL_JUMP,

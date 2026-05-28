@@ -76,7 +76,19 @@ function reset_impl<T extends string>(
 
 export type DefaultLoadingStep = 'downloading' | 'initializing' | 'loading_assets' | 'ready'
 
-export function create_loading<T extends string>(initial_step: T) {
+interface LoadingApi<T extends string> {
+	readonly is_visible: boolean
+	readonly current_step: T
+	readonly status_text: string
+	readonly progress: string
+	readonly progress_value: number
+	configure: (messages: Record<T, string>) => void
+	set_step: (step: T) => void
+	mark_ready: () => void
+	reset: () => void
+}
+
+export function create_loading<T extends string>(initial_step: T): LoadingApi<T> {
 	let step_messages: Partial<Record<T, string>> = {}
 	const s = $state<LoadingState<T>>({
 		is_visible: true,
