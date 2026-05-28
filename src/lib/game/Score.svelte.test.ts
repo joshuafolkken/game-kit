@@ -309,12 +309,12 @@ describe('load_stored_data', () => {
 
 describe('create_score isolation', () => {
 	it('two instances do not share current_score state', () => {
-		const a = create_score()
-		const b = create_score()
+		const instance_a = create_score()
+		const instance_b = create_score()
 
-		a.add_round_score(ELAPSED_0, SEQ_1, ROUND_1)
-		expect(a.current_score).toBeGreaterThan(0)
-		expect(b.current_score).toBe(0)
+		instance_a.add_round_score(ELAPSED_0, SEQ_1, ROUND_1)
+		expect(instance_a.current_score).toBeGreaterThan(0)
+		expect(instance_b.current_score).toBe(0)
 	})
 
 	it('custom key prefix stores to different keys than default', () => {

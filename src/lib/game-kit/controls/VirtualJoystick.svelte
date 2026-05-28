@@ -43,8 +43,8 @@
 		return undefined
 	}
 
-	function clamp(v: number, min: number, max: number): number {
-		return Math.max(min, Math.min(max, v))
+	function clamp(value: number, min: number, max: number): number {
+		return Math.max(min, Math.min(max, value))
 	}
 
 	function on_move_start(e: TouchEvent): void {

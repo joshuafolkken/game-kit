@@ -124,9 +124,9 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 	})
 
 	it('sharpness = 1 produces the same result as no sharpness argument (backward-compatible)', () => {
-		for (let c = 0; c <= PERIOD; c += PERIOD / 8) {
-			expect(crt_dither.compute_scanline_factor(c, PERIOD, SCANLINE_DARK, 1)).toBeCloseTo(
-				crt_dither.compute_scanline_factor(c, PERIOD, SCANLINE_DARK),
+		for (let coord = 0; coord <= PERIOD; coord += PERIOD / 8) {
+			expect(crt_dither.compute_scanline_factor(coord, PERIOD, SCANLINE_DARK, 1)).toBeCloseTo(
+				crt_dither.compute_scanline_factor(coord, PERIOD, SCANLINE_DARK),
 				10,
 			)
 		}
@@ -134,10 +134,10 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 
 	it('always stays within [SCANLINE_DARK, 1.0] for all phases', () => {
 		for (let t = 0; t <= PERIOD; t += PERIOD / 20) {
-			const v = crt_dither.compute_scanline_factor(t, PERIOD, SCANLINE_DARK)
+			const scanline_factor = crt_dither.compute_scanline_factor(t, PERIOD, SCANLINE_DARK)
 
-			expect(v).toBeGreaterThanOrEqual(SCANLINE_DARK - 1e-10)
-			expect(v).toBeLessThanOrEqual(1 + 1e-10)
+			expect(scanline_factor).toBeGreaterThanOrEqual(SCANLINE_DARK - 1e-10)
+			expect(scanline_factor).toBeLessThanOrEqual(1 + 1e-10)
 		}
 	})
 
@@ -252,8 +252,8 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 		function distinct_outputs(levels: number): number {
 			const seen = new Set<number>()
 
-			for (let v = 0; v <= 100; v++) {
-				const channel = v / 100
+			for (let level = 0; level <= 100; level++) {
+				const channel = level / 100
 				const out = crt_dither.quantize_with_dither_2d(channel, BAYER_HIGH, levels, BLACK_FLOOR)
 
 				seen.add(Math.round(out * 1000))

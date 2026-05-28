@@ -33,11 +33,11 @@ describe('crt', () => {
 
 describe('create_crt isolation', () => {
 	it('two instances do not share is_crt_enabled state', () => {
-		const a = create_crt()
-		const b = create_crt()
+		const instance_a = create_crt()
+		const instance_b = create_crt()
 
-		a.toggle()
-		expect(a.is_crt_enabled).toBe(false)
-		expect(b.is_crt_enabled).toBe(true)
+		instance_a.toggle()
+		expect(instance_a.is_crt_enabled).toBe(false)
+		expect(instance_b.is_crt_enabled).toBe(true)
 	})
 })

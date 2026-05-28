@@ -54,20 +54,20 @@ describe('fps', () => {
 
 describe('create_fps isolation', () => {
 	it('two instances do not share is_fps_enabled state', () => {
-		const a = create_fps()
-		const b = create_fps()
+		const instance_a = create_fps()
+		const instance_b = create_fps()
 
-		a.toggle()
-		expect(a.is_fps_enabled).toBe(false)
-		expect(b.is_fps_enabled).toBe(true)
+		instance_a.toggle()
+		expect(instance_a.is_fps_enabled).toBe(false)
+		expect(instance_b.is_fps_enabled).toBe(true)
 	})
 
 	it('two instances do not share current_fps_text state', () => {
-		const a = create_fps()
-		const b = create_fps()
+		const instance_a = create_fps()
+		const instance_b = create_fps()
 
-		a.set_fps_text('30')
-		expect(a.current_fps_text).toBe('30')
-		expect(b.current_fps_text).toBe('---')
+		instance_a.set_fps_text('30')
+		expect(instance_a.current_fps_text).toBe('30')
+		expect(instance_b.current_fps_text).toBe('---')
 	})
 })
