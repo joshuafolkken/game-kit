@@ -4,7 +4,11 @@ import FloorCredits from './FloorCredits.svelte'
 import FLOOR_CREDITS_SOURCE from './FloorCredits.svelte?raw'
 
 vi.mock('@threlte/core', () => ({ T: {}, useTask: vi.fn() }))
-vi.mock('@threlte/extras', () => ({ Text: function Text() {} }))
+vi.mock('@threlte/extras', () => ({
+	Text: function Text() {
+		/* no-op */
+	},
+}))
 
 const SAMPLE_CREDITS = 'CREDITS\n\nSponsor A\n\nSponsor B'
 const START_Z = 10

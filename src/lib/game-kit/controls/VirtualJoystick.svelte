@@ -197,7 +197,11 @@
 	}
 
 	onMount(() => {
-		if (!('ontouchstart' in globalThis)) return () => {}
+		if (!('ontouchstart' in globalThis)) {
+			return () => {
+				/* no-op */
+			}
+		}
 
 		move_zone.addEventListener('touchstart', on_move_start, { passive: false })
 		look_zone.addEventListener('touchstart', on_look_start, { passive: false })

@@ -10,7 +10,9 @@ describe('create_switch_input', () => {
 	beforeEach(() => {
 		session.reset_session()
 		action = vi.fn<() => void>()
-		vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {})
+		vi.spyOn(switch_audio, 'play_switch_click').mockImplementation(() => {
+			/* no-op */
+		})
 	})
 
 	afterEach(() => {

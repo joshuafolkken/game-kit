@@ -88,7 +88,9 @@ describe('cancel_flash', () => {
 describe('run_victory_flash', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
-		vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {})
+		vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {
+			/* no-op */
+		})
 	})
 
 	afterEach(() => {
@@ -116,7 +118,9 @@ describe('run_victory_flash', () => {
 	})
 
 	it('calls play_tone for each color during burst', async () => {
-		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {})
+		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {
+			/* no-op */
+		})
 		const s = make_state()
 		const t = make_timers()
 
@@ -157,7 +161,9 @@ describe('run_victory_flash', () => {
 
 	it('works with a custom color subset', async () => {
 		const custom: Array<ButtonColor> = ['green', 'blue']
-		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {})
+		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {
+			/* no-op */
+		})
 		const s = make_state()
 		const t = make_timers()
 

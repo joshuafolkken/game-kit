@@ -6,7 +6,11 @@ import Switch from './Switch.svelte'
 import SWITCH_SOURCE from './Switch.svelte?raw'
 
 vi.mock('@threlte/core', () => ({ T: {} }))
-vi.mock('@threlte/extras', () => ({ Text: function Text() {} }))
+vi.mock('@threlte/extras', () => ({
+	Text: function Text() {
+		/* no-op */
+	},
+}))
 vi.mock('$lib/game-kit/fonts', () => ({
 	fonts: { get_font: vi.fn(() => ''), get_font_size_multiplier: vi.fn(() => 1) },
 }))

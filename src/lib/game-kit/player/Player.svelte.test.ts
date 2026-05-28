@@ -16,9 +16,15 @@ const { tick_holder, mock_input } = vi.hoisted(() => ({
 		pitch: 0,
 		is_jump_requested: false,
 		is_sprinting: false,
-		clear_jump_request: () => {},
-		apply_look_delta: () => {},
-		set_joystick_look: () => {},
+		clear_jump_request: () => {
+			/* no-op */
+		},
+		apply_look_delta: () => {
+			/* no-op */
+		},
+		set_joystick_look: () => {
+			/* no-op */
+		},
 	},
 }))
 
