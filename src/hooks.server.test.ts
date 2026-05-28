@@ -19,6 +19,8 @@ function make_resolve(): ResolveFunction {
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- empty-mock pattern; `const x: RequestEvent = {}` won't type-check
 const MOCK_EVENT = {} as RequestEvent
 
+const HTML_NO_PLACEHOLDER = '<p>no placeholder here</p>'
+
 describe('inject_game_name', () => {
 	it('replaces __GAME_NAME__ with the all-caps game name', () => {
 		const html = '<p class="game-title">__GAME_NAME__</p>'
@@ -39,7 +41,7 @@ describe('inject_game_name', () => {
 	})
 
 	it('passes through html with no placeholders', () => {
-		const html = '<p>no placeholder here</p>'
+		const html = HTML_NO_PLACEHOLDER
 
 		expect(inject_game_name(html)).toBe(html)
 	})
@@ -59,7 +61,7 @@ describe('inject_version', () => {
 	})
 
 	it('passes through html that has no placeholder', () => {
-		const html = '<p>no placeholder here</p>'
+		const html = HTML_NO_PLACEHOLDER
 
 		expect(inject_version(html)).toBe(html)
 	})

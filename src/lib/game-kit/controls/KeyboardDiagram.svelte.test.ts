@@ -3,17 +3,19 @@ import { render } from 'vitest-browser-svelte'
 import KeyboardDiagram from './KeyboardDiagram.svelte'
 
 const PROPS = { label_move: 'Move', label_jump: 'Jump', label_return: 'Return' }
+const SEL_KEYBOARD_DIAGRAM = 'svg.keyboard-diagram'
+const SEL_KEY_SPACE_POLYLINE = '.key-space polyline'
 
 describe('KeyboardDiagram', () => {
 	it('renders the SVG diagram', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
 
-		expect(container.querySelector('svg.keyboard-diagram')).toBeTruthy()
+		expect(container.querySelector(SEL_KEYBOARD_DIAGRAM)).toBeTruthy()
 	})
 
 	it('SVG aria-label includes move, jump, and return labels for screen readers', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const aria = container.querySelector('svg.keyboard-diagram')?.getAttribute('aria-label') ?? ''
+		const aria = container.querySelector(SEL_KEYBOARD_DIAGRAM)?.getAttribute('aria-label') ?? ''
 
 		expect(aria).toContain(PROPS.label_move)
 		expect(aria).toContain(PROPS.label_jump)
@@ -55,7 +57,7 @@ describe('KeyboardDiagram', () => {
 
 	it('spacebar uses double chevron (two 3-point polylines, no straight line)', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const polylines = [...container.querySelectorAll('.key-space polyline')]
+		const polylines = [...container.querySelectorAll(SEL_KEY_SPACE_POLYLINE)]
 
 		expect(polylines).toHaveLength(2)
 
@@ -68,7 +70,7 @@ describe('KeyboardDiagram', () => {
 
 	it('spacebar chevron is text-sized (total span <= 13 units, similar to WASD font-size)', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const polylines = [...container.querySelectorAll('.key-space polyline')]
+		const polylines = [...container.querySelectorAll(SEL_KEY_SPACE_POLYLINE)]
 		const all_y_values = polylines.flatMap(
 			(p) =>
 				p

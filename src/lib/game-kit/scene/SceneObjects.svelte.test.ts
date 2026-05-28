@@ -110,6 +110,7 @@ const MOCK_MESSAGES = {
 }
 
 const MOCK_SCORE_DISPLAY_Z = -4.65
+const EMPTY_SPAN = '<span></span>'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- test mock factory; the props bag shape is an internal test detail
 function make_properties(game_board: ReturnType<typeof createRawSnippet>) {
@@ -127,7 +128,7 @@ function make_properties(game_board: ReturnType<typeof createRawSnippet>) {
 
 describe('SceneObjects', () => {
 	it('renders without error with a game_board snippet', () => {
-		const game_board = createRawSnippet(() => ({ render: () => '<span></span>' }))
+		const game_board = createRawSnippet(() => ({ render: () => EMPTY_SPAN }))
 		const { container } = render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container).toBeTruthy()
@@ -143,7 +144,7 @@ describe('SceneObjects', () => {
 	})
 
 	it('renders with default props without error', () => {
-		const game_board = createRawSnippet(() => ({ render: () => '<span></span>' }))
+		const game_board = createRawSnippet(() => ({ render: () => EMPTY_SPAN }))
 		const { container } = render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container).toBeTruthy()

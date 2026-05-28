@@ -7,6 +7,7 @@ const CUSTOM_ARIA_LABEL = 'Test Label'
 const EXPECTED_VIEW_BOX = '20 18 45 59'
 const DEFAULT_SIZE_STRING = '96'
 const DEFAULT_ARIA_LABEL = 'Geometric JF Fusion Logo'
+const ATTR_ARIA_LABEL = 'aria-label'
 
 describe('Logo', () => {
 	it('renders an svg with the expected viewBox', () => {
@@ -35,14 +36,14 @@ describe('Logo', () => {
 		const { container } = render(Logo)
 		const svg = container.querySelector('svg')
 
-		expect(svg?.getAttribute('aria-label')).toBe(DEFAULT_ARIA_LABEL)
+		expect(svg?.getAttribute(ATTR_ARIA_LABEL)).toBe(DEFAULT_ARIA_LABEL)
 	})
 
 	it('reflects the aria_label prop on the aria-label attribute', () => {
 		const { container } = render(Logo, { aria_label: CUSTOM_ARIA_LABEL })
 		const svg = container.querySelector('svg')
 
-		expect(svg?.getAttribute('aria-label')).toBe(CUSTOM_ARIA_LABEL)
+		expect(svg?.getAttribute(ATTR_ARIA_LABEL)).toBe(CUSTOM_ARIA_LABEL)
 	})
 
 	it('generates a unique filter id per instance', () => {
