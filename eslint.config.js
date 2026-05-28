@@ -19,10 +19,16 @@ const LAYER_B_DISABLES = {
 	// the rule treats the snippet call as a value-consuming expression, but `@render`
 	// is a template directive. Per-line disables on every snippet site is noisier.
 	'sonarjs/no-use-of-empty-return-value': 'off',
+	// `unicorn/no-null` prefers `undefined`, but this codebase deliberately uses `null`
+	// to mirror the DOM / Three.js / Web APIs it wraps (Element | null, AudioContext |
+	// null, CanvasTexture | null, Three.js texture uniforms `{ value: null }`, Response
+	// body, document.fullscreenElement / pointerLockElement). Forcing `undefined` would
+	// add boundary-conversion noise plus ~15 external-API inline disables for a pure
+	// style change. Always disabled.
+	'unicorn/no-null': 'off',
 
 	// === Layer C follow-up (high-volume manual refactor) ===
 	'id-length': 'off',
-	'unicorn/no-null': 'off',
 	'import/exports-last': 'off',
 	'no-restricted-syntax': 'off',
 	'max-lines-per-function': 'off',
