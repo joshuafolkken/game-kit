@@ -31,7 +31,7 @@ describe('MouseDiagram', () => {
 		const { container } = render(MouseDiagram, { props: PROPS })
 		const rects = [...container.querySelectorAll('rect')]
 		const wheel = rects.find(
-			(r) => r.getAttribute('rx') === '5' && r.getAttribute('width') === '10',
+			(rect_el) => rect_el.getAttribute('rx') === '5' && rect_el.getAttribute('width') === '10',
 		)
 
 		expect(wheel).toBeUndefined()

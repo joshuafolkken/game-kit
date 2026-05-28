@@ -5,7 +5,9 @@ const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 
 type ChangeListener = (e: { matches: boolean }) => void
 
-function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean) => void } {
+type MockMql = MediaQueryList & { _fire: (matches_value: boolean) => void }
+
+function make_mock_mql(initial: boolean): MockMql {
 	const listeners: Array<ChangeListener> = []
 
 	return {
@@ -16,10 +18,10 @@ function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean)
 		removeEventListener(): void {
 			/* no-op */
 		},
-		_fire(v: boolean): void {
-			for (const listener of listeners) listener({ matches: v })
+		_fire(matches_value: boolean): void {
+			for (const listener of listeners) listener({ matches: matches_value })
 		},
-	} as unknown as MediaQueryList & { _fire: (v: boolean) => void }
+	} as unknown as MediaQueryList & { _fire: (matches_value: boolean) => void }
 }
 
 describe('device', () => {
@@ -29,23 +31,23 @@ describe('device', () => {
 
 	it('is_touch_primary is true when media query matches', () => {
 		vi.stubGlobal('matchMedia', () => make_mock_mql(true))
-		const d = create_device()
+		const device = create_device()
 
-		expect(d.is_touch_primary).toBe(true)
+		expect(device.is_touch_primary).toBe(true)
 	})
 
 	it('is_touch_primary is false when media query does not match', () => {
 		vi.stubGlobal('matchMedia', () => make_mock_mql(false))
-		const d = create_device()
+		const device = create_device()
 
-		expect(d.is_touch_primary).toBe(false)
+		expect(device.is_touch_primary).toBe(false)
 	})
 
 	it('uses the touch primary media query', () => {
 		let received = ''
 
-		vi.stubGlobal('matchMedia', (q: string) => {
-			received = q
+		vi.stubGlobal('matchMedia', (media_query: string) => {
+			received = media_query
 
 			return make_mock_mql(false)
 		})
@@ -57,28 +59,28 @@ describe('device', () => {
 		const mql = make_mock_mql(false)
 
 		vi.stubGlobal('matchMedia', () => mql)
-		const d = create_device()
+		const device = create_device()
 
-		expect(d.is_touch_primary).toBe(false)
+		expect(device.is_touch_primary).toBe(false)
 		mql._fire(true)
-		expect(d.is_touch_primary).toBe(true)
+		expect(device.is_touch_primary).toBe(true)
 	})
 
 	it('updates is_touch_primary when media query changes to false', () => {
 		const mql = make_mock_mql(true)
 
 		vi.stubGlobal('matchMedia', () => mql)
-		const d = create_device()
+		const device = create_device()
 
-		expect(d.is_touch_primary).toBe(true)
+		expect(device.is_touch_primary).toBe(true)
 		mql._fire(false)
-		expect(d.is_touch_primary).toBe(false)
+		expect(device.is_touch_primary).toBe(false)
 	})
 
 	it('defaults to false when matchMedia is unavailable', () => {
 		vi.stubGlobal('matchMedia', undefined)
-		const d = create_device()
+		const device = create_device()
 
-		expect(d.is_touch_primary).toBe(false)
+		expect(device.is_touch_primary).toBe(false)
 	})
 })

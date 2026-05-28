@@ -76,10 +76,10 @@ describe('create_listener_manager', () => {
 
 	it('double setup returns the same cleanup function', () => {
 		const manager = create_listener_manager([spec])
-		const a = manager.setup()
-		const b = manager.setup()
+		const instance_a = manager.setup()
+		const instance_b = manager.setup()
 
-		expect(a).toBe(b)
+		expect(instance_a).toBe(instance_b)
 	})
 
 	it('double setup does not register listener twice', () => {

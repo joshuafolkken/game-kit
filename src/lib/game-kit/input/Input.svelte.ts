@@ -61,11 +61,11 @@ function clamp_pitch(value: number): number {
 	return Math.max(-MAX_PITCH, Math.min(MAX_PITCH, value))
 }
 
-function reset_transient_input(s: InputState): void {
-	s.keys = { w: false, a: false, s: false, d: false }
-	s.is_sprinting = false
-	s.is_jump_requested = false
-	s.is_dragging_look = false
+function reset_transient_input(state: InputState): void {
+	state.keys = { w: false, a: false, s: false, d: false }
+	state.is_sprinting = false
+	state.is_jump_requested = false
+	state.is_dragging_look = false
 }
 
 function dispatch_synthetic_pointer(
@@ -86,65 +86,70 @@ function dispatch_synthetic_pointer(
 	canvas_element.dispatchEvent(synth)
 }
 
-function on_mouse_down_impl(s: InputState, e: MouseEvent): void {
+function on_mouse_down_impl(state: InputState, e: MouseEvent): void {
 	if (e.button !== RIGHT_MOUSE_BUTTON) return
-	s.drag_start_x = e.clientX
-	s.drag_start_y = e.clientY
-	s.is_dragging_look = true
+	state.drag_start_x = e.clientX
+	state.drag_start_y = e.clientY
+	state.is_dragging_look = true
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- requestPointerLock is typed as always present but absent on older browsers
 	if (e.target instanceof HTMLElement) void e.target.requestPointerLock?.()
 }
 
-function on_mouse_up_impl(s: InputState, e: MouseEvent): void {
+function on_mouse_up_impl(state: InputState, e: MouseEvent): void {
 	if (e.button !== RIGHT_MOUSE_BUTTON) return
-	s.is_dragging_look = false
+	state.is_dragging_look = false
 	if (document.pointerLockElement) document.exitPointerLock()
 }
 
-function on_mouse_move_impl(s: InputState, e: MouseEvent): void {
-	if (!s.is_dragging_look) return
-	s.yaw -= e.movementX * MOUSE_SENSITIVITY
-	s.pitch = clamp_pitch(s.pitch - e.movementY * MOUSE_SENSITIVITY)
+function on_mouse_move_impl(state: InputState, e: MouseEvent): void {
+	if (!state.is_dragging_look) return
+	state.yaw -= e.movementX * MOUSE_SENSITIVITY
+	state.pitch = clamp_pitch(state.pitch - e.movementY * MOUSE_SENSITIVITY)
 }
 
-function on_pointer_lock_change_impl(s: InputState): void {
-	if (!document.pointerLockElement) s.is_dragging_look = false
+function on_pointer_lock_change_impl(state: InputState): void {
+	if (!document.pointerLockElement) state.is_dragging_look = false
 }
 
-function on_wheel_impl(s: InputState, e: WheelEvent): void {
+function on_wheel_impl(state: InputState, e: WheelEvent): void {
 	e.preventDefault()
-	s.yaw += e.deltaX * WHEEL_SENSITIVITY
-	s.pitch = clamp_pitch(s.pitch + e.deltaY * WHEEL_SENSITIVITY)
+	state.yaw += e.deltaX * WHEEL_SENSITIVITY
+	state.pitch = clamp_pitch(state.pitch + e.deltaY * WHEEL_SENSITIVITY)
 }
 
-function override_offset_during_drag_impl(s: InputState, event: Event): void {
-	if (!s.is_dragging_look) return
+function override_offset_during_drag_impl(state: InputState, event: Event): void {
+	if (!state.is_dragging_look) return
 	if (!(event.target instanceof HTMLElement)) return
 	const rect = event.target.getBoundingClientRect()
 
-	override_event_offset(event, s.drag_start_x - rect.left, s.drag_start_y - rect.top)
+	override_event_offset(event, state.drag_start_x - rect.left, state.drag_start_y - rect.top)
 }
 
 function on_left_mouse_for_synth_impl(
-	s: InputState,
+	state: InputState,
 	e: MouseEvent,
 	references: InputReferences,
 ): void {
-	if (!s.is_dragging_look || e.button !== 0) return
+	if (!state.is_dragging_look || e.button !== 0) return
 
 	switch (e.type) {
 		case 'mousedown': {
 			dispatch_synthetic_pointer(
 				'pointerdown',
-				s.drag_start_x,
-				s.drag_start_y,
+				state.drag_start_x,
+				state.drag_start_y,
 				references.canvas_el,
 			)
 			break
 		}
 
 		case 'mouseup': {
-			dispatch_synthetic_pointer('pointerup', s.drag_start_x, s.drag_start_y, references.canvas_el)
+			dispatch_synthetic_pointer(
+				'pointerup',
+				state.drag_start_x,
+				state.drag_start_y,
+				references.canvas_el,
+			)
 			break
 		}
 
@@ -155,28 +160,28 @@ function on_left_mouse_for_synth_impl(
 	}
 }
 
-function on_key_impl(s: InputState, e: KeyboardEvent, is_down: boolean): void {
+function on_key_impl(state: InputState, e: KeyboardEvent, is_down: boolean): void {
 	if (e.key === 'Shift') {
-		s.is_sprinting = is_down
+		state.is_sprinting = is_down
 
 		return
 	}
 
 	if (is_down && e.key === ' ') {
-		s.is_jump_requested = true
+		state.is_jump_requested = true
 
 		return
 	}
 
 	const key = KEY_MAP[e.key]
 	if (!key) return
-	s.keys[key] = is_down
+	state.keys[key] = is_down
 	if (e.key.startsWith('Arrow')) e.preventDefault()
 }
 
-function make_drag_override_specs(s: InputState): Array<ListenerSpec> {
+function make_drag_override_specs(state: InputState): Array<ListenerSpec> {
 	const handler = (e: Event): void => {
-		override_offset_during_drag_impl(s, e)
+		override_offset_during_drag_impl(state, e)
 	}
 
 	return [
@@ -188,7 +193,7 @@ function make_drag_override_specs(s: InputState): Array<ListenerSpec> {
 }
 
 function make_listener_specs(
-	s: InputState,
+	state: InputState,
 	references: InputReferences,
 ): ReadonlyArray<ListenerSpec> {
 	return [
@@ -196,28 +201,28 @@ function make_listener_specs(
 			target: document,
 			type: 'mousedown',
 			handler: (e) => {
-				on_mouse_down_impl(s, e as MouseEvent)
+				on_mouse_down_impl(state, e as MouseEvent)
 			},
 		},
 		{
 			target: document,
 			type: 'mousemove',
 			handler: (e) => {
-				on_mouse_move_impl(s, e as MouseEvent)
+				on_mouse_move_impl(state, e as MouseEvent)
 			},
 		},
 		{
 			target: document,
 			type: 'mouseup',
 			handler: (e) => {
-				on_mouse_up_impl(s, e as MouseEvent)
+				on_mouse_up_impl(state, e as MouseEvent)
 			},
 		},
 		{
 			target: document,
 			type: 'mousedown',
 			handler: (e) => {
-				on_left_mouse_for_synth_impl(s, e as MouseEvent, references)
+				on_left_mouse_for_synth_impl(state, e as MouseEvent, references)
 			},
 			options: CAPTURE,
 		},
@@ -225,7 +230,7 @@ function make_listener_specs(
 			target: document,
 			type: 'mouseup',
 			handler: (e) => {
-				on_left_mouse_for_synth_impl(s, e as MouseEvent, references)
+				on_left_mouse_for_synth_impl(state, e as MouseEvent, references)
 			},
 			options: CAPTURE,
 		},
@@ -233,7 +238,7 @@ function make_listener_specs(
 			target: document,
 			type: 'wheel',
 			handler: (e) => {
-				on_wheel_impl(s, e as WheelEvent)
+				on_wheel_impl(state, e as WheelEvent)
 			},
 			options: PASSIVE_FALSE,
 		},
@@ -248,29 +253,29 @@ function make_listener_specs(
 			target: document,
 			type: 'pointerlockchange',
 			handler: () => {
-				on_pointer_lock_change_impl(s)
+				on_pointer_lock_change_impl(state)
 			},
 		},
-		...make_drag_override_specs(s),
+		...make_drag_override_specs(state),
 		{
 			target: document,
 			type: 'keydown',
 			handler: (e) => {
-				on_key_impl(s, e as KeyboardEvent, true)
+				on_key_impl(state, e as KeyboardEvent, true)
 			},
 		},
 		{
 			target: document,
 			type: 'keyup',
 			handler: (e) => {
-				on_key_impl(s, e as KeyboardEvent, false)
+				on_key_impl(state, e as KeyboardEvent, false)
 			},
 		},
 		{
 			target: globalThis,
 			type: 'blur',
 			handler: () => {
-				reset_transient_input(s)
+				reset_transient_input(state)
 			},
 		},
 	]
@@ -296,13 +301,18 @@ interface InputApi {
 	apply_look_delta: (delta_yaw: number, delta_pitch: number) => void
 }
 
-function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputReferences): InputApi {
+function make_input_api(
+	state: InputState,
+	jm: Vec2,
+	jl: Vec2,
+	references: InputReferences,
+): InputApi {
 	let manager: ListenerManager | null = null
 
 	function on_cleanup(): void {
-		s.yaw = 0
-		s.pitch = 0
-		reset_transient_input(s)
+		state.yaw = 0
+		state.pitch = 0
+		reset_transient_input(state)
 		jm.x = 0
 		jm.y = 0
 		jl.x = 0
@@ -311,28 +321,28 @@ function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputRefe
 
 	return {
 		get is_dragging_look() {
-			return s.is_dragging_look
+			return state.is_dragging_look
 		},
 		get drag_start_x() {
-			return s.drag_start_x
+			return state.drag_start_x
 		},
 		get drag_start_y() {
-			return s.drag_start_y
+			return state.drag_start_y
 		},
 		get yaw() {
-			return s.yaw
+			return state.yaw
 		},
 		get pitch() {
-			return s.pitch
+			return state.pitch
 		},
 		get keys() {
-			return s.keys
+			return state.keys
 		},
 		get is_sprinting() {
-			return s.is_sprinting
+			return state.is_sprinting
 		},
 		get is_jump_requested() {
-			return s.is_jump_requested
+			return state.is_jump_requested
 		},
 		get joystick_move() {
 			return jm
@@ -341,11 +351,12 @@ function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputRefe
 			return jl
 		},
 		setup_listeners: (canvas_element: HTMLCanvasElement | null): (() => void) => {
+			const specs = make_listener_specs(state, references)
 			// eslint-disable-next-line no-multi-assign -- idiomatic lazy-init `??=` pattern
-			const m = (manager ??= create_listener_manager(make_listener_specs(s, references)))
-			if (!m.is_active || canvas_element !== null) references.canvas_el = canvas_element
+			const listener_mgr = (manager ??= create_listener_manager(specs))
+			if (!listener_mgr.is_active || canvas_element !== null) references.canvas_el = canvas_element
 
-			return m.setup(on_cleanup)
+			return listener_mgr.setup(on_cleanup)
 		},
 		set_joystick_move: (x: number, y: number): void => {
 			jm.x = x
@@ -356,23 +367,23 @@ function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputRefe
 			jl.y = y
 		},
 		set_sprinting: (value: boolean): void => {
-			s.is_sprinting = value
+			state.is_sprinting = value
 		},
 		trigger_jump: (): void => {
-			s.is_jump_requested = true
+			state.is_jump_requested = true
 		},
 		clear_jump_request: (): void => {
-			s.is_jump_requested = false
+			state.is_jump_requested = false
 		},
 		apply_look_delta: (delta_yaw: number, delta_pitch: number): void => {
-			s.yaw -= delta_yaw
-			s.pitch = clamp_pitch(s.pitch - delta_pitch)
+			state.yaw -= delta_yaw
+			state.pitch = clamp_pitch(state.pitch - delta_pitch)
 		},
 	}
 }
 
 export function create_input(): InputApi {
-	const s = $state<InputState>({
+	const state = $state<InputState>({
 		is_dragging_look: false,
 		drag_start_x: 0,
 		drag_start_y: 0,
@@ -386,7 +397,7 @@ export function create_input(): InputApi {
 	const joystick_look = $state<Vec2>({ x: 0, y: 0 })
 	const references: InputReferences = { canvas_el: null }
 
-	return make_input_api(s, joystick_move, joystick_look, references)
+	return make_input_api(state, joystick_move, joystick_look, references)
 }
 
 export type InputInstance = ReturnType<typeof create_input>

@@ -52,35 +52,35 @@ describe('flash constants', () => {
 
 describe('cancel_flash', () => {
 	it('increments flash_gen', () => {
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 
-		cancel_flash(s, t)
+		cancel_flash(state, t)
 		expect(t.flash_gen).toBe(1)
 	})
 
 	it('clears flash_colors', () => {
-		const s: FlashState = { flash_colors: ['green', 'red'], flash_intensity: 2.5 }
+		const state: FlashState = { flash_colors: ['green', 'red'], flash_intensity: 2.5 }
 		const t = make_timers()
 
-		cancel_flash(s, t)
-		expect(s.flash_colors).toHaveLength(0)
+		cancel_flash(state, t)
+		expect(state.flash_colors).toHaveLength(0)
 	})
 
 	it('resets flash_intensity to 1', () => {
-		const s: FlashState = { flash_colors: ['green'], flash_intensity: 2.5 }
+		const state: FlashState = { flash_colors: ['green'], flash_intensity: 2.5 }
 		const t = make_timers()
 
-		cancel_flash(s, t)
-		expect(s.flash_intensity).toBe(1)
+		cancel_flash(state, t)
+		expect(state.flash_intensity).toBe(1)
 	})
 
 	it('increments flash_gen each call', () => {
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 
-		cancel_flash(s, t)
-		cancel_flash(s, t)
+		cancel_flash(state, t)
+		cancel_flash(state, t)
 		expect(t.flash_gen).toBe(2)
 	})
 })
@@ -100,43 +100,43 @@ describe('run_victory_flash', () => {
 	})
 
 	it('sets flash_colors to all colors at start of burst', async () => {
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 
-		void run_victory_flash(s, t, COLORS, 0)
+		void run_victory_flash(state, t, COLORS, 0)
 		await vi.advanceTimersByTimeAsync(0)
-		expect(s.flash_colors).toEqual(expect.arrayContaining(COLORS))
+		expect(state.flash_colors).toEqual(expect.arrayContaining(COLORS))
 	})
 
 	it('sets flash_intensity above 1 during burst', async () => {
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 
-		void run_victory_flash(s, t, COLORS, 0)
+		void run_victory_flash(state, t, COLORS, 0)
 		await vi.advanceTimersByTimeAsync(0)
-		expect(s.flash_intensity).toBeGreaterThan(1)
+		expect(state.flash_intensity).toBeGreaterThan(1)
 	})
 
 	it('calls play_tone for each color during burst', async () => {
 		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {
 			/* no-op */
 		})
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 
-		void run_victory_flash(s, t, COLORS, 0)
+		void run_victory_flash(state, t, COLORS, 0)
 		await vi.advanceTimersByTimeAsync(FLASH_BURST_ON_MS)
-		const called_colors = spy.mock.calls.map((c) => c[0])
+		const called_colors = spy.mock.calls.map((call) => call[0])
 		for (const color of COLORS) expect(called_colors).toContain(color)
 	})
 
 	it('aborts when flash_gen changes mid-run', async () => {
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 
-		void run_victory_flash(s, t, COLORS, 0)
+		void run_victory_flash(state, t, COLORS, 0)
 		await vi.advanceTimersByTimeAsync(0)
-		cancel_flash(s, t)
+		cancel_flash(state, t)
 		const calls_before = vi.mocked(game_audio.play_tone).mock.calls.length
 
 		await vi.runAllTimersAsync()
@@ -146,17 +146,17 @@ describe('run_victory_flash', () => {
 	})
 
 	it('clears flash_colors after full run completes', async () => {
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 		const flash_total_ms =
 			FLASH_BURST_CYCLES * (FLASH_BURST_ON_MS + FLASH_BURST_OFF_MS) +
 			COLORS.length * (FLASH_CASCADE_FWD_MS + FLASH_CASCADE_REV_MS) +
 			FLASH_FINALE_MS
 
-		void run_victory_flash(s, t, COLORS, 0)
+		void run_victory_flash(state, t, COLORS, 0)
 		await vi.advanceTimersByTimeAsync(flash_total_ms + 10)
-		expect(s.flash_colors).toHaveLength(0)
-		expect(s.flash_intensity).toBe(1)
+		expect(state.flash_colors).toHaveLength(0)
+		expect(state.flash_intensity).toBe(1)
 	})
 
 	it('works with a custom color subset', async () => {
@@ -164,12 +164,12 @@ describe('run_victory_flash', () => {
 		const spy = vi.spyOn(game_audio, 'play_tone').mockImplementation(() => {
 			/* no-op */
 		})
-		const s = make_state()
+		const state = make_state()
 		const t = make_timers()
 
-		void run_victory_flash(s, t, custom, 0)
+		void run_victory_flash(state, t, custom, 0)
 		await vi.advanceTimersByTimeAsync(FLASH_BURST_ON_MS)
-		const called_colors = spy.mock.calls.map((c) => c[0])
+		const called_colors = spy.mock.calls.map((call) => call[0])
 
 		expect(called_colors).toContain('green')
 		expect(called_colors).toContain('blue')

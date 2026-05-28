@@ -48,26 +48,26 @@ async function call_native_exit(): Promise<void> {
 	}
 }
 
-function update_native_flag(s: FullscreenState): void {
-	s.is_native_fullscreen = get_native_fullscreen_element() !== null
-	if (s.is_native_fullscreen) s.is_pseudo_fullscreen = false
+function update_native_flag(state: FullscreenState): void {
+	state.is_native_fullscreen = get_native_fullscreen_element() !== null
+	if (state.is_native_fullscreen) state.is_pseudo_fullscreen = false
 }
 
-async function request_fullscreen(s: FullscreenState, element: HTMLElement): Promise<void> {
-	if (s.is_native_fullscreen || s.is_pseudo_fullscreen) return
+async function request_fullscreen(state: FullscreenState, element: HTMLElement): Promise<void> {
+	if (state.is_native_fullscreen || state.is_pseudo_fullscreen) return
 	const did_succeed = await call_native_request(element)
-	// eslint-disable-next-line require-atomic-updates -- `s.is_pseudo_fullscreen` is read once at entry, awaited, then assigned. There is no concurrent caller (single-user fullscreen state machine).
-	if (!did_succeed) s.is_pseudo_fullscreen = true
+	// eslint-disable-next-line require-atomic-updates -- `state.is_pseudo_fullscreen` is read once at entry, awaited, then assigned. There is no concurrent caller (single-user fullscreen state machine).
+	if (!did_succeed) state.is_pseudo_fullscreen = true
 }
 
-async function exit_fullscreen(s: FullscreenState): Promise<void> {
-	if (s.is_pseudo_fullscreen) {
-		s.is_pseudo_fullscreen = false
+async function exit_fullscreen(state: FullscreenState): Promise<void> {
+	if (state.is_pseudo_fullscreen) {
+		state.is_pseudo_fullscreen = false
 
 		return
 	}
 
-	if (s.is_native_fullscreen) await call_native_exit()
+	if (state.is_native_fullscreen) await call_native_exit()
 }
 
 interface FullscreenApi {
@@ -80,43 +80,46 @@ interface FullscreenApi {
 }
 
 export function create_fullscreen(): FullscreenApi {
-	const s = $state<FullscreenState>({ is_pseudo_fullscreen: false, is_native_fullscreen: false })
+	const state = $state<FullscreenState>({
+		is_pseudo_fullscreen: false,
+		is_native_fullscreen: false,
+	})
 
 	const handler = (): void => {
-		update_native_flag(s)
+		update_native_flag(state)
 	}
 
 	let manager: ListenerManager | null = null
 
 	function setup_listeners(): () => void {
 		// eslint-disable-next-line no-multi-assign -- `(manager ??= ...)` is the idiomatic lazy-init pattern
-		const m = (manager ??= create_listener_manager([
+		const listener_mgr = (manager ??= create_listener_manager([
 			{ target: document, type: 'fullscreenchange', handler },
 			{ target: document, type: 'webkitfullscreenchange', handler },
 		]))
 
-		update_native_flag(s)
+		update_native_flag(state)
 
-		return m.setup((): void => {
-			s.is_native_fullscreen = false
-			s.is_pseudo_fullscreen = false
+		return listener_mgr.setup((): void => {
+			state.is_native_fullscreen = false
+			state.is_pseudo_fullscreen = false
 		})
 	}
 
 	return {
 		get is_pseudo_fullscreen() {
-			return s.is_pseudo_fullscreen
+			return state.is_pseudo_fullscreen
 		},
 		get is_native_fullscreen() {
-			return s.is_native_fullscreen
+			return state.is_native_fullscreen
 		},
 		get is_active() {
-			return s.is_native_fullscreen || s.is_pseudo_fullscreen
+			return state.is_native_fullscreen || state.is_pseudo_fullscreen
 		},
 		// eslint-disable-next-line @typescript-eslint/promise-function-async -- thin pass-through; async wrapper would add a needless microtask
-		request: (element: HTMLElement): Promise<void> => request_fullscreen(s, element),
+		request: (element: HTMLElement): Promise<void> => request_fullscreen(state, element),
 		// eslint-disable-next-line @typescript-eslint/promise-function-async -- thin pass-through; async wrapper would add a needless microtask
-		exit: (): Promise<void> => exit_fullscreen(s),
+		exit: (): Promise<void> => exit_fullscreen(state),
 		setup_listeners,
 	}
 }

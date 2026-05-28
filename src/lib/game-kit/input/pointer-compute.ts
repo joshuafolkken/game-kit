@@ -36,13 +36,13 @@ export function make_pointer_compute(
 ): (event: DomEvent, context: ComputeContext) => void {
 	return function compute_pointer(event: DomEvent, context: ComputeContext): void {
 		if (!is_valid_target(event.target)) return
-		const { clientWidth: w, clientHeight: h } = event.target
+		const { clientWidth: target_w, clientHeight: target_h } = event.target
 		const { x, y } = compute_target_offset(event, event.target)
 
-		context.pointer.update((p) => {
-			p.set((x / w) * NDC_SCALE - 1, -(y / h) * NDC_SCALE + 1)
+		context.pointer.update((pointer_vec) => {
+			pointer_vec.set((x / target_w) * NDC_SCALE - 1, -(y / target_h) * NDC_SCALE + 1)
 
-			return p
+			return pointer_vec
 		})
 		context.raycaster.setFromCamera(context.pointer.current, camera.current)
 	}

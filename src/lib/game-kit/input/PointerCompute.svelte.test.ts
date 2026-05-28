@@ -4,16 +4,16 @@ import { make_pointer_compute } from './pointer-compute.js'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- test mock factory; the assembled Threlte-context shape is an internal test detail
 function make_context() {
-	const v = new Vector2()
+	const ptr_vec = new Vector2()
 	const raycaster = new Raycaster()
 
 	vi.spyOn(raycaster, 'setFromCamera')
 
 	return {
 		pointer: {
-			current: v,
+			current: ptr_vec,
 			update(function_: (p: Vector2) => Vector2) {
-				function_(v)
+				function_(ptr_vec)
 			},
 		},
 		raycaster,
