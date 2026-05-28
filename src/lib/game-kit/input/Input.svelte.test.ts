@@ -235,7 +235,9 @@ describe('input', () => {
 
 	it('right mouse up exits pointer lock when locked', () => {
 		vi.spyOn(Document.prototype, 'pointerLockElement', 'get').mockReturnValue(document.body)
-		const spy = vi.spyOn(Document.prototype, 'exitPointerLock').mockImplementation(() => {})
+		const spy = vi.spyOn(Document.prototype, 'exitPointerLock').mockImplementation(() => {
+			/* no-op */
+		})
 
 		dispatch_mouse('mouseup', { button: RIGHT_BUTTON })
 		expect(spy).toHaveBeenCalledTimes(1)
@@ -243,7 +245,9 @@ describe('input', () => {
 
 	it('right mouse up does not call exitPointerLock when not locked', () => {
 		vi.spyOn(Document.prototype, 'pointerLockElement', 'get').mockReturnValue(null)
-		const spy = vi.spyOn(Document.prototype, 'exitPointerLock').mockImplementation(() => {})
+		const spy = vi.spyOn(Document.prototype, 'exitPointerLock').mockImplementation(() => {
+			/* no-op */
+		})
 
 		dispatch_mouse('mouseup', { button: RIGHT_BUTTON })
 		expect(spy).not.toHaveBeenCalled()

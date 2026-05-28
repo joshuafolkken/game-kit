@@ -9,9 +9,15 @@ interface BoardCallbacks {
 }
 
 let board_callbacks: BoardCallbacks = {
-	on_press: () => {},
-	on_release: () => {},
-	on_start: () => {},
+	on_press: () => {
+		/* no-op */
+	},
+	on_release: () => {
+		/* no-op */
+	},
+	on_start: () => {
+		/* no-op */
+	},
 }
 
 function configure(cbs: BoardCallbacks): void {

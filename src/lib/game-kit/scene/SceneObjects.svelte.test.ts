@@ -12,15 +12,35 @@ vi.mock('@threlte/core', () => ({
 }))
 vi.mock('@threlte/extras', () => ({
 	interactivity: vi.fn(),
-	Text: function Text() {},
+	Text: function Text() {
+		/* no-op */
+	},
 }))
-vi.mock('./Room.svelte', () => ({ default: function Room() {} }))
-vi.mock('$lib/game-kit/player/Player.svelte', () => ({ default: function Player() {} }))
+vi.mock('./Room.svelte', () => ({
+	default: function Room() {
+		/* no-op */
+	},
+}))
+vi.mock('$lib/game-kit/player/Player.svelte', () => ({
+	default: function Player() {
+		/* no-op */
+	},
+}))
 vi.mock('$lib/game-kit/display/ScoreDisplay.svelte', () => ({
-	default: function ScoreDisplay() {},
+	default: function ScoreDisplay() {
+		/* no-op */
+	},
 }))
-vi.mock('$lib/game-kit/switch/Switch.svelte', () => ({ default: function Switch() {} }))
-vi.mock('./FloorCredits.svelte', () => ({ default: function FloorCredits() {} }))
+vi.mock('$lib/game-kit/switch/Switch.svelte', () => ({
+	default: function Switch() {
+		/* no-op */
+	},
+}))
+vi.mock('./FloorCredits.svelte', () => ({
+	default: function FloorCredits() {
+		/* no-op */
+	},
+}))
 vi.mock('$lib/game-kit/Fullscreen.svelte', () => ({ fullscreen: { is_active: false } }))
 vi.mock('$lib/game-kit/State.svelte', () => ({ game_state: { is_alt: false } }))
 vi.mock('$lib/game-kit/input/pointer-compute.js', () => ({
@@ -64,7 +84,11 @@ vi.mock('$lib/game-kit/Crt.svelte', () => ({
 vi.mock('$lib/game-kit/display/Fps.svelte', () => ({
 	fps: { is_fps_enabled: true, current_fps_text: '---', toggle: vi.fn() },
 }))
-vi.mock('$lib/game-kit/display/FpsDisplay.svelte', () => ({ default: function FpsDisplay() {} }))
+vi.mock('$lib/game-kit/display/FpsDisplay.svelte', () => ({
+	default: function FpsDisplay() {
+		/* no-op */
+	},
+}))
 
 const MOCK_CREDITS_START_Z = 10
 const MOCK_CREDITS_END_Z = -10

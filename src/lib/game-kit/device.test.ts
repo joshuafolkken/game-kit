@@ -13,7 +13,9 @@ function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean)
 		addEventListener(_: string, function_: EventListenerOrEventListenerObject): void {
 			listeners.push(function_ as unknown as ChangeListener)
 		},
-		removeEventListener(): void {},
+		removeEventListener(): void {
+			/* no-op */
+		},
 		_fire(v: boolean): void {
 			for (const function_ of listeners) function_({ matches: v })
 		},

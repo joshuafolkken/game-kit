@@ -73,7 +73,9 @@ describe('game audio envelope', () => {
 	it('normal mode uses flat envelope — no exponential ramp', () => {
 		const { ctx, gain_node } = make_mock_context()
 
-		vi.spyOn(audio, 'init_audio').mockImplementation(() => {})
+		vi.spyOn(audio, 'init_audio').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(audio, 'get_audio_context').mockReturnValue(ctx as unknown as AudioContext)
 
 		game_audio.play_tone('green', 200, false)
@@ -85,7 +87,9 @@ describe('game audio envelope', () => {
 	it('cyber mode applies exponential gain ramp', () => {
 		const { ctx, gain_node } = make_mock_context()
 
-		vi.spyOn(audio, 'init_audio').mockImplementation(() => {})
+		vi.spyOn(audio, 'init_audio').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(audio, 'get_audio_context').mockReturnValue(ctx as unknown as AudioContext)
 
 		game_audio.play_tone('green', 200, true)
@@ -96,7 +100,9 @@ describe('game audio envelope', () => {
 	it('play_error_tone uses ERROR_FREQ', () => {
 		const { ctx, osc_node } = make_mock_context()
 
-		vi.spyOn(audio, 'init_audio').mockImplementation(() => {})
+		vi.spyOn(audio, 'init_audio').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(audio, 'get_audio_context').mockReturnValue(ctx as unknown as AudioContext)
 
 		game_audio.play_error_tone(3000, false)
@@ -107,7 +113,9 @@ describe('game audio envelope', () => {
 	it('start_tone starts oscillator without calling stop', () => {
 		const { ctx, osc_node } = make_mock_context()
 
-		vi.spyOn(audio, 'init_audio').mockImplementation(() => {})
+		vi.spyOn(audio, 'init_audio').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(audio, 'get_audio_context').mockReturnValue(ctx as unknown as AudioContext)
 
 		game_audio.start_tone('green', false)
@@ -119,7 +127,9 @@ describe('game audio envelope', () => {
 	it('stop_tone calls stop on the active oscillator', () => {
 		const { ctx, osc_node } = make_mock_context()
 
-		vi.spyOn(audio, 'init_audio').mockImplementation(() => {})
+		vi.spyOn(audio, 'init_audio').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(audio, 'get_audio_context').mockReturnValue(ctx as unknown as AudioContext)
 
 		game_audio.start_tone('red', false)
@@ -131,7 +141,9 @@ describe('game audio envelope', () => {
 	it('play_error_tone normal mode uses flat envelope', () => {
 		const { ctx, gain_node } = make_mock_context()
 
-		vi.spyOn(audio, 'init_audio').mockImplementation(() => {})
+		vi.spyOn(audio, 'init_audio').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(audio, 'get_audio_context').mockReturnValue(ctx as unknown as AudioContext)
 
 		game_audio.play_error_tone(3000, false)
@@ -143,7 +155,9 @@ describe('game audio envelope', () => {
 	it('play_error_tone cyber mode applies exponential gain ramp', () => {
 		const { ctx, gain_node } = make_mock_context()
 
-		vi.spyOn(audio, 'init_audio').mockImplementation(() => {})
+		vi.spyOn(audio, 'init_audio').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(audio, 'get_audio_context').mockReturnValue(ctx as unknown as AudioContext)
 
 		game_audio.play_error_tone(3000, true)

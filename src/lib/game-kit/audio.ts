@@ -7,8 +7,12 @@ function init_audio(): void {
 }
 
 function get_audio_context(): AudioContext | null {
-	// eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget; making this async would require awaiting at every audio call site
-	if (context?.state === 'suspended') void context.resume().catch(() => {})
+	if (context?.state === 'suspended') {
+		// eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget; awaiting would force every audio call site async
+		void context.resume().catch(() => {
+			/* no-op */
+		})
+	}
 
 	return context
 }

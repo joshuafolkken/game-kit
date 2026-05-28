@@ -14,10 +14,18 @@ export async function stub_touch_primary(page: Page, is_touch: boolean): Promise
 						matches,
 						media: input,
 						onchange: null,
-						addEventListener() {},
-						removeEventListener() {},
-						addListener() {},
-						removeListener() {},
+						addEventListener() {
+							/* no-op */
+						},
+						removeEventListener() {
+							/* no-op */
+						},
+						addListener() {
+							/* no-op */
+						},
+						removeListener() {
+							/* no-op */
+						},
 						dispatchEvent() {
 							return false
 						},
