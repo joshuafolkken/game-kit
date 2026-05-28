@@ -5,9 +5,11 @@ import {
 	type ListenerSpec,
 } from '$lib/game-kit/listener-manager'
 
+const HALF_DIVISOR = 2
+const PITCH_LIMIT_MARGIN = 0.01
 const MOUSE_SENSITIVITY = 0.004
 const WHEEL_SENSITIVITY = 0.004
-const MAX_PITCH = Math.PI / 2 - 0.01
+const MAX_PITCH = Math.PI / HALF_DIVISOR - PITCH_LIMIT_MARGIN
 const RIGHT_MOUSE_BUTTON = 2
 
 interface Keys {

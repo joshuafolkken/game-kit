@@ -7,14 +7,19 @@
 	import { game_board_input } from './board-input'
 	import type { ButtonColor, GameBoardData } from './types'
 
+	const HALF_DIVISOR = 2
+	const QUARTER_TURN = Math.PI / HALF_DIVISOR
+	const BUTTON_GAP_DIVISOR = 36
 	const INNER_RADIUS = 0.3
 	const OUTER_RADIUS = 0.7
 	const THETA_SEGMENTS = 32
 	const CIRCLE_SEGMENTS = 32
 	const BACKING_SEGMENTS = 64
-	const BUTTON_GAP = Math.PI / 36
+	const BACKING_ROUGHNESS = 0.8
+	const CENTER_ROUGHNESS = 0.5
+	const BUTTON_GAP = Math.PI / BUTTON_GAP_DIVISOR
 	const THETA_START = BUTTON_GAP
-	const THETA_LENGTH = Math.PI / 2 - BUTTON_GAP * 2
+	const THETA_LENGTH = QUARTER_TURN - BUTTON_GAP * HALF_DIVISOR
 	const CENTER_RADIUS = 0.22
 	const BACKING_Z = -0.01
 	const FONT_SIZE = 0.13
@@ -59,7 +64,7 @@
 		},
 		{
 			color: 'red',
-			rotation: Math.PI / 2,
+			rotation: QUARTER_TURN,
 			lit_color: '#ff2222',
 			dim_color: '#330000',
 			cyber_lit_color: '#ff0088',
@@ -75,7 +80,7 @@
 		},
 		{
 			color: 'blue',
-			rotation: -Math.PI / 2,
+			rotation: -QUARTER_TURN,
 			lit_color: '#2266ff',
 			dim_color: '#001133',
 			cyber_lit_color: '#00ccff',
@@ -135,7 +140,7 @@
 <T.Group position={[0, BOARD_Y, BOARD_Z]}>
 	<T.Mesh position.z={BACKING_Z}>
 		<T.CircleGeometry args={[BACKING_RADIUS, BACKING_SEGMENTS]} />
-		<T.MeshStandardMaterial color="#111111" roughness={0.8} />
+		<T.MeshStandardMaterial color="#111111" roughness={BACKING_ROUGHNESS} />
 	</T.Mesh>
 
 	{#each BUTTON_CONFIGS as button (button.color)}
@@ -172,7 +177,7 @@
 		}}
 	>
 		<T.CircleGeometry args={[CENTER_RADIUS, CIRCLE_SEGMENTS]} />
-		<T.MeshStandardMaterial color="#222222" roughness={0.5} />
+		<T.MeshStandardMaterial color="#222222" roughness={CENTER_ROUGHNESS} />
 	</T.Mesh>
 
 	<T.Group position={[0, 0, BOARD_LABEL_Z]}>
