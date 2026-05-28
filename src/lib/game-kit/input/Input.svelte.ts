@@ -273,7 +273,27 @@ function make_listener_specs(
 	]
 }
 
-function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputReferences) {
+interface InputApi {
+	readonly is_dragging_look: boolean
+	readonly drag_start_x: number
+	readonly drag_start_y: number
+	readonly yaw: number
+	readonly pitch: number
+	readonly keys: Keys
+	readonly is_sprinting: boolean
+	readonly is_jump_requested: boolean
+	readonly joystick_move: Vec2
+	readonly joystick_look: Vec2
+	setup_listeners: (canvas_element: HTMLCanvasElement | null) => () => void
+	set_joystick_move: (x: number, y: number) => void
+	set_joystick_look: (x: number, y: number) => void
+	set_sprinting: (value: boolean) => void
+	trigger_jump: () => void
+	clear_jump_request: () => void
+	apply_look_delta: (delta_yaw: number, delta_pitch: number) => void
+}
+
+function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputReferences): InputApi {
 	let manager: ListenerManager | null = null
 
 	function on_cleanup(): void {
@@ -348,7 +368,7 @@ function make_input_api(s: InputState, jm: Vec2, jl: Vec2, references: InputRefe
 	}
 }
 
-export function create_input() {
+export function create_input(): InputApi {
 	const s = $state<InputState>({
 		is_dragging_look: false,
 		drag_start_x: 0,

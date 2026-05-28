@@ -1,6 +1,13 @@
 const INITIAL_FPS_TEXT = '---'
 
-export function create_fps() {
+interface Fps {
+	readonly is_fps_enabled: boolean
+	readonly current_fps_text: string
+	toggle: () => void
+	set_fps_text: (text: string) => void
+}
+
+export function create_fps(): Fps {
 	let is_fps_enabled = $state(true)
 	let current_fps_text = $state(INITIAL_FPS_TEXT)
 

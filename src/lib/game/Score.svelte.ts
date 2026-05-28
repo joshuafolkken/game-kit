@@ -106,7 +106,20 @@ function reset_score_impl(s: ScoreState): void {
 	s.last_cleared_round = 0
 }
 
-function make_score_api(s: ScoreState, keys: StorageKeys) {
+interface ScoreApi {
+	readonly current_score: number
+	readonly high_score: number
+	readonly high_score_round: number
+	readonly is_new_high_score: boolean
+	readonly last_cleared_round: number
+	add_round_score: (elapsed_ms: number, sequence_length: number, round: number) => void
+	reset: () => void
+	format_score: typeof format_score
+	calculate_time_coefficient: typeof calculate_time_coefficient
+	calculate_round_score: typeof calculate_round_score
+}
+
+function make_score_api(s: ScoreState, keys: StorageKeys): ScoreApi {
 	return {
 		get current_score(): number {
 			return s.current_score
@@ -144,7 +157,7 @@ function migrate_legacy_score(keys: StorageKeys): { score: number; round: number
 	return legacy
 }
 
-export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX) {
+export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX): ScoreApi {
 	const keys = make_storage_keys(key_prefix)
 	let loaded = load_stored_data(keys)
 

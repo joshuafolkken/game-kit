@@ -5,7 +5,12 @@ export interface ListenerSpec {
 	options?: AddEventListenerOptions
 }
 
-export function create_listener_manager(specs: ReadonlyArray<ListenerSpec>) {
+interface ListenerManagerApi {
+	readonly is_active: boolean
+	setup: (on_cleanup?: () => void) => () => void
+}
+
+export function create_listener_manager(specs: ReadonlyArray<ListenerSpec>): ListenerManagerApi {
 	let cleanup_function: (() => void) | null = null
 
 	return {

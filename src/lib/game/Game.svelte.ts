@@ -172,12 +172,27 @@ function reset_game(s: GameState, t: GameTimers, score: ScoreInstance): void {
 	s.round = 0
 }
 
+interface GameApi {
+	readonly phase: GameState['phase']
+	readonly sequence: GameState['sequence']
+	readonly position: GameState['position']
+	readonly active_color: GameState['active_color']
+	readonly pressed_color: GameState['pressed_color']
+	readonly round: GameState['round']
+	readonly flash_colors: GameState['flash_colors']
+	readonly flash_intensity: GameState['flash_intensity']
+	start: () => void
+	press: (color: ButtonColor) => void
+	release: () => void
+	reset: () => void
+}
+
 function make_game_api(
 	s: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
 	colors: ReadonlyArray<ButtonColor>,
-) {
+): GameApi {
 	return {
 		get phase() {
 			return s.phase
@@ -222,7 +237,7 @@ interface GameConfig {
 	colors?: ReadonlyArray<ButtonColor>
 }
 
-export function create_game(score: ScoreInstance, config: GameConfig = {}) {
+export function create_game(score: ScoreInstance, config: GameConfig = {}): GameApi {
 	const colors = config.colors ?? DEFAULT_COLORS
 	const s = $state<GameState>({
 		phase: 'idle',

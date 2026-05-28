@@ -2,6 +2,7 @@ import { PerspectiveCamera, Raycaster, Vector2 } from 'three'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { make_pointer_compute } from './pointer-compute.js'
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- test mock factory; the assembled Threlte-context shape is an internal test detail
 function make_context() {
 	const v = new Vector2()
 	const raycaster = new Raycaster()
@@ -19,7 +20,7 @@ function make_context() {
 	}
 }
 
-function make_camera() {
+function make_camera(): { current: PerspectiveCamera } {
 	return { current: new PerspectiveCamera() }
 }
 

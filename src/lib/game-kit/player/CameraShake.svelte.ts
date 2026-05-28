@@ -35,7 +35,7 @@ function sample_rotation_offset(): number {
 }
 
 export const camera_shake = {
-	get intensity() {
+	get intensity(): number {
 		return intensity
 	},
 	trigger,
