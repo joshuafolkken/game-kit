@@ -8,6 +8,10 @@ export const STEP_MS_1_5 = 500
 export const STEP_MS_6_13 = 400
 export const STEP_MS_14_20 = 250
 export const STEP_MS_21_PLUS = 150
+
+const LENGTH_TIER_1_MAX = 5
+const LENGTH_TIER_2_MAX = 13
+const LENGTH_TIER_3_MAX = 20
 export const ON_RATIO = 0.7
 export const OFF_RATIO = 0.3
 export const ERROR_BEEP_MS = 3000
@@ -36,9 +40,9 @@ async function delay(ms: number): Promise<void> {
 }
 
 function get_step_ms(length_: number): number {
-	if (length_ <= 5) return STEP_MS_1_5
-	if (length_ <= 13) return STEP_MS_6_13
-	if (length_ <= 20) return STEP_MS_14_20
+	if (length_ <= LENGTH_TIER_1_MAX) return STEP_MS_1_5
+	if (length_ <= LENGTH_TIER_2_MAX) return STEP_MS_6_13
+	if (length_ <= LENGTH_TIER_3_MAX) return STEP_MS_14_20
 
 	return STEP_MS_21_PLUS
 }

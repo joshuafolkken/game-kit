@@ -5,6 +5,9 @@
 	const DEFAULT_D = 10
 	const DEFAULT_H = 3
 	const HALF_DIVISOR = 2
+	const QUARTER_TURN = Math.PI / HALF_DIVISOR
+	const FLOOR_CEILING_ROUGHNESS = 0.9
+	const WALL_ROUGHNESS = 0.8
 
 	interface Props {
 		width?: number
@@ -29,37 +32,37 @@
 </script>
 
 <!-- Floor -->
-<T.Mesh rotation.x={-Math.PI / 2}>
+<T.Mesh rotation.x={-QUARTER_TURN}>
 	<T.PlaneGeometry args={[width, depth]} />
-	<T.MeshStandardMaterial color={floor_color} roughness={0.9} />
+	<T.MeshStandardMaterial color={floor_color} roughness={FLOOR_CEILING_ROUGHNESS} />
 </T.Mesh>
 
 <!-- Ceiling -->
-<T.Mesh position.y={height} rotation.x={Math.PI / 2}>
+<T.Mesh position.y={height} rotation.x={QUARTER_TURN}>
 	<T.PlaneGeometry args={[width, depth]} />
-	<T.MeshStandardMaterial color={ceiling_color} roughness={0.9} />
+	<T.MeshStandardMaterial color={ceiling_color} roughness={FLOOR_CEILING_ROUGHNESS} />
 </T.Mesh>
 
 <!-- Left wall -->
-<T.Mesh position={[-half_w, half_h, 0]} rotation.y={Math.PI / 2}>
+<T.Mesh position={[-half_w, half_h, 0]} rotation.y={QUARTER_TURN}>
 	<T.PlaneGeometry args={[depth, height]} />
-	<T.MeshStandardMaterial color={wall_color} roughness={0.8} />
+	<T.MeshStandardMaterial color={wall_color} roughness={WALL_ROUGHNESS} />
 </T.Mesh>
 
 <!-- Right wall -->
-<T.Mesh position={[half_w, half_h, 0]} rotation.y={-Math.PI / 2}>
+<T.Mesh position={[half_w, half_h, 0]} rotation.y={-QUARTER_TURN}>
 	<T.PlaneGeometry args={[depth, height]} />
-	<T.MeshStandardMaterial color={wall_color} roughness={0.8} />
+	<T.MeshStandardMaterial color={wall_color} roughness={WALL_ROUGHNESS} />
 </T.Mesh>
 
 <!-- Back wall -->
 <T.Mesh position={[0, half_h, -half_d]}>
 	<T.PlaneGeometry args={[width, height]} />
-	<T.MeshStandardMaterial color={wall_color} roughness={0.8} />
+	<T.MeshStandardMaterial color={wall_color} roughness={WALL_ROUGHNESS} />
 </T.Mesh>
 
 <!-- Front wall -->
 <T.Mesh position={[0, half_h, half_d]} rotation.y={Math.PI}>
 	<T.PlaneGeometry args={[width, height]} />
-	<T.MeshStandardMaterial color={wall_color} roughness={0.8} />
+	<T.MeshStandardMaterial color={wall_color} roughness={WALL_ROUGHNESS} />
 </T.Mesh>

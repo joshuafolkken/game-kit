@@ -57,12 +57,14 @@ export const COLOR_LEVELS = { r: 8, g: 8, b: 4 } as const
 // 4×4 ordered (Bayer) dither matrix. Values 0..15 — every cell unique. The coarser
 // 4×4 pattern (vs 8×8) gives a chunkier, more visible cross-hatch — closer to the
 // Mega Drive / PC-98 era texture-dithering look.
+/* eslint-disable @typescript-eslint/no-magic-numbers -- canonical 4×4 Bayer dither matrix; the 0–15 cells are intrinsic data and named constants would add no clarity */
 export const BAYER_MATRIX: ReadonlyArray<ReadonlyArray<number>> = [
 	[0, 8, 2, 10],
 	[12, 4, 14, 6],
 	[3, 11, 1, 9],
 	[15, 7, 13, 5],
 ] as const
+/* eslint-enable @typescript-eslint/no-magic-numbers */
 
 function create_bayer_texture(): DataTexture {
 	const cells = BAYER_SIZE_VALUE * BAYER_SIZE_VALUE
@@ -99,7 +101,7 @@ function compute_scanline_factor(
 	sharpness = 1,
 ): number {
 	const HALF = 0.5
-	const TWO_PI = 2 * Math.PI
+	const TWO_PI = Math.PI / HALF
 	const phase = ((coord % period) + period) % period
 	const wave_cos = HALF * (1 - Math.cos((TWO_PI * phase) / period))
 	const wave = wave_cos ** sharpness

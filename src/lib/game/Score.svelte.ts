@@ -1,4 +1,5 @@
 const BASE_SCORE = 1000
+const MS_PER_SECOND = 1000
 const TIME_COEFF_DECAY = 0.1
 const MIN_TIME_COEFF = 0.1
 const CHECK_SEED = 0x9e_37_79_b9
@@ -61,7 +62,7 @@ function save_high_score(value: number, round: number, keys: StorageKeys): void 
 }
 
 export function calculate_time_coefficient(elapsed_ms: number, sequence_length: number): number {
-	const avg_s = elapsed_ms / 1000 / sequence_length
+	const avg_s = elapsed_ms / MS_PER_SECOND / sequence_length
 
 	return Math.max(MIN_TIME_COEFF, 1 - avg_s * TIME_COEFF_DECAY)
 }

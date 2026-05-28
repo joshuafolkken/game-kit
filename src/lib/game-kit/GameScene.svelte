@@ -26,7 +26,8 @@
 	const TARGET_SHORT_EDGE_PIXELS = 256
 	const MIN_SHORT_EDGE_PIXELS = 128
 	const MAX_DPR = 1
-	const FALLBACK_DPR = 1 / 3
+	const FALLBACK_DPR_DIVISOR = 3
+	const FALLBACK_DPR = 1 / FALLBACK_DPR_DIVISOR
 
 	function create_renderer_factory(
 		antialias: boolean,
