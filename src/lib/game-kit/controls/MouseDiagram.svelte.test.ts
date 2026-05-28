@@ -14,7 +14,7 @@ describe('MouseDiagram', () => {
 	it('does not render visible action label text', () => {
 		const { container } = render(MouseDiagram, { props: PROPS })
 		const texts = [...container.querySelectorAll('text')]
-		const action = texts.find((t) => t.textContent?.trim() === PROPS.label_action)
+		const action = texts.find((t) => t.textContent.trim() === PROPS.label_action)
 
 		expect(action).toBeUndefined()
 	})
@@ -22,7 +22,7 @@ describe('MouseDiagram', () => {
 	it('does not render visible look label text', () => {
 		const { container } = render(MouseDiagram, { props: PROPS })
 		const texts = [...container.querySelectorAll('text')]
-		const look = texts.find((t) => t.textContent?.trim() === PROPS.label_look)
+		const look = texts.find((t) => t.textContent.trim() === PROPS.label_look)
 
 		expect(look).toBeUndefined()
 	})

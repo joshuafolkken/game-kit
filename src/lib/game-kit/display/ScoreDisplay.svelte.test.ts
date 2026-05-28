@@ -67,7 +67,7 @@ describe('ScoreDisplay', () => {
 	})
 
 	it('accepts custom format_score function via score_data', () => {
-		const format_score = vi.fn((v: number) => `${v} pts`)
+		const format_score = vi.fn((v: number) => `${String(v)} pts`)
 		const { container } = render(ScoreDisplay, {
 			props: {
 				score_data: make_score_data({ format_score }),

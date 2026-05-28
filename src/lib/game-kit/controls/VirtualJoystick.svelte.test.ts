@@ -48,7 +48,7 @@ describe('VirtualJoystick', () => {
 
 		expect(button?.getAttribute('aria-label')).toBe(LABEL_JUMP)
 		expect(button?.querySelector('svg')).toBeTruthy()
-		expect(button?.textContent?.trim()).toBe('')
+		expect(button?.textContent.trim()).toBe('')
 	})
 
 	it('joystick-zone does not capture pointer events on non-touch devices', () => {
@@ -214,7 +214,6 @@ describe('VirtualJoystick touch handlers', () => {
 		const look_zone = container.querySelectorAll('.joystick-zone').item(1)
 
 		expect(look_zone).toBeTruthy()
-		if (!look_zone) return
 
 		const t_start = make_touch(2, 300, 200, look_zone)
 
@@ -239,7 +238,6 @@ describe('VirtualJoystick touch handlers', () => {
 		const look_zone = container.querySelectorAll('.joystick-zone').item(1)
 
 		expect(look_zone).toBeTruthy()
-		if (!look_zone) return
 
 		const t_start = make_touch(2, 300, 200, look_zone)
 
@@ -271,7 +269,6 @@ describe('VirtualJoystick touch handlers', () => {
 
 		expect(move_zone).toBeTruthy()
 		expect(look_zone).toBeTruthy()
-		if (!move_zone || !look_zone) return
 
 		const t1 = make_touch(1, 100, 200, move_zone)
 
@@ -366,7 +363,6 @@ describe('VirtualJoystick touch handlers', () => {
 		const look_zone = container.querySelectorAll('.joystick-zone').item(1)
 
 		expect(look_zone).toBeTruthy()
-		if (!look_zone) return
 
 		const t_start = make_touch(2, 300, 200, look_zone)
 
@@ -442,7 +438,6 @@ describe('VirtualJoystick touch handlers', () => {
 		const look_zone = container.querySelectorAll('.joystick-zone').item(1)
 
 		expect(look_zone).toBeTruthy()
-		if (!look_zone) return
 
 		const t = make_touch(2, 300, 200, look_zone)
 
@@ -563,7 +558,7 @@ describe('VirtualJoystick touch handlers', () => {
 
 		expect(look_zone).toBeTruthy()
 		expect(jump_button).toBeTruthy()
-		if (!look_zone || !jump_button) return
+		if (!jump_button) return
 
 		const look_touch = make_touch(1, 300, 200, look_zone)
 
