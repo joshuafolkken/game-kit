@@ -68,7 +68,16 @@ async function exit_fullscreen(s: FullscreenState): Promise<void> {
 	if (s.is_native_fullscreen) await call_native_exit()
 }
 
-export function create_fullscreen() {
+interface FullscreenApi {
+	readonly is_pseudo_fullscreen: boolean
+	readonly is_native_fullscreen: boolean
+	readonly is_active: boolean
+	request: (element: HTMLElement) => Promise<void>
+	exit: () => Promise<void>
+	setup_listeners: () => () => void
+}
+
+export function create_fullscreen(): FullscreenApi {
 	const s = $state<FullscreenState>({ is_pseudo_fullscreen: false, is_native_fullscreen: false })
 
 	const handler = (): void => {

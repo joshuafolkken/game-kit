@@ -87,6 +87,7 @@ const MOCK_MESSAGES = {
 
 const MOCK_SCORE_DISPLAY_Z = -4.65
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- test mock factory; the props bag shape is an internal test detail
 function make_properties(game_board: ReturnType<typeof createRawSnippet>) {
 	return {
 		game_board,
