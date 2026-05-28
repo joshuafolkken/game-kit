@@ -26,7 +26,6 @@ const LAYER_B_DISABLES = {
 	'import/exports-last': 'off',
 	'no-restricted-syntax': 'off',
 	'max-lines-per-function': 'off',
-	'@typescript-eslint/naming-convention': 'off',
 	'max-statements': 'off',
 	'sonarjs/cognitive-complexity': 'off',
 	complexity: 'off',

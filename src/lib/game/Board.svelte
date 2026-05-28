@@ -161,10 +161,10 @@
 				/>
 				{@const lit = button_lit(button)}
 				{@const dim = button_dim(button)}
-				{@const active = is_lit(button.color)}
+				{@const is_active = is_lit(button.color)}
 				<T.MeshStandardMaterial
-					color={active ? lit : dim}
-					emissive={active ? lit : '#000000'}
+					color={is_active ? lit : dim}
+					emissive={is_active ? lit : '#000000'}
 					emissiveIntensity={emissive_intensity}
 				/>
 			</T.Mesh>

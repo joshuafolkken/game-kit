@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.99.0",
+	"version": "0.100.0",
 	"keywords": [
 		"svelte"
 	],
@@ -44,7 +44,7 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.189.0",
+		"@joshuafolkken/kit": "0.190.0",
 		"@playwright/test": "1.60.0",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",

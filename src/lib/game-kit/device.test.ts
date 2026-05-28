@@ -17,7 +17,7 @@ function make_mock_mql(initial: boolean): MediaQueryList & { _fire: (v: boolean)
 			/* no-op */
 		},
 		_fire(v: boolean): void {
-			for (const function_ of listeners) function_({ matches: v })
+			for (const listener of listeners) listener({ matches: v })
 		},
 	} as unknown as MediaQueryList & { _fire: (v: boolean) => void }
 }

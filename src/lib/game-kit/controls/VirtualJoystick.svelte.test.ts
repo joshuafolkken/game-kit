@@ -72,17 +72,17 @@ describe('VirtualJoystick', () => {
 		expect(getComputedStyle(overlay).touchAction).toBe('none')
 	})
 
-	it('hides jump button when show_jump=false', () => {
+	it('hides jump button when should_show_jump=false', () => {
 		const { container } = render(VirtualJoystick, {
-			props: { label_jump: LABEL_JUMP, show_jump: false },
+			props: { label_jump: LABEL_JUMP, should_show_jump: false },
 		})
 
 		expect(container.querySelector(SEL_JUMP_BTN)).toBeNull()
 	})
 
-	it('still renders joystick zones even when show_jump=false (move/look usable in overlay)', () => {
+	it('still renders joystick zones even when should_show_jump=false (move/look usable in overlay)', () => {
 		const { container } = render(VirtualJoystick, {
-			props: { label_jump: LABEL_JUMP, show_jump: false },
+			props: { label_jump: LABEL_JUMP, should_show_jump: false },
 		})
 
 		expect(container.querySelectorAll(SEL_JOYSTICK_ZONE)).toHaveLength(2)

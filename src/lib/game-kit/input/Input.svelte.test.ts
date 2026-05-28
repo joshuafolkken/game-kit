@@ -9,18 +9,18 @@ function dispatch_mouse(type: string, init: MouseEventInit): void {
 }
 
 function dispatch_mouse_with_target(type: string, init: MouseEventInit, target: HTMLElement): void {
-	const event_ = new MouseEvent(type, init)
+	const created_event = new MouseEvent(type, init)
 
-	Object.defineProperty(event_, 'target', { value: target })
-	document.dispatchEvent(event_)
+	Object.defineProperty(created_event, 'target', { value: target })
+	document.dispatchEvent(created_event)
 }
 
 function dispatch_wheel(init: WheelEventInit): WheelEvent {
-	const event_ = new WheelEvent('wheel', { ...init, cancelable: true })
+	const created_event = new WheelEvent('wheel', { ...init, cancelable: true })
 
-	document.dispatchEvent(event_)
+	document.dispatchEvent(created_event)
 
-	return event_
+	return created_event
 }
 
 function start_right_drag(): void {
@@ -55,13 +55,13 @@ function make_pointer_event_with_offsets(
 	offset_x: number,
 	offset_y: number,
 ): PointerEvent {
-	const event_ = new PointerEvent('pointerdown', { button: 0, bubbles: true })
+	const created_event = new PointerEvent('pointerdown', { button: 0, bubbles: true })
 
-	Object.defineProperty(event_, 'target', { value: target })
-	Object.defineProperty(event_, 'offsetX', { value: offset_x, configurable: true })
-	Object.defineProperty(event_, 'offsetY', { value: offset_y, configurable: true })
+	Object.defineProperty(created_event, 'target', { value: target })
+	Object.defineProperty(created_event, 'offsetX', { value: offset_x, configurable: true })
+	Object.defineProperty(created_event, 'offsetY', { value: offset_y, configurable: true })
 
-	return event_
+	return created_event
 }
 
 describe('input', () => {
@@ -154,23 +154,23 @@ describe('input', () => {
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		expect(input.is_dragging_look).toBe(true)
 
-		const event_ = make_pointer_event_with_offsets(target, 999, 999)
+		const created_event = make_pointer_event_with_offsets(target, 999, 999)
 
-		target.dispatchEvent(event_)
+		target.dispatchEvent(created_event)
 
-		expect(event_.offsetX).toBe(200)
-		expect(event_.offsetY).toBe(150)
+		expect(created_event.offsetX).toBe(200)
+		expect(created_event.offsetY).toBe(150)
 		target.remove()
 	})
 
 	it('without drag, capture-phase listener leaves offsetX/Y untouched', () => {
 		const target = make_zero_rect_target()
-		const event_ = make_pointer_event_with_offsets(target, 999, 999)
+		const created_event = make_pointer_event_with_offsets(target, 999, 999)
 
-		target.dispatchEvent(event_)
+		target.dispatchEvent(created_event)
 
-		expect(event_.offsetX).toBe(999)
-		expect(event_.offsetY).toBe(999)
+		expect(created_event.offsetX).toBe(999)
+		expect(created_event.offsetY).toBe(999)
 		target.remove()
 	})
 
@@ -290,16 +290,16 @@ describe('input', () => {
 	})
 
 	it('wheel event preventDefault is called', () => {
-		const event_ = dispatch_wheel({ deltaX: 10, deltaY: 0 })
+		const created_event = dispatch_wheel({ deltaX: 10, deltaY: 0 })
 
-		expect(event_.defaultPrevented).toBe(true)
+		expect(created_event.defaultPrevented).toBe(true)
 	})
 
 	it('contextmenu preventDefault is called', () => {
-		const event_ = new MouseEvent('contextmenu', { cancelable: true })
+		const created_event = new MouseEvent('contextmenu', { cancelable: true })
 
-		document.dispatchEvent(event_)
-		expect(event_.defaultPrevented).toBe(true)
+		document.dispatchEvent(created_event)
+		expect(created_event.defaultPrevented).toBe(true)
 	})
 
 	it('clamps pitch at max during right drag', () => {
@@ -383,18 +383,18 @@ describe('input', () => {
 	})
 
 	it('prevents default on arrow keys to stop page scroll', () => {
-		const event_ = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true })
+		const created_event = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true })
 
-		document.dispatchEvent(event_)
-		expect(event_.defaultPrevented).toBe(true)
+		document.dispatchEvent(created_event)
+		expect(created_event.defaultPrevented).toBe(true)
 		expect(input.keys.w).toBe(true)
 	})
 
 	it('does not prevent default on letter keys', () => {
-		const event_ = new KeyboardEvent('keydown', { key: 'w', cancelable: true })
+		const created_event = new KeyboardEvent('keydown', { key: 'w', cancelable: true })
 
-		document.dispatchEvent(event_)
-		expect(event_.defaultPrevented).toBe(false)
+		document.dispatchEvent(created_event)
+		expect(created_event.defaultPrevented).toBe(false)
 	})
 
 	it('resets keys on window blur to prevent stuck movement', () => {
