@@ -139,24 +139,24 @@ describe('loading', () => {
 describe('create_loading isolation', () => {
 	it('two instances do not share is_visible state', () => {
 		vi.useFakeTimers()
-		const a = create_loading<DefaultLoadingStep>('downloading')
-		const b = create_loading<DefaultLoadingStep>('downloading')
+		const instance_a = create_loading<DefaultLoadingStep>('downloading')
+		const instance_b = create_loading<DefaultLoadingStep>('downloading')
 
-		a.mark_ready()
+		instance_a.mark_ready()
 		vi.advanceTimersByTime(MIN_DISPLAY_MS)
-		expect(a.is_visible).toBe(false)
-		expect(b.is_visible).toBe(true)
+		expect(instance_a.is_visible).toBe(false)
+		expect(instance_b.is_visible).toBe(true)
 		vi.useRealTimers()
 	})
 
 	it('two instances do not share current_step state', () => {
-		const a = create_loading<DefaultLoadingStep>('downloading')
-		const b = create_loading<DefaultLoadingStep>('downloading')
+		const instance_a = create_loading<DefaultLoadingStep>('downloading')
+		const instance_b = create_loading<DefaultLoadingStep>('downloading')
 
-		a.configure({ downloading: 'd', initializing: 'i', loading_assets: 'l', ready: 'r' })
-		b.configure({ downloading: 'd', initializing: 'i', loading_assets: 'l', ready: 'r' })
-		a.set_step('initializing')
-		expect(a.current_step).toBe('initializing')
-		expect(b.current_step).toBe('downloading')
+		instance_a.configure({ downloading: 'd', initializing: 'i', loading_assets: 'l', ready: 'r' })
+		instance_b.configure({ downloading: 'd', initializing: 'i', loading_assets: 'l', ready: 'r' })
+		instance_a.set_step('initializing')
+		expect(instance_a.current_step).toBe('initializing')
+		expect(instance_b.current_step).toBe('downloading')
 	})
 })

@@ -34,30 +34,30 @@ function disconnect_observer(): void {
 }
 
 function set_step_impl<T extends string>(
-	s: LoadingState<T>,
+	state: LoadingState<T>,
 	messages: Partial<Record<T, string>>,
 	step: T,
 ): void {
-	s.current_step = step
-	s.status_text = messages[step] ?? ''
+	state.current_step = step
+	state.status_text = messages[step] ?? ''
 }
 
 function mark_ready_impl<T extends string>(
-	s: LoadingState<T>,
+	state: LoadingState<T>,
 	references: LoadingReferences,
 ): void {
 	if (references.hide_timer_id !== null) return
 	disconnect_observer()
-	s.progress = READY_PROGRESS
-	s.progress_value = READY_PROGRESS_VALUE
+	state.progress = READY_PROGRESS
+	state.progress_value = READY_PROGRESS_VALUE
 	references.hide_timer_id = setTimeout(function on_min_display_elapsed(): void {
-		s.is_visible = false
+		state.is_visible = false
 		references.hide_timer_id = null
 	}, MIN_DISPLAY_MS)
 }
 
 function reset_impl<T extends string>(
-	s: LoadingState<T>,
+	state: LoadingState<T>,
 	references: LoadingReferences,
 	messages: Partial<Record<T, string>>,
 	initial_step: T,
@@ -68,10 +68,10 @@ function reset_impl<T extends string>(
 	}
 
 	disconnect_observer()
-	s.is_visible = true
-	s.progress = INITIAL_PROGRESS
-	s.progress_value = 0
-	set_step_impl(s, messages, initial_step)
+	state.is_visible = true
+	state.progress = INITIAL_PROGRESS
+	state.progress_value = 0
+	set_step_impl(state, messages, initial_step)
 }
 
 export type DefaultLoadingStep = 'downloading' | 'initializing' | 'loading_assets' | 'ready'
@@ -90,7 +90,7 @@ interface LoadingApi<T extends string> {
 
 export function create_loading<T extends string>(initial_step: T): LoadingApi<T> {
 	let step_messages: Partial<Record<T, string>> = {}
-	const s = $state<LoadingState<T>>({
+	const state = $state<LoadingState<T>>({
 		is_visible: true,
 		current_step: initial_step,
 		status_text: '',
@@ -101,31 +101,31 @@ export function create_loading<T extends string>(initial_step: T): LoadingApi<T>
 
 	return {
 		get is_visible() {
-			return s.is_visible
+			return state.is_visible
 		},
 		get current_step() {
-			return s.current_step
+			return state.current_step
 		},
 		get status_text() {
-			return s.status_text
+			return state.status_text
 		},
 		get progress() {
-			return s.progress
+			return state.progress
 		},
 		get progress_value() {
-			return s.progress_value
+			return state.progress_value
 		},
 		configure: (messages: Record<T, string>): void => {
 			step_messages = messages
 		},
 		set_step: (step: T): void => {
-			set_step_impl(s, step_messages, step)
+			set_step_impl(state, step_messages, step)
 		},
 		mark_ready: (): void => {
-			mark_ready_impl(s, references)
+			mark_ready_impl(state, references)
 		},
 		reset: (): void => {
-			reset_impl(s, references, step_messages, initial_step)
+			reset_impl(state, references, step_messages, initial_step)
 		},
 	}
 }

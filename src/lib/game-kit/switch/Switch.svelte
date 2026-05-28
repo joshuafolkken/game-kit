@@ -34,15 +34,15 @@
 		arm_center: number
 	}
 
-	function make_bar(sx: CornerSign, sy: CornerSign, axis: BarAxis, g: CornerGeom): CornerBar {
+	function make_bar(sx: CornerSign, sy: CornerSign, axis: BarAxis, geom: CornerGeom): CornerBar {
 		const is_h = axis === 'h'
 
 		return {
 			key: `${axis}${String(sx)}${String(sy)}`,
-			px: sx * (is_h ? g.arm_center : g.pos),
-			py: sy * (is_h ? g.pos : g.arm_center),
-			w: is_h ? g.arm : g.thickness,
-			h: is_h ? g.thickness : g.arm,
+			px: sx * (is_h ? geom.arm_center : geom.pos),
+			py: sy * (is_h ? geom.pos : geom.arm_center),
+			w: is_h ? geom.arm : geom.thickness,
+			h: is_h ? geom.thickness : geom.arm,
 		}
 	}
 

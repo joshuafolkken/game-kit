@@ -463,24 +463,24 @@ describe('input', () => {
 
 describe('create_input isolation', () => {
 	it('two instances do not share yaw state', () => {
-		const a = create_input()
-		const b = create_input()
+		const instance_a = create_input()
+		const instance_b = create_input()
 
-		a.apply_look_delta(-0.5, 0)
-		expect(a.yaw).toBe(0.5)
-		expect(b.yaw).toBe(0)
+		instance_a.apply_look_delta(-0.5, 0)
+		expect(instance_a.yaw).toBe(0.5)
+		expect(instance_b.yaw).toBe(0)
 	})
 
 	it('cleaning up one instance does not detach the other instance listeners', () => {
-		const a = create_input()
-		const b = create_input()
-		const cleanup_a = a.setup_listeners(null)
-		const cleanup_b = b.setup_listeners(null)
+		const instance_a = create_input()
+		const instance_b = create_input()
+		const cleanup_a = instance_a.setup_listeners(null)
+		const cleanup_b = instance_b.setup_listeners(null)
 
 		cleanup_a()
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }))
-		expect(a.keys.w).toBe(false)
-		expect(b.keys.w).toBe(true)
+		expect(instance_a.keys.w).toBe(false)
+		expect(instance_b.keys.w).toBe(true)
 		cleanup_b()
 	})
 })

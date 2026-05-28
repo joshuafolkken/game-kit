@@ -61,9 +61,9 @@ describe('camera_shake', () => {
 		camera_shake.trigger(STRONG)
 
 		for (let index = 0; index < 100; index++) {
-			const v = camera_shake.sample_position_offset()
+			const offset = camera_shake.sample_position_offset()
 
-			expect(Math.abs(v)).toBeLessThanOrEqual(MAX_POSITION_OFFSET + Number.EPSILON)
+			expect(Math.abs(offset)).toBeLessThanOrEqual(MAX_POSITION_OFFSET + Number.EPSILON)
 		}
 	})
 
@@ -71,9 +71,9 @@ describe('camera_shake', () => {
 		camera_shake.trigger(STRONG)
 
 		for (let index = 0; index < 100; index++) {
-			const v = camera_shake.sample_rotation_offset()
+			const offset = camera_shake.sample_rotation_offset()
 
-			expect(Math.abs(v)).toBeLessThanOrEqual(MAX_ROTATION_OFFSET + Number.EPSILON)
+			expect(Math.abs(offset)).toBeLessThanOrEqual(MAX_ROTATION_OFFSET + Number.EPSILON)
 		}
 	})
 

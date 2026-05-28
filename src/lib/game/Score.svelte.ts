@@ -87,24 +87,24 @@ interface ScoreState {
 	last_cleared_round: number
 }
 
-function update_high_score(s: ScoreState, round: number, keys: StorageKeys): void {
-	if (s.current_score <= s.high_score) return
-	s.high_score = s.current_score
-	s.high_score_round = round
-	s.is_new_high_score = true
-	save_high_score(s.high_score, round, keys)
+function update_high_score(state: ScoreState, round: number, keys: StorageKeys): void {
+	if (state.current_score <= state.high_score) return
+	state.high_score = state.current_score
+	state.high_score_round = round
+	state.is_new_high_score = true
+	save_high_score(state.high_score, round, keys)
 }
 
-function add_round_score_impl(s: ScoreState, data: RoundData, keys: StorageKeys): void {
-	s.current_score += calculate_round_score(data.elapsed_ms, data.sequence_length, data.round)
-	s.last_cleared_round = data.round
-	update_high_score(s, data.round, keys)
+function add_round_score_impl(state: ScoreState, data: RoundData, keys: StorageKeys): void {
+	state.current_score += calculate_round_score(data.elapsed_ms, data.sequence_length, data.round)
+	state.last_cleared_round = data.round
+	update_high_score(state, data.round, keys)
 }
 
-function reset_score_impl(s: ScoreState): void {
-	s.current_score = 0
-	s.is_new_high_score = false
-	s.last_cleared_round = 0
+function reset_score_impl(state: ScoreState): void {
+	state.current_score = 0
+	state.is_new_high_score = false
+	state.last_cleared_round = 0
 }
 
 interface ScoreApi {
@@ -120,28 +120,28 @@ interface ScoreApi {
 	calculate_round_score: typeof calculate_round_score
 }
 
-function make_score_api(s: ScoreState, keys: StorageKeys): ScoreApi {
+function make_score_api(state: ScoreState, keys: StorageKeys): ScoreApi {
 	return {
 		get current_score(): number {
-			return s.current_score
+			return state.current_score
 		},
 		get high_score(): number {
-			return s.high_score
+			return state.high_score
 		},
 		get high_score_round(): number {
-			return s.high_score_round
+			return state.high_score_round
 		},
 		get is_new_high_score(): boolean {
-			return s.is_new_high_score
+			return state.is_new_high_score
 		},
 		get last_cleared_round(): number {
-			return s.last_cleared_round
+			return state.last_cleared_round
 		},
 		add_round_score(elapsed_ms: number, sequence_length: number, round: number): void {
-			add_round_score_impl(s, { elapsed_ms, sequence_length, round }, keys)
+			add_round_score_impl(state, { elapsed_ms, sequence_length, round }, keys)
 		},
 		reset(): void {
-			reset_score_impl(s)
+			reset_score_impl(state)
 		},
 		format_score,
 		calculate_time_coefficient,
@@ -166,7 +166,7 @@ export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX): ScoreA
 		loaded = migrate_legacy_score(keys)
 	}
 
-	const s = $state<ScoreState>({
+	const state = $state<ScoreState>({
 		current_score: 0,
 		high_score: loaded.score,
 		high_score_round: loaded.round,
@@ -174,7 +174,7 @@ export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX): ScoreA
 		last_cleared_round: 0,
 	})
 
-	return make_score_api(s, keys)
+	return make_score_api(state, keys)
 }
 
 export type ScoreInstance = ReturnType<typeof create_score>

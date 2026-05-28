@@ -26,7 +26,7 @@ const ON_MS = STEP_MS_1_5 * ON_RATIO
 const OFF_MS = STEP_MS_1_5 * OFF_RATIO
 
 function wrong_color(color: ButtonColor): ButtonColor {
-	return ALL_COLORS.find((c) => c !== color) ?? 'red'
+	return ALL_COLORS.find((col) => col !== color) ?? 'red'
 }
 
 function seq_at(index: number): ButtonColor {
@@ -403,7 +403,7 @@ describe('victory flash', () => {
 		spy.mockClear()
 		game.press(seq_at(0))
 		game.release()
-		const called_colors = spy.mock.calls.map((c) => c[0])
+		const called_colors = spy.mock.calls.map((call) => call[0])
 
 		expect(called_colors).toContain('green')
 		expect(called_colors).toContain('red')
@@ -463,41 +463,41 @@ describe('create_game isolation', () => {
 	it('two instances do not share phase state', () => {
 		const score_a = create_score()
 		const score_b = create_score()
-		const a = create_game(score_a)
-		const b = create_game(score_b)
+		const game_a = create_game(score_a)
+		const game_b = create_game(score_b)
 
-		a.start()
-		expect(a.phase).toBe('showing')
-		expect(b.phase).toBe('idle')
-		a.reset()
+		game_a.start()
+		expect(game_a.phase).toBe('showing')
+		expect(game_b.phase).toBe('idle')
+		game_a.reset()
 	})
 
 	it('two instances do not share sequence state', () => {
 		const score_a = create_score()
 		const score_b = create_score()
-		const a = create_game(score_a)
-		const b = create_game(score_b)
+		const game_a = create_game(score_a)
+		const game_b = create_game(score_b)
 
-		a.start()
-		expect(a.sequence).toHaveLength(1)
-		expect(b.sequence).toHaveLength(0)
-		a.reset()
+		game_a.start()
+		expect(game_a.sequence).toHaveLength(1)
+		expect(game_b.sequence).toHaveLength(0)
+		game_a.reset()
 	})
 
 	it('create_game with custom colors only uses those colors in sequence', () => {
 		const score_c = create_score()
 		const custom_colors: Array<ButtonColor> = ['green', 'blue']
-		const c = create_game(score_c, { colors: custom_colors })
+		const game_c = create_game(score_c, { colors: custom_colors })
 
-		c.start()
+		game_c.start()
 
 		for (let index = 0; index < 20; index++) {
-			c.reset()
-			c.start()
+			game_c.reset()
+			game_c.start()
 		}
 
-		const used = new Set(c.sequence)
+		const used = new Set(game_c.sequence)
 		for (const color of used) expect(custom_colors).toContain(color)
-		c.reset()
+		game_c.reset()
 	})
 })

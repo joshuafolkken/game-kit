@@ -120,8 +120,8 @@ describe('fullscreen', () => {
 
 describe('create_fullscreen isolation', () => {
 	it('two instances do not share is_pseudo_fullscreen state', async () => {
-		const a = create_fullscreen()
-		const b = create_fullscreen()
+		const instance_a = create_fullscreen()
+		const instance_b = create_fullscreen()
 		const element = document.createElement('div')
 
 		Object.defineProperty(element, 'requestFullscreen', { value: undefined, configurable: true })
@@ -129,8 +129,8 @@ describe('create_fullscreen isolation', () => {
 			value: undefined,
 			configurable: true,
 		})
-		await a.request(element)
-		expect(a.is_pseudo_fullscreen).toBe(true)
-		expect(b.is_pseudo_fullscreen).toBe(false)
+		await instance_a.request(element)
+		expect(instance_a.is_pseudo_fullscreen).toBe(true)
+		expect(instance_b.is_pseudo_fullscreen).toBe(false)
 	})
 })

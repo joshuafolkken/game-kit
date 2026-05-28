@@ -47,11 +47,11 @@ function get_step_ms(length_: number): number {
 	return STEP_MS_21_PLUS
 }
 
-function add_to_sequence(s: GameState, colors: ReadonlyArray<ButtonColor>): void {
+function add_to_sequence(state: GameState, colors: ReadonlyArray<ButtonColor>): void {
 	// eslint-disable-next-line sonarjs/pseudo-random -- game RNG; not security-sensitive
 	const index = Math.floor(Math.random() * colors.length)
 
-	s.sequence.push(colors[index] ?? FALLBACK_COLOR)
+	state.sequence.push(colors[index] ?? FALLBACK_COLOR)
 }
 
 function cancel_restart_timer(t: GameTimers): void {
@@ -59,121 +59,125 @@ function cancel_restart_timer(t: GameTimers): void {
 	t.restart_timer = null
 }
 
-async function run_show(s: GameState, t: GameTimers, gen: number): Promise<void> {
-	const step_ms = get_step_ms(s.sequence.length)
+async function run_show(state: GameState, t: GameTimers, gen: number): Promise<void> {
+	const step_ms = get_step_ms(state.sequence.length)
 	const on_ms = step_ms * ON_RATIO
 	const off_ms = step_ms * OFF_RATIO
 
-	for (const color of s.sequence) {
+	for (const color of state.sequence) {
 		if (gen !== t.show_gen) return
-		s.active_color = color
+		state.active_color = color
 		game_audio.play_tone(color, on_ms, game_state.is_alt)
 		await delay(on_ms)
 		if (gen !== t.show_gen) return
-		s.active_color = null
+		state.active_color = null
 		await delay(off_ms)
 	}
 
 	if (gen !== t.show_gen) return
 	t.input_start_ms = Date.now()
-	s.phase = 'player_input'
-	s.position = 0
+	state.phase = 'player_input'
+	state.position = 0
 }
 
-function start_next_round(s: GameState, t: GameTimers, colors: ReadonlyArray<ButtonColor>): void {
+function start_next_round(
+	state: GameState,
+	t: GameTimers,
+	colors: ReadonlyArray<ButtonColor>,
+): void {
 	t.restart_timer = null
-	cancel_flash(s, t)
-	s.round += 1
-	add_to_sequence(s, colors)
+	cancel_flash(state, t)
+	state.round += 1
+	add_to_sequence(state, colors)
 	t.show_gen += 1
-	void run_show(s, t, t.show_gen)
+	void run_show(state, t, t.show_gen)
 }
 
 function schedule_next_round(
-	s: GameState,
+	state: GameState,
 	t: GameTimers,
 	colors: ReadonlyArray<ButtonColor>,
 ): void {
 	cancel_restart_timer(t)
-	cancel_flash(s, t)
-	s.phase = 'showing'
-	void run_victory_flash(s, t, colors, t.flash_gen)
+	cancel_flash(state, t)
+	state.phase = 'showing'
+	void run_victory_flash(state, t, colors, t.flash_gen)
 	t.restart_timer = setTimeout(() => {
-		start_next_round(s, t, colors)
+		start_next_round(state, t, colors)
 	}, RESTART_DELAY_MS)
 }
 
 function handle_correct_release(
-	s: GameState,
+	state: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
 	colors: ReadonlyArray<ButtonColor>,
 ): void {
-	s.position += 1
-	if (s.position < s.sequence.length) return
-	score.add_round_score(Date.now() - t.input_start_ms, s.sequence.length, s.round)
-	s.phase = 'round_complete'
-	schedule_next_round(s, t, colors)
+	state.position += 1
+	if (state.position < state.sequence.length) return
+	score.add_round_score(Date.now() - t.input_start_ms, state.sequence.length, state.round)
+	state.phase = 'round_complete'
+	schedule_next_round(state, t, colors)
 }
 
 function start_game(
-	s: GameState,
+	state: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
 	colors: ReadonlyArray<ButtonColor>,
 ): void {
-	if (s.phase === 'showing' || s.phase === 'player_input') return
+	if (state.phase === 'showing' || state.phase === 'player_input') return
 	cancel_restart_timer(t)
 	score.reset()
-	s.phase = 'showing'
-	s.round = 1
-	s.sequence = []
-	add_to_sequence(s, colors)
+	state.phase = 'showing'
+	state.round = 1
+	state.sequence = []
+	add_to_sequence(state, colors)
 	t.show_gen += 1
-	void run_show(s, t, t.show_gen)
+	void run_show(state, t, t.show_gen)
 }
 
 function release_game(
-	s: GameState,
+	state: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
 	colors: ReadonlyArray<ButtonColor>,
 ): void {
 	game_audio.stop_tone()
-	const color = s.pressed_color
+	const color = state.pressed_color
 
-	s.pressed_color = null
-	if (s.phase !== 'player_input') return
+	state.pressed_color = null
+	if (state.phase !== 'player_input') return
 	if (color === null) return
 
-	if (color === s.sequence[s.position]) {
-		handle_correct_release(s, t, score, colors)
+	if (color === state.sequence[state.position]) {
+		handle_correct_release(state, t, score, colors)
 	} else {
 		game_audio.play_error_tone(ERROR_BEEP_MS, game_state.is_alt)
-		s.phase = 'gameover'
+		state.phase = 'gameover'
 	}
 }
 
-function press_game(s: GameState, color: ButtonColor): void {
-	if (s.phase !== 'player_input') return
-	if (s.pressed_color !== null) return
-	s.pressed_color = color
+function press_game(state: GameState, color: ButtonColor): void {
+	if (state.phase !== 'player_input') return
+	if (state.pressed_color !== null) return
+	state.pressed_color = color
 	game_audio.start_tone(color, game_state.is_alt)
 }
 
-function reset_game(s: GameState, t: GameTimers, score: ScoreInstance): void {
+function reset_game(state: GameState, t: GameTimers, score: ScoreInstance): void {
 	t.show_gen += 1
 	game_audio.stop_tone()
-	s.pressed_color = null
+	state.pressed_color = null
 	cancel_restart_timer(t)
-	cancel_flash(s, t)
+	cancel_flash(state, t)
 	score.reset()
-	s.phase = 'idle'
-	s.sequence = []
-	s.position = 0
-	s.active_color = null
+	state.phase = 'idle'
+	state.sequence = []
+	state.position = 0
+	state.active_color = null
 	t.input_start_ms = 0
-	s.round = 0
+	state.round = 0
 }
 
 interface GameApi {
@@ -192,47 +196,47 @@ interface GameApi {
 }
 
 function make_game_api(
-	s: GameState,
+	state: GameState,
 	t: GameTimers,
 	score: ScoreInstance,
 	colors: ReadonlyArray<ButtonColor>,
 ): GameApi {
 	return {
 		get phase() {
-			return s.phase
+			return state.phase
 		},
 		get sequence() {
-			return s.sequence
+			return state.sequence
 		},
 		get position() {
-			return s.position
+			return state.position
 		},
 		get active_color() {
-			return s.active_color
+			return state.active_color
 		},
 		get pressed_color() {
-			return s.pressed_color
+			return state.pressed_color
 		},
 		get round() {
-			return s.round
+			return state.round
 		},
 		get flash_colors() {
-			return s.flash_colors
+			return state.flash_colors
 		},
 		get flash_intensity() {
-			return s.flash_intensity
+			return state.flash_intensity
 		},
 		start(): void {
-			start_game(s, t, score, colors)
+			start_game(state, t, score, colors)
 		},
 		press(color: ButtonColor): void {
-			press_game(s, color)
+			press_game(state, color)
 		},
 		release(): void {
-			release_game(s, t, score, colors)
+			release_game(state, t, score, colors)
 		},
 		reset(): void {
-			reset_game(s, t, score)
+			reset_game(state, t, score)
 		},
 	}
 }
@@ -243,7 +247,7 @@ interface GameConfig {
 
 export function create_game(score: ScoreInstance, config: GameConfig = {}): GameApi {
 	const colors = config.colors ?? DEFAULT_COLORS
-	const s = $state<GameState>({
+	const state = $state<GameState>({
 		phase: 'idle',
 		sequence: [],
 		position: 0,
@@ -255,7 +259,7 @@ export function create_game(score: ScoreInstance, config: GameConfig = {}): Game
 	})
 	const t: GameTimers = { show_gen: 0, flash_gen: 0, restart_timer: null, input_start_ms: 0 }
 
-	return make_game_api(s, t, score, colors)
+	return make_game_api(state, t, score, colors)
 }
 
 export type GameInstance = ReturnType<typeof create_game>

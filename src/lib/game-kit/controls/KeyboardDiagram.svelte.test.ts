@@ -61,8 +61,8 @@ describe('KeyboardDiagram', () => {
 
 		expect(polylines).toHaveLength(2)
 
-		for (const p of polylines) {
-			const points = p.getAttribute('points')?.trim().split(/\s+/u) ?? []
+		for (const polyline of polylines) {
+			const points = polyline.getAttribute('points')?.trim().split(/\s+/u) ?? []
 
 			expect(points).toHaveLength(3)
 		}
@@ -72,8 +72,8 @@ describe('KeyboardDiagram', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
 		const polylines = [...container.querySelectorAll(SEL_KEY_SPACE_POLYLINE)]
 		const all_y_values = polylines.flatMap(
-			(p) =>
-				p
+			(polyline) =>
+				polyline
 					.getAttribute('points')
 					?.trim()
 					.split(/\s+/u)

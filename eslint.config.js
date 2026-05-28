@@ -28,7 +28,6 @@ const LAYER_B_DISABLES = {
 	'unicorn/no-null': 'off',
 
 	// === Layer C follow-up (high-volume manual refactor) ===
-	'id-length': 'off',
 	'import/exports-last': 'off',
 	'no-restricted-syntax': 'off',
 	'max-lines-per-function': 'off',

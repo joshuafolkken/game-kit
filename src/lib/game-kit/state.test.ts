@@ -41,11 +41,11 @@ describe('game_state', () => {
 
 describe('create_game_state isolation', () => {
 	it('two instances do not share is_alt state', () => {
-		const a = create_game_state()
-		const b = create_game_state()
+		const instance_a = create_game_state()
+		const instance_b = create_game_state()
 
-		a.toggle_alt()
-		expect(a.is_alt).toBe(true)
-		expect(b.is_alt).toBe(false)
+		instance_a.toggle_alt()
+		expect(instance_a.is_alt).toBe(true)
+		expect(instance_b.is_alt).toBe(false)
 	})
 })
