@@ -3,6 +3,11 @@ import { render } from 'vitest-browser-svelte'
 import TouchDiagram from './TouchDiagram.svelte'
 
 const PROPS = { label_move: 'Move', label_look: 'Look around', label_action: 'Action' }
+const ATTR_ARIA_LABEL = 'aria-label'
+const SEL_MOVE_GESTURE = 'svg.move-gesture'
+const SEL_LOOK_GESTURE = 'svg.look-gesture'
+const VIEWBOX_GESTURE = '27 14 58 54'
+const COLOR_CYBER_PURPLE = '160,130,255'
 
 describe('TouchDiagram', () => {
 	it('renders the touch-diagram container with role and aria-label', () => {
@@ -11,9 +16,9 @@ describe('TouchDiagram', () => {
 
 		expect(diagram).toBeTruthy()
 		expect(diagram?.getAttribute('role')).toBe('img')
-		expect(diagram?.getAttribute('aria-label')).toContain(PROPS.label_move)
-		expect(diagram?.getAttribute('aria-label')).toContain(PROPS.label_look)
-		expect(diagram?.getAttribute('aria-label')).toContain(PROPS.label_action)
+		expect(diagram?.getAttribute(ATTR_ARIA_LABEL)).toContain(PROPS.label_move)
+		expect(diagram?.getAttribute(ATTR_ARIA_LABEL)).toContain(PROPS.label_look)
+		expect(diagram?.getAttribute(ATTR_ARIA_LABEL)).toContain(PROPS.label_action)
 	})
 
 	it('renders a frame and two halves so width can stretch with viewport', () => {
@@ -26,17 +31,17 @@ describe('TouchDiagram', () => {
 	it('renders move-gesture and look-gesture as separate fixed-size SVGs', () => {
 		const { container } = render(TouchDiagram, { props: PROPS })
 
-		expect(container.querySelector('svg.move-gesture')).toBeTruthy()
-		expect(container.querySelector('svg.look-gesture')).toBeTruthy()
+		expect(container.querySelector(SEL_MOVE_GESTURE)).toBeTruthy()
+		expect(container.querySelector(SEL_LOOK_GESTURE)).toBeTruthy()
 	})
 
 	it('gesture viewBox encompasses full arc extent (no clipping at top/sides)', () => {
 		const { container } = render(TouchDiagram, { props: PROPS })
-		const move = container.querySelector('svg.move-gesture')
-		const look = container.querySelector('svg.look-gesture')
+		const move = container.querySelector(SEL_MOVE_GESTURE)
+		const look = container.querySelector(SEL_LOOK_GESTURE)
 
-		expect(move?.getAttribute('viewBox')).toBe('27 14 58 54')
-		expect(look?.getAttribute('viewBox')).toBe('27 14 58 54')
+		expect(move?.getAttribute('viewBox')).toBe(VIEWBOX_GESTURE)
+		expect(look?.getAttribute('viewBox')).toBe(VIEWBOX_GESTURE)
 	})
 
 	it('does not render any visible label text', () => {
@@ -51,7 +56,7 @@ describe('TouchDiagram', () => {
 		const path = container.querySelector('svg.move-gesture path')
 		const ring = container.querySelector('svg.move-gesture circle')
 
-		expect(path?.getAttribute('stroke')).toContain('160,130,255')
-		expect(ring?.getAttribute('stroke')).toContain('160,130,255')
+		expect(path?.getAttribute('stroke')).toContain(COLOR_CYBER_PURPLE)
+		expect(ring?.getAttribute('stroke')).toContain(COLOR_CYBER_PURPLE)
 	})
 })

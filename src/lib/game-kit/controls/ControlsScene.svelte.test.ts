@@ -6,6 +6,14 @@ const FOREGROUND_RENDER_ORDER_VALUE = 2
 const BACKDROP_BACK_RENDER_ORDER_VALUE = 3
 const DEFAULT_RENDER_ORDER_VALUE = 0
 
+const MARKER_TOUCH = '[0, TOUCH_Y, TOUCH_Z]'
+const MARKER_KEYBOARD = '[KEYBOARD_X, 0, 0]'
+const MARKER_MOUSE = '[MOUSE_X, MOUSE_Y, 0]'
+const ATTR_BACKDROP_OPACITY = 'opacity={BACKDROP_OPACITY}'
+const ATTR_BACKDROP_BACK_RENDER_ORDER = 'renderOrder={BACKDROP_BACK_RENDER_ORDER}'
+const ATTR_DOUBLE_SIDE = 'side={DoubleSide}'
+const ATTR_MOUSE_POSITION = 'position={[MOUSE_X, MOUSE_Y, 0]}'
+
 function find_mesh_open_tag(source: string, position_marker: string): string {
 	const start_index = source.indexOf(position_marker)
 	if (start_index === -1) throw new Error(`mesh with marker "${position_marker}" not found`)
@@ -55,19 +63,19 @@ describe('ControlsScene render order — regression for camera-angle brightness 
 	})
 
 	it('touch icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
-		const block = find_mesh_open_tag(SOURCE, '[0, TOUCH_Y, TOUCH_Z]')
+		const block = find_mesh_open_tag(SOURCE, MARKER_TOUCH)
 
 		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
 	})
 
 	it('keyboard icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
-		const block = find_mesh_open_tag(SOURCE, '[KEYBOARD_X, 0, 0]')
+		const block = find_mesh_open_tag(SOURCE, MARKER_KEYBOARD)
 
 		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
 	})
 
 	it('mouse icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
-		const block = find_mesh_open_tag(SOURCE, '[MOUSE_X, MOUSE_Y, 0]')
+		const block = find_mesh_open_tag(SOURCE, MARKER_MOUSE)
 
 		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
 	})
@@ -86,25 +94,19 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 
 		expect(blocks).toHaveLength(1)
 		expect(blocks[0]).toContain('side={FrontSide}')
-		expect(blocks[0]).toContain('opacity={BACKDROP_OPACITY}')
+		expect(blocks[0]).toContain(ATTR_BACKDROP_OPACITY)
 	})
 
 	it('back-facing backdrop uses BackSide and renders after icons (renderOrder=2)', () => {
-		const blocks = find_mesh_blocks_by_render_order(
-			SOURCE,
-			'renderOrder={BACKDROP_BACK_RENDER_ORDER}',
-		)
+		const blocks = find_mesh_blocks_by_render_order(SOURCE, ATTR_BACKDROP_BACK_RENDER_ORDER)
 
 		expect(blocks).toHaveLength(1)
 		expect(blocks[0]).toContain('side={BackSide}')
-		expect(blocks[0]).toContain('opacity={BACKDROP_OPACITY}')
+		expect(blocks[0]).toContain(ATTR_BACKDROP_OPACITY)
 	})
 
 	it('back-facing backdrop is positioned at the same point as the front-facing backdrop', () => {
-		const blocks = find_mesh_blocks_by_render_order(
-			SOURCE,
-			'renderOrder={BACKDROP_BACK_RENDER_ORDER}',
-		)
+		const blocks = find_mesh_blocks_by_render_order(SOURCE, ATTR_BACKDROP_BACK_RENDER_ORDER)
 
 		expect(blocks[0]).toContain('position={[BACKDROP_X, BACKDROP_Y, BACKDROP_Z]}')
 	})
@@ -117,13 +119,13 @@ describe('ControlsScene dual-backdrop — icons dim through backdrop from both s
 	})
 
 	it('icon materials are DoubleSide so they remain visible when viewed from behind', () => {
-		const touch_block = find_mesh_full_block(SOURCE, '[0, TOUCH_Y, TOUCH_Z]')
-		const keyboard_block = find_mesh_full_block(SOURCE, '[KEYBOARD_X, 0, 0]')
-		const mouse_block = find_mesh_full_block(SOURCE, '[MOUSE_X, MOUSE_Y, 0]')
+		const touch_block = find_mesh_full_block(SOURCE, MARKER_TOUCH)
+		const keyboard_block = find_mesh_full_block(SOURCE, MARKER_KEYBOARD)
+		const mouse_block = find_mesh_full_block(SOURCE, MARKER_MOUSE)
 
-		expect(touch_block).toContain('side={DoubleSide}')
-		expect(keyboard_block).toContain('side={DoubleSide}')
-		expect(mouse_block).toContain('side={DoubleSide}')
+		expect(touch_block).toContain(ATTR_DOUBLE_SIDE)
+		expect(keyboard_block).toContain(ATTR_DOUBLE_SIDE)
+		expect(mouse_block).toContain(ATTR_DOUBLE_SIDE)
 	})
 
 	it('render-order constants are ordered: front-backdrop < icons < back-backdrop', () => {
@@ -159,7 +161,7 @@ describe('ControlsScene PC icon fit — keyboard and mouse must not overflow the
 	})
 
 	it('mouse mesh uses group-local position [MOUSE_X, MOUSE_Y, 0]', () => {
-		expect(SOURCE).toContain('position={[MOUSE_X, MOUSE_Y, 0]}')
+		expect(SOURCE).toContain(ATTR_MOUSE_POSITION)
 	})
 
 	it('pc_scale is derived from compute_fit_scale with the viewport width, natural span and min side padding', () => {
@@ -464,7 +466,7 @@ const MOUSE_Z_ALIGNMENT_TOLERANCE = 0.01
 describe('ControlsScene mouse vertical alignment — mouse body bottom matches Z key bottom', () => {
 	it('MOUSE_Y constant is defined and the mesh uses [MOUSE_X, MOUSE_Y, 0]', () => {
 		expect(SOURCE).toMatch(/const\s+MOUSE_Y\s*=\s*-?\d+(?:\.\d+)?/u)
-		expect(SOURCE).toContain('position={[MOUSE_X, MOUSE_Y, 0]}')
+		expect(SOURCE).toContain(ATTR_MOUSE_POSITION)
 	})
 
 	it('mouse body bottom (PC-group local y) aligns with Z-key bottom (PC-group local y)', () => {

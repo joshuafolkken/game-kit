@@ -31,6 +31,9 @@ const BOARD_TEXT_PROPS = {
 	text_start: 'START',
 }
 
+const TITLE_DERIVES_ALT_FONT = 'derives should_use_alt_font from !crt.is_crt_enabled'
+const TITLE_NO_IS_ALT_IN_FONTS = 'does not pass is_alt directly into fonts helpers'
+
 describe('Board', () => {
 	it('renders without error in idle state', () => {
 		const { container } = render(Board, {
@@ -77,7 +80,7 @@ describe('Board', () => {
 })
 
 describe('Board font selection — driven by CRT, not CYBER (is_alt)', () => {
-	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
+	it(TITLE_DERIVES_ALT_FONT, () => {
 		expect(BOARD_SOURCE).toMatch(
 			/(?:let|const)\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
@@ -101,7 +104,7 @@ describe('Board font selection — driven by CRT, not CYBER (is_alt)', () => {
 		expect(BOARD_SOURCE).toMatch(/return\s+is_alt\s*\?\s*button\.cyber_dim_color/u)
 	})
 
-	it('does not pass is_alt directly into fonts helpers', () => {
+	it(TITLE_NO_IS_ALT_IN_FONTS, () => {
 		expect(BOARD_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/u)
 		expect(BOARD_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/u)
 	})
@@ -180,7 +183,7 @@ describe('Board center label — START, ROUND digit, and 2-line GAME OVER', () =
 })
 
 describe('templates Board mirrors the CRT-driven font behavior', () => {
-	it('derives should_use_alt_font from !crt.is_crt_enabled', () => {
+	it(TITLE_DERIVES_ALT_FONT, () => {
 		expect(TEMPLATE_BOARD_SOURCE).toMatch(
 			/(?:let|const)\s+should_use_alt_font\s*=\s*\$derived\(\s*!\s*crt\.is_crt_enabled\s*\)/u,
 		)
@@ -192,7 +195,7 @@ describe('templates Board mirrors the CRT-driven font behavior', () => {
 		)
 	})
 
-	it('does not pass is_alt directly into fonts helpers', () => {
+	it(TITLE_NO_IS_ALT_IN_FONTS, () => {
 		expect(TEMPLATE_BOARD_SOURCE).not.toMatch(/fonts\.get_font\(\s*is_alt\s*\)/u)
 		expect(TEMPLATE_BOARD_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/u)
 	})

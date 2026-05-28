@@ -29,7 +29,6 @@ const LAYER_B_DISABLES = {
 	'max-lines-per-function': 'off',
 	'@typescript-eslint/naming-convention': 'off',
 	'max-statements': 'off',
-	'sonarjs/no-duplicate-string': 'off',
 	'sonarjs/cognitive-complexity': 'off',
 	complexity: 'off',
 	'max-lines': 'off',

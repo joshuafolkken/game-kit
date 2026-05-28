@@ -10,6 +10,8 @@ const CLIENT_Y = 250
 const RECT_LEFT = 100
 const RECT_TOP = 200
 
+const TITLE_NO_CANVAS = 'does nothing when no canvas found'
+
 class FakeEvent {
 	type: string
 
@@ -43,7 +45,7 @@ afterEach(() => {
 })
 
 describe('dispatch_pointer_down', () => {
-	it('does nothing when no canvas found', () => {
+	it(TITLE_NO_CANVAS, () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
 
@@ -62,7 +64,7 @@ describe('dispatch_pointer_down', () => {
 })
 
 describe('dispatch_pointer_up', () => {
-	it('does nothing when no canvas found', () => {
+	it(TITLE_NO_CANVAS, () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
 
@@ -92,7 +94,7 @@ describe('dispatch_pointer_up', () => {
 })
 
 describe('dispatch_pointer_cancel', () => {
-	it('does nothing when no canvas found', () => {
+	it(TITLE_NO_CANVAS, () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
 
