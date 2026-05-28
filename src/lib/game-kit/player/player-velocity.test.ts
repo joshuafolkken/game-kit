@@ -51,9 +51,9 @@ describe('player_velocity.compute_velocity', () => {
 			strafe: 1,
 			is_sprinting: false,
 		})
-		const length_ = Math.hypot(result.x, result.z)
+		const magnitude = Math.hypot(result.x, result.z)
 
-		expect(length_).toBeCloseTo(NORMAL_SPEED)
+		expect(magnitude).toBeCloseTo(NORMAL_SPEED)
 	})
 
 	it('preserves analog magnitude for partial joystick input below length 1', () => {

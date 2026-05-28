@@ -225,8 +225,8 @@ importers:
         specifier: ^4.7.1
         version: 4.7.1(prettier@3.8.3)
       '@joshuafolkken/kit':
-        specifier: 0.189.0
-        version: 0.189.0(@playwright/test@1.60.0)(@typescript-eslint/utils@8.60.0(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(svelte@5.55.9(@typescript-eslint/types@8.60.0))(typescript@6.0.3)
+        specifier: 0.190.0
+        version: 0.190.0(@playwright/test@1.60.0)(@typescript-eslint/utils@8.60.0(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(svelte@5.55.9(@typescript-eslint/types@8.60.0))(typescript@6.0.3)
       '@playwright/test':
         specifier: 1.60.0
         version: 1.60.0
@@ -1722,8 +1722,8 @@ packages:
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
     engines: {node: '>=18'}
 
-  '@joshuafolkken/kit@0.189.0':
-    resolution: {integrity: sha512-IK5kLpXJ8oJ+lURf1JOn64sVLJYUFIypcTOxfSzoT2OZqTEvPtb1kx353C7WTCMZ1mkdotdl4NOjVuDWgi/eXA==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.189.0/a3079ef67d419685a8a57361330103caaaad0dd3}
+  '@joshuafolkken/kit@0.190.0':
+    resolution: {integrity: sha512-O0KoFjzQN+4grjyCGjdM8ZlyEJSUU9nnv1TN0clyZtbofs8afbmQBIW7zCU8W6Ns1upW5ierzOPOLgaSpeMQRA==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.190.0/d77dae012a1b7644bb3238eb869d65402ab9affb}
     engines: {node: '>=22.19.0'}
     hasBin: true
     peerDependencies:
@@ -6010,7 +6010,7 @@ snapshots:
 
   '@isaacs/cliui@9.0.0': {}
 
-  '@joshuafolkken/kit@0.189.0(@playwright/test@1.60.0)(@typescript-eslint/utils@8.60.0(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(svelte@5.55.9(@typescript-eslint/types@8.60.0))(typescript@6.0.3)':
+  '@joshuafolkken/kit@0.190.0(@playwright/test@1.60.0)(@typescript-eslint/utils@8.60.0(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(svelte@5.55.9(@typescript-eslint/types@8.60.0))(typescript@6.0.3)':
     dependencies:
       '@eslint/compat': 2.1.0(eslint@10.4.0(jiti@2.7.0))
       '@eslint/js': 10.0.1(eslint@10.4.0(jiti@2.7.0))

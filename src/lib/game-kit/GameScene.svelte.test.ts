@@ -95,10 +95,10 @@ describe('GameScene', () => {
 	})
 
 	it('calls on_start callback when user first clicks', () => {
-		let called = false
+		let is_called = false
 		const { container } = render_scene({
 			on_start: () => {
-				called = true
+				is_called = true
 			},
 		})
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
@@ -106,7 +106,7 @@ describe('GameScene', () => {
 		expect(scene).toBeTruthy()
 		if (!scene) return
 		scene.click()
-		expect(called).toBe(true)
+		expect(is_called).toBe(true)
 	})
 
 	it('calls on_start only once across multiple clicks', () => {

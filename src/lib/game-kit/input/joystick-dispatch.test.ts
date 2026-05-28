@@ -4,7 +4,7 @@ import { joystick_dispatch } from './joystick-dispatch'
 vi.mock('$lib/game-kit/input/override-event-offset', () => ({ override_event_offset: vi.fn() }))
 
 const POINTER_ID = 3
-const IS_PRIMARY = true
+const is_primary = true
 const CLIENT_X = 150
 const CLIENT_Y = 250
 const RECT_LEFT = 100
@@ -49,7 +49,7 @@ describe('dispatch_pointer_down', () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
 
-		joystick_dispatch.dispatch_pointer_down(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
+		joystick_dispatch.dispatch_pointer_down(POINTER_ID, is_primary, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toHaveLength(0)
 	})
 
@@ -58,7 +58,7 @@ describe('dispatch_pointer_down', () => {
 		const { dom, dispatched } = make_fake_dom()
 
 		stub_document(dom)
-		joystick_dispatch.dispatch_pointer_down(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
+		joystick_dispatch.dispatch_pointer_down(POINTER_ID, is_primary, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toEqual(['pointermove', 'pointerdown'])
 	})
 })
@@ -68,7 +68,7 @@ describe('dispatch_pointer_up', () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
 
-		joystick_dispatch.dispatch_pointer_up(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
+		joystick_dispatch.dispatch_pointer_up(POINTER_ID, is_primary, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toHaveLength(0)
 	})
 
@@ -78,7 +78,7 @@ describe('dispatch_pointer_up', () => {
 		const { dom, dispatched } = make_fake_dom()
 
 		stub_document(dom)
-		joystick_dispatch.dispatch_pointer_up(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
+		joystick_dispatch.dispatch_pointer_up(POINTER_ID, is_primary, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toEqual(['pointerup', 'click', 'pointerleave'])
 	})
 
@@ -88,7 +88,7 @@ describe('dispatch_pointer_up', () => {
 		const { dom, dispatched } = make_fake_dom()
 
 		stub_document(dom)
-		joystick_dispatch.dispatch_pointer_up(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y, false)
+		joystick_dispatch.dispatch_pointer_up(POINTER_ID, is_primary, CLIENT_X, CLIENT_Y, false)
 		expect(dispatched).toEqual(['pointerup', 'pointerleave'])
 	})
 })
@@ -98,7 +98,7 @@ describe('dispatch_pointer_cancel', () => {
 		stub_document(null)
 		const { dispatched } = make_fake_dom()
 
-		joystick_dispatch.dispatch_pointer_cancel(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
+		joystick_dispatch.dispatch_pointer_cancel(POINTER_ID, is_primary, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toHaveLength(0)
 	})
 
@@ -107,7 +107,7 @@ describe('dispatch_pointer_cancel', () => {
 		const { dom, dispatched } = make_fake_dom()
 
 		stub_document(dom)
-		joystick_dispatch.dispatch_pointer_cancel(POINTER_ID, IS_PRIMARY, CLIENT_X, CLIENT_Y)
+		joystick_dispatch.dispatch_pointer_cancel(POINTER_ID, is_primary, CLIENT_X, CLIENT_Y)
 		expect(dispatched).toEqual(['pointerup', 'pointerleave'])
 	})
 })

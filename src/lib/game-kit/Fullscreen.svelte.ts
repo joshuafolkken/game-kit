@@ -21,13 +21,13 @@ function get_native_fullscreen_element(): Element | null {
 }
 
 async function call_native_request(element: HTMLElement): Promise<boolean> {
-	const function_ =
+	const request_method =
 		// eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/no-unnecessary-condition -- .call(element) below binds `this`; webkit fallback is absent in lib.dom types but real on older Safari
 		element.requestFullscreen ?? element.webkitRequestFullscreen
-	if (typeof function_ !== 'function') return false
+	if (typeof request_method !== 'function') return false
 
 	try {
-		await function_.call(element)
+		await request_method.call(element)
 
 		return true
 	} catch {
@@ -36,13 +36,13 @@ async function call_native_request(element: HTMLElement): Promise<boolean> {
 }
 
 async function call_native_exit(): Promise<void> {
-	const function_ =
+	const exit_method =
 		// eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/no-unnecessary-condition -- .call(document) below binds `this`; webkit fallback is absent in lib.dom types but real on older Safari
 		document.exitFullscreen ?? document.webkitExitFullscreen
-	if (typeof function_ !== 'function') return
+	if (typeof exit_method !== 'function') return
 
 	try {
-		await function_.call(document)
+		await exit_method.call(document)
 	} catch {
 		/* ignore */
 	}

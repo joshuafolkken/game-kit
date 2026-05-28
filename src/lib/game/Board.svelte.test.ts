@@ -8,7 +8,7 @@ import type { GameBoardData } from './types'
 
 vi.mock('@threlte/core', () => ({ T: {}, useTask: vi.fn() }))
 vi.mock('@threlte/extras', () => ({
-	Text: function Text() {
+	Text: function text_mock() {
 		/* no-op */
 	},
 }))

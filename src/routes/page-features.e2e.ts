@@ -53,7 +53,7 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 	await page.goto('/')
 	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
 
-	const was_called = await page.evaluate(
+	const is_fullscreen_requested = await page.evaluate(
 		async ([sel, wait_ms]) =>
 			await new Promise<boolean>((resolve) => {
 				const scene = document.querySelector<HTMLElement>(sel)
@@ -64,24 +64,24 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 					return
 				}
 
-				let called = false
+				let is_called = false
 
 				// eslint-disable-next-line @typescript-eslint/promise-function-async -- test mock simulates a Promise<void>-returning DOM API
 				scene.requestFullscreen = function (): Promise<void> {
-					called = true
+					is_called = true
 
 					return Promise.resolve()
 				}
 
 				scene.click()
 				setTimeout(() => {
-					resolve(called)
+					resolve(is_called)
 				}, wait_ms)
 			}),
 		[SEL_GAME_SCENE, FULLSCREEN_NOT_CALLED_WAIT_MS] as const,
 	)
 
-	expect(was_called).toBe(false)
+	expect(is_fullscreen_requested).toBe(false)
 })
 
 test('pseudo-fullscreen class is applied when native API is unavailable on touch devices', async ({

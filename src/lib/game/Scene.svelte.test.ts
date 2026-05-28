@@ -6,12 +6,12 @@ import { render } from 'vitest-browser-svelte'
 import Scene from './Scene.svelte'
 
 vi.mock('$lib/game-kit/scene/SceneObjects.svelte', () => ({
-	default: function SceneObjects() {
+	default: function scene_objects_mock() {
 		/* no-op */
 	},
 }))
 vi.mock('$lib/game/Board.svelte', () => ({
-	default: function Board() {
+	default: function board_mock() {
 		/* no-op */
 	},
 }))

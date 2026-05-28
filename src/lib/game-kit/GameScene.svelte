@@ -206,7 +206,7 @@
 		</Suspense>
 		<CrtDitherPass {lo_dpr} />
 	</Canvas>
-	<VirtualJoystick {label_jump} show_jump={is_started} />
+	<VirtualJoystick {label_jump} should_show_jump={is_started} />
 	{#if is_dragging_look}
 		<svg
 			class="fake-cursor"
