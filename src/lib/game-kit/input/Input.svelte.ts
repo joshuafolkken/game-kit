@@ -89,6 +89,7 @@ function on_mouse_down_impl(s: InputState, e: MouseEvent): void {
 	s.drag_start_x = e.clientX
 	s.drag_start_y = e.clientY
 	s.is_dragging_look = true
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- requestPointerLock is typed as always present but absent on older browsers
 	if (e.target instanceof HTMLElement) void e.target.requestPointerLock?.()
 }
 

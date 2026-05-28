@@ -178,7 +178,7 @@ describe('input', () => {
 		const received: Array<string> = []
 
 		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
-			received.push(`${e.type}:${e.button}`),
+			received.push(`${e.type}:${String(e.button)}`),
 		)
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		dispatch_mouse('mousedown', { button: LEFT_BUTTON })
@@ -190,7 +190,7 @@ describe('input', () => {
 		const received: Array<string> = []
 
 		canvas_element.addEventListener('pointerup', (e: PointerEvent) =>
-			received.push(`${e.type}:${e.button}`),
+			received.push(`${e.type}:${String(e.button)}`),
 		)
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		dispatch_mouse('mouseup', { button: LEFT_BUTTON })
@@ -202,7 +202,7 @@ describe('input', () => {
 		const received: Array<string> = []
 
 		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
-			received.push(`${e.type}:${e.button}`),
+			received.push(`${e.type}:${String(e.button)}`),
 		)
 		dispatch_mouse('mousedown', { button: LEFT_BUTTON })
 
@@ -213,7 +213,7 @@ describe('input', () => {
 		const received: Array<string> = []
 
 		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
-			received.push(`${e.type}:${e.button}`),
+			received.push(`${e.type}:${String(e.button)}`),
 		)
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		const start_count = received.length
