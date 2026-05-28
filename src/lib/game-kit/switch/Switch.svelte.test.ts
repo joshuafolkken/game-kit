@@ -7,7 +7,7 @@ import SWITCH_SOURCE from './Switch.svelte?raw'
 
 vi.mock('@threlte/core', () => ({ T: {} }))
 vi.mock('@threlte/extras', () => ({
-	Text: function Text() {
+	Text: function text_mock() {
 		/* no-op */
 	},
 }))

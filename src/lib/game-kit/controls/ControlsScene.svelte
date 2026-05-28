@@ -205,7 +205,7 @@
 	}
 
 	onMount(function setup(): () => void {
-		let alive = true
+		let is_alive = true
 
 		void (async function load_textures(): Promise<void> {
 			try {
@@ -215,8 +215,8 @@
 					svg_to_texture(TOUCH_SVG, TOUCH_TEX_W, TOUCH_TEX_H),
 				])
 
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- async race guard: the returned cleanup sets `alive = false`, which TS's flow analysis can't see across the await
-				if (!alive) {
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- async race guard: the returned cleanup sets `is_alive = false`, which TS's flow analysis can't see across the await
+				if (!is_alive) {
 					kb.dispose()
 					ms.dispose()
 					tc.dispose()
@@ -234,7 +234,7 @@
 		})()
 
 		return function cleanup(): void {
-			alive = false
+			is_alive = false
 			keyboard_tex?.dispose()
 			mouse_tex?.dispose()
 			touch_tex?.dispose()

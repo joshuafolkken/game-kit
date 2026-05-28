@@ -6,10 +6,10 @@
 
 	interface Props {
 		label_jump: string
-		show_jump?: boolean
+		should_show_jump?: boolean
 	}
 
-	const { label_jump, show_jump = true }: Props = $props()
+	const { label_jump, should_show_jump = true }: Props = $props()
 
 	// eslint-disable-next-line init-declarations -- assigned by Svelte bind:this
 	let move_zone: HTMLElement
@@ -25,15 +25,15 @@
 	let move_touch_id: number | null = null
 	let move_start_x = 0
 	let move_start_y = 0
-	let move_did_drag = false
+	let did_move_drag = false
 
 	let look_touch_id: number | null = null
 	let look_last_x = 0
 	let look_last_y = 0
 	let look_start_x = 0
 	let look_start_y = 0
-	let look_is_first_move = false
-	let look_did_drag = false
+	let is_look_first_move = false
+	let did_look_drag = false
 
 	function find_touch(list: TouchList, id: number): Touch | undefined {
 		for (const t of list) {
@@ -56,7 +56,7 @@
 		move_touch_id = t.identifier
 		move_start_x = t.clientX
 		move_start_y = t.clientY
-		move_did_drag = false
+		did_move_drag = false
 		joystick_dispatch.dispatch_pointer_down(
 			t.identifier,
 			look_touch_id === null,
@@ -76,8 +76,8 @@
 		look_last_y = t.clientY
 		look_start_x = t.clientX
 		look_start_y = t.clientY
-		look_is_first_move = true
-		look_did_drag = false
+		is_look_first_move = true
+		did_look_drag = false
 		joystick_dispatch.dispatch_pointer_down(
 			t.identifier,
 			move_touch_id === null,
@@ -95,7 +95,7 @@
 
 	function apply_move_touch(t: Touch): void {
 		if (Math.hypot(t.clientX - move_start_x, t.clientY - move_start_y) > TAP_DRAG_THRESHOLD) {
-			move_did_drag = true
+			did_move_drag = true
 		}
 
 		input.set_joystick_move(
@@ -106,14 +106,14 @@
 
 	function apply_look_touch(t: Touch): void {
 		if (Math.hypot(t.clientX - look_start_x, t.clientY - look_start_y) > TAP_DRAG_THRESHOLD) {
-			look_did_drag = true
+			did_look_drag = true
 		}
 
-		const sensitivity = look_is_first_move
+		const sensitivity = is_look_first_move
 			? TOUCH_LOOK_SENSITIVITY * FIRST_MOVE_SENSITIVITY_FRACTION
 			: TOUCH_LOOK_SENSITIVITY
 
-		look_is_first_move = false
+		is_look_first_move = false
 		input.apply_look_delta(
 			(t.clientX - look_last_x) * sensitivity,
 			(t.clientY - look_last_y) * sensitivity,
@@ -142,7 +142,7 @@
 			look_touch_id === null,
 			move_start_x,
 			move_start_y,
-			!move_did_drag,
+			!did_move_drag,
 		)
 	}
 
@@ -153,7 +153,7 @@
 			move_touch_id === null,
 			look_start_x,
 			look_start_y,
-			!look_did_drag,
+			!did_look_drag,
 		)
 	}
 
@@ -222,7 +222,7 @@
 <div class="joystick-overlay">
 	<div class="joystick-zone" aria-hidden="true" bind:this={move_zone}></div>
 	<div class="joystick-zone" aria-hidden="true" bind:this={look_zone}></div>
-	{#if show_jump}
+	{#if should_show_jump}
 		<button
 			class="jump-btn"
 			data-testid="jump-btn"
