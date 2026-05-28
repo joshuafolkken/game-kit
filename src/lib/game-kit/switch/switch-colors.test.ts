@@ -20,6 +20,9 @@ const TEST_COLORS: SwitchColors = {
 	inactive_orb_emissive: 0.2,
 }
 
+const TITLE_RESOLVE_ACTIVE = 'resolves correctly when active'
+const TITLE_RESOLVE_INACTIVE = 'resolves correctly when inactive'
+
 describe('resolve_switch_colors', () => {
 	it('returns active values when is_active is true', () => {
 		const result = resolve_switch_colors(TEST_COLORS, true)
@@ -51,7 +54,7 @@ describe('CYBER_SWITCH_COLORS', () => {
 		expect(CYBER_SWITCH_COLORS.inactive).toBe('#00aaff')
 	})
 
-	it('resolves correctly when active', () => {
+	it(TITLE_RESOLVE_ACTIVE, () => {
 		const result = resolve_switch_colors(CYBER_SWITCH_COLORS, true)
 
 		expect(result.current_color).toBe('#ff00ff')
@@ -61,7 +64,7 @@ describe('CYBER_SWITCH_COLORS', () => {
 		expect(result.orb_emissive).toBe(5)
 	})
 
-	it('resolves correctly when inactive', () => {
+	it(TITLE_RESOLVE_INACTIVE, () => {
 		const result = resolve_switch_colors(CYBER_SWITCH_COLORS, false)
 
 		expect(result.current_color).toBe('#00aaff')
@@ -81,7 +84,7 @@ describe('FULLSCREEN_SWITCH_COLORS', () => {
 		expect(FULLSCREEN_SWITCH_COLORS.inactive).toBe('#006644')
 	})
 
-	it('resolves correctly when active', () => {
+	it(TITLE_RESOLVE_ACTIVE, () => {
 		const result = resolve_switch_colors(FULLSCREEN_SWITCH_COLORS, true)
 
 		expect(result.current_color).toBe('#00ff88')
@@ -90,7 +93,7 @@ describe('FULLSCREEN_SWITCH_COLORS', () => {
 		expect(result.orb_emissive).toBe(5)
 	})
 
-	it('resolves correctly when inactive', () => {
+	it(TITLE_RESOLVE_INACTIVE, () => {
 		const result = resolve_switch_colors(FULLSCREEN_SWITCH_COLORS, false)
 
 		expect(result.current_color).toBe('#006644')
@@ -109,7 +112,7 @@ describe('FPS_SWITCH_COLORS', () => {
 		expect(FPS_SWITCH_COLORS.inactive).toBe('#665500')
 	})
 
-	it('resolves correctly when active', () => {
+	it(TITLE_RESOLVE_ACTIVE, () => {
 		const result = resolve_switch_colors(FPS_SWITCH_COLORS, true)
 
 		expect(result.current_color).toBe('#ffdd00')
@@ -118,7 +121,7 @@ describe('FPS_SWITCH_COLORS', () => {
 		expect(result.orb_emissive).toBe(5)
 	})
 
-	it('resolves correctly when inactive', () => {
+	it(TITLE_RESOLVE_INACTIVE, () => {
 		const result = resolve_switch_colors(FPS_SWITCH_COLORS, false)
 
 		expect(result.current_color).toBe('#665500')

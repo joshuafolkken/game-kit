@@ -10,18 +10,20 @@ const CHECK_SEED = 0x9e_37_79_b9
 const SAMPLE_HIGH_SCORE = 5000
 const SAMPLE_HIGH_ROUND = 3
 const LOADING_OVERLAY_TIMEOUT_MS = 8000
+const SEL_GAME_SCENE = '[data-testid="game-scene"]'
+const GAME_SCENE_TARGET = 'game-scene'
 
 test('fullscreen is requested on touch-primary devices when start hint is clicked', async ({
 	page,
 }) => {
 	await stub_touch_primary(page, true)
 	await page.goto('/')
-	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
+	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
 
 	const fullscreen_target = await page.evaluate(
-		async () =>
+		async ([sel, target]) =>
 			await new Promise<string>((resolve) => {
-				const scene = document.querySelector<HTMLElement>('[data-testid="game-scene"]')
+				const scene = document.querySelector<HTMLElement>(sel)
 
 				if (!scene) {
 					resolve('no-scene')
@@ -31,16 +33,17 @@ test('fullscreen is requested on touch-primary devices when start hint is clicke
 
 				// eslint-disable-next-line @typescript-eslint/promise-function-async -- test mock simulates a Promise<void>-returning DOM API
 				scene.requestFullscreen = function (): Promise<void> {
-					resolve('game-scene')
+					resolve(target)
 
 					return Promise.resolve()
 				}
 
 				scene.click()
 			}),
+		[SEL_GAME_SCENE, GAME_SCENE_TARGET] as const,
 	)
 
-	expect(fullscreen_target).toBe('game-scene')
+	expect(fullscreen_target).toBe(GAME_SCENE_TARGET)
 })
 
 test('fullscreen is NOT requested on desktop devices when start hint is clicked', async ({
@@ -48,12 +51,12 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 }) => {
 	await stub_touch_primary(page, false)
 	await page.goto('/')
-	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
+	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
 
 	const was_called = await page.evaluate(
-		async (wait_ms) =>
+		async ([sel, wait_ms]) =>
 			await new Promise<boolean>((resolve) => {
-				const scene = document.querySelector<HTMLElement>('[data-testid="game-scene"]')
+				const scene = document.querySelector<HTMLElement>(sel)
 
 				if (!scene) {
 					resolve(false)
@@ -75,7 +78,7 @@ test('fullscreen is NOT requested on desktop devices when start hint is clicked'
 					resolve(called)
 				}, wait_ms)
 			}),
-		FULLSCREEN_NOT_CALLED_WAIT_MS,
+		[SEL_GAME_SCENE, FULLSCREEN_NOT_CALLED_WAIT_MS] as const,
 	)
 
 	expect(was_called).toBe(false)
@@ -86,10 +89,10 @@ test('pseudo-fullscreen class is applied when native API is unavailable on touch
 }) => {
 	await stub_touch_primary(page, true)
 	await page.goto('/')
-	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
+	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
 
-	await page.evaluate(() => {
-		const scene = document.querySelector<HTMLElement>('[data-testid="game-scene"]')
+	await page.evaluate((sel) => {
+		const scene = document.querySelector<HTMLElement>(sel)
 		if (!scene) return
 		Object.defineProperty(scene, 'requestFullscreen', { value: undefined, configurable: true })
 		Object.defineProperty(scene, 'webkitRequestFullscreen', {
@@ -97,9 +100,9 @@ test('pseudo-fullscreen class is applied when native API is unavailable on touch
 			configurable: true,
 		})
 		scene.click()
-	})
+	}, SEL_GAME_SCENE)
 
-	await expect(page.locator('[data-testid="game-scene"]')).toHaveClass(/pseudo-fullscreen/u)
+	await expect(page.locator(SEL_GAME_SCENE)).toHaveClass(/pseudo-fullscreen/u)
 })
 
 test('page has no critical or serious accessibility violations', async ({ page }) => {
