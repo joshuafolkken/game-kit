@@ -32,8 +32,6 @@ const LAYER_B_DISABLES = {
 	'@typescript-eslint/no-empty-function': 'off',
 	'sonarjs/no-duplicate-string': 'off',
 	'sonarjs/cognitive-complexity': 'off',
-	'@typescript-eslint/restrict-template-expressions': 'off',
-	'@typescript-eslint/no-unnecessary-condition': 'off',
 	complexity: 'off',
 	'max-lines': 'off',
 }

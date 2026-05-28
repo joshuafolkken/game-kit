@@ -98,6 +98,7 @@
 	function start_game(): void {
 		if (session.is_session_started) return
 		audio.init_audio()
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- `container` is a bind:this ref, typed non-null but undefined before mount
 		if (container && device.is_touch_primary) void fullscreen.request(container)
 		session.start_session()
 		on_start?.()

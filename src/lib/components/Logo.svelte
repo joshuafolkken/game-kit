@@ -5,7 +5,7 @@
 	function generate_filter_id(): string {
 		next_filter_id += 1
 
-		return `${FILTER_ID_PREFIX}-${next_filter_id}`
+		return `${FILTER_ID_PREFIX}-${String(next_filter_id)}`
 	}
 </script>
 

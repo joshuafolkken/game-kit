@@ -213,6 +213,7 @@
 					svg_to_texture(TOUCH_SVG, TOUCH_TEX_W, TOUCH_TEX_H),
 				])
 
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- async race guard: the returned cleanup sets `alive = false`, which TS's flow analysis can't see across the await
 				if (!alive) {
 					kb.dispose()
 					ms.dispose()

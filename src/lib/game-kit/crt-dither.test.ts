@@ -167,7 +167,7 @@ describe('crt_dither.compute_scanline_factor (cosine profile)', () => {
 })
 
 describe('BAYER_MATRIX', () => {
-	it(`is a ${BAYER_SIZE}×${BAYER_SIZE} matrix`, () => {
+	it(`is a ${String(BAYER_SIZE)}×${String(BAYER_SIZE)} matrix`, () => {
 		expect(BAYER_MATRIX).toHaveLength(BAYER_SIZE)
 
 		for (const row of BAYER_MATRIX) {
@@ -175,7 +175,7 @@ describe('BAYER_MATRIX', () => {
 		}
 	})
 
-	it(`contains every integer 0..${MAX_BAYER_VALUE} exactly once (proper Bayer ordering)`, () => {
+	it(`contains every integer 0..${String(MAX_BAYER_VALUE)} exactly once (proper Bayer ordering)`, () => {
 		const seen = new Set<number>()
 
 		for (const row of BAYER_MATRIX) {
@@ -272,7 +272,7 @@ describe('crt_dither.quantize_with_dither_2d', () => {
 })
 
 describe('crt_dither.create_bayer_texture', () => {
-	it(`returns a DataTexture sized ${BAYER_SIZE}×${BAYER_SIZE} with non-zero data`, () => {
+	it(`returns a DataTexture sized ${String(BAYER_SIZE)}×${String(BAYER_SIZE)} with non-zero data`, () => {
 		const tex = crt_dither.create_bayer_texture()
 
 		expect(tex.image.width).toBe(BAYER_SIZE)
@@ -284,7 +284,7 @@ describe('crt_dither.create_bayer_texture', () => {
 		tex.dispose()
 	})
 
-	it(`stores normalized values in [0, 1) matching BAYER_MATRIX / ${SQUARED_BAYER_SIZE}`, () => {
+	it(`stores normalized values in [0, 1) matching BAYER_MATRIX / ${String(SQUARED_BAYER_SIZE)}`, () => {
 		const tex = crt_dither.create_bayer_texture()
 		const data = tex.image.data as Float32Array
 

@@ -37,7 +37,7 @@
 		const is_h = axis === 'h'
 
 		return {
-			key: `${axis}${sx}${sy}`,
+			key: `${axis}${String(sx)}${String(sy)}`,
 			px: sx * (is_h ? g.arm_center : g.pos),
 			py: sy * (is_h ? g.pos : g.arm_center),
 			w: is_h ? g.arm : g.thickness,

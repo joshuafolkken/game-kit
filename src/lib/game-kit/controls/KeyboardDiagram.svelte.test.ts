@@ -23,7 +23,7 @@ describe('KeyboardDiagram', () => {
 	it('does not render a visible move label text', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
 		const texts = [...container.querySelectorAll('text')]
-		const move_label = texts.find((t) => t.textContent?.trim() === PROPS.label_move)
+		const move_label = texts.find((t) => t.textContent.trim() === PROPS.label_move)
 
 		expect(move_label).toBeUndefined()
 	})
@@ -31,7 +31,7 @@ describe('KeyboardDiagram', () => {
 	it('renders ESC text centered in its key (dominant-baseline central)', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
 		const texts = [...container.querySelectorAll('text')]
-		const esc = texts.find((t) => t.textContent?.trim() === 'ESC')
+		const esc = texts.find((t) => t.textContent.trim() === 'ESC')
 
 		expect(esc).toBeTruthy()
 		expect(esc?.getAttribute('dominant-baseline')).toBe('central')
