@@ -2,6 +2,7 @@ export const DECAY_RATE = 6
 export const MAX_POSITION_OFFSET = 0.08
 export const MAX_ROTATION_OFFSET = 0.04
 const INTENSITY_FLOOR = 0.001
+const RANDOM_RANGE_SCALE = 2
 
 let intensity = $state(0)
 
@@ -17,7 +18,7 @@ function sample(max: number): number {
 	if (intensity <= 0) return 0
 
 	// eslint-disable-next-line sonarjs/pseudo-random -- visual camera shake; not security-sensitive
-	return (Math.random() * 2 - 1) * max * intensity
+	return (Math.random() * RANDOM_RANGE_SCALE - 1) * max * intensity
 }
 
 function step(delta: number): void {

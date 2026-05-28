@@ -1,3 +1,5 @@
+const HALF_DIVISOR = 2
+
 export const CREDITS_FONT_SIZE = 0.1
 export const CREDITS_LINE_HEIGHT = 1.3
 export const CREDITS_NORMAL_COLOR = '#776655'
@@ -6,9 +8,7 @@ export const CREDITS_POSITION_Y = 0.08
 export const CREDITS_SCROLL_SPEED = 0.2
 export const CREDITS_GLOW_BLUR = '50%'
 export const CREDITS_GLOW_OPACITY = 0.4
-export const FLOOR_TEXT_ROTATION_X = -Math.PI / 2
-
-const HALF_DIVISOR = 2
+export const FLOOR_TEXT_ROTATION_X = -(Math.PI / HALF_DIVISOR)
 
 export function make_credits_scroll_bounds(
 	line_count: number,

@@ -25,7 +25,6 @@ const LAYER_B_DISABLES = {
 	'unicorn/no-null': 'off',
 	'import/exports-last': 'off',
 	'no-restricted-syntax': 'off',
-	'@typescript-eslint/no-magic-numbers': 'off',
 	'max-lines-per-function': 'off',
 	'@typescript-eslint/naming-convention': 'off',
 	'max-statements': 'off',

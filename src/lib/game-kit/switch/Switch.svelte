@@ -16,6 +16,7 @@
 	import { MeshStandardMaterial } from 'three'
 
 	const CRT_LINES: ReadonlyArray<number> = [-1, 0, 1]
+	const HALF_DIVISOR = 2
 
 	type CornerSign = -1 | 1
 	type BarAxis = 'h' | 'v'
@@ -86,12 +87,12 @@
 	}: Props = $props()
 
 	const geom: Required<SwitchGeometry> = $derived({ ...DEFAULT_SWITCH_GEOMETRY, ...geometry })
-	const border_pos = $derived(geom.panel_size / 2 - geom.border_thickness / 2)
+	const border_pos = $derived(geom.panel_size / HALF_DIVISOR - geom.border_thickness / HALF_DIVISOR)
 	const corner_geom: CornerGeom = $derived({
 		arm: geom.corner_arm,
 		thickness: geom.corner_thickness,
 		pos: geom.corner_pos,
-		arm_center: geom.corner_pos - geom.corner_arm / 2,
+		arm_center: geom.corner_pos - geom.corner_arm / HALF_DIVISOR,
 	})
 	const corner_bars = $derived(
 		CORNER_SIGNS.flatMap(function (sx) {
@@ -206,7 +207,7 @@
 	{:else if icon_type === 'fps'}
 		<!-- FPS icon: 3 ascending performance bars -->
 		{#each FPS_BARS as bar (bar.key)}
-			<T.Mesh position={[bar.x, FPS_BAR_BASE_Y + bar.h / 2, geom.fps_icon_z]}>
+			<T.Mesh position={[bar.x, FPS_BAR_BASE_Y + bar.h / HALF_DIVISOR, geom.fps_icon_z]}>
 				<T.BoxGeometry args={[geom.fps_bar_width, bar.h, geom.fps_bar_depth]} />
 				<T.MeshStandardMaterial
 					color={resolved.current_color}
