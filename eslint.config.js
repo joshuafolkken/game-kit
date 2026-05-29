@@ -27,14 +27,25 @@ const LAYER_B_DISABLES = {
 	// style change. Always disabled.
 	'unicorn/no-null': 'off',
 
-	// === Layer C follow-up (high-volume manual refactor) ===
-	'import/exports-last': 'off',
-	'no-restricted-syntax': 'off',
+	// `max-lines-per-function`, `max-statements`, `sonarjs/cognitive-complexity`, `complexity`,
+	// and `max-lines` all fight this codebase's patterns:
+	// - Test `it()` bodies legitimately span 20-40 lines (setup → act → multiple assertions);
+	//   splitting them into smaller functions hurts readability without a quality gain.
+	// - Async game-loop source (VirtualJoystick touch handling, flash sequences, Player.svelte
+	//   coroutines) is naturally high-statement and cognitively complex by domain — not a sign
+	//   of poor design.
+	// - Whole-file size limits conflict with large test suites that must live in one file for
+	//   shared setup (GameScene, Input, VirtualJoystick, crt-dither).
+	// Always disabled.
 	'max-lines-per-function': 'off',
 	'max-statements': 'off',
 	'sonarjs/cognitive-complexity': 'off',
 	complexity: 'off',
 	'max-lines': 'off',
+
+	// === Layer C follow-up (high-volume manual refactor) ===
+	'import/exports-last': 'off',
+	'no-restricted-syntax': 'off',
 }
 
 // `scripts/` and `templates/` are not in any tsconfig project here:
