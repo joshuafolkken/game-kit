@@ -30,12 +30,12 @@ interface RoundData {
 	round: number
 }
 
-export function compute_check(value: number, round: number): number {
+function compute_check(value: number, round: number): number {
 	// eslint-disable-next-line no-bitwise -- score-tamper-check hash; bitwise XOR and unsigned-shift are intentional
 	return (Math.imul(value + 1, CHECK_SEED) ^ Math.imul(round + 1, CHECK_SEED >>> 1)) >>> 0
 }
 
-export function load_stored_data(keys: StorageKeys): { score: number; round: number } {
+function load_stored_data(keys: StorageKeys): { score: number; round: number } {
 	try {
 		const stored_score = Number(localStorage.getItem(keys.score))
 		const stored_round = Number(localStorage.getItem(keys.round))
@@ -61,21 +61,17 @@ function save_high_score(value: number, round: number, keys: StorageKeys): void 
 	}
 }
 
-export function calculate_time_coefficient(elapsed_ms: number, sequence_length: number): number {
+function calculate_time_coefficient(elapsed_ms: number, sequence_length: number): number {
 	const avg_s = elapsed_ms / MS_PER_SECOND / sequence_length
 
 	return Math.max(MIN_TIME_COEFF, 1 - avg_s * TIME_COEFF_DECAY)
 }
 
-export function calculate_round_score(
-	elapsed_ms: number,
-	sequence_length: number,
-	round: number,
-): number {
+function calculate_round_score(elapsed_ms: number, sequence_length: number, round: number): number {
 	return Math.round(BASE_SCORE * calculate_time_coefficient(elapsed_ms, sequence_length) * round)
 }
 
-export function format_score(value: number): string {
+function format_score(value: number): string {
 	return SCORE_FORMATTER.format(value)
 }
 
@@ -158,7 +154,7 @@ function migrate_legacy_score(keys: StorageKeys): { score: number; round: number
 	return legacy
 }
 
-export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX): ScoreApi {
+function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX): ScoreApi {
 	const keys = make_storage_keys(key_prefix)
 	let loaded = load_stored_data(keys)
 
@@ -179,4 +175,14 @@ export function create_score(key_prefix: string = GAME_SCORE_KEY_PREFIX): ScoreA
 
 export type ScoreInstance = ReturnType<typeof create_score>
 
-export const score = create_score()
+const score = create_score()
+
+export {
+	compute_check,
+	load_stored_data,
+	calculate_time_coefficient,
+	calculate_round_score,
+	format_score,
+	create_score,
+	score,
+}

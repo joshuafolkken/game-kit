@@ -10,7 +10,7 @@ interface ListenerManagerApi {
 	setup: (on_cleanup?: () => void) => () => void
 }
 
-export function create_listener_manager(specs: ReadonlyArray<ListenerSpec>): ListenerManagerApi {
+function create_listener_manager(specs: ReadonlyArray<ListenerSpec>): ListenerManagerApi {
 	let cleanup_function: (() => void) | null = null
 
 	return {
@@ -36,3 +36,5 @@ export function create_listener_manager(specs: ReadonlyArray<ListenerSpec>): Lis
 }
 
 export type ListenerManager = ReturnType<typeof create_listener_manager>
+
+export { create_listener_manager }

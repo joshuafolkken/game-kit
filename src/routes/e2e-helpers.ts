@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 
 const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 
-export async function stub_touch_primary(page: Page, is_touch: boolean): Promise<void> {
+async function stub_touch_primary(page: Page, is_touch: boolean): Promise<void> {
 	await page.addInitScript(
 		([query, matches]) => {
 			const original = globalThis.matchMedia.bind(globalThis)
@@ -38,3 +38,5 @@ export async function stub_touch_primary(page: Page, is_touch: boolean): Promise
 		[TOUCH_PRIMARY_QUERY, is_touch] as const,
 	)
 }
+
+export { stub_touch_primary }

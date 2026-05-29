@@ -382,7 +382,7 @@ function make_input_api(
 	}
 }
 
-export function create_input(): InputApi {
+function create_input(): InputApi {
 	const state = $state<InputState>({
 		is_dragging_look: false,
 		drag_start_x: 0,
@@ -402,4 +402,6 @@ export function create_input(): InputApi {
 
 export type InputInstance = ReturnType<typeof create_input>
 
-export const input = create_input()
+const input = create_input()
+
+export { create_input, input }

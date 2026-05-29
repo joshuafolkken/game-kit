@@ -79,7 +79,7 @@ interface FullscreenApi {
 	setup_listeners: () => () => void
 }
 
-export function create_fullscreen(): FullscreenApi {
+function create_fullscreen(): FullscreenApi {
 	const state = $state<FullscreenState>({
 		is_pseudo_fullscreen: false,
 		is_native_fullscreen: false,
@@ -126,4 +126,6 @@ export function create_fullscreen(): FullscreenApi {
 
 export type FullscreenInstance = ReturnType<typeof create_fullscreen>
 
-export const fullscreen = create_fullscreen()
+const fullscreen = create_fullscreen()
+
+export { create_fullscreen, fullscreen }
