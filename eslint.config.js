@@ -14,14 +14,15 @@ const PERMANENT_OVERRIDES = {
 }
 
 const GAME_COMPLEXITY_OVERRIDES = {
-	files: ['src/lib/game-kit/**', 'src/lib/game/**'],
+	files: ['src/lib/game-kit/**', 'src/lib/game/**', 'templates/src/lib/game/**'],
 	rules: {
 		complexity: ['error', 7],
 		'sonarjs/cognitive-complexity': ['error', 7],
 	},
 }
 
-const FILE_IGNORES = ['templates/**']
+// templates/ tooling config stays ignored (vite/svelte config — kit owns those rules).
+const FILE_IGNORES = ['templates/**/*.config.*']
 
 // scripts/ (CLI tools) are not in the SvelteKit tsconfig project, so type-aware parsing
 // would error. Lint them with type-checking disabled — structure/style rules still apply.
@@ -41,6 +42,22 @@ const SCRIPTS_NON_TYPED = {
 	},
 }
 
+// templates/ is verbatim scaffolding: it imports @joshuafolkken/game-kit and SvelteKit
+// $app/$lib aliases that don't resolve in game-kit's own tsconfig project (type-aware
+// parse error). Lint with type-checking disabled so structure/style rules still apply —
+// the same approach as scripts/. Type-aware coverage happens in the destination project.
+const TEMPLATES_NON_TYPED = {
+	files: ['templates/**/*.ts', 'templates/**/*.svelte'],
+	...tseslint.configs.disableTypeChecked,
+	languageOptions: {
+		...tseslint.configs.disableTypeChecked.languageOptions,
+		parserOptions: { project: false, projectService: false },
+	},
+	rules: {
+		...tseslint.configs.disableTypeChecked.rules,
+	},
+}
+
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
@@ -50,4 +67,5 @@ export default create_sveltekit_config({
 	{ rules: PERMANENT_OVERRIDES },
 	GAME_COMPLEXITY_OVERRIDES,
 	SCRIPTS_NON_TYPED,
+	TEMPLATES_NON_TYPED,
 )

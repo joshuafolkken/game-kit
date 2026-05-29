@@ -11,7 +11,7 @@
 		on_start: () => game.start(),
 	})
 
-	let hint_text = $derived(
+	const hint_text = $derived(
 		device.is_touch_primary ? messages.tap_to_start : messages.click_to_start,
 	)
 </script>
