@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { jgame_managed_dev_deps } from './jgame-managed-dev-deps.ts'
+import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
 
@@ -28,14 +28,14 @@ const USER_TSCONFIG = {
 	},
 }
 
-type GameKitPkg = {
+interface GameKitPackage {
 	version: string
 	scripts: Record<string, string>
 	devDependencies: Record<string, string>
 	devEngines: unknown
 }
 
-type GameNames = {
+interface GameNames {
 	kebab: string
 	display: string
 	upper: string
@@ -44,15 +44,18 @@ type GameNames = {
 }
 
 function to_kebab(raw: string): string {
-	return raw
-		.toLowerCase()
-		.trim()
-		.replace(/\s+/g, '-')
-		.replace(/[^a-z0-9-]/g, '')
-		.replace(/^-+|-+$/g, '')
+	return (
+		raw
+			.toLowerCase()
+			.trim()
+			.replaceAll(/\s+/gu, '-')
+			.replaceAll(/[^\da-z-]/gu, '')
+			// eslint-disable-next-line sonarjs/slow-regex -- bounded input (a short slug string); anchored alternation is safe
+			.replaceAll(/^-+|-+$/gu, '')
+	)
 }
 
-function build_done_msg(kebab: string): string {
+function build_done_message(kebab: string): string {
 	return [
 		'\n✅ Done.',
 		'',
@@ -75,12 +78,14 @@ function derive_names(raw: string): GameNames {
 	const kebab = to_kebab(raw)
 	const display = to_display(kebab)
 	const upper = display.toUpperCase()
+
 	return { kebab, display, upper, description: `A ${display} game`, app_label: `${display} game` }
 }
 
-function read_game_kit_pkg(): GameKitPkg {
+function read_game_kit_package(): GameKitPackage {
 	const raw = readFileSync(path.join(jgame_paths.PACKAGE_DIR, 'package.json'), 'utf8')
-	return JSON.parse(raw) as GameKitPkg
+
+	return JSON.parse(raw) as GameKitPackage
 }
 
 // `pnpm pack` strips the `packageManager` field from the published `package.json`,
@@ -91,8 +96,9 @@ function detect_host_pnpm_version(): string {
 	return execSync('pnpm --version').toString().trim()
 }
 
-function build_scripts(pkg: GameKitPkg): Record<string, string> {
-	const managed = jgame_managed_scripts.pick_managed_scripts(pkg.scripts)
+function build_scripts(package_: GameKitPackage): Record<string, string> {
+	const managed = jgame_managed_scripts.pick_managed_scripts(package_.scripts)
+
 	return {
 		preinstall: 'pnpm dlx @aikidosec/safe-chain setup-ci',
 		dev: 'vite dev',
@@ -105,22 +111,22 @@ function build_scripts(pkg: GameKitPkg): Record<string, string> {
 	}
 }
 
-function build_package_json(pkg: GameKitPkg, game_name: string): object {
+function build_package_json(package_: GameKitPackage, game_name: string): object {
 	return {
 		name: game_name,
 		version: '0.1.0',
 		private: true,
 		type: 'module',
-		scripts: build_scripts(pkg),
-		dependencies: { '@joshuafolkken/game-kit': `^${pkg.version}` },
-		devDependencies: jgame_managed_dev_deps.pick_required_deps(pkg.devDependencies),
+		scripts: build_scripts(package_),
+		dependencies: { '@joshuafolkken/game-kit': `^${package_.version}` },
+		devDependencies: jgame_managed_development_deps.pick_required_deps(package_.devDependencies),
 		packageManager: `pnpm@${detect_host_pnpm_version()}`,
-		devEngines: pkg.devEngines,
+		devEngines: package_.devEngines,
 	}
 }
 
 function generate_package_json(game_name: string): string {
-	return JSON.stringify(build_package_json(read_game_kit_pkg(), game_name), null, '\t')
+	return JSON.stringify(build_package_json(read_game_kit_package(), game_name), null, '\t')
 }
 
 function generate_tsconfig(): string {
@@ -141,39 +147,42 @@ function generate_game_config(names: GameNames): string {
 	].join('\n')
 }
 
-function write_package_json(game_name: string, project_dir: string): void {
-	writeFileSync(path.join(project_dir, 'package.json'), generate_package_json(game_name))
+function write_package_json(game_name: string, project_directory: string): void {
+	writeFileSync(path.join(project_directory, 'package.json'), generate_package_json(game_name))
 	console.info('  ✔ wrote    package.json')
 }
 
-function write_tsconfig(project_dir: string): void {
-	writeFileSync(path.join(project_dir, TSCONFIG_FILE_NAME), generate_tsconfig())
+function write_tsconfig(project_directory: string): void {
+	writeFileSync(path.join(project_directory, TSCONFIG_FILE_NAME), generate_tsconfig())
 	console.info('  ✔ wrote    tsconfig.json')
 }
 
-function write_game_config(names: GameNames, project_dir: string): void {
-	const dest = path.join(project_dir, 'src', 'lib', 'game-config.ts')
-	writeFileSync(dest, generate_game_config(names))
+function write_game_config(names: GameNames, project_directory: string): void {
+	const destination = path.join(project_directory, 'src', 'lib', 'game-config.ts')
+
+	writeFileSync(destination, generate_game_config(names))
 	console.info('  ✔ wrote    src/lib/game-config.ts')
 }
 
-function should_copy_template(src: string): boolean {
-	const name = path.basename(src)
+function should_copy_template(source: string): boolean {
+	const name = path.basename(source)
+
 	return name !== TSCONFIG_FILE_NAME && name !== NPMRC_SRC_NAME
 }
 
-function copy_templates(project_dir: string): void {
-	cpSync(jgame_paths.TEMPLATES_DIR, project_dir, {
+function copy_templates(project_directory: string): void {
+	cpSync(jgame_paths.TEMPLATES_DIR, project_directory, {
 		recursive: true,
 		filter: should_copy_template,
 	})
 	console.info('  ✔ copied   templates')
 }
 
-function write_npmrc(project_dir: string): void {
-	const src = path.join(jgame_paths.TEMPLATES_DIR, NPMRC_SRC_NAME)
-	const dest = path.join(project_dir, NPMRC_DEST_NAME)
-	cpSync(src, dest)
+function write_npmrc(project_directory: string): void {
+	const source = path.join(jgame_paths.TEMPLATES_DIR, NPMRC_SRC_NAME)
+	const destination = path.join(project_directory, NPMRC_DEST_NAME)
+
+	cpSync(source, destination)
 	console.info(`  ✔ wrote    ${NPMRC_DEST_NAME}`)
 }
 
@@ -182,29 +191,33 @@ function run(game_name_raw?: string): void {
 		console.error('Error: game name is required.\nUsage: jgame init <name>')
 		process.exit(1)
 	}
+
 	const names = derive_names(game_name_raw)
+
 	if (!names.kebab) {
 		console.error(
 			`Error: "${game_name_raw}" is not a valid game name. Use letters, numbers, and hyphens only (e.g. tic-tac-toe).`,
 		)
 		process.exit(1)
 	}
-	const project_dir = path.join(jgame_paths.PROJECT_ROOT, names.kebab)
-	const opts = { ...SPAWN_OPTIONS, cwd: project_dir }
+
+	const project_directory = path.join(jgame_paths.PROJECT_ROOT, names.kebab)
+	const opts = { ...SPAWN_OPTIONS, cwd: project_directory }
+
 	console.info('\n🎮 jgame init — Scaffolding new game project\n')
-	mkdirSync(project_dir, { recursive: true })
-	write_package_json(names.kebab, project_dir)
-	copy_templates(project_dir)
-	write_npmrc(project_dir)
-	write_game_config(names, project_dir)
-	write_tsconfig(project_dir)
+	mkdirSync(project_directory, { recursive: true })
+	write_package_json(names.kebab, project_directory)
+	copy_templates(project_directory)
+	write_npmrc(project_directory)
+	write_game_config(names, project_directory)
+	write_tsconfig(project_directory)
 	execSync('git init', opts)
 	execSync('pnpm install', opts)
 	// `josh sync` early-returns when destination files are missing, so eslint.config.js
 	// and prettier.config.js never get scaffolded; `josh init` is the canonical creator.
 	execSync('pnpm josh init --type sveltekit', opts)
 	execSync('pnpm josh sync', opts)
-	console.info(build_done_msg(names.kebab))
+	console.info(build_done_message(names.kebab))
 }
 
 const jgame_init = {

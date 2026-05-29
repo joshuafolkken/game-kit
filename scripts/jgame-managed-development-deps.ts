@@ -40,7 +40,7 @@ const REQUIRED_DEV_DEPS = [
 	'wrangler',
 ] as const
 
-type RequiredDevDep = (typeof REQUIRED_DEV_DEPS)[number]
+type RequiredDevelopmentDep = (typeof REQUIRED_DEV_DEPS)[number]
 
 const WILDCARD_VERSION = '*'
 
@@ -50,15 +50,16 @@ function pick_required_deps(source: Record<string, string>): Record<string, stri
 
 function read_required_deps_from_kit(): Record<string, string> {
 	const raw = readFileSync(path.join(jgame_paths.PACKAGE_DIR, 'package.json'), 'utf8')
-	const pkg = JSON.parse(raw) as { devDependencies?: Record<string, string> }
-	return pick_required_deps(pkg.devDependencies ?? {})
+	const package_ = JSON.parse(raw) as { devDependencies?: Record<string, string> }
+
+	return pick_required_deps(package_.devDependencies ?? {})
 }
 
-const jgame_managed_dev_deps = {
+const jgame_managed_development_deps = {
 	REQUIRED_DEV_DEPS,
 	pick_required_deps,
 	read_required_deps_from_kit,
 }
 
-export { jgame_managed_dev_deps }
-export type { RequiredDevDep }
+export { jgame_managed_development_deps as jgame_managed_dev_deps }
+export type { RequiredDevelopmentDep as RequiredDevDep }

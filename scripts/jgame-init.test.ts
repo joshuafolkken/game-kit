@@ -42,6 +42,7 @@ describe('jgame_init.generate_package_json', () => {
 	beforeEach(async () => {
 		const { readFileSync } = await import('node:fs')
 		const { execSync } = await import('node:child_process')
+
 		vi.mocked(readFileSync).mockReturnValue(JSON.stringify(MOCK_PKG))
 		vi.mocked(execSync).mockReturnValue(Buffer.from(`${MOCK_HOST_PNPM_VERSION}\n`))
 	})
@@ -49,18 +50,21 @@ describe('jgame_init.generate_package_json', () => {
 	it('includes game-kit as dependency with current version', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.dependencies['@joshuafolkken/game-kit']).toBe('^1.0.0')
 	})
 
 	it('uses supplied game name as package name', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('tic-tac-toe'))
+
 		expect(result.name).toBe('tic-tac-toe')
 	})
 
 	it('includes kit in devDependencies', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.devDependencies['@joshuafolkken/kit']).toBe('0.162.0')
 	})
 
@@ -71,6 +75,7 @@ describe('jgame_init.generate_package_json', () => {
 		// `pnpm josh format` fail on first use with "Command not found".
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.devDependencies.prettier).toBe('^3.8.3')
 		expect(result.devDependencies.eslint).toBe('^10.4.0')
 		expect(result.devDependencies['prettier-plugin-svelte']).toBe('^4.0.1')
@@ -82,12 +87,14 @@ describe('jgame_init.generate_package_json', () => {
 	it('does not emit a pnpm field (settings are sourced from pnpm-workspace.yaml, copied via templates)', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.pnpm).toBeUndefined()
 	})
 
 	it('includes required scripts', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.scripts.dev).toBe('vite dev')
 		expect(result.scripts.jgame).toBe('jgame')
 		expect(result.scripts.josh).toBe('josh')
@@ -105,12 +112,14 @@ describe('jgame_init.generate_package_json', () => {
 		// exact semver that the validation accepts.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.packageManager).toBe(`pnpm@${MOCK_HOST_PNPM_VERSION}`)
 	})
 
 	it('preserves devEngines.packageManager range alongside the host-derived packageManager', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.devEngines.packageManager.version).toBe('>=11.0.0-0')
 	})
 
@@ -121,6 +130,7 @@ describe('jgame_init.generate_package_json', () => {
 		// own package.json so the two paths cannot drift.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
 		expect(result.scripts.preview).toBe(CANONICAL_PREVIEW)
 		expect(result.scripts.preview).not.toBe('vite preview')
 	})
@@ -130,12 +140,14 @@ describe('jgame_init.generate_tsconfig', () => {
 	it('extends .svelte-kit/tsconfig.json', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_tsconfig())
+
 		expect(result.extends).toContain('./.svelte-kit/tsconfig.json')
 	})
 
 	it('enables strict mode', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_tsconfig())
+
 		expect(result.compilerOptions.strict).toBe(true)
 	})
 })
@@ -144,6 +156,7 @@ describe('jgame_init.derive_names', () => {
 	it('derives all name forms from kebab input', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = jgame_init.derive_names('tic-tac-toe')
+
 		expect(result.kebab).toBe('tic-tac-toe')
 		expect(result.display).toBe('Tic Tac Toe')
 		expect(result.upper).toBe('TIC TAC TOE')
@@ -154,6 +167,7 @@ describe('jgame_init.derive_names', () => {
 	it('normalizes space-separated input to kebab', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = jgame_init.derive_names('my game')
+
 		expect(result.kebab).toBe('my-game')
 		expect(result.display).toBe('My Game')
 	})
@@ -161,6 +175,7 @@ describe('jgame_init.derive_names', () => {
 	it('normalizes uppercase input', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = jgame_init.derive_names('MyGame')
+
 		expect(result.kebab).toBe('mygame')
 		expect(result.display).toBe('Mygame')
 	})
@@ -168,12 +183,14 @@ describe('jgame_init.derive_names', () => {
 	it('returns empty kebab for empty input', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = jgame_init.derive_names('')
+
 		expect(result.kebab).toBe('')
 	})
 
 	it('strips invalid characters', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = jgame_init.derive_names('my_game!')
+
 		expect(result.kebab).toBe('mygame')
 	})
 })
@@ -189,6 +206,7 @@ describe('jgame_init.generate_game_config', () => {
 			app_label: 'Tic Tac Toe game',
 		}
 		const result = jgame_init.generate_game_config(names)
+
 		expect(result).toContain("const GAME_NAME = 'tic-tac-toe'")
 		expect(result).toContain("const GAME_NAME_DISPLAY = 'Tic Tac Toe'")
 		expect(result).toContain("const GAME_NAME_UPPER = 'TIC TAC TOE'")
@@ -201,6 +219,7 @@ describe('jgame_init.generate_game_config', () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 		const names = jgame_init.derive_names('game-kit')
 		const result = jgame_init.generate_game_config(names)
+
 		expect(result).toContain("const GAME_NAME = 'game-kit'")
 		expect(result).toContain("const GAME_NAME_DISPLAY = 'Game Kit'")
 		expect(result).toContain("const GAME_NAME_UPPER = 'GAME KIT'")
@@ -211,13 +230,19 @@ describe('jgame_init.run', () => {
 	beforeEach(async () => {
 		const { readFileSync } = await import('node:fs')
 		const { execSync } = await import('node:child_process')
+
 		vi.mocked(readFileSync).mockReturnValue(JSON.stringify(MOCK_PKG))
 		vi.mocked(execSync).mockImplementation((command: string | Uint8Array) => {
 			if (command === 'pnpm --version') return Buffer.from(`${MOCK_HOST_PNPM_VERSION}\n`)
+
 			return Buffer.from('')
 		})
-		vi.spyOn(console, 'info').mockImplementation(() => {})
-		vi.spyOn(console, 'error').mockImplementation(() => {})
+		vi.spyOn(console, 'info').mockImplementation(() => {
+			/* no-op */
+		})
+		vi.spyOn(console, 'error').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(process, 'exit').mockImplementation(() => {
 			throw new Error('process.exit called')
 		})
@@ -225,6 +250,7 @@ describe('jgame_init.run', () => {
 
 	it('exits with code 1 when no name is given', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		expect(() => jgame_init.run()).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('game name is required'))
@@ -232,6 +258,7 @@ describe('jgame_init.run', () => {
 
 	it('exits with code 1 when name normalizes to empty', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		expect(() => jgame_init.run('!@#')).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(
@@ -242,6 +269,7 @@ describe('jgame_init.run', () => {
 	it('creates project subdirectory', async () => {
 		const { mkdirSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		expect(mkdirSync).toHaveBeenCalledWith('/project/tic-tac-toe', { recursive: true })
 	})
@@ -249,6 +277,7 @@ describe('jgame_init.run', () => {
 	it('writes package.json into project subdirectory', async () => {
 		const { writeFileSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		expect(writeFileSync).toHaveBeenCalledWith(
 			'/project/tic-tac-toe/package.json',
@@ -259,6 +288,7 @@ describe('jgame_init.run', () => {
 	it('writes game-config.ts into project subdirectory', async () => {
 		const { writeFileSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		expect(writeFileSync).toHaveBeenCalledWith(
 			'/project/tic-tac-toe/src/lib/game-config.ts',
@@ -269,6 +299,7 @@ describe('jgame_init.run', () => {
 	it('writes tsconfig.json into project subdirectory', async () => {
 		const { writeFileSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		expect(writeFileSync).toHaveBeenCalledWith(
 			'/project/tic-tac-toe/tsconfig.json',
@@ -279,6 +310,7 @@ describe('jgame_init.run', () => {
 	it('copies templates into project subdirectory', async () => {
 		const { cpSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		expect(cpSync).toHaveBeenCalledWith('/pkg/templates', '/project/tic-tac-toe', {
 			recursive: true,
@@ -289,8 +321,11 @@ describe('jgame_init.run', () => {
 	it('copy_templates filter excludes tsconfig.json and npmrc', async () => {
 		const { cpSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
-		const recursive_call = vi.mocked(cpSync).mock.calls.find(([src]) => src === '/pkg/templates')
+		const recursive_call = vi
+			.mocked(cpSync)
+			.mock.calls.find(([source]) => source === '/pkg/templates')
 		const filter = recursive_call?.[2]?.filter
 		if (typeof filter !== 'function') throw new Error('filter must be a function')
 		expect(filter('/pkg/templates/tsconfig.json', '/project/tic-tac-toe/tsconfig.json')).toBe(false)
@@ -303,6 +338,7 @@ describe('jgame_init.run', () => {
 	it('writes .npmrc from templates/npmrc to bypass npm dotfile exclusion', async () => {
 		const { cpSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		expect(cpSync).toHaveBeenCalledWith('/pkg/templates/npmrc', '/project/tic-tac-toe/.npmrc')
 	})
@@ -310,8 +346,10 @@ describe('jgame_init.run', () => {
 	it('runs git init, pnpm install, pnpm josh init, and pnpm josh sync with project cwd', async () => {
 		const { execSync } = await import('node:child_process')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		const opts = expect.objectContaining({ cwd: '/project/tic-tac-toe' })
+
 		expect(execSync).toHaveBeenCalledWith('git init', opts)
 		expect(execSync).toHaveBeenCalledWith('pnpm install', opts)
 		expect(execSync).toHaveBeenCalledWith('pnpm josh init --type sveltekit', opts)
@@ -325,18 +363,22 @@ describe('jgame_init.run', () => {
 		// updates anything already present.
 		const { execSync } = await import('node:child_process')
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		const calls = vi.mocked(execSync).mock.calls.map(([cmd]) => cmd)
 		const init_index = calls.indexOf('pnpm josh init --type sveltekit')
 		const sync_index = calls.indexOf('pnpm josh sync')
+
 		expect(init_index).toBeGreaterThan(-1)
 		expect(sync_index).toBeGreaterThan(init_index)
 	})
 
 	it('prints next-steps message with cd and pnpm dev', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame_init.run('tic-tac-toe')
 		const calls = vi.mocked(console.info).mock.calls.flat().join('\n')
+
 		expect(calls).toContain('cd tic-tac-toe')
 		expect(calls).toContain('pnpm dev')
 	})

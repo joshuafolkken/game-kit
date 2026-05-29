@@ -47,11 +47,13 @@ function exec_pnpm_global_add(latest: string): number {
 
 function fetch_and_exec(exec: (latest: string) => number): void {
 	const latest = jgame_version_api.fetch_latest_version()
+
 	if (latest === undefined) {
 		console.warn('⚠ Failed to fetch latest version (is `gh` authenticated?)')
 
 		return
 	}
+
 	const status = exec(latest)
 	if (status !== 0) process.exit(status)
 }
@@ -59,21 +61,25 @@ function fetch_and_exec(exec: (latest: string) => number): void {
 function run_consumer_upgrade(raw: string): void {
 	const overrides = jgame_version_upgrade_logic.parse_overrides_from_package(raw)
 	const capped_value = jgame_version_upgrade_logic.extract_game_kit_override(overrides)
+
 	if (capped_value !== undefined) {
 		console.info(jgame_version_upgrade_logic.format_capped_message(capped_value))
 
 		return
 	}
+
 	fetch_and_exec(exec_pnpm_add)
 }
 
 function run(): void {
 	const raw = read_project_package_json_or_undefined()
+
 	if (jgame_version_upgrade_logic.is_consumer_project_context(raw)) {
 		run_consumer_upgrade(raw)
 
 		return
 	}
+
 	fetch_and_exec(exec_pnpm_global_add)
 }
 
