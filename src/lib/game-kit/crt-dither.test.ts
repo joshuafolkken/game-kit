@@ -422,8 +422,15 @@ describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
 	const TRIVIAL_FRAGMENT_SHADER = 'void main(){ gl_FragColor = vec4(1.0); }'
 
 	// eslint-disable-next-line unicorn/consistent-function-scoping -- test helper scoped to the ShaderPass describe block
+	function get_uniform_slot(pass: ShaderPass): { value: unknown } | undefined {
+		// Three.js `uniforms` is an index signature; TS4111 (noPropertyAccessFromIndexSignature)
+		// requires bracket access, which conflicts with the `dot-notation` lint rule.
+		// eslint-disable-next-line dot-notation -- index-signature access mandated by TS4111
+		return pass.uniforms['u_res']
+	}
+
 	function get_uniform_vec2(pass: ShaderPass): Vector2 {
-		const slot = pass.uniforms['u_res']
+		const slot = get_uniform_slot(pass)
 		if (!slot) throw new Error('u_res uniform missing on pass')
 
 		return slot.value as Vector2
@@ -437,7 +444,7 @@ describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
 			fragmentShader: TRIVIAL_FRAGMENT_SHADER,
 		})
 
-		expect(pass.uniforms['u_res']).not.toBe(local.u_res)
+		expect(get_uniform_slot(pass)).not.toBe(local.u_res)
 		expect(get_uniform_vec2(pass)).not.toBe(local.u_res.value)
 		const NEW_WIDTH = 320
 		const NEW_HEIGHT = 240
@@ -458,7 +465,7 @@ describe('ShaderPass uniform binding (CrtDitherPass regression)', () => {
 		})
 		const pass = new ShaderPass(material)
 
-		expect(pass.uniforms['u_res']).toBe(local.u_res)
+		expect(get_uniform_slot(pass)).toBe(local.u_res)
 		expect(get_uniform_vec2(pass)).toBe(local.u_res.value)
 		const NEW_WIDTH = 320
 		const NEW_HEIGHT = 240
