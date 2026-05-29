@@ -2,6 +2,9 @@ import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
 import svelteConfig from './svelte.config.js'
 
 const PERMANENT_OVERRIDES = {
+	// Kept off deliberately: most nullable state here wraps Three.js / Web Audio / DOM null
+	// contracts, so `null` is the consistent idiom. Switching to `undefined` would add `?? null`
+	// boundary conversions at every Three.js/Web-Audio handoff and mix two idioms (see #232).
 	'unicorn/no-null': 'off',
 	'max-lines-per-function': 'off',
 	'max-statements': 'off',
