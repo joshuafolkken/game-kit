@@ -11,18 +11,10 @@ const COMMAND_ARG_INDEX = 2
 const NAME_ARG_INDEX = 3
 
 const COMMAND_HANDLERS: Record<string, (argument?: string) => void> = {
-	init: (argument) => {
-		jgame_init.run(argument)
-	},
-	sync: () => {
-		jgame_sync.run()
-	},
-	version: () => {
-		jgame_version_check.run()
-	},
-	'version:upgrade': () => {
-		jgame_version_upgrade.run()
-	},
+	init: jgame_init.run,
+	sync: jgame_sync.run,
+	version: jgame_version_check.run,
+	'version:upgrade': jgame_version_upgrade.run,
 }
 
 function resolve_command(input: string | undefined): string | undefined {
