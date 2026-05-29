@@ -95,11 +95,12 @@
 		arm_center: geom.corner_pos - geom.corner_arm / HALF_DIVISOR,
 	})
 	const corner_bars = $derived(
-		CORNER_SIGNS.flatMap(function (sx) {
-			return CORNER_SIGNS.flatMap(function (sy) {
-				return [make_bar(sx, sy, 'h', corner_geom), make_bar(sx, sy, 'v', corner_geom)]
-			})
-		}),
+		CORNER_SIGNS.flatMap((sx) =>
+			CORNER_SIGNS.flatMap((sy) => [
+				make_bar(sx, sy, 'h', corner_geom),
+				make_bar(sx, sy, 'v', corner_geom),
+			]),
+		),
 	)
 	const hit_area_w = $derived(geom.panel_size + HIT_AREA_PADDING)
 	const hit_area_h = $derived(geom.panel_size + HIT_AREA_PADDING)

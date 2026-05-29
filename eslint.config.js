@@ -5,20 +5,15 @@ import svelteConfig from './svelte.config.js'
 // patterns in a way that cannot be resolved by code changes alone. All Layer C follow-up
 // PRs (#191-#217) have been shipped; these are the entries that survived the migration.
 // See issue #188 for the full migration history.
+//
+// Note: `prefer-arrow-callback`, `unicorn/no-useless-undefined`,
+// `sonarjs/no-use-of-empty-return-value`, and the project-wide
+// `unicorn/prevent-abbreviations` allowList previously lived here but were moved
+// into kit (issues #432-435, kit 0.196.0) and removed from this file.
 const PERMANENT_DISABLES = {
-	// `prefer-arrow-callback` rewrites `function () {}` → `() => {}` which breaks
-	// `new`-constructibility (Audio mock regression). Always disabled.
-	'prefer-arrow-callback': 'off',
-	// `unicorn/no-useless-undefined` strips required-by-signature undefined args
-	// (broke vi.stubGlobal / mockResolvedValue calls). Always disabled.
-	'unicorn/no-useless-undefined': 'off',
 	// `dot-notation` converts bracket access to dot access, but TS index-signature
 	// types REQUIRE bracket access. Always disabled.
 	'dot-notation': 'off',
-	// `sonarjs/no-use-of-empty-return-value` fires on Svelte `{@render snippet()}` —
-	// the rule treats the snippet call as a value-consuming expression, but `@render`
-	// is a template directive. Per-line disables on every snippet site is noisier.
-	'sonarjs/no-use-of-empty-return-value': 'off',
 	// `unicorn/no-null` prefers `undefined`, but this codebase deliberately uses `null`
 	// to mirror the DOM / Three.js / Web APIs it wraps (Element | null, AudioContext |
 	// null, CanvasTexture | null, Three.js texture uniforms `{ value: null }`, Response
@@ -58,37 +53,8 @@ const PERMANENT_DISABLES = {
 // Tracked as Layer C follow-up (add a scripts tsconfig; restructure templates).
 const FILE_IGNORES = ['scripts/**', 'templates/**']
 
-// Kit 0.189 ships `unicorn/prevent-abbreviations` allowList inside SVELTE_FILE_PATTERNS.svelte,
-// but plain `.ts` files (non-Svelte) don't inherit it. Re-apply the same allowList project-wide
-// so idiomatic short names (e, el, ctx, btn, idx, etc.) don't fire in CLI helpers, hash utilities,
-// or e2e tests. Also adds `e2e` so Playwright filename convention (page.e2e.ts) doesn't get
-// expanded to absurd `page.error2error.ts`.
-const PREVENT_ABBREVIATIONS_OVERRIDE = {
-	'unicorn/prevent-abbreviations': [
-		'error',
-		{
-			allowList: {
-				Props: true,
-				e: true,
-				e2e: true,
-				el: true,
-				ctx: true,
-				btn: true,
-				idx: true,
-				opts: true,
-				params: true,
-				args: true,
-			},
-		},
-	],
-}
-
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
 	svelte_config: svelteConfig,
-}).concat(
-	{ ignores: FILE_IGNORES },
-	{ rules: PERMANENT_DISABLES },
-	{ rules: PREVENT_ABBREVIATIONS_OVERRIDE },
-)
+}).concat({ ignores: FILE_IGNORES }, { rules: PERMANENT_DISABLES })
