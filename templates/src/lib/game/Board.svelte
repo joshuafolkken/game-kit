@@ -6,14 +6,19 @@
 	import { game_board_input } from './board-input'
 	import type { ButtonColor, GameBoardData } from './types'
 
+	const HALF_DIVISOR = 2
+	const QUARTER_TURN = Math.PI / HALF_DIVISOR
+	const BUTTON_GAP_DIVISOR = 36
 	const INNER_RADIUS = 0.3
 	const OUTER_RADIUS = 0.7
 	const THETA_SEGMENTS = 32
 	const CIRCLE_SEGMENTS = 32
 	const BACKING_SEGMENTS = 64
-	const BUTTON_GAP = Math.PI / 36
+	const BACKING_ROUGHNESS = 0.8
+	const CENTER_ROUGHNESS = 0.5
+	const BUTTON_GAP = Math.PI / BUTTON_GAP_DIVISOR
 	const THETA_START = BUTTON_GAP
-	const THETA_LENGTH = Math.PI / 2 - BUTTON_GAP * 2
+	const THETA_LENGTH = QUARTER_TURN - BUTTON_GAP * HALF_DIVISOR
 	const BACKING_RADIUS = 0.85
 	const CENTER_RADIUS = 0.22
 	const BACKING_Z = -0.01
@@ -49,7 +54,7 @@
 		},
 		{
 			color: 'red' as ButtonColor,
-			rotation: Math.PI / 2,
+			rotation: QUARTER_TURN,
 			lit_color: '#ff2222',
 			dim_color: '#330000',
 			cyber_lit_color: '#ff0088',
@@ -65,15 +70,15 @@
 		},
 		{
 			color: 'blue' as ButtonColor,
-			rotation: -Math.PI / 2,
+			rotation: -QUARTER_TURN,
 			lit_color: '#2266ff',
 			dim_color: '#001133',
 			cyber_lit_color: '#00ccff',
 			cyber_dim_color: '#003355',
 		},
-	] as const satisfies readonly ButtonConfig[]
+	] as const satisfies ReadonlyArray<ButtonConfig>
 
-	let { game_data, is_alt, text_gameover, text_round, text_start }: Props = $props()
+	const { game_data, is_alt, text_gameover, text_round, text_start }: Props = $props()
 
 	function is_lit(color: ButtonColor): boolean {
 		return (
@@ -94,23 +99,26 @@
 	function get_center_text(): string {
 		if (game_data.phase === 'gameover') return text_gameover
 		if (game_data.round > 0) return `${text_round} ${game_data.round}`
+
 		return text_start
 	}
 
-	let center_text = $derived(get_center_text())
-	let emissive_intensity = $derived(
+	const center_text = $derived(get_center_text())
+	const emissive_intensity = $derived(
 		(is_alt ? CYBER_EMISSIVE_INTENSITY : EMISSIVE_INTENSITY) * game_data.flash_intensity,
 	)
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
-	let should_use_alt_font = $derived(!crt.is_crt_enabled)
-	let current_font = $derived(fonts.get_font(should_use_alt_font))
-	let current_font_size = $derived(FONT_SIZE * fonts.get_font_size_multiplier(should_use_alt_font))
+	const should_use_alt_font = $derived(!crt.is_crt_enabled)
+	const current_font = $derived(fonts.get_font(should_use_alt_font))
+	const current_font_size = $derived(
+		FONT_SIZE * fonts.get_font_size_multiplier(should_use_alt_font),
+	)
 </script>
 
 <T.Group position={[0, BOARD_Y, BOARD_Z]}>
 	<T.Mesh position.z={BACKING_Z}>
 		<T.CircleGeometry args={[BACKING_RADIUS, BACKING_SEGMENTS]} />
-		<T.MeshStandardMaterial color="#111111" roughness={0.8} />
+		<T.MeshStandardMaterial color="#111111" roughness={BACKING_ROUGHNESS} />
 	</T.Mesh>
 
 	{#each BUTTON_CONFIGS as btn (btn.color)}
@@ -138,7 +146,7 @@
 
 	<T.Mesh onclick={() => game_board_input.on_center_click()}>
 		<T.CircleGeometry args={[CENTER_RADIUS, CIRCLE_SEGMENTS]} />
-		<T.MeshStandardMaterial color="#222222" roughness={0.5} />
+		<T.MeshStandardMaterial color="#222222" roughness={CENTER_ROUGHNESS} />
 	</T.Mesh>
 
 	<T.Group position={[0, 0, BOARD_LABEL_Z]}>

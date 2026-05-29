@@ -5,7 +5,7 @@ export interface GameBoardData {
 	pressed_color: ButtonColor | undefined
 	phase: string
 	round: number
-	flash_colors: readonly ButtonColor[]
+	flash_colors: ReadonlyArray<ButtonColor>
 	flash_intensity: number
 }
 
