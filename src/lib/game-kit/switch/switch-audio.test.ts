@@ -14,7 +14,7 @@ describe('switch_audio.play_switch_click', () => {
 		vi.resetModules()
 		play_mock = vi.fn().mockResolvedValue(undefined)
 		shared_instance = { currentTime: 0, play: play_mock }
-		audio_ctor = vi.fn().mockImplementation(function () {
+		audio_ctor = vi.fn().mockImplementation(function audio_constructor() {
 			return shared_instance
 		})
 		vi.stubGlobal('Audio', audio_ctor)
