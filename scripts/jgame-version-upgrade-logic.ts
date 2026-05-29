@@ -32,6 +32,7 @@ function is_package_json_with_pnpm_overrides(
 
 function parse_overrides_from_package(raw: string): Record<string, string> {
 	const parsed: unknown = JSON.parse(raw)
+
 	if (!is_package_json_with_pnpm_overrides(parsed)) {
 		throw new Error('package.json pnpm.overrides has unexpected shape')
 	}

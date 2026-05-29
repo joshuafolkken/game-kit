@@ -16,11 +16,13 @@ describe('jgame_version_check_logic.format_version_status', () => {
 describe('jgame_version_check_logic.format_version_output', () => {
 	it('omits update hint when current matches latest', () => {
 		const output = jgame_version_check_logic.format_version_output('0.55.0', '0.55.0')
+
 		expect(output).toBe(['Current: 0.55.0', 'Latest:  0.55.0', '✓ Up to date'].join('\n'))
 	})
 
 	it('suggests jgame vu (not a raw pnpm command) when current is behind latest', () => {
 		const output = jgame_version_check_logic.format_version_output('0.55.0', '0.56.0')
+
 		expect(output).toBe(
 			[
 				'Current: 0.55.0',
@@ -34,6 +36,7 @@ describe('jgame_version_check_logic.format_version_output', () => {
 
 	it('does not leak a raw pnpm command (consumer- or global-specific) into the update hint', () => {
 		const output = jgame_version_check_logic.format_version_output('0.55.0', '0.56.0')
+
 		expect(output).not.toMatch(/pnpm\s+add/u)
 	})
 

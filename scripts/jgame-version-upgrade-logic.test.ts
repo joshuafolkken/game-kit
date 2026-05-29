@@ -51,6 +51,7 @@ describe('jgame_version_upgrade_logic.extract_game_kit_override', () => {
 describe('jgame_version_upgrade_logic.format_capped_message', () => {
 	it('includes the override value and the canonical package name', () => {
 		const message = jgame_version_upgrade_logic.format_capped_message('<1.0.0')
+
 		expect(message).toContain('@joshuafolkken/game-kit')
 		expect(message).toContain('<1.0.0')
 		expect(message).toContain('pnpm.overrides')
@@ -78,21 +79,25 @@ describe('jgame_version_upgrade_logic.format_upgrade_command', () => {
 describe('jgame_version_upgrade_logic.is_consumer_project_context', () => {
 	it('returns true when game-kit is in dependencies', () => {
 		const raw = JSON.stringify({ dependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
+
 		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
 	})
 
 	it('returns true when game-kit is in devDependencies', () => {
 		const raw = JSON.stringify({ devDependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
+
 		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
 	})
 
 	it('returns true when game-kit is in peerDependencies', () => {
 		const raw = JSON.stringify({ peerDependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
+
 		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
 	})
 
 	it('returns false when game-kit is not in any dependency field', () => {
 		const raw = JSON.stringify({ dependencies: { 'other-pkg': '^1.0.0' } })
+
 		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(false)
 	})
 
@@ -136,6 +141,7 @@ describe('jgame_version_upgrade_logic.is_enoent_error', () => {
 
 	it('returns true for an Error instance augmented with code === "ENOENT"', () => {
 		const error = Object.assign(new Error('not found'), { code: 'ENOENT' })
+
 		expect(jgame_version_upgrade_logic.is_enoent_error(error)).toBe(true)
 	})
 

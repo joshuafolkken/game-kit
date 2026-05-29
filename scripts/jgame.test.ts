@@ -30,23 +30,28 @@ describe('route_command', () => {
 		vi.spyOn(process, 'exit').mockImplementation(() => {
 			throw new Error('process.exit called')
 		})
-		vi.spyOn(console, 'error').mockImplementation(() => {})
+		vi.spyOn(console, 'error').mockImplementation(() => {
+			/* no-op */
+		})
 	})
 
 	it('routes init to jgame_init.run without name', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame.route_command('init')
 		expect(jgame_init.run).toHaveBeenCalledWith(undefined)
 	})
 
 	it('routes init to jgame_init.run with game name', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
+
 		jgame.route_command('init', 'tic-tac-toe')
 		expect(jgame_init.run).toHaveBeenCalledWith('tic-tac-toe')
 	})
 
 	it('routes sync to jgame_sync.run', async () => {
 		const { jgame_sync } = await import('./jgame-sync.ts')
+
 		jgame.route_command('sync')
 		expect(jgame_sync.run).toHaveBeenCalledOnce()
 	})
@@ -59,24 +64,28 @@ describe('route_command', () => {
 
 	it('routes version to jgame_version_check.run', async () => {
 		const { jgame_version_check } = await import('./jgame-version-check.ts')
+
 		jgame.route_command('version')
 		expect(jgame_version_check.run).toHaveBeenCalledOnce()
 	})
 
 	it('routes v as alias for version', async () => {
 		const { jgame_version_check } = await import('./jgame-version-check.ts')
+
 		jgame.route_command('v')
 		expect(jgame_version_check.run).toHaveBeenCalledOnce()
 	})
 
 	it('routes version:upgrade to jgame_version_upgrade.run', async () => {
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
+
 		jgame.route_command('version:upgrade')
 		expect(jgame_version_upgrade.run).toHaveBeenCalledOnce()
 	})
 
 	it('routes vu as alias for version:upgrade', async () => {
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
+
 		jgame.route_command('vu')
 		expect(jgame_version_upgrade.run).toHaveBeenCalledOnce()
 	})
@@ -94,20 +103,22 @@ describe('route_command', () => {
 })
 
 describe('is_invoked_directly', () => {
-	let tmp_dir: string
+	/* eslint-disable init-declarations -- assigned in beforeEach */
+	let temporary_directory: string
 	let real_file: string
 	let symlink_path: string
+	/* eslint-enable init-declarations */
 
 	beforeEach(() => {
-		tmp_dir = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'jgame-test-')))
-		real_file = path.join(tmp_dir, 'jgame.js')
-		symlink_path = path.join(tmp_dir, 'jgame-link')
+		temporary_directory = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'jgame-test-')))
+		real_file = path.join(temporary_directory, 'jgame.js')
+		symlink_path = path.join(temporary_directory, 'jgame-link')
 		writeFileSync(real_file, '')
 		symlinkSync(real_file, symlink_path)
 	})
 
 	afterEach(() => {
-		rmSync(tmp_dir, { recursive: true, force: true })
+		rmSync(temporary_directory, { recursive: true, force: true })
 	})
 
 	it('returns true when argv_path equals module_path directly', () => {
@@ -119,12 +130,15 @@ describe('is_invoked_directly', () => {
 	})
 
 	it('returns false when paths are unrelated', () => {
-		const other = path.join(tmp_dir, 'other.js')
+		const other = path.join(temporary_directory, 'other.js')
+
 		writeFileSync(other, '')
 		expect(jgame.is_invoked_directly(real_file, other)).toBe(false)
 	})
 
 	it('returns false when argv_path does not exist (realpath throws)', () => {
-		expect(jgame.is_invoked_directly(path.join(tmp_dir, 'nonexistent'), real_file)).toBe(false)
+		expect(
+			jgame.is_invoked_directly(path.join(temporary_directory, 'nonexistent'), real_file),
+		).toBe(false)
 	})
 })

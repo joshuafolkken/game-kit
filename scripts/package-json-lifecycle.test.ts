@@ -14,31 +14,31 @@ interface PackageJsonShape {
 	pnpm?: unknown
 }
 
-const pkg = JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8')) as PackageJsonShape
+const package_ = JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8')) as PackageJsonShape
 
 describe('package.json lifecycle scripts', () => {
 	it('does not run developer-only commands on consumer install (no postinstall)', () => {
-		expect(pkg.scripts.postinstall).toBeUndefined()
+		expect(package_.scripts.postinstall).toBeUndefined()
 	})
 
 	it('runs lefthook install in prepare so it fires only for the package owner', () => {
-		expect(pkg.scripts.prepare).toMatch(/lefthook install/)
+		expect(package_.scripts.prepare).toMatch(/lefthook install/u)
 	})
 
 	it('runs fix-gh-packages in prepare so it fires only for the package owner', () => {
-		expect(pkg.scripts.prepare).toMatch(/fix-gh-packages/)
+		expect(package_.scripts.prepare).toMatch(/fix-gh-packages/u)
 	})
 
 	it('does not reference jgame-install-bin in any lifecycle script', () => {
-		expect(pkg.scripts.prepare ?? '').not.toMatch(/jgame-install-bin/)
-		expect(pkg.scripts.postinstall ?? '').not.toMatch(/jgame-install-bin/)
+		expect(package_.scripts.prepare ?? '').not.toMatch(/jgame-install-bin/u)
+		expect(package_.scripts.postinstall ?? '').not.toMatch(/jgame-install-bin/u)
 	})
 
 	it('keeps safe-chain in preinstall for consumer-side malware scanning', () => {
-		expect(pkg.scripts.preinstall).toMatch(/safe-chain/)
+		expect(package_.scripts.preinstall).toMatch(/safe-chain/u)
 	})
 
 	it('does not declare a pnpm field (settings live in pnpm-workspace.yaml)', () => {
-		expect(pkg.pnpm).toBeUndefined()
+		expect(package_.pnpm).toBeUndefined()
 	})
 })
