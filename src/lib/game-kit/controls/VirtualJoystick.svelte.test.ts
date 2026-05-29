@@ -37,6 +37,18 @@ function setup_threlte_dom(): { dom: HTMLDivElement; canvas: HTMLCanvasElement }
 	return { dom, canvas }
 }
 
+function setup_touch_device(): void {
+	beforeEach(() => {
+		// eslint-disable-next-line unicorn/prefer-add-event-listener -- direct property assignment is the standard pattern for stubbing a touch-detection sentinel
+		;(globalThis as typeof globalThis & { ontouchstart: null }).ontouchstart = null
+	})
+
+	afterEach(() => {
+		vi.restoreAllMocks()
+		delete (globalThis as typeof globalThis & { ontouchstart?: null }).ontouchstart
+	})
+}
+
 describe('VirtualJoystick', () => {
 	it('renders jump button inside overlay but not inside any joystick zone', () => {
 		const { container } = render_joystick()
@@ -116,16 +128,8 @@ describe('VirtualJoystick', () => {
 	})
 })
 
-describe('VirtualJoystick touch handlers', () => {
-	beforeEach(() => {
-		// eslint-disable-next-line unicorn/prefer-add-event-listener -- direct property assignment is the standard pattern for stubbing a touch-detection sentinel
-		;(globalThis as typeof globalThis & { ontouchstart: null }).ontouchstart = null
-	})
-
-	afterEach(() => {
-		vi.restoreAllMocks()
-		delete (globalThis as typeof globalThis & { ontouchstart?: null }).ontouchstart
-	})
+describe('VirtualJoystick touch — joystick move/look input', () => {
+	setup_touch_device()
 
 	it('dragging move zone calls set_joystick_move with normalized vector at max distance', () => {
 		const spy = vi.spyOn(input, 'set_joystick_move')
@@ -304,6 +308,10 @@ describe('VirtualJoystick touch handlers', () => {
 
 		expect(spy).toHaveBeenLastCalledWith(0, 0)
 	})
+})
+
+describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => {
+	setup_touch_device()
 
 	it('touching move zone dispatches pointerdown to threlte dom (canvas parent)', () => {
 		const { dom } = setup_threlte_dom()
@@ -454,6 +462,10 @@ describe('VirtualJoystick touch handlers', () => {
 		expect(pointer_event.offsetY).toBe(200)
 		dom.remove()
 	})
+})
+
+describe('VirtualJoystick touch — touchcancel', () => {
+	setup_touch_device()
 
 	it('touchcancel does not dispatch click to threlte dom', () => {
 		const { dom } = setup_threlte_dom()
@@ -517,6 +529,10 @@ describe('VirtualJoystick touch handlers', () => {
 		expect(spy).toHaveBeenCalledOnce()
 		dom.remove()
 	})
+})
+
+describe('VirtualJoystick touch — jump button', () => {
+	setup_touch_device()
 
 	it('tapping jump button does not dispatch to threlte dom', () => {
 		const { dom } = setup_threlte_dom()
