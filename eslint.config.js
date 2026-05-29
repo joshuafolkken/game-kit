@@ -1,11 +1,11 @@
 import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
 import svelteConfig from './svelte.config.js'
 
-// Post-kit-0.188.0 baseline (absorbed kit #416-419). The disables below silence
-// the remaining violations so CI stays green; each entry has a Layer C follow-up
-// PR planned to remove it.
-const LAYER_B_DISABLES = {
-	// === Permanent (rule + tooling conflict, not a code-quality choice) ===
+// Permanent rule disables — each rule conflicts with this project's tooling or domain
+// patterns in a way that cannot be resolved by code changes alone. All Layer C follow-up
+// PRs (#191-#217) have been shipped; these are the entries that survived the migration.
+// See issue #188 for the full migration history.
+const PERMANENT_DISABLES = {
 	// `prefer-arrow-callback` rewrites `function () {}` → `() => {}` which breaks
 	// `new`-constructibility (Audio mock regression). Always disabled.
 	'prefer-arrow-callback': 'off',
@@ -89,6 +89,6 @@ export default create_sveltekit_config({
 	svelte_config: svelteConfig,
 }).concat(
 	{ ignores: FILE_IGNORES },
-	{ rules: LAYER_B_DISABLES },
+	{ rules: PERMANENT_DISABLES },
 	{ rules: PREVENT_ABBREVIATIONS_OVERRIDE },
 )
