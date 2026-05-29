@@ -5,8 +5,8 @@
 	import { SCORE_DISPLAY_Z } from './board-config'
 	import Board from './Board.svelte'
 	import { CREDITS_LINE_COUNT, CREDITS_TEXT } from './credits'
-	import { game } from './game.svelte'
-	import { score } from './score.svelte'
+	import { game } from './Game.svelte'
+	import { score } from './Score.svelte'
 
 	const { start_z: CREDITS_SCROLL_START_Z, end_z: CREDITS_SCROLL_END_Z } =
 		credits_scroll.make_credits_scroll_bounds(CREDITS_LINE_COUNT, HALF_D)
