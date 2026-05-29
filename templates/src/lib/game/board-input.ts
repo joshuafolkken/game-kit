@@ -1,16 +1,22 @@
 import { pointer_button, session } from '@joshuafolkken/game-kit'
 import type { ButtonColor } from './types'
 
-type BoardCallbacks = {
+interface BoardCallbacks {
 	on_press: (color: ButtonColor) => void
 	on_release: () => void
 	on_start: () => void
 }
 
 let board_callbacks: BoardCallbacks = {
-	on_press: () => {},
-	on_release: () => {},
-	on_start: () => {},
+	on_press: () => {
+		/* no-op */
+	},
+	on_release: () => {
+		/* no-op */
+	},
+	on_start: () => {
+		/* no-op */
+	},
 }
 
 function configure(cbs: BoardCallbacks): void {

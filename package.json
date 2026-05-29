@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.115.0",
+	"version": "0.116.0",
 	"keywords": [
 		"svelte"
 	],
@@ -65,7 +65,7 @@
 		"esbuild": "^0.28.0",
 		"eslint": "^10.4.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-svelte": "^3.17.1",
+		"eslint-plugin-svelte": "^3.18.0",
 		"globals": "^17.6.0",
 		"playwright": "^1.60.0",
 		"prettier": "^3.8.3",
@@ -74,7 +74,7 @@
 		"publint": "^0.3.21",
 		"rollup-plugin-visualizer": "^7.0.1",
 		"size-limit": "^12.1.0",
-		"svelte": "^5.55.9",
+		"svelte": "^5.55.10",
 		"svelte-check": "^4.4.8",
 		"tailwindcss": "^4.3.0",
 		"three": "^0.184.0",
@@ -86,7 +86,7 @@
 		"vitest-browser-svelte": "^2.1.1",
 		"workbox-build": "^7.4.1",
 		"workbox-window": "^7.4.1",
-		"wrangler": "^4.94.0"
+		"wrangler": "^4.95.0"
 	},
 	"peerDependencies": {
 		"@threlte/core": ">=8.0.0",
@@ -94,7 +94,7 @@
 		"svelte": "^5.0.0",
 		"three": ">=0.180.0"
 	},
-	"packageManager": "pnpm@11.3.0+sha512.2c403d6594527287672b1f7056343a1f7c3634036a67ffabfcc2b3d7595d843768f8787148d1b57cf7956c90606bbd192857c363af19e96d2d0ec9ec5741d215",
+	"packageManager": "pnpm@11.4.0+sha512.f0febc7e37552ab485494a914241b338e0b3580b93d54ce31f00933015880863129038a1b4ae4e414a0ee63ac35bf21197e990172c4a68256450b5636310968f",
 	"devEngines": {
 		"packageManager": {
 			"name": "pnpm",
