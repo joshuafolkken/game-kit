@@ -1,4 +1,5 @@
 import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
+import tseslint from 'typescript-eslint'
 import svelteConfig from './svelte.config.js'
 
 const PERMANENT_OVERRIDES = {
@@ -20,10 +21,33 @@ const GAME_COMPLEXITY_OVERRIDES = {
 	},
 }
 
-const FILE_IGNORES = ['scripts/**', 'templates/**']
+const FILE_IGNORES = ['templates/**']
+
+// scripts/ (CLI tools) are not in the SvelteKit tsconfig project, so type-aware parsing
+// would error. Lint them with type-checking disabled — structure/style rules still apply.
+const SCRIPTS_NON_TYPED = {
+	files: ['scripts/**/*.ts'],
+	...tseslint.configs.disableTypeChecked,
+	languageOptions: {
+		...tseslint.configs.disableTypeChecked.languageOptions,
+		parserOptions: { project: false, projectService: false },
+	},
+	rules: {
+		...tseslint.configs.disableTypeChecked.rules,
+		// These are dev-time CLI tools: invoking pnpm/git/node via PATH is their job, and
+		// duplicated path/fixture strings in one-off scripts and their tests aren't a real smell.
+		'sonarjs/no-os-command-from-path': 'off',
+		'sonarjs/no-duplicate-string': 'off',
+	},
+}
 
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
 	svelte_config: svelteConfig,
-}).concat({ ignores: FILE_IGNORES }, { rules: PERMANENT_OVERRIDES }, GAME_COMPLEXITY_OVERRIDES)
+}).concat(
+	{ ignores: FILE_IGNORES },
+	{ rules: PERMANENT_OVERRIDES },
+	GAME_COMPLEXITY_OVERRIDES,
+	SCRIPTS_NON_TYPED,
+)

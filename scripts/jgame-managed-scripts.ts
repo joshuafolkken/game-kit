@@ -17,19 +17,25 @@ type ManagedScripts = Record<ManagedScriptKey, string>
 
 function pick_managed_scripts(scripts: Record<string, string>): ManagedScripts {
 	const out: Partial<ManagedScripts> = {}
+
 	for (const key of MANAGED_SCRIPT_KEYS) {
 		const value = scripts[key]
-		if (typeof value !== 'string')
-			throw new Error(`game-kit package.json is missing scripts.${key}`)
+
+		if (typeof value !== 'string') {
+			throw new TypeError(`game-kit package.json is missing scripts.${key}`)
+		}
+
 		out[key] = value
 	}
+
 	return out as ManagedScripts
 }
 
 function read_canonical_scripts(): ManagedScripts {
 	const raw = readFileSync(path.join(jgame_paths.PACKAGE_DIR, 'package.json'), 'utf8')
-	const pkg = JSON.parse(raw) as { scripts?: Record<string, string> }
-	return pick_managed_scripts(pkg.scripts ?? {})
+	const package_ = JSON.parse(raw) as { scripts?: Record<string, string> }
+
+	return pick_managed_scripts(package_.scripts ?? {})
 }
 
 const jgame_managed_scripts = {

@@ -4,13 +4,18 @@ import { fileURLToPath } from 'node:url'
 import { jgame_version_api } from './jgame-version-api.ts'
 import { jgame_version_check_logic } from './jgame-version-check-logic.ts'
 
-const TRAILING_SEPARATOR_PATTERN = /[\\/]+$/
+// eslint-disable-next-line sonarjs/slow-regex -- bounded input (a filesystem path); trailing-separator match is safe
+const TRAILING_SEPARATOR_PATTERN = /[/\\]+$/u
+
+const DIST_SCRIPTS_DEPTH = 2
+const PACKAGE_ROOT_DEPTH = 1
 
 function resolve_package_json_path(script_directory: string): string {
 	const trimmed = script_directory.replace(TRAILING_SEPARATOR_PATTERN, '')
 	const segments = trimmed.split(path.sep)
-	const is_dist = segments.at(-2) === 'dist' && segments.at(-1) === 'scripts'
-	const levels_up = is_dist ? 2 : 1
+	const is_distribution =
+		segments.at(-DIST_SCRIPTS_DEPTH) === 'dist' && segments.at(-1) === 'scripts'
+	const levels_up = is_distribution ? DIST_SCRIPTS_DEPTH : PACKAGE_ROOT_DEPTH
 
 	return path.join(trimmed, ...Array.from({ length: levels_up }, () => '..'), 'package.json')
 }
@@ -26,6 +31,7 @@ function is_package_json_with_version(value: unknown): value is { version: strin
 
 function parse_version(raw: string): string {
 	const parsed: unknown = JSON.parse(raw)
+
 	if (!is_package_json_with_version(parsed)) {
 		throw new Error('package.json does not contain a string "version" field')
 	}

@@ -1,13 +1,16 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { jgame_managed_dev_deps } from './jgame-managed-dev-deps.ts'
+import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 
-type SyncEntry = { dest: string; src?: string }
+interface SyncEntry {
+	dest: string
+	src?: string
+}
 
 // Files copied from templates/ to the project root on every `jgame sync` run.
 // Scope: framework / app-shell config that should evolve with game-kit. Scaffold
@@ -20,7 +23,7 @@ type SyncEntry = { dest: string; src?: string }
 // `src` is used when the source filename inside templates/ must differ from the
 // destination. .npmrc lives at templates/npmrc because npm always strips
 // `.npmrc` from published packages regardless of the package.json `files` field.
-const SYNC_FILES: readonly SyncEntry[] = [
+const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: '.npmrc', src: 'npmrc' },
 	{ dest: 'src/app.d.ts' },
 	{ dest: 'src/app.html' },
@@ -32,71 +35,91 @@ const SYNC_FILES: readonly SyncEntry[] = [
 ]
 
 function sync_file(entry: SyncEntry): void {
-	const src = path.join(jgame_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
-	const dest = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
-	mkdirSync(path.dirname(dest), { recursive: true })
-	cpSync(src, dest)
+	const source = path.join(jgame_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
+	const destination = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
+
+	mkdirSync(path.dirname(destination), { recursive: true })
+	cpSync(source, destination)
 	console.info(`  ✔ synced   ${entry.dest}`)
 }
 
-type ConsumerPkg = {
+interface ConsumerPackage {
 	scripts?: Record<string, string>
 	devDependencies?: Record<string, string>
 	[key: string]: unknown
 }
 
-function apply_managed_scripts(pkg: ConsumerPkg, canonical: Record<string, string>): boolean {
-	const scripts = pkg.scripts ?? {}
+function apply_managed_scripts(
+	package_: ConsumerPackage,
+	canonical: Record<string, string>,
+): boolean {
+	const scripts = package_.scripts ?? {}
 	let did_change = false
+
 	for (const key of jgame_managed_scripts.MANAGED_SCRIPT_KEYS) {
 		if (scripts[key] !== canonical[key]) {
 			scripts[key] = canonical[key]
 			did_change = true
 		}
 	}
-	pkg.scripts = scripts
+
+	package_.scripts = scripts
+
 	return did_change
 }
 
 function sync_managed_scripts(): void {
-	const pkg_path = path.join(jgame_paths.PROJECT_ROOT, 'package.json')
-	const raw = readFileSync(pkg_path, 'utf8')
-	const pkg = JSON.parse(raw) as ConsumerPkg
+	const package_path = path.join(jgame_paths.PROJECT_ROOT, 'package.json')
+	const raw = readFileSync(package_path, 'utf8')
+	const package_ = JSON.parse(raw) as ConsumerPackage
 	const canonical = jgame_managed_scripts.read_canonical_scripts()
-	const did_change = apply_managed_scripts(pkg, canonical)
+	const did_change = apply_managed_scripts(package_, canonical)
+
 	if (!did_change) {
 		console.info('  ✔ checked  package.json scripts (up-to-date)')
+
 		return
 	}
-	writeFileSync(pkg_path, `${JSON.stringify(pkg, null, '\t')}\n`)
+
+	writeFileSync(package_path, `${JSON.stringify(package_, null, '\t')}\n`)
 	console.info('  ✔ synced   package.json scripts')
 }
 
 // Preserves existing pins so consumers who upgraded individual packages are not
 // silently downgraded — only fills in missing entries. Mutates `pkg`.
-function apply_managed_dev_deps(pkg: ConsumerPkg, required: Record<string, string>): boolean {
-	const existing = pkg.devDependencies ?? {}
+function apply_managed_development_deps(
+	package_: ConsumerPackage,
+	required: Record<string, string>,
+): boolean {
+	const existing = package_.devDependencies ?? {}
 	const missing = Object.entries(required).filter(([key]) => !(key in existing))
+
 	if (missing.length === 0) {
-		pkg.devDependencies = existing
+		package_.devDependencies = existing
+
 		return false
 	}
-	pkg.devDependencies = { ...existing, ...Object.fromEntries(missing) }
+
+	package_.devDependencies = { ...existing, ...Object.fromEntries(missing) }
+
 	return true
 }
 
 // Must run BEFORE pnpm so the preflight install picks up new devDeps (#184 self-heal).
-function sync_managed_dev_deps(): void {
-	const pkg_path = path.join(jgame_paths.PROJECT_ROOT, 'package.json')
-	const raw = readFileSync(pkg_path, 'utf8')
-	const pkg = JSON.parse(raw) as ConsumerPkg
-	const required = jgame_managed_dev_deps.read_required_deps_from_kit()
-	const did_change = apply_managed_dev_deps(pkg, required)
+function sync_managed_development_deps(): void {
+	const package_path = path.join(jgame_paths.PROJECT_ROOT, 'package.json')
+	const raw = readFileSync(package_path, 'utf8')
+	const package_ = JSON.parse(raw) as ConsumerPackage
+	const required = jgame_managed_development_deps.read_required_deps_from_kit()
+	const did_change = apply_managed_development_deps(package_, required)
+
 	if (!did_change) {
 		console.info('  ✔ checked  package.json devDependencies (up-to-date)')
+
 		return
 	}
-	writeFileSync(pkg_path, `${JSON.stringify(pkg, null, '\t')}\n`)
+
+	writeFileSync(package_path, `${JSON.stringify(package_, null, '\t')}\n`)
 	console.info('  ✔ synced   package.json devDependencies')
 }
 
@@ -113,7 +136,7 @@ function pre_sync_pnpm_workspace_yaml(): void {
 
 function run(): void {
 	console.info('\n🔄 jgame sync\n')
-	sync_managed_dev_deps()
+	sync_managed_development_deps()
 	pre_sync_pnpm_workspace_yaml()
 	execSync('pnpm josh sync', SPAWN_OPTIONS)
 	// `josh sync` early-returns for missing configs (#184); `josh init` is the
@@ -125,5 +148,9 @@ function run(): void {
 	console.info('\n✅ Done.\n')
 }
 
-const jgame_sync = { run, apply_managed_scripts, apply_managed_dev_deps }
+const jgame_sync = {
+	run,
+	apply_managed_scripts,
+	apply_managed_dev_deps: apply_managed_development_deps,
+}
 export { jgame_sync }

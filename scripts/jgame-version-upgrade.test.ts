@@ -29,8 +29,12 @@ function mock_spawn_result(status: number): {
 describe('jgame_version_upgrade', () => {
 	beforeEach(() => {
 		vi.resetAllMocks()
-		vi.spyOn(console, 'info').mockImplementation(() => {})
-		vi.spyOn(console, 'warn').mockImplementation(() => {})
+		vi.spyOn(console, 'info').mockImplementation(() => {
+			/* no-op */
+		})
+		vi.spyOn(console, 'warn').mockImplementation(() => {
+			/* no-op */
+		})
 		vi.spyOn(process, 'exit').mockImplementation(() => {
 			throw new Error('process.exit called')
 		})
@@ -38,6 +42,7 @@ describe('jgame_version_upgrade', () => {
 
 	it('exposes run / read_project_overrides / exec_pnpm_add / exec_pnpm_global_add', async () => {
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
+
 		expect(typeof jgame_version_upgrade.run).toBe('function')
 		expect(typeof jgame_version_upgrade.read_project_overrides).toBe('function')
 		expect(typeof jgame_version_upgrade.exec_pnpm_add).toBe('function')
@@ -48,6 +53,7 @@ describe('jgame_version_upgrade', () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
+
 		vi.mocked(readFileSync).mockReturnValue(
 			JSON.stringify({ devDependencies: { '@joshuafolkken/game-kit': '^0.55.0' } }),
 		)
@@ -67,6 +73,7 @@ describe('jgame_version_upgrade', () => {
 	it('respects the pnpm.overrides cap in consumer context (no spawn)', async () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
+
 		vi.mocked(readFileSync).mockReturnValue(
 			JSON.stringify({
 				devDependencies: { '@joshuafolkken/game-kit': '^0.55.0' },
@@ -85,6 +92,7 @@ describe('jgame_version_upgrade', () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
+
 		vi.mocked(readFileSync).mockImplementation(() => {
 			throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
 		})
@@ -105,6 +113,7 @@ describe('jgame_version_upgrade', () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
+
 		vi.mocked(readFileSync).mockReturnValue(
 			JSON.stringify({ devDependencies: { unrelated: '^1.0.0' } }),
 		)
@@ -123,6 +132,7 @@ describe('jgame_version_upgrade', () => {
 
 	it('rethrows non-ENOENT errors from readFileSync instead of falling back to global', async () => {
 		const { readFileSync } = await import('node:fs')
+
 		vi.mocked(readFileSync).mockImplementation(() => {
 			throw Object.assign(new Error('permission denied'), { code: 'EACCES' })
 		})
@@ -135,6 +145,7 @@ describe('jgame_version_upgrade', () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
+
 		vi.mocked(readFileSync).mockImplementation(() => {
 			throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
 		})
