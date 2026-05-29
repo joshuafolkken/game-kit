@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { device, GameScene } from '@joshuafolkken/game-kit'
 	import { game_board_input } from '$lib/game/board-input'
-	import { game } from '$lib/game/game.svelte'
+	import { game } from '$lib/game/Game.svelte'
 	import Scene from '$lib/game/Scene.svelte'
 	import { messages } from '$lib/messages'
 
