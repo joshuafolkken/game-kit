@@ -36,19 +36,19 @@ function seq_at(index: number): ButtonColor {
 	return color
 }
 
-describe('game FSM', () => {
-	beforeEach(() => {
-		vi.useFakeTimers()
-		game.reset()
-	})
+beforeEach(() => {
+	vi.useFakeTimers()
+	game.reset()
+})
 
-	afterEach(() => {
-		vi.clearAllTimers()
-		vi.useRealTimers()
-		vi.restoreAllMocks()
-		game.reset()
-	})
+afterEach(() => {
+	vi.clearAllTimers()
+	vi.useRealTimers()
+	vi.restoreAllMocks()
+	game.reset()
+})
 
+describe('game FSM — start & sequence display', () => {
 	it('starts in idle phase with empty sequence and round 0', () => {
 		expect(game.phase).toBe('idle')
 		expect(game.sequence).toHaveLength(0)
@@ -85,7 +85,9 @@ describe('game FSM', () => {
 		await vi.advanceTimersByTimeAsync(OFF_MS)
 		expect(game.phase).toBe('player_input')
 	})
+})
 
+describe('game FSM — round progression', () => {
 	it('final correct press + release advances to showing for the next round', async () => {
 		game.start()
 		await vi.runAllTimersAsync()
@@ -165,7 +167,9 @@ describe('game FSM', () => {
 		expect(game.phase).toBe('player_input')
 		expect(game.round).toBe(2)
 	})
+})
 
+describe('game FSM — error handling', () => {
 	it('wrong press + release triggers gameover', async () => {
 		game.start()
 		await vi.runAllTimersAsync()
@@ -183,7 +187,9 @@ describe('game FSM', () => {
 		game.release()
 		expect(spy).toHaveBeenCalledWith(ERROR_BEEP_MS, false)
 	})
+})
 
+describe('game FSM — press & release', () => {
 	it('press() is ignored when not in player_input phase', () => {
 		game.start() // phase = showing
 		game.press('green')
@@ -208,7 +214,9 @@ describe('game FSM', () => {
 		game.release()
 		expect(game.pressed_color).toBeNull()
 	})
+})
 
+describe('game FSM — reset & lifecycle', () => {
 	it('reset() returns all state to initial values', async () => {
 		game.start()
 		await vi.runAllTimersAsync()
@@ -274,7 +282,9 @@ describe('game FSM', () => {
 		game.start()
 		expect(game.phase).toBe('player_input')
 	})
+})
 
+describe('game FSM — tone', () => {
 	it('press() starts tone for pressed color', async () => {
 		const spy = vi.spyOn(game_audio, 'start_tone')
 
@@ -306,18 +316,6 @@ describe('game FSM', () => {
 })
 
 describe('score integration', () => {
-	beforeEach(() => {
-		vi.useFakeTimers()
-		game.reset()
-	})
-
-	afterEach(() => {
-		vi.clearAllTimers()
-		vi.useRealTimers()
-		vi.restoreAllMocks()
-		game.reset()
-	})
-
 	it('current_score is 0 while the final button is held and increases after release', async () => {
 		game.start()
 		await vi.runAllTimersAsync()
@@ -361,18 +359,6 @@ describe('score integration', () => {
 })
 
 describe('victory flash', () => {
-	beforeEach(() => {
-		vi.useFakeTimers()
-		game.reset()
-	})
-
-	afterEach(() => {
-		vi.clearAllTimers()
-		vi.useRealTimers()
-		vi.restoreAllMocks()
-		game.reset()
-	})
-
 	it('flash_colors is empty before any round completes', () => {
 		game.start()
 		expect(game.flash_colors).toHaveLength(0)
@@ -450,16 +436,6 @@ describe('victory flash', () => {
 })
 
 describe('create_game isolation', () => {
-	beforeEach(() => {
-		vi.useFakeTimers()
-	})
-
-	afterEach(() => {
-		vi.clearAllTimers()
-		vi.useRealTimers()
-		vi.restoreAllMocks()
-	})
-
 	it('two instances do not share phase state', () => {
 		const score_a = create_score()
 		const score_b = create_score()
