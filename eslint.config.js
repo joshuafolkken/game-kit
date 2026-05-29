@@ -43,8 +43,14 @@ const LAYER_B_DISABLES = {
 	complexity: 'off',
 	'max-lines': 'off',
 
-	// === Layer C follow-up (high-volume manual refactor) ===
+	// `import/exports-last` requires all exports to be at the bottom of the file.
+	// This fights the project's readable pattern of `export const X = value` near the
+	// definition site (e.g., exported constants at the top of config files alongside
+	// their context). Forcing 58+ exports to the file bottom would harm readability
+	// without a correctness gain. Always disabled.
 	'import/exports-last': 'off',
+
+	// === Layer C follow-up (high-volume manual refactor) ===
 	'no-restricted-syntax': 'off',
 }
 
