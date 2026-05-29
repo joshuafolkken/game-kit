@@ -5,14 +5,14 @@ import svelteConfig from './svelte.config.js'
 const PERMANENT_OVERRIDES = {
 	// Codebase uses `null` to mirror the DOM / Three.js / Web APIs it wraps.
 	'unicorn/no-null': 'off',
-	// Test it() bodies and async game-loop source are legitimately long / complex by domain.
+	// Test it() bodies and async game-loop source are legitimately long by domain.
 	'max-lines-per-function': 'off',
 	'max-statements': 'off',
-	'sonarjs/cognitive-complexity': 'off',
-	// Capped at 7 (above kit's default 5) — game-loop / input / render functions are
-	// branchy by domain; 7 still catches genuinely tangled logic.
-	complexity: ['error', 7],
 	'max-lines': 'off',
+	// Capped above kit's defaults (complexity 5, cognitive-complexity 4) — game-loop /
+	// input / render functions are branchy by domain; these ceilings still catch worse.
+	complexity: ['error', 7],
+	'sonarjs/cognitive-complexity': ['error', 7],
 	// Inline `export const X = value` at the definition site reads better than file-bottom exports.
 	'import/exports-last': 'off',
 }
