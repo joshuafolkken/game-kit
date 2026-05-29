@@ -1,4 +1,4 @@
-export const base_messages = {
+const base_messages = {
 	press_start: 'PRESS START',
 	cyber_switch_label: 'CYBER',
 	click_to_start: 'CLICK TO START',
@@ -20,3 +20,5 @@ export const base_messages = {
 	controls_jump: 'Jump',
 	controls_return: 'Return to start',
 } as const
+
+export { base_messages }

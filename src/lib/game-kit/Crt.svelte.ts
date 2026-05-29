@@ -3,7 +3,7 @@ interface Crt {
 	toggle: () => void
 }
 
-export function create_crt(): Crt {
+function create_crt(): Crt {
 	let is_crt_enabled = $state(true)
 
 	function toggle(): void {
@@ -20,4 +20,6 @@ export function create_crt(): Crt {
 
 export type CrtInstance = ReturnType<typeof create_crt>
 
-export const crt = create_crt()
+const crt = create_crt()
+
+export { create_crt, crt }

@@ -6,7 +6,7 @@ import { base_messages } from '$lib/messages/en'
 // declare game-specific labels, compose with spread. The only intentional difference
 // is the import path of base_messages — internal here, '@joshuafolkken/game-kit'
 // in scaffolded projects.
-export const game_messages = {
+const game_messages = {
 	game_title: GAME_NAME,
 	game_start: 'START',
 	game_round: 'ROUND',
@@ -14,4 +14,6 @@ export const game_messages = {
 	game_application_label: GAME_NAME_DISPLAY,
 } as const
 
-export const messages = { ...base_messages, ...game_messages } as const
+const messages = { ...base_messages, ...game_messages } as const
+
+export { game_messages, messages }

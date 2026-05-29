@@ -6,7 +6,7 @@ interface SwitchInputConfig {
 	guard?: () => boolean
 }
 
-export function create_switch_input(config: SwitchInputConfig): { on_click: () => void } {
+function create_switch_input(config: SwitchInputConfig): { on_click: () => void } {
 	function on_click(): void {
 		if (!session.is_session_started) return
 		if (config.guard && !config.guard()) return
@@ -16,3 +16,5 @@ export function create_switch_input(config: SwitchInputConfig): { on_click: () =
 
 	return { on_click }
 }
+
+export { create_switch_input }

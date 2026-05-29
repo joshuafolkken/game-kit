@@ -31,7 +31,7 @@ function play_all_tones(colors: ReadonlyArray<ButtonColor>, duration_ms: number)
 	for (const color of colors) game_audio.play_tone(color, duration_ms, is_alt)
 }
 
-export function cancel_flash(state: FlashState, t: FlashTimers): void {
+function cancel_flash(state: FlashState, t: FlashTimers): void {
 	t.flash_gen += 1
 	state.flash_colors = []
 	state.flash_intensity = FLASH_INTENSITY_RESET
@@ -95,7 +95,7 @@ async function flash_finale(
 	state.flash_intensity = FLASH_INTENSITY_RESET
 }
 
-export async function run_victory_flash(
+async function run_victory_flash(
 	state: FlashState,
 	t: FlashTimers,
 	colors: ReadonlyArray<ButtonColor>,
@@ -105,3 +105,5 @@ export async function run_victory_flash(
 	await flash_cascade(state, t, colors, gen)
 	await flash_finale(state, t, colors, gen)
 }
+
+export { cancel_flash, run_victory_flash }

@@ -7,7 +7,7 @@ interface GameStateApi {
 	set_alt: (value: boolean) => void
 }
 
-export function create_game_state(): GameStateApi {
+function create_game_state(): GameStateApi {
 	let is_alt = $state(is_alt_default)
 
 	function reset_mode(): void {
@@ -34,4 +34,6 @@ export function create_game_state(): GameStateApi {
 
 export type GameStateInstance = ReturnType<typeof create_game_state>
 
-export const game_state = create_game_state()
+const game_state = create_game_state()
+
+export { create_game_state, game_state }

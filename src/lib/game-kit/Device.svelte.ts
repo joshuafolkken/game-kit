@@ -4,7 +4,7 @@ interface Device {
 	readonly is_touch_primary: boolean
 }
 
-export function create_device(): Device {
+function create_device(): Device {
 	// `typeof === 'function'` (not optional chaining) so TS sees the genuine
 	// `MediaQueryList | null` union — matchMedia is absent under SSR / Node test envs,
 	// even though lib.dom types it as always present. Covers both "missing" and
@@ -26,4 +26,6 @@ export function create_device(): Device {
 
 export type DeviceInstance = ReturnType<typeof create_device>
 
-export const device = create_device()
+const device = create_device()
+
+export { create_device, device }

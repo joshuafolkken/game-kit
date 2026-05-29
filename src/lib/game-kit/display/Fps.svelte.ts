@@ -7,7 +7,7 @@ interface Fps {
 	set_fps_text: (text: string) => void
 }
 
-export function create_fps(): Fps {
+function create_fps(): Fps {
 	let is_fps_enabled = $state(true)
 	let current_fps_text = $state(INITIAL_FPS_TEXT)
 
@@ -34,4 +34,6 @@ export function create_fps(): Fps {
 
 export type FpsInstance = ReturnType<typeof create_fps>
 
-export const fps = create_fps()
+const fps = create_fps()
+
+export { create_fps, fps }
