@@ -64,24 +64,24 @@ function make_pointer_event_with_offsets(
 	return created_event
 }
 
-describe('input', () => {
-	// eslint-disable-next-line init-declarations -- assigned by beforeEach
-	let cleanup: () => void
-	// eslint-disable-next-line init-declarations -- assigned by beforeEach
-	let canvas_element: HTMLCanvasElement
+// eslint-disable-next-line init-declarations -- assigned by beforeEach
+let cleanup: () => void
+// eslint-disable-next-line init-declarations -- assigned by beforeEach
+let canvas_element: HTMLCanvasElement
 
-	beforeEach(() => {
-		canvas_element = document.createElement('canvas')
-		document.body.append(canvas_element)
-		cleanup = input.setup_listeners(canvas_element)
-	})
+beforeEach(() => {
+	canvas_element = document.createElement('canvas')
+	document.body.append(canvas_element)
+	cleanup = input.setup_listeners(canvas_element)
+})
 
-	afterEach(() => {
-		cleanup()
-		canvas_element.remove()
-		vi.restoreAllMocks()
-	})
+afterEach(() => {
+	cleanup()
+	canvas_element.remove()
+	vi.restoreAllMocks()
+})
 
+describe('input — mouse drag (look)', () => {
 	it('starts with look-drag inactive', () => {
 		expect(input.is_dragging_look).toBe(false)
 	})
@@ -141,7 +141,9 @@ describe('input', () => {
 		expect(input.yaw).toBe(0)
 		expect(input.pitch).toBe(0)
 	})
+})
 
+describe('input — drag offset & synthetic pointer', () => {
 	it('right mouse down captures drag start clientX/clientY', () => {
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 100, clientY: 200 })
 		expect(input.drag_start_x).toBe(100)
@@ -221,7 +223,9 @@ describe('input', () => {
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON })
 		expect(received.length).toBe(start_count)
 	})
+})
 
+describe('input — pointer lock', () => {
 	it('right mouse down requests pointer lock on event target', () => {
 		const target = document.createElement('div')
 
@@ -267,7 +271,9 @@ describe('input', () => {
 		dispatch_mouse('mousemove', { movementX: 100, movementY: 0 })
 		expect(input.yaw).not.toBe(0)
 	})
+})
 
+describe('input — wheel', () => {
 	it('wheel event updates yaw and pitch from deltaX/deltaY', () => {
 		dispatch_wheel({ deltaX: 50, deltaY: 30 })
 		expect(input.yaw).not.toBe(0)
@@ -301,7 +307,9 @@ describe('input', () => {
 		document.dispatchEvent(created_event)
 		expect(created_event.defaultPrevented).toBe(true)
 	})
+})
 
+describe('input — pitch clamping', () => {
 	it('clamps pitch at max during right drag', () => {
 		start_right_drag()
 		dispatch_mouse('mousemove', { movementX: 0, movementY: -100_000 })
@@ -321,7 +329,9 @@ describe('input', () => {
 		expect(input.pitch).toBeGreaterThan(0)
 		expect(input.pitch).toBeLessThan(Math.PI / 2)
 	})
+})
 
+describe('input — keyboard movement', () => {
 	it('maps w key to forward', () => {
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }))
 		expect(input.keys.w).toBe(true)
@@ -351,7 +361,9 @@ describe('input', () => {
 		expect(input.keys.s).toBe(false)
 		expect(input.keys.d).toBe(false)
 	})
+})
 
+describe('input — joystick & look delta', () => {
 	it('sets joystick move values', () => {
 		input.set_joystick_move(0.5, -0.3)
 		expect(input.joystick_move.x).toBe(0.5)
@@ -396,7 +408,9 @@ describe('input', () => {
 		document.dispatchEvent(created_event)
 		expect(created_event.defaultPrevented).toBe(false)
 	})
+})
 
+describe('input — lifecycle & state', () => {
 	it('resets keys on window blur to prevent stuck movement', () => {
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }))
 		expect(input.keys.w).toBe(true)
