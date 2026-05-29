@@ -88,7 +88,7 @@ interface LoadingApi<T extends string> {
 	reset: () => void
 }
 
-export function create_loading<T extends string>(initial_step: T): LoadingApi<T> {
+function create_loading<T extends string>(initial_step: T): LoadingApi<T> {
 	let step_messages: Partial<Record<T, string>> = {}
 	const state = $state<LoadingState<T>>({
 		is_visible: true,
@@ -132,4 +132,6 @@ export function create_loading<T extends string>(initial_step: T): LoadingApi<T>
 
 export type LoadingInstance = ReturnType<typeof create_loading>
 
-export const loading = create_loading<DefaultLoadingStep>('downloading')
+const loading = create_loading<DefaultLoadingStep>('downloading')
+
+export { create_loading, loading }

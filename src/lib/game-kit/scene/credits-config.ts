@@ -10,7 +10,7 @@ export const CREDITS_GLOW_BLUR = '50%'
 export const CREDITS_GLOW_OPACITY = 0.4
 export const FLOOR_TEXT_ROTATION_X = -(Math.PI / HALF_DIVISOR)
 
-export function make_credits_scroll_bounds(
+function make_credits_scroll_bounds(
 	line_count: number,
 	half_depth: number,
 ): { start_z: number; end_z: number } {
@@ -21,7 +21,7 @@ export function make_credits_scroll_bounds(
 }
 
 // eslint-disable-next-line max-params -- scrolling math signature with 5 numeric params; object-arg shape adds noise at call sites
-export function advance_scroll(
+function advance_scroll(
 	current_z: number,
 	delta: number,
 	start_z: number,
@@ -34,3 +34,5 @@ export function advance_scroll(
 }
 
 export const credits_scroll = { make_credits_scroll_bounds, advance_scroll }
+
+export { make_credits_scroll_bounds, advance_scroll }

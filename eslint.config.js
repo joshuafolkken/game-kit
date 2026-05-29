@@ -49,9 +49,6 @@ const LAYER_B_DISABLES = {
 	// their context). Forcing 58+ exports to the file bottom would harm readability
 	// without a correctness gain. Always disabled.
 	'import/exports-last': 'off',
-
-	// === Layer C follow-up (high-volume manual refactor) ===
-	'no-restricted-syntax': 'off',
 }
 
 // `scripts/` and `templates/` are not in any tsconfig project here:

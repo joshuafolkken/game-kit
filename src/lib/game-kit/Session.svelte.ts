@@ -4,7 +4,7 @@ interface Session {
 	reset_session: () => void
 }
 
-export function create_session(): Session {
+function create_session(): Session {
 	let is_session_started = $state(false)
 
 	function start_session(): void {
@@ -26,4 +26,6 @@ export function create_session(): Session {
 
 export type SessionInstance = ReturnType<typeof create_session>
 
-export const session = create_session()
+const session = create_session()
+
+export { create_session, session }

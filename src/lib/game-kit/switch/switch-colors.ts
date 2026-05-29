@@ -19,10 +19,7 @@ export interface ResolvedSwitchColors {
 	orb_emissive: number
 }
 
-export function resolve_switch_colors(
-	colors: SwitchColors,
-	is_active: boolean,
-): ResolvedSwitchColors {
+function resolve_switch_colors(colors: SwitchColors, is_active: boolean): ResolvedSwitchColors {
 	return {
 		current_color: is_active ? colors.active : colors.inactive,
 		housing_color: is_active ? colors.active_housing : colors.inactive_housing,
@@ -83,3 +80,5 @@ export const CRT_SWITCH_COLORS: SwitchColors = {
 	active_orb_emissive: 5,
 	inactive_orb_emissive: 0.2,
 }
+
+export { resolve_switch_colors }

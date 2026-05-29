@@ -31,7 +31,7 @@ function compute_target_offset(event: DomEvent, target: HTMLElement): { x: numbe
 	return { x: event.clientX - rect.left, y: event.clientY - rect.top }
 }
 
-export function make_pointer_compute(
+function make_pointer_compute(
 	camera: CameraReference,
 ): (event: DomEvent, context: ComputeContext) => void {
 	return function compute_pointer(event: DomEvent, context: ComputeContext): void {
@@ -47,3 +47,5 @@ export function make_pointer_compute(
 		context.raycaster.setFromCamera(context.pointer.current, camera.current)
 	}
 }
+
+export { make_pointer_compute }

@@ -245,7 +245,7 @@ interface GameConfig {
 	colors?: ReadonlyArray<ButtonColor>
 }
 
-export function create_game(score: ScoreInstance, config: GameConfig = {}): GameApi {
+function create_game(score: ScoreInstance, config: GameConfig = {}): GameApi {
 	const colors = config.colors ?? DEFAULT_COLORS
 	const state = $state<GameState>({
 		phase: 'idle',
@@ -264,4 +264,6 @@ export function create_game(score: ScoreInstance, config: GameConfig = {}): Game
 
 export type GameInstance = ReturnType<typeof create_game>
 
-export const game = create_game(default_score)
+const game = create_game(default_score)
+
+export { create_game, game }
