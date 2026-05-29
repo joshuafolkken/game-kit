@@ -1,15 +1,17 @@
 import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
 import svelteConfig from './svelte.config.js'
 
-// Permanent rule disables — each conflicts with this project's tooling or domain.
-const PERMANENT_DISABLES = {
+// Permanent rule overrides — each conflicts with this project's tooling or domain.
+const PERMANENT_OVERRIDES = {
 	// Codebase uses `null` to mirror the DOM / Three.js / Web APIs it wraps.
 	'unicorn/no-null': 'off',
 	// Test it() bodies and async game-loop source are legitimately long / complex by domain.
 	'max-lines-per-function': 'off',
 	'max-statements': 'off',
 	'sonarjs/cognitive-complexity': 'off',
-	complexity: 'off',
+	// Capped at 7 (above kit's default 5) — game-loop / input / render functions are
+	// branchy by domain; 7 still catches genuinely tangled logic.
+	complexity: ['error', 7],
 	'max-lines': 'off',
 	// Inline `export const X = value` at the definition site reads better than file-bottom exports.
 	'import/exports-last': 'off',
@@ -23,4 +25,4 @@ export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
 	svelte_config: svelteConfig,
-}).concat({ ignores: FILE_IGNORES }, { rules: PERMANENT_DISABLES })
+}).concat({ ignores: FILE_IGNORES }, { rules: PERMANENT_OVERRIDES })
