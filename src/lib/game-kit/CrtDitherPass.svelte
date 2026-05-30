@@ -143,6 +143,7 @@
 
 	const hi_drawing_buf = new Vector2()
 	useTask(
+		// eslint-disable-next-line max-statements -- per-frame render scheduler: one cohesive CRT/no-CRT branch sequence; splitting the task callback fragments the frame logic. See #250.
 		(delta) => {
 			if (!crt.is_crt_enabled) {
 				context.renderer.setPixelRatio(context.dpr.current)
