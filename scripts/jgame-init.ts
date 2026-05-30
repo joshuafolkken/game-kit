@@ -186,6 +186,7 @@ function write_npmrc(project_directory: string): void {
 	console.info(`  ✔ wrote    ${NPMRC_DEST_NAME}`)
 }
 
+// eslint-disable-next-line max-statements -- CLI entry point: a linear validate -> scaffold -> write sequence that reads better as one run() than fragmented. See #250.
 function run(game_name_raw?: string): void {
 	if (!game_name_raw) {
 		console.error('Error: game name is required.\nUsage: jgame init <name>')

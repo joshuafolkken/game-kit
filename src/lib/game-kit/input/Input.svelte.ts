@@ -192,6 +192,7 @@ function make_drag_override_specs(state: InputState): Array<ListenerSpec> {
 	]
 }
 
+// eslint-disable-next-line max-lines-per-function -- one flat declaration table, one entry per input source; splitting a cohesive spec list would only scatter it. See #250.
 function make_listener_specs(
 	state: InputState,
 	references: InputReferences,
@@ -301,6 +302,7 @@ interface InputApi {
 	apply_look_delta: (delta_yaw: number, delta_pitch: number) => void
 }
 
+// eslint-disable-next-line max-lines-per-function -- assembles the full input API object in one closure over shared state; extracting members would add indirection without cutting size. See #250.
 function make_input_api(
 	state: InputState,
 	jm: Vec2,
