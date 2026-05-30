@@ -22,7 +22,7 @@ const GAME_COMPLEXITY_OVERRIDES = {
 }
 
 // templates/ tooling config stays ignored (vite/svelte config — kit owns those rules).
-const FILE_IGNORES = ['templates/**/*.config.*']
+const FILE_IGNORES = ['templates/**/*.config.*', 'scripts/__fixtures__/**']
 
 // scripts/ (CLI tools) live outside the SvelteKit tsconfig program, so the base config's
 // `project: './tsconfig.json'` cannot type-check them. Point ESLint at a dedicated

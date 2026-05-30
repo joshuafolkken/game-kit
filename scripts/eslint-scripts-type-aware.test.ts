@@ -1,11 +1,18 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ESLint } from 'eslint'
 import { describe, expect, it } from 'vitest'
 
 const REPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const ESLINT_CONFIG_PATH = path.join(REPO_ROOT, 'eslint.config.js')
 const SCRIPTS_TSCONFIG_PATH = path.join(REPO_ROOT, 'scripts', 'tsconfig.json')
+const FLOATING_PROMISE_FIXTURE = path.join(
+	REPO_ROOT,
+	'scripts',
+	'__fixtures__',
+	'floating-promise.ts',
+)
 
 const eslint_config_source = readFileSync(ESLINT_CONFIG_PATH, 'utf8')
 
@@ -37,6 +44,16 @@ describe('scripts/ ESLint type-aware coverage (regression for #240)', () => {
 		expect(eslint_config_source).toContain("files: ['scripts/**/*.test.ts']")
 		expect(eslint_config_source).toContain("'@typescript-eslint/no-unsafe-assignment': 'off'")
 		expect(eslint_config_source).toContain("'@typescript-eslint/no-base-to-string': 'off'")
+	})
+
+	it('enforces type-aware rules on scripts/ — no-floating-promises fires on a fixture', async () => {
+		// Behavioral proof (not just config strings): lint a fixture that floats a Promise and
+		// assert the type-aware rule reports it, exercising the scripts/tsconfig.json project.
+		const eslint = new ESLint({ cwd: REPO_ROOT, ignore: false })
+		const results = await eslint.lintFiles([FLOATING_PROMISE_FIXTURE])
+		const rule_ids = results.flatMap((result) => result.messages).map((message) => message.ruleId)
+
+		expect(rule_ids).toContain('@typescript-eslint/no-floating-promises')
 	})
 })
 
