@@ -2,6 +2,27 @@ import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
 import tseslint from 'typescript-eslint'
 import svelteConfig from './svelte.config.js'
 
+// Size-cap tiers. SOURCE_* are the whole-codebase defaults (set just above the bulk of source
+// units so nothing splits now, but tight enough to catch regressions). TEST_* are the higher
+// budget test files get back (see TEST_SIZE_CAPS). Genuine source outliers carry an inline
+// eslint-disable rather than dragging the SOURCE_* caps up to their size. Re-measured #250.
+const SOURCE_FN_LINES = 50
+const SOURCE_FN_STATEMENTS = 20
+const SOURCE_FILE_LINES = 400
+const TEST_FN_LINES = 130
+const TEST_FN_STATEMENTS = 25
+const TEST_FILE_LINES = 600
+
+// Game-loop / rendering / input units are cohesive and have 6–7 decision points without being
+// logically separable, so the game dirs raise the kit's default complexity cap of 5 to this.
+const GAME_COMPLEXITY = 7
+
+// Both max-lines-per-function and max-lines take the same options object; build it once so the
+// SOURCE/TEST tiers differ only by their max and stay visually comparable.
+function lines_cap(max) {
+	return ['error', { max, skipBlankLines: true, skipComments: true }]
+}
+
 const PERMANENT_OVERRIDES = {
 	// Kept off deliberately: most nullable state here wraps Three.js / Web Audio / DOM null
 	// contracts, so `null` is the consistent idiom. Switching to `undefined` would add `?? null`
@@ -12,23 +33,18 @@ const PERMANENT_OVERRIDES = {
 	// bottom. Re-enabling would force unrelated reorders for a pure style change (see #248).
 	'import/exports-last': 'off',
 	// Re-enabled as numeric caps instead of 'off' (was off #248/#188; re-measured #250).
-	// These are SOURCE-tier caps: set just above the bulk of source units so nothing splits now,
-	// but tight enough to catch future regressions. Test files get a higher tier (TEST_SIZE_CAPS
-	// below); the few genuine source outliers (game-loop / audio / CLI) carry an inline
-	// eslint-disable with rationale rather than dragging the whole-codebase cap up to their size.
-	'max-lines-per-function': ['error', { max: 50, skipBlankLines: true, skipComments: true }],
-	'max-statements': ['error', 20],
-	'max-lines': ['error', { max: 400, skipBlankLines: true, skipComments: true }],
+	// SOURCE-tier caps — see the SOURCE_*/TEST_* constants above for the tier rationale.
+	'max-lines-per-function': lines_cap(SOURCE_FN_LINES),
+	'max-statements': ['error', SOURCE_FN_STATEMENTS],
+	'max-lines': lines_cap(SOURCE_FILE_LINES),
 }
 
-// Game-loop, rendering, and input functions are cohesive units that fragment poorly under
-// the kit's default cap of 5: a physics step or audio scheduler naturally has 6–7 decision
-// points without being logically separable. Cap raised to 7 for game dirs only.
+// Cap raised for game dirs only (see GAME_COMPLEXITY above for the rationale).
 const GAME_COMPLEXITY_OVERRIDES = {
 	files: ['src/lib/game-kit/**', 'src/lib/game/**', 'templates/src/lib/game/**'],
 	rules: {
-		complexity: ['error', 7],
-		'sonarjs/cognitive-complexity': ['error', 7],
+		complexity: ['error', GAME_COMPLEXITY],
+		'sonarjs/cognitive-complexity': ['error', GAME_COMPLEXITY],
 	},
 }
 
@@ -39,9 +55,9 @@ const GAME_COMPLEXITY_OVERRIDES = {
 const TEST_SIZE_CAPS = {
 	files: ['**/*.test.ts', '**/*.spec.ts', '**/*.e2e.ts'],
 	rules: {
-		'max-lines-per-function': ['error', { max: 130, skipBlankLines: true, skipComments: true }],
-		'max-statements': ['error', 25],
-		'max-lines': ['error', { max: 600, skipBlankLines: true, skipComments: true }],
+		'max-lines-per-function': lines_cap(TEST_FN_LINES),
+		'max-statements': ['error', TEST_FN_STATEMENTS],
+		'max-lines': lines_cap(TEST_FILE_LINES),
 	},
 }
 
