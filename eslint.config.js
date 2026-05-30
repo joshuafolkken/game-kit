@@ -11,15 +11,14 @@ const PERMANENT_OVERRIDES = {
 	// (constants/config declared next to their context) over hoisting every export to the file
 	// bottom. Re-enabling would force unrelated reorders for a pure style change (see #248).
 	'import/exports-last': 'off',
-	// Kept off deliberately (verified #248, originally #188): these size/length limits fight
-	// patterns that are legitimate across the whole codebase, not one area — game-loop / audio /
-	// input source (e.g. Input.svelte.ts make_listener_specs ~88 lines), integration-style test
-	// bodies (a single it() runs ~130 lines), and one-off CLI scripts (jgame-init run()). A full
-	// lint with these enforced at kit defaults surfaces 60+ such cases with no logical split, so
-	// scoping the relaxation to any single dir does not work; they stay globally off.
-	'max-lines-per-function': 'off',
-	'max-statements': 'off',
-	'max-lines': 'off',
+	// Re-enabled as numeric caps instead of 'off' (was off #248/#188; re-measured #250).
+	// These are SOURCE-tier caps: set just above the bulk of source units so nothing splits now,
+	// but tight enough to catch future regressions. Test files get a higher tier (TEST_SIZE_CAPS
+	// below); the few genuine source outliers (game-loop / audio / CLI) carry an inline
+	// eslint-disable with rationale rather than dragging the whole-codebase cap up to their size.
+	'max-lines-per-function': ['error', { max: 50, skipBlankLines: true, skipComments: true }],
+	'max-statements': ['error', 20],
+	'max-lines': ['error', { max: 400, skipBlankLines: true, skipComments: true }],
 }
 
 // Game-loop, rendering, and input functions are cohesive units that fragment poorly under
@@ -30,6 +29,19 @@ const GAME_COMPLEXITY_OVERRIDES = {
 	rules: {
 		complexity: ['error', 7],
 		'sonarjs/cognitive-complexity': ['error', 7],
+	},
+}
+
+// Test files run long by nature: integration-style it() bodies, table-driven case lists, and
+// mock setup that doesn't factor out. They get a higher size budget than source so the source
+// caps in PERMANENT_OVERRIDES stay meaningful. Caps set just above today's largest test units
+// (function 128 lines, 23 statements, file 571 lines) so existing tests pass and worse ones flag (#250).
+const TEST_SIZE_CAPS = {
+	files: ['**/*.test.ts', '**/*.spec.ts', '**/*.e2e.ts'],
+	rules: {
+		'max-lines-per-function': ['error', { max: 130, skipBlankLines: true, skipComments: true }],
+		'max-statements': ['error', 25],
+		'max-lines': ['error', { max: 600, skipBlankLines: true, skipComments: true }],
 	},
 }
 
@@ -98,6 +110,9 @@ export default create_sveltekit_config({
 	SCRIPTS_TYPED,
 	SCRIPTS_TESTS_UNTYPED_MOCKS,
 	TEMPLATES_NON_TYPED,
+	// Must come after PERMANENT_OVERRIDES (the source-tier caps apply globally, including to test
+	// files) so test files get their higher size budget back.
+	TEST_SIZE_CAPS,
 	// Must come last: templates/src/lib/game/** also matches TEMPLATES_NON_TYPED, so placing
 	// GAME_COMPLEXITY_OVERRIDES after the NON_TYPED blocks guarantees the cap always wins
 	// regardless of what future non-typed blocks do with the complexity family. (#244)
