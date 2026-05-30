@@ -7,10 +7,19 @@ const PERMANENT_OVERRIDES = {
 	// contracts, so `null` is the consistent idiom. Switching to `undefined` would add `?? null`
 	// boundary conversions at every Three.js/Web-Audio handoff and mix two idioms (see #232).
 	'unicorn/no-null': 'off',
+	// Kept off deliberately: the project favours `export const X = value` at the definition site
+	// (constants/config declared next to their context) over hoisting every export to the file
+	// bottom. Re-enabling would force unrelated reorders for a pure style change (see #248).
+	'import/exports-last': 'off',
+	// Kept off deliberately (verified #248, originally #188): these size/length limits fight
+	// patterns that are legitimate across the whole codebase, not one area — game-loop / audio /
+	// input source (e.g. Input.svelte.ts make_listener_specs ~88 lines), integration-style test
+	// bodies (a single it() runs ~130 lines), and one-off CLI scripts (jgame-init run()). A full
+	// lint with these enforced at kit defaults surfaces 60+ such cases with no logical split, so
+	// scoping the relaxation to any single dir does not work; they stay globally off.
 	'max-lines-per-function': 'off',
 	'max-statements': 'off',
 	'max-lines': 'off',
-	'import/exports-last': 'off',
 }
 
 // Game-loop, rendering, and input functions are cohesive units that fragment poorly under
@@ -30,8 +39,9 @@ const FILE_IGNORES = ['templates/**/*.config.*', 'scripts/__fixtures__/**']
 // scripts/ (CLI tools) live outside the SvelteKit tsconfig program, so the base config's
 // `project: './tsconfig.json'` cannot type-check them. Point ESLint at a dedicated
 // scripts/tsconfig.json so type-aware rules (no-floating-promises, no-unsafe-*, etc.) apply.
-// The two sonarjs rules stay off: invoking pnpm/git/node via PATH is these CLI tools' job,
-// and duplicated path/fixture strings in one-off scripts and their tests aren't a real smell.
+// sonarjs/no-duplicate-string stays off here: duplicated path/fixture strings in one-off
+// scripts and their tests aren't a real smell. (no-os-command-from-path and unbound-method
+// used to live here too, but kit 0.199.0 moved them into its shared scripts block — #442.)
 const SCRIPTS_TYPED = {
 	files: ['scripts/**/*.ts'],
 	languageOptions: {
@@ -41,15 +51,11 @@ const SCRIPTS_TYPED = {
 		},
 	},
 	rules: {
-		'sonarjs/no-os-command-from-path': 'off',
 		'sonarjs/no-duplicate-string': 'off',
 		// Node built-in imports (readFileSync, spawnSync, …), the `package_` reserved-word
 		// workaround, and external object keys (package names, 'version:upgrade') are inherently
 		// non-snake_case — this rule governs first-party identifiers, not third-party glue.
 		'@typescript-eslint/naming-convention': 'off',
-		// The project's mandatory `export { module }` namespace-object pattern means these
-		// functions never use `this`, so referencing them unbound (e.g. in test spies) is safe.
-		'@typescript-eslint/unbound-method': 'off',
 	},
 }
 
@@ -71,13 +77,14 @@ const SCRIPTS_TESTS_UNTYPED_MOCKS = {
 // the same approach as scripts/. Type-aware coverage happens in the destination project.
 const TEMPLATES_NON_TYPED = {
 	files: ['templates/**/*.ts', 'templates/**/*.svelte'],
+	// Spread disableTypeChecked once for its rule set; re-spread its languageOptions so we keep
+	// its parser settings while pinning parserOptions fully off (no project / projectService).
+	// (The previous explicit `rules: { ...disableTypeChecked.rules }` just re-copied what the
+	// top-level spread already provides, so it was redundant and has been dropped.)
 	...tseslint.configs.disableTypeChecked,
 	languageOptions: {
 		...tseslint.configs.disableTypeChecked.languageOptions,
 		parserOptions: { project: false, projectService: false },
-	},
-	rules: {
-		...tseslint.configs.disableTypeChecked.rules,
 	},
 }
 
