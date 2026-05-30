@@ -79,6 +79,43 @@ describe('eslint.config.js block ordering (regression for #244)', () => {
 	})
 })
 
+describe('eslint.config.js size-cap tiers (regression for #252)', () => {
+	// The size-cap literals (50/20/400 source, 130/25/600 test) and complexity 7 were extracted
+	// to named constants and a lines_cap() helper. These assert the MERGED config ESLint resolves
+	// per file, so a typo'd constant or a wrong helper wiring would surface here — string checks
+	// alone could not catch that. (calculateConfigForFile returns rules as [severity, ...options].)
+	const eslint = new ESLint({ cwd: REPO_ROOT, ignore: false })
+
+	it('applies SOURCE-tier size caps to source files (50 / 20 / 400)', async () => {
+		const config = await eslint.calculateConfigForFile(
+			path.join(REPO_ROOT, 'src/lib/game/game-name.ts'),
+		)
+
+		expect(config.rules['max-lines-per-function'][1].max).toBe(50)
+		expect(config.rules['max-statements'][1]).toBe(20)
+		expect(config.rules['max-lines'][1].max).toBe(400)
+	})
+
+	it('gives test files the higher TEST-tier size budget (130 / 25 / 600)', async () => {
+		const config = await eslint.calculateConfigForFile(
+			path.join(REPO_ROOT, 'scripts', 'eslint-scripts-type-aware.test.ts'),
+		)
+
+		expect(config.rules['max-lines-per-function'][1].max).toBe(130)
+		expect(config.rules['max-statements'][1]).toBe(25)
+		expect(config.rules['max-lines'][1].max).toBe(600)
+	})
+
+	it('raises the complexity cap to 7 for game dirs', async () => {
+		const config = await eslint.calculateConfigForFile(
+			path.join(REPO_ROOT, 'src/lib/game/game-name.ts'),
+		)
+
+		expect(config.rules.complexity[1]).toBe(7)
+		expect(config.rules['sonarjs/cognitive-complexity'][1]).toBe(7)
+	})
+})
+
 describe('scripts/tsconfig.json (regression for #240)', () => {
 	const scripts_tsconfig_source = readFileSync(SCRIPTS_TSCONFIG_PATH, 'utf8')
 
