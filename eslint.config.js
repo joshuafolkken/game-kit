@@ -85,8 +85,11 @@ export default create_sveltekit_config({
 }).concat(
 	{ ignores: FILE_IGNORES },
 	{ rules: PERMANENT_OVERRIDES },
-	GAME_COMPLEXITY_OVERRIDES,
 	SCRIPTS_TYPED,
 	SCRIPTS_TESTS_UNTYPED_MOCKS,
 	TEMPLATES_NON_TYPED,
+	// Must come last: templates/src/lib/game/** also matches TEMPLATES_NON_TYPED, so placing
+	// GAME_COMPLEXITY_OVERRIDES after the NON_TYPED blocks guarantees the cap always wins
+	// regardless of what future non-typed blocks do with the complexity family. (#244)
+	GAME_COMPLEXITY_OVERRIDES,
 )
