@@ -64,6 +64,19 @@ describe('scripts/ ESLint type-aware coverage (regression for #240)', () => {
 	)
 })
 
+describe('eslint.config.js block ordering (regression for #244)', () => {
+	it('GAME_COMPLEXITY_OVERRIDES appears after TEMPLATES_NON_TYPED in the concat call', () => {
+		// GAME_COMPLEXITY_OVERRIDES must win over TEMPLATES_NON_TYPED for templates/src/lib/game/**
+		// because both blocks match that glob. Placing it last guarantees the cap always takes
+		// precedence regardless of what future NON_TYPED blocks do with the complexity family.
+		const templates_pos = eslint_config_source.indexOf('TEMPLATES_NON_TYPED,')
+		const complexity_pos = eslint_config_source.indexOf('GAME_COMPLEXITY_OVERRIDES,')
+
+		expect(templates_pos).toBeGreaterThan(0)
+		expect(complexity_pos).toBeGreaterThan(templates_pos)
+	})
+})
+
 describe('scripts/tsconfig.json (regression for #240)', () => {
 	const scripts_tsconfig_source = readFileSync(SCRIPTS_TSCONFIG_PATH, 'utf8')
 
