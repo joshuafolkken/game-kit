@@ -138,7 +138,9 @@ describe('jgame_version_upgrade', () => {
 		})
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
 
-		expect(() => jgame_version_upgrade.run()).toThrow(/permission denied/u)
+		expect(() => {
+			jgame_version_upgrade.run()
+		}).toThrow(/permission denied/u)
 	})
 
 	it('warns and skips spawn when fetch_latest_version returns undefined', async () => {
