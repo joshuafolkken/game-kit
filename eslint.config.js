@@ -13,6 +13,9 @@ const PERMANENT_OVERRIDES = {
 	'import/exports-last': 'off',
 }
 
+// Game-loop, rendering, and input functions are cohesive units that fragment poorly under
+// the kit's default cap of 5: a physics step or audio scheduler naturally has 6–7 decision
+// points without being logically separable. Cap raised to 7 for game dirs only.
 const GAME_COMPLEXITY_OVERRIDES = {
 	files: ['src/lib/game-kit/**', 'src/lib/game/**', 'templates/src/lib/game/**'],
 	rules: {
