@@ -57,7 +57,9 @@ describe('route_command', () => {
 	})
 
 	it('treats install as unknown command', () => {
-		expect(() => jgame.route_command('install')).toThrow('process.exit called')
+		expect(() => {
+			jgame.route_command('install')
+		}).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Unknown command: install'))
 	})
@@ -91,13 +93,17 @@ describe('route_command', () => {
 	})
 
 	it('exits with code 1 for unknown command and prints jgame usage', () => {
-		expect(() => jgame.route_command('unknown')).toThrow('process.exit called')
+		expect(() => {
+			jgame.route_command('unknown')
+		}).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('jgame'))
 	})
 
 	it('exits with code 1 when no command given', () => {
-		expect(() => jgame.route_command(undefined)).toThrow('process.exit called')
+		expect(() => {
+			jgame.route_command(undefined)
+		}).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 	})
 })

@@ -24,21 +24,41 @@ const GAME_COMPLEXITY_OVERRIDES = {
 // templates/ tooling config stays ignored (vite/svelte config — kit owns those rules).
 const FILE_IGNORES = ['templates/**/*.config.*']
 
-// scripts/ (CLI tools) are not in the SvelteKit tsconfig project, so type-aware parsing
-// would error. Lint them with type-checking disabled — structure/style rules still apply.
-const SCRIPTS_NON_TYPED = {
+// scripts/ (CLI tools) live outside the SvelteKit tsconfig program, so the base config's
+// `project: './tsconfig.json'` cannot type-check them. Point ESLint at a dedicated
+// scripts/tsconfig.json so type-aware rules (no-floating-promises, no-unsafe-*, etc.) apply.
+// The two sonarjs rules stay off: invoking pnpm/git/node via PATH is these CLI tools' job,
+// and duplicated path/fixture strings in one-off scripts and their tests aren't a real smell.
+const SCRIPTS_TYPED = {
 	files: ['scripts/**/*.ts'],
-	...tseslint.configs.disableTypeChecked,
 	languageOptions: {
-		...tseslint.configs.disableTypeChecked.languageOptions,
-		parserOptions: { project: false, projectService: false },
+		parserOptions: {
+			project: './scripts/tsconfig.json',
+			tsconfigRootDir: import.meta.dirname,
+		},
 	},
 	rules: {
-		...tseslint.configs.disableTypeChecked.rules,
-		// These are dev-time CLI tools: invoking pnpm/git/node via PATH is their job, and
-		// duplicated path/fixture strings in one-off scripts and their tests aren't a real smell.
 		'sonarjs/no-os-command-from-path': 'off',
 		'sonarjs/no-duplicate-string': 'off',
+		// Node built-in imports (readFileSync, spawnSync, …), the `package_` reserved-word
+		// workaround, and external object keys (package names, 'version:upgrade') are inherently
+		// non-snake_case — this rule governs first-party identifiers, not third-party glue.
+		'@typescript-eslint/naming-convention': 'off',
+		// The project's mandatory `export { module }` namespace-object pattern means these
+		// functions never use `this`, so referencing them unbound (e.g. in test spies) is safe.
+		'@typescript-eslint/unbound-method': 'off',
+	},
+}
+
+// scripts/ test files inspect vi.mock calls and JSON.parse untyped fixtures, which are
+// inherently `any`-typed. The type-safety rules stay fully enforced on scripts SOURCE —
+// only the mock-inspection noise in tests is relaxed here.
+const SCRIPTS_TESTS_UNTYPED_MOCKS = {
+	files: ['scripts/**/*.test.ts'],
+	rules: {
+		'@typescript-eslint/no-unsafe-assignment': 'off',
+		'@typescript-eslint/no-unsafe-member-access': 'off',
+		'@typescript-eslint/no-base-to-string': 'off',
 	},
 }
 
@@ -66,6 +86,7 @@ export default create_sveltekit_config({
 	{ ignores: FILE_IGNORES },
 	{ rules: PERMANENT_OVERRIDES },
 	GAME_COMPLEXITY_OVERRIDES,
-	SCRIPTS_NON_TYPED,
+	SCRIPTS_TYPED,
+	SCRIPTS_TESTS_UNTYPED_MOCKS,
 	TEMPLATES_NON_TYPED,
 )
