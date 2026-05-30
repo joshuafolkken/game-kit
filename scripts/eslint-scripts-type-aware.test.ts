@@ -13,6 +13,9 @@ const FLOATING_PROMISE_FIXTURE = path.join(
 	'__fixtures__',
 	'floating-promise.ts',
 )
+// Building the type-aware TS program for scripts/tsconfig.json takes several seconds,
+// which exceeds vitest's 5s default on cold CI runners.
+const ESLINT_PROGRAM_TIMEOUT_MS = 30_000
 
 const eslint_config_source = readFileSync(ESLINT_CONFIG_PATH, 'utf8')
 
@@ -46,15 +49,19 @@ describe('scripts/ ESLint type-aware coverage (regression for #240)', () => {
 		expect(eslint_config_source).toContain("'@typescript-eslint/no-base-to-string': 'off'")
 	})
 
-	it('enforces type-aware rules on scripts/ — no-floating-promises fires on a fixture', async () => {
-		// Behavioral proof (not just config strings): lint a fixture that floats a Promise and
-		// assert the type-aware rule reports it, exercising the scripts/tsconfig.json project.
-		const eslint = new ESLint({ cwd: REPO_ROOT, ignore: false })
-		const results = await eslint.lintFiles([FLOATING_PROMISE_FIXTURE])
-		const rule_ids = results.flatMap((result) => result.messages).map((message) => message.ruleId)
+	it(
+		'enforces type-aware rules on scripts/ — no-floating-promises fires on a fixture',
+		async () => {
+			// Behavioral proof (not just config strings): lint a fixture that floats a Promise and
+			// assert the type-aware rule reports it, exercising the scripts/tsconfig.json project.
+			const eslint = new ESLint({ cwd: REPO_ROOT, ignore: false })
+			const results = await eslint.lintFiles([FLOATING_PROMISE_FIXTURE])
+			const rule_ids = results.flatMap((result) => result.messages).map((message) => message.ruleId)
 
-		expect(rule_ids).toContain('@typescript-eslint/no-floating-promises')
-	})
+			expect(rule_ids).toContain('@typescript-eslint/no-floating-promises')
+		},
+		ESLINT_PROGRAM_TIMEOUT_MS,
+	)
 })
 
 describe('scripts/tsconfig.json (regression for #240)', () => {
