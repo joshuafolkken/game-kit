@@ -53,7 +53,7 @@ function stub_readFileSync_by_path(
 	overrides: Record<string, string>,
 ): void {
 	read.mockImplementation((file: string) => {
-		const key = String(file)
+		const key = file
 		if (key in overrides) return overrides[key]
 		throw new Error(`unexpected readFileSync(${key})`)
 	})
@@ -132,10 +132,8 @@ describe('jgame_sync.run', () => {
 
 		jgame_sync.run()
 		const exec_calls = vi.mocked(execSync).mock.calls
-		const sync_index = exec_calls.findIndex(([cmd]) => String(cmd) === 'pnpm josh sync')
-		const init_index = exec_calls.findIndex(
-			([cmd]) => String(cmd) === 'pnpm josh init --type sveltekit',
-		)
+		const sync_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh sync')
+		const init_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh init --type sveltekit')
 
 		expect(sync_index).toBeGreaterThanOrEqual(0)
 		expect(init_index).toBeGreaterThanOrEqual(0)
@@ -180,7 +178,7 @@ describe('jgame_sync.run', () => {
 				String(source) === '/pkg/templates/pnpm-workspace.yaml' &&
 				String(destination) === '/project/pnpm-workspace.yaml',
 		)
-		const josh_sync_index = exec_calls.findIndex(([cmd]) => String(cmd) === 'pnpm josh sync')
+		const josh_sync_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh sync')
 		const yaml_cp_order = vi.mocked(cpSync).mock.invocationCallOrder[yaml_cp_index]
 		const josh_sync_order = vi.mocked(execSync).mock.invocationCallOrder[josh_sync_index]
 

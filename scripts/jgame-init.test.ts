@@ -251,7 +251,9 @@ describe('jgame_init.run', () => {
 	it('exits with code 1 when no name is given', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 
-		expect(() => jgame_init.run()).toThrow('process.exit called')
+		expect(() => {
+			jgame_init.run()
+		}).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('game name is required'))
 	})
@@ -259,7 +261,9 @@ describe('jgame_init.run', () => {
 	it('exits with code 1 when name normalizes to empty', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 
-		expect(() => jgame_init.run('!@#')).toThrow('process.exit called')
+		expect(() => {
+			jgame_init.run('!@#')
+		}).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(
 			expect.stringContaining('"!@#" is not a valid game name'),
