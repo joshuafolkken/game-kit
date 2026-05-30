@@ -30,16 +30,18 @@ describe('scripts/ ESLint type-aware coverage (regression for #240)', () => {
 		expect(eslint_config_source).toContain("project: './scripts/tsconfig.json'")
 	})
 
-	it('keeps the CLI-specific sonarjs rules off for scripts/', () => {
-		expect(eslint_config_source).toContain("'sonarjs/no-os-command-from-path': 'off'")
+	it('keeps sonarjs/no-duplicate-string off for scripts/ (path/fixture strings are not a smell)', () => {
 		expect(eslint_config_source).toContain("'sonarjs/no-duplicate-string': 'off'")
+		// no-os-command-from-path moved to kit 0.199.0's shared scripts block (#442), so it is no
+		// longer declared locally — kit now owns it for every consumer with a scripts/ dir.
+		expect(eslint_config_source).not.toContain("'sonarjs/no-os-command-from-path'")
 	})
 
-	it('disables the two rules that cannot apply to CLI glue (external names, namespace pattern)', () => {
+	it('disables naming-convention for CLI glue (external names cannot be renamed)', () => {
 		// naming-convention: Node imports / package_ / external keys cannot be renamed.
-		// unbound-method: the export { module } pattern never uses `this`.
 		expect(eslint_config_source).toContain("'@typescript-eslint/naming-convention': 'off'")
-		expect(eslint_config_source).toContain("'@typescript-eslint/unbound-method': 'off'")
+		// unbound-method moved to kit 0.199.0's shared scripts block (#442); no longer local.
+		expect(eslint_config_source).not.toContain("'@typescript-eslint/unbound-method'")
 	})
 
 	it('relaxes no-unsafe rules only for scripts test files (mock/JSON.parse any)', () => {
