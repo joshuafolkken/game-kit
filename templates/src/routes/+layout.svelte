@@ -8,6 +8,11 @@
 		switch_audio,
 	} from '@joshuafolkken/game-kit'
 	import { messages } from '$lib/messages'
+	import type { Snippet } from 'svelte'
+
+	interface Props {
+		children: Snippet
+	}
 
 	const CLICK_SOUND_URL = '/sounds/click.opus'
 	const LOADING_STATUS_ID = 'loading-status'
@@ -41,7 +46,7 @@
 		if (bar) bar.value = loading.progress_value
 	})
 
-	const { children } = $props()
+	const { children }: Props = $props()
 </script>
 
 <svelte:head>

@@ -45,7 +45,7 @@
 
 	const BUTTON_CONFIGS = [
 		{
-			color: 'green' as ButtonColor,
+			color: 'green',
 			rotation: 0,
 			lit_color: '#00ff00',
 			dim_color: '#003300',
@@ -53,7 +53,7 @@
 			cyber_dim_color: '#005533',
 		},
 		{
-			color: 'red' as ButtonColor,
+			color: 'red',
 			rotation: QUARTER_TURN,
 			lit_color: '#ff2222',
 			dim_color: '#330000',
@@ -61,7 +61,7 @@
 			cyber_dim_color: '#550022',
 		},
 		{
-			color: 'yellow' as ButtonColor,
+			color: 'yellow',
 			rotation: Math.PI,
 			lit_color: '#ffff00',
 			dim_color: '#333300',
@@ -69,7 +69,7 @@
 			cyber_dim_color: '#555500',
 		},
 		{
-			color: 'blue' as ButtonColor,
+			color: 'blue',
 			rotation: -QUARTER_TURN,
 			lit_color: '#2266ff',
 			dim_color: '#001133',
@@ -98,7 +98,7 @@
 
 	function get_center_text(): string {
 		if (game_data.phase === 'gameover') return text_gameover
-		if (game_data.round > 0) return `${text_round} ${game_data.round}`
+		if (game_data.round > 0) return `${text_round} ${String(game_data.round)}`
 
 		return text_start
 	}
@@ -124,27 +124,36 @@
 	{#each BUTTON_CONFIGS as btn (btn.color)}
 		<T.Group rotation.z={btn.rotation}>
 			<T.Mesh
-				onpointerdown={(e: { nativeEvent: { button: number } }) =>
-					game_board_input.on_button_pointer_down(e, btn.color)}
-				onpointerup={() => game_board_input.on_button_release()}
-				onpointerleave={() => game_board_input.on_button_release()}
+				onpointerdown={(e: { nativeEvent: { button: number } }) => {
+					game_board_input.on_button_pointer_down(e, btn.color)
+				}}
+				onpointerup={() => {
+					game_board_input.on_button_release()
+				}}
+				onpointerleave={() => {
+					game_board_input.on_button_release()
+				}}
 			>
 				<T.RingGeometry
 					args={[INNER_RADIUS, OUTER_RADIUS, THETA_SEGMENTS, 1, THETA_START, THETA_LENGTH]}
 				/>
 				{@const lit = btn_lit(btn)}
 				{@const dim = btn_dim(btn)}
-				{@const active = is_lit(btn.color)}
+				{@const is_active = is_lit(btn.color)}
 				<T.MeshStandardMaterial
-					color={active ? lit : dim}
-					emissive={active ? lit : '#000000'}
+					color={is_active ? lit : dim}
+					emissive={is_active ? lit : '#000000'}
 					emissiveIntensity={emissive_intensity}
 				/>
 			</T.Mesh>
 		</T.Group>
 	{/each}
 
-	<T.Mesh onclick={() => game_board_input.on_center_click()}>
+	<T.Mesh
+		onclick={() => {
+			game_board_input.on_center_click()
+		}}
+	>
 		<T.CircleGeometry args={[CENTER_RADIUS, CIRCLE_SEGMENTS]} />
 		<T.MeshStandardMaterial color="#222222" roughness={CENTER_ROUGHNESS} />
 	</T.Mesh>

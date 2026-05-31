@@ -17,6 +17,7 @@ vi.mock('./jgame-paths.ts', () => ({
 
 const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
 const MOCK_HOST_PNPM_VERSION = '11.3.0'
+const MAX_LINE_LENGTH = 100
 
 // `pnpm pack` strips the top-level `packageManager` field on publish, so the
 // fixture mirrors the published shape (only `devEngines.packageManager` remains).
@@ -223,6 +224,17 @@ describe('jgame_init.generate_game_config', () => {
 		expect(result).toContain("const GAME_NAME = 'game-kit'")
 		expect(result).toContain("const GAME_NAME_DISPLAY = 'Game Kit'")
 		expect(result).toContain("const GAME_NAME_UPPER = 'GAME KIT'")
+	})
+
+	it('emits the game_config object across multiple lines so no line exceeds the print width (#260)', async () => {
+		const { jgame_init } = await import('./jgame-init.ts')
+		const names = jgame_init.derive_names('a-very-long-game-name-that-would-overflow')
+		const result = jgame_init.generate_game_config(names)
+		const longest = Math.max(...result.split('\n').map((line) => line.length))
+
+		expect(longest).toBeLessThanOrEqual(MAX_LINE_LENGTH)
+		expect(result).toContain('const game_config = {\n')
+		expect(result).toContain('\tGAME_NAME,\n')
 	})
 })
 
