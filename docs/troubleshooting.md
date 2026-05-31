@@ -53,7 +53,7 @@ pnpm install
 
 ## Wrong Node or pnpm version
 
-The kit targets **pnpm ≥ 11** (see `devEngines` / `engines` in `package.json`). Check:
+The kit targets **pnpm ≥ 11** (see `devEngines` in `package.json`). Check:
 
 ```bash
 node -v
