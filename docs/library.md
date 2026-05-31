@@ -2,42 +2,19 @@
 
 Use `@joshuafolkken/game-kit` as a Svelte component library inside an existing SvelteKit + Threlte project.
 
-## 1. Authenticate
+## 1. Authenticate with GitHub Packages
 
-GitHub Packages requires auth even for public packages. The token comes from the [gh CLI](https://cli.github.com/); if you haven't already, run `gh auth login --scopes read:packages`.
+`@joshuafolkken/game-kit` lives on GitHub Packages, which needs auth even for public packages. Follow the one-time setup in **[authentication.md](./authentication.md)** (get a `gh` token → persist `NODE_AUTH_TOKEN` → configure `.npmrc`), then return here.
 
-Persist `NODE_AUTH_TOKEN` so every shell session picks up a fresh token automatically. The following snippet is idempotent — re-running it does not duplicate the line:
+For a shared project, write the `.npmrc` to your **project root** and commit it — it holds only a literal placeholder, not a secret, so committing unlocks `pnpm install` for the whole team and CI. See the project-vs-global table in that guide.
 
-```bash
-LINE='export NODE_AUTH_TOKEN=$(gh auth token)'
-grep -qxF "$LINE" ~/.zshrc 2>/dev/null || echo "$LINE" >> ~/.zshrc
-exec $SHELL
-```
-
-Single quotes around `$LINE` keep `$(gh auth token)` literal, so the token is re-evaluated on each shell startup and gh's rotation is picked up automatically.
-
-## 2. Configure `.npmrc`
-
-Tell `pnpm` to resolve `@joshuafolkken/*` against GitHub Packages with the token from §1. Run the following from your project root; the snippet is idempotent:
-
-```bash
-REGISTRY='@joshuafolkken:registry=https://npm.pkg.github.com'
-TOKEN='//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}'
-grep -qxF "$REGISTRY" .npmrc 2>/dev/null || echo "$REGISTRY" >> .npmrc
-grep -qxF "$TOKEN"    .npmrc 2>/dev/null || echo "$TOKEN"    >> .npmrc
-```
-
-**Commit the resulting `.npmrc`.** `${NODE_AUTH_TOKEN}` is a literal placeholder and contains no secret — `pnpm` expands it from the env var at install time (which is why §1 must come first). Each developer and CI provides `NODE_AUTH_TOKEN` separately, so committing this file unlocks `pnpm install` for the whole team without leaking credentials.
-
-If you'd rather keep this scoped to your machine instead of the project, swap `.npmrc` for `~/.npmrc` in the snippet above.
-
-## 3. Install
+## 2. Install
 
 ```bash
 pnpm add -D @joshuafolkken/game-kit
 ```
 
-## 4. Use
+## 3. Use
 
 `GameScene` wraps the Threlte canvas, controls overlay, and lifecycle. Its `children` snippet receives 3D components (Threlte primitives plus the kit's `Room`, `Player`, etc.) rendered inside the canvas as siblings — not as parent / child of each other.
 
