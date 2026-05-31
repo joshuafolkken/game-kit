@@ -2,36 +2,13 @@
 
 Create a new SvelteKit + Threlte game from the `@joshuafolkken/game-kit` template.
 
-## 1. Authenticate
+## 1. Authenticate with GitHub Packages
 
-GitHub Packages requires auth even for public packages. The token comes from the [gh CLI](https://cli.github.com/); if you haven't already, run `gh auth login --scopes read:packages`.
+`@joshuafolkken/game-kit` lives on GitHub Packages, which needs auth even for public packages. Follow the one-time setup in **[authentication.md](./authentication.md)** (get a `gh` token → persist `NODE_AUTH_TOKEN` → configure `.npmrc`), then return here.
 
-Persist `NODE_AUTH_TOKEN` so every shell session picks up a fresh token automatically. The following snippet is idempotent — re-running it does not duplicate the line:
+For a global `jgame` install, write the `.npmrc` to your home directory (`~/.npmrc`) as described in that guide.
 
-```bash
-LINE='export NODE_AUTH_TOKEN=$(gh auth token)'
-grep -qxF "$LINE" ~/.zshrc 2>/dev/null || echo "$LINE" >> ~/.zshrc
-exec $SHELL
-```
-
-Single quotes around `$LINE` keep `$(gh auth token)` literal, so the token is re-evaluated on each shell startup and gh's rotation is picked up automatically.
-
-## 2. Configure `.npmrc`
-
-Tell `pnpm` to resolve `@joshuafolkken/*` against GitHub Packages with the token from §1. The following snippet is idempotent:
-
-```bash
-REGISTRY='@joshuafolkken:registry=https://npm.pkg.github.com'
-TOKEN='//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}'
-grep -qxF "$REGISTRY" ~/.npmrc 2>/dev/null || echo "$REGISTRY" >> ~/.npmrc
-grep -qxF "$TOKEN"    ~/.npmrc 2>/dev/null || echo "$TOKEN"    >> ~/.npmrc
-```
-
-`${NODE_AUTH_TOKEN}` is intentionally written as a literal placeholder — `pnpm` expands it from the env var at install time (which is why §1 must come first). To scope this to a single project, swap `~/.npmrc` for `./.npmrc`.
-
-Without this, `pnpm` will try the public npm registry for `@joshuafolkken/*` packages and fail.
-
-## 3. Install `jgame` globally
+## 2. Install `jgame` globally
 
 ### One-time pnpm setup
 
@@ -58,7 +35,7 @@ Update later with:
 pnpm up -g @joshuafolkken/game-kit
 ```
 
-## 4. Scaffold
+## 3. Scaffold
 
 ```bash
 jgame init my-game
@@ -68,7 +45,7 @@ Replace `my-game` with your game name. Input is normalized to kebab-case automat
 
 This copies the template into `./my-game/`, runs `pnpm install`, and syncs managed config files.
 
-## 5. Develop
+## 4. Develop
 
 ```bash
 cd my-game
