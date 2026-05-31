@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
@@ -141,7 +142,13 @@ function generate_game_config(names: GameNames): string {
 		`const GAME_DESCRIPTION = '${names.description}'`,
 		`const GAME_APP_LABEL = '${names.app_label}'`,
 		'',
-		'const game_config = { GAME_NAME, GAME_NAME_DISPLAY, GAME_NAME_UPPER, GAME_DESCRIPTION, GAME_APP_LABEL }',
+		'const game_config = {',
+		'\tGAME_NAME,',
+		'\tGAME_NAME_DISPLAY,',
+		'\tGAME_NAME_UPPER,',
+		'\tGAME_DESCRIPTION,',
+		'\tGAME_APP_LABEL,',
+		'}',
 		'export { game_config }',
 		'',
 	].join('\n')
@@ -218,6 +225,10 @@ function run(game_name_raw?: string): void {
 	// and prettier.config.js never get scaffolded; `josh init` is the canonical creator.
 	execSync('pnpm josh init --type sveltekit', opts)
 	execSync('pnpm josh sync', opts)
+	// Overwrite the bare config `josh init` wrote with one that relaxes the strict defaults for
+	// src/lib/game/** (#260). `josh sync` never overwrites an existing eslint.config.js, so this
+	// stays put on the user's later syncs.
+	jgame_eslint_config.write_eslint_config(project_directory)
 	console.info(build_done_message(names.kebab))
 }
 

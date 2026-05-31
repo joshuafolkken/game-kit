@@ -202,6 +202,19 @@ describe('jgame_sync.run', () => {
 		expect(cpSync).toHaveBeenCalledWith('/pkg/templates/npmrc', '/project/.npmrc')
 		expect(existsSync(path.join(REAL_TEMPLATES_DIR, '.npmrc'))).toBe(false)
 	})
+
+	it('overwrites eslint.config.js with the game-dir overrides so pre-#260 projects self-heal', async () => {
+		// josh sync/init never overwrite an existing eslint.config.js, so an older
+		// project keeps a bare config that fails on the verbatim game templates.
+		const { writeFileSync } = await import('node:fs')
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		jgame_sync.run()
+		expect(writeFileSync).toHaveBeenCalledWith(
+			'/project/eslint.config.js',
+			expect.stringContaining("files: ['src/lib/game/**']"),
+		)
+	})
 })
 
 describe('jgame_sync managed package.json scripts', () => {
@@ -232,11 +245,12 @@ describe('jgame_sync managed package.json scripts', () => {
 		const { jgame_sync } = await import('./jgame-sync.ts')
 
 		jgame_sync.run()
-		expect(writeFileSync).toHaveBeenCalledTimes(1)
-		const [[written_path, written_body]] = vi.mocked(writeFileSync).mock.calls
+		const package_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
 
-		expect(written_path).toBe('/project/package.json')
-		const written = JSON.parse(String(written_body))
+		expect(package_writes).toHaveLength(1)
+		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
 
 		expect(written.scripts.preview).toBe(CANONICAL_PREVIEW)
 		// Preserves consumer-owned scripts that are NOT in MANAGED_SCRIPT_KEYS.
@@ -263,7 +277,11 @@ describe('jgame_sync managed package.json scripts', () => {
 		const { jgame_sync } = await import('./jgame-sync.ts')
 
 		jgame_sync.run()
-		expect(writeFileSync).not.toHaveBeenCalled()
+		const package_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+
+		expect(package_writes).toHaveLength(0)
 	})
 
 	it('adds the canonical preview script when the consumer has no scripts field', async () => {
@@ -283,8 +301,12 @@ describe('jgame_sync managed package.json scripts', () => {
 		const { jgame_sync } = await import('./jgame-sync.ts')
 
 		jgame_sync.run()
-		expect(writeFileSync).toHaveBeenCalledTimes(1)
-		const written = JSON.parse(String(vi.mocked(writeFileSync).mock.calls[0][1]))
+		const package_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+
+		expect(package_writes).toHaveLength(1)
+		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
 
 		expect(written.scripts.preview).toBe(CANONICAL_PREVIEW)
 	})

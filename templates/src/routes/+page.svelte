@@ -6,9 +6,15 @@
 	import { messages } from '$lib/messages'
 
 	game_board_input.configure({
-		on_press: (color) => game.press(color),
-		on_release: () => game.release(),
-		on_start: () => game.start(),
+		on_press: (color) => {
+			game.press(color)
+		},
+		on_release: () => {
+			game.release()
+		},
+		on_start: () => {
+			game.start()
+		},
 	})
 
 	const hint_text = $derived(
