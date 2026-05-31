@@ -12,6 +12,7 @@ minimumReleaseAgeExclude:
   - vite
   - '@joshuafolkken/kit'
   - prettier-plugin-svelte@4.0.1
+  - tsx@4.22.4
 
 overrides:
   cookie: ^0.7.0
