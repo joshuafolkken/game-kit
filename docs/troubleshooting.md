@@ -64,7 +64,7 @@ If pnpm is older than 11, upgrade with `pnpm self-update` (or via Corepack: `cor
 
 ## `jgame sync` reports config drift
 
-`jgame sync` overwrites managed config files (e.g. `playwright.config.ts`, CI workflow) with the latest published versions. If you intentionally customized one of these, your change will be reverted. Keep local-only config in files **not** managed by the kit, or re-apply the change after syncing.
+`jgame sync` overwrites managed config files (e.g. `playwright.config.ts`, CI workflow, `eslint.config.js`) with the latest published versions. The synced `eslint.config.js` relaxes a few lint rules for `src/lib/game/**` (game/Three.js/Web-Audio code legitimately uses `null` contracts, definition-site exports, and longer/branchier functions); the rest of the app keeps the strict defaults. If you intentionally customized one of these files, your change will be reverted. Keep local-only config in files **not** managed by the kit, or re-apply the change after syncing.
 
 ## Still stuck?
 

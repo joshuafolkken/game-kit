@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
@@ -142,6 +143,11 @@ function run(): void {
 	// `josh sync` early-returns for missing configs (#184); `josh init` is the
 	// canonical scaffolder and is idempotent on existing files.
 	execSync('pnpm josh init --type sveltekit', SPAWN_OPTIONS)
+	// `josh sync`/`josh init` never overwrite an existing eslint.config.js, so projects
+	// scaffolded before #260 keep a bare config that fails on the verbatim game templates.
+	// Rewrite it here (framework-generated, like svelte.config.js/vite.config.ts) so existing
+	// projects pick up the src/lib/game/** lint overrides on the next sync.
+	jgame_eslint_config.write_eslint_config(jgame_paths.PROJECT_ROOT)
 	console.info('\nGame-specific files:')
 	for (const entry of SYNC_FILES) sync_file(entry)
 	sync_managed_scripts()
