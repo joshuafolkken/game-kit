@@ -35,13 +35,36 @@ const COPY_PAIRS: ReadonlyArray<TemplateSourcePair> = [
 	{ template: 'templates/src/lib/game/Score.svelte.ts', source: 'src/lib/game/Score.svelte.ts' },
 ]
 
-// Tripwire pairs: the template intentionally diverges from the root source
-// (e.g. templates/vite.config.ts omits the in-repo Vitest config). A source
-// edit trips the guard and forces a conscious re-check; propagation stays a
-// human decision recorded by `reconcile`. Adding a pair to either list needs
-// no other wiring — the lefthook pre-commit guard runs `--check` unconditionally.
+// Tripwire pairs: the template is a hand-maintained port of the root source and
+// CANNOT be generated mechanically — the scaffold imports the published
+// `@joshuafolkken/game-kit` package, whose curated namespace API (e.g.
+// `credits_scroll.make_credits_scroll_bounds`) differs in symbol shape from the
+// bare internal modules the in-repo demo uses (`make_credits_scroll_bounds` from
+// `$lib/game-kit/scene/credits-config`). So a root edit cannot auto-propagate;
+// it trips the guard and forces a conscious re-check + manual port. The recorded
+// hash is the source's last-reviewed state. Adding a pair needs no other wiring —
+// the lefthook pre-commit guard runs `--check` unconditionally.
+//
+// `source` is the in-repo demo file; `template` is its scaffold counterpart. The
+// messages pair crosses directories: the demo keeps messages under
+// src/lib/game/, the scaffold at src/lib/.
 const TRIPWIRE_PAIRS: ReadonlyArray<TemplateSourcePair> = [
 	{ template: 'templates/vite.config.ts', source: 'vite.config.ts' },
+	{ template: 'templates/src/app.html', source: 'src/app.html' },
+	{ template: 'templates/src/hooks.server.ts', source: 'src/hooks.server.ts' },
+	{ template: 'templates/src/lib/messages.ts', source: 'src/lib/game/messages.ts' },
+	{ template: 'templates/src/routes/+layout.svelte', source: 'src/routes/+layout.svelte' },
+	{ template: 'templates/src/routes/+page.svelte', source: 'src/routes/+page.svelte' },
+	{ template: 'templates/src/routes/+page.ts', source: 'src/routes/+page.ts' },
+	{ template: 'templates/src/lib/game/Board.svelte', source: 'src/lib/game/Board.svelte' },
+	{ template: 'templates/src/lib/game/Scene.svelte', source: 'src/lib/game/Scene.svelte' },
+	{ template: 'templates/src/lib/game/Game.svelte.ts', source: 'src/lib/game/Game.svelte.ts' },
+	{ template: 'templates/src/lib/game/types.ts', source: 'src/lib/game/types.ts' },
+	{ template: 'templates/src/lib/game/board-config.ts', source: 'src/lib/game/board-config.ts' },
+	{ template: 'templates/src/lib/game/board-input.ts', source: 'src/lib/game/board-input.ts' },
+	{ template: 'templates/src/lib/game/audio.ts', source: 'src/lib/game/audio.ts' },
+	{ template: 'templates/src/lib/game/credits.ts', source: 'src/lib/game/credits.ts' },
+	{ template: 'templates/src/lib/game/flash.ts', source: 'src/lib/game/flash.ts' },
 ]
 
 // Internal maintainer guard state, kept at the repo root (not under templates/)
