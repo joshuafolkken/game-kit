@@ -5,6 +5,7 @@ import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
+import { jgame_root_files } from './jgame-root-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
@@ -185,6 +186,17 @@ function copy_templates(project_directory: string): void {
 	console.info('  ✔ copied   templates')
 }
 
+// Byte-identical files live only at the repo root (single source) and are copied
+// straight from the installed package, not duplicated into templates/. See
+// jgame-root-files.ts.
+function copy_root_files(project_directory: string): void {
+	for (const relative_path of jgame_root_files.ROOT_COPY_FILES) {
+		jgame_root_files.copy_root_file(relative_path, jgame_paths.PACKAGE_DIR, project_directory)
+	}
+
+	console.info('  ✔ copied   root-sourced files')
+}
+
 function write_npmrc(project_directory: string): void {
 	const source = path.join(jgame_paths.TEMPLATES_DIR, NPMRC_SRC_NAME)
 	const destination = path.join(project_directory, NPMRC_DEST_NAME)
@@ -216,6 +228,7 @@ function run(game_name_raw?: string): void {
 	mkdirSync(project_directory, { recursive: true })
 	write_package_json(names.kebab, project_directory)
 	copy_templates(project_directory)
+	copy_root_files(project_directory)
 	write_npmrc(project_directory)
 	write_game_config(names, project_directory)
 	write_tsconfig(project_directory)

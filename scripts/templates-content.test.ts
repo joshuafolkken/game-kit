@@ -2,10 +2,25 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { jgame_root_files } from './jgame-root-files.ts'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const TEMPLATES_DIR = path.join(HERE, '..', 'templates')
 const TEMPLATES_GAME_DIR = path.join(TEMPLATES_DIR, 'src', 'lib', 'game')
+
+// Byte-identical, import-decoupled files single-sourced at the repo root (#266).
+// They are copied directly from the package root by jgame init / sync and MUST
+// NOT reappear as duplicates under templates/, or drift becomes possible again.
+// Derived from the production list so a newly root-sourced file is auto-guarded.
+// (Import-coupled byte copies like layout.css / Score.svelte.ts deliberately
+// remain under templates/ as COPY_PAIRS until their importers leave templates.)
+const ROOT_SOURCED_FILES = jgame_root_files.ROOT_COPY_FILES
+
+describe('templates/ excludes root-single-sourced files (regression for #266)', () => {
+	it.each(ROOT_SOURCED_FILES)('does not duplicate %s under templates/', (relative_path) => {
+		expect(existsSync(path.join(TEMPLATES_DIR, relative_path))).toBe(false)
+	})
+})
 
 describe('templates/src/lib/game content shape (regression for #178)', () => {
 	it('does not ship a placeholder game-name.ts (game identity must flow from the generated game-config.ts)', () => {

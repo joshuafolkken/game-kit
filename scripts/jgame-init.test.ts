@@ -238,27 +238,29 @@ describe('jgame_init.generate_game_config', () => {
 	})
 })
 
-describe('jgame_init.run', () => {
-	beforeEach(async () => {
-		const { readFileSync } = await import('node:fs')
-		const { execSync } = await import('node:child_process')
+async function setup_run_mocks(): Promise<void> {
+	const { readFileSync } = await import('node:fs')
+	const { execSync } = await import('node:child_process')
 
-		vi.mocked(readFileSync).mockReturnValue(JSON.stringify(MOCK_PKG))
-		vi.mocked(execSync).mockImplementation((command: string | Uint8Array) => {
-			if (command === 'pnpm --version') return Buffer.from(`${MOCK_HOST_PNPM_VERSION}\n`)
+	vi.mocked(readFileSync).mockReturnValue(JSON.stringify(MOCK_PKG))
+	vi.mocked(execSync).mockImplementation((command: string | Uint8Array) => {
+		if (command === 'pnpm --version') return Buffer.from(`${MOCK_HOST_PNPM_VERSION}\n`)
 
-			return Buffer.from('')
-		})
-		vi.spyOn(console, 'info').mockImplementation(() => {
-			/* no-op */
-		})
-		vi.spyOn(console, 'error').mockImplementation(() => {
-			/* no-op */
-		})
-		vi.spyOn(process, 'exit').mockImplementation(() => {
-			throw new Error('process.exit called')
-		})
+		return Buffer.from('')
 	})
+	vi.spyOn(console, 'info').mockImplementation(() => {
+		/* no-op */
+	})
+	vi.spyOn(console, 'error').mockImplementation(() => {
+		/* no-op */
+	})
+	vi.spyOn(process, 'exit').mockImplementation(() => {
+		throw new Error('process.exit called')
+	})
+}
+
+describe('jgame_init.run', () => {
+	beforeEach(setup_run_mocks)
 
 	it('exits with code 1 when no name is given', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
@@ -346,9 +348,7 @@ describe('jgame_init.run', () => {
 		if (typeof filter !== 'function') throw new Error('filter must be a function')
 		expect(filter('/pkg/templates/tsconfig.json', '/project/tic-tac-toe/tsconfig.json')).toBe(false)
 		expect(filter('/pkg/templates/npmrc', '/project/tic-tac-toe/npmrc')).toBe(false)
-		expect(filter('/pkg/templates/svelte.config.js', '/project/tic-tac-toe/svelte.config.js')).toBe(
-			true,
-		)
+		expect(filter('/pkg/templates/src/app.html', '/project/tic-tac-toe/src/app.html')).toBe(true)
 	})
 
 	it('writes .npmrc from templates/npmrc to bypass npm dotfile exclusion', async () => {
@@ -357,6 +357,21 @@ describe('jgame_init.run', () => {
 
 		jgame_init.run('tic-tac-toe')
 		expect(cpSync).toHaveBeenCalledWith('/pkg/templates/npmrc', '/project/tic-tac-toe/.npmrc')
+	})
+
+	it('copies byte-identical, import-decoupled files directly from the package root', async () => {
+		// These files are single-sourced at the repo root and not imported by any
+		// template file, so jgame init copies them straight from the installed
+		// package — they cannot drift from a template because none exists.
+		const { cpSync } = await import('node:fs')
+		const { jgame_init } = await import('./jgame-init.ts')
+
+		jgame_init.run('tic-tac-toe')
+		expect(cpSync).toHaveBeenCalledWith(
+			'/pkg/svelte.config.js',
+			'/project/tic-tac-toe/svelte.config.js',
+		)
+		expect(cpSync).toHaveBeenCalledWith('/pkg/src/app.d.ts', '/project/tic-tac-toe/src/app.d.ts')
 	})
 
 	it('runs git init, pnpm install, pnpm josh init, and pnpm josh sync with project cwd', async () => {
