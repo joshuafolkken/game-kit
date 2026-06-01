@@ -22,6 +22,42 @@ describe('templates/ excludes root-single-sourced files (regression for #266)', 
 	})
 })
 
+describe('templates/src/lib/game/Board.svelte has the #137 readability behavior (regression for #267 drift)', () => {
+	const board_source = readFileSync(path.join(TEMPLATES_GAME_DIR, 'Board.svelte'), 'utf8')
+
+	it('wraps the multi-line GAME OVER label instead of showing it on one line', () => {
+		expect(board_source).toContain(String.raw`text_gameover.replace(' ', '\n')`)
+	})
+
+	it('shows the round as a large bare digit (no ROUND prefix, larger focal font)', () => {
+		expect(board_source).toContain('ROUND_DIGIT_FONT_SIZE')
+		expect(board_source).toContain('return String(game_data.round)')
+		// The stale pre-#137 form prefixed the digit with the ROUND label.
+		expect(board_source).not.toContain('text_round')
+	})
+
+	it('passes a per-state line height to the centre Text (multi-line spacing)', () => {
+		expect(board_source).toContain('lineHeight={current_line_height}')
+		expect(board_source).toContain('MULTILINE_LINE_HEIGHT')
+	})
+})
+
+describe('templates board-config scoreboard depth matches root (#267)', () => {
+	const ROOT_GAME_DIR = path.join(HERE, '..', 'src', 'lib', 'game')
+
+	function read_z_offset(directory: string): string {
+		const source = readFileSync(path.join(directory, 'board-config.ts'), 'utf8')
+		const value = /SCORE_DISPLAY_Z_OFFSET\s*=\s*([\d.]+)/u.exec(source)?.[1]
+		if (value === undefined) throw new Error('SCORE_DISPLAY_Z_OFFSET not found')
+
+		return value
+	}
+
+	it('keeps the template SCORE_DISPLAY_Z_OFFSET aligned with the root value', () => {
+		expect(read_z_offset(TEMPLATES_GAME_DIR)).toBe(read_z_offset(ROOT_GAME_DIR))
+	})
+})
+
 describe('templates/src/lib/game content shape (regression for #178)', () => {
 	it('does not ship a placeholder game-name.ts (game identity must flow from the generated game-config.ts)', () => {
 		const game_name_path = path.join(TEMPLATES_GAME_DIR, 'game-name.ts')

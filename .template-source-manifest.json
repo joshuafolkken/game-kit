@@ -1,3 +1,18 @@
 {
-	"vite.config.ts": "bc68bb4f7ab611fedd87c8f3fe7436e1598974c5135ff34c546e237521955463"
+	"vite.config.ts": "bc68bb4f7ab611fedd87c8f3fe7436e1598974c5135ff34c546e237521955463",
+	"src/app.html": "be1f5575e2daf9cff8eee03da181bfd4488342acdfe0c686cce28c35f8668996",
+	"src/hooks.server.ts": "ff893c4f9f61353fd7c6b6ec15fc63ef1066d30e4d61d960695edd4b099c4d27",
+	"src/lib/game/messages.ts": "e9cf0c8e7a140744e0276bb64ca97d1b8245ba64d99043c0e96de4693fd6bb32",
+	"src/routes/+layout.svelte": "469ce60fbdc09c47cd560dfcffeca340672a5bc19313f605633b05cd5c12a704",
+	"src/routes/+page.svelte": "2cd2b749259686729a20528c8d784a13215cdf88b9c7b04174c0ca535f64e700",
+	"src/routes/+page.ts": "2b17e9e785d0d48d8947f38c1047a817a6d81d31b06bdf5ac587e2050c1ca110",
+	"src/lib/game/Board.svelte": "925511e6cee24719e58644f7d2a765b3e9be4d6fd7bde17f50864df4dcfbb7b8",
+	"src/lib/game/Scene.svelte": "0d2d86475d762689c18823c55a27b653585c4eae270e5cb80357fd186579f219",
+	"src/lib/game/Game.svelte.ts": "f994a561f8e15b46fdc04a0c3513a0e90ab26e9140947a82b2b1454801436d51",
+	"src/lib/game/types.ts": "61b3a3c854e2a9259649ddbce46fb5792e91b4a9d2b5ab867e7ce5cbe2e8b29c",
+	"src/lib/game/board-config.ts": "dd03a83990cde59324c5ea17c45184cfef9620987f48a636904115a9aa5a5b5a",
+	"src/lib/game/board-input.ts": "738f3c6f512e27a06e47a04cf376654402deed1bb188dbbccaf8c1fd94c5802a",
+	"src/lib/game/audio.ts": "bbc1e149e27861a44e8f4355fcfa58d0b113d313361114f00e4b25ccc600a0a5",
+	"src/lib/game/credits.ts": "6ab13a4a5e40ddac1221a701d98ba13af21d74feb2d306f18cd2dc1be4277648",
+	"src/lib/game/flash.ts": "001523e112281419f5d2820e2747d8b1518c51506fc3eab569f60d7f293b2470"
 }
