@@ -1,56 +1,47 @@
 import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
 import tseslint from 'typescript-eslint'
+import { eslint_game_overrides } from './eslint-game-overrides.js'
 import svelteConfig from './svelte.config.js'
 
-// Size-cap tiers (rationale + measurements in #250). Source caps apply globally; test files get a
-// higher budget via TEST_SIZE_CAPS; genuine source outliers carry an inline eslint-disable instead.
-const SIZE_CAPS = {
-	source: { fn_lines: 50, fn_statements: 20, file_lines: 400 },
-	test: { fn_lines: 130, fn_statements: 25, file_lines: 600 },
-}
+// The game-dir relaxation profile (null idiom #232, definition-site exports #248,
+// size caps #250, complexity #244) is single-sourced with the scaffold generator
+// (scripts/jgame-eslint-config.ts) so the two cannot drift (#261).
+const { GAME_DIR_CAPS, lines_cap, game_idiom_rules, game_complexity_rules } = eslint_game_overrides
 
-// Cohesive game-loop/render/input units run 6–7 decision points; game dirs raise the kit default of 5.
-const GAME_COMPLEXITY = 7
+// Test files run long by nature (integration it() bodies, table-driven cases) — higher budget than the
+// source game-dir caps (#250). This tier is game-kit-specific and not part of the shared profile.
+const TEST_CAPS = { fn_lines: 130, fn_statements: 25, file_lines: 600 }
 
-function lines_cap(max) {
-	return ['error', { max, skipBlankLines: true, skipComments: true }]
-}
-
-// Build the size-rule trio once so the source/test tiers differ only by their numbers.
-function size_cap_rules(tier) {
+function size_cap_rules(caps) {
 	return {
-		'max-lines-per-function': lines_cap(tier.fn_lines),
-		'max-statements': ['error', tier.fn_statements],
-		'max-lines': lines_cap(tier.file_lines),
+		'max-lines-per-function': lines_cap(caps.fn_lines),
+		'max-statements': ['error', caps.fn_statements],
+		'max-lines': lines_cap(caps.file_lines),
 	}
 }
 
-const PERMANENT_OVERRIDES = {
-	// `null` is the consistent idiom for Three.js/Web-Audio/DOM contracts here (#232).
-	'unicorn/no-null': 'off',
-	// Project favours `export const X` at the definition site over bottom-hoisting (#248).
-	'import/exports-last': 'off',
-	// Source-tier size caps, applied globally (#250).
-	...size_cap_rules(SIZE_CAPS.source),
-}
+// Source-tier idiom + size relaxations, applied globally (#250).
+const PERMANENT_OVERRIDES = game_idiom_rules(GAME_DIR_CAPS)
 
-// Game dirs raise the complexity cap (see GAME_COMPLEXITY).
+// Game dirs raise the complexity cap above the kit default of 5 (#244).
 const GAME_COMPLEXITY_OVERRIDES = {
 	files: ['src/lib/game-kit/**', 'src/lib/game/**', 'templates/src/lib/game/**'],
-	rules: {
-		complexity: ['error', GAME_COMPLEXITY],
-		'sonarjs/cognitive-complexity': ['error', GAME_COMPLEXITY],
-	},
+	rules: game_complexity_rules(GAME_DIR_CAPS),
 }
 
-// Test files run long by nature (integration it() bodies, table-driven cases) — higher budget than source (#250).
 const TEST_SIZE_CAPS = {
 	files: ['**/*.test.ts', '**/*.spec.ts', '**/*.e2e.ts'],
-	rules: size_cap_rules(SIZE_CAPS.test),
+	rules: size_cap_rules(TEST_CAPS),
 }
 
-// templates/ tooling config (vite/svelte) — kit owns those rules.
-const FILE_IGNORES = ['templates/**/*.config.*', 'scripts/__fixtures__/**']
+// templates/ tooling config (vite/svelte) — kit owns those rules. The shared
+// game-dir profile is config-adjacent (like eslint.config.js itself, which kit
+// already ignores via *.config.*) so it is not linted either (#261).
+const FILE_IGNORES = [
+	'templates/**/*.config.*',
+	'scripts/__fixtures__/**',
+	'eslint-game-overrides.js',
+]
 
 // scripts/ (CLI) sit outside the SvelteKit tsconfig, so point ESLint at scripts/tsconfig.json for
 // type-aware rules. no-duplicate-string + naming-convention off: path/fixture strings and Node/external
