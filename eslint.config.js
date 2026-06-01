@@ -79,10 +79,31 @@ const SCRIPTS_TESTS_UNTYPED_MOCKS = {
 	},
 }
 
-// templates/ is verbatim scaffolding importing aliases that don't resolve in game-kit's tsconfig.
-// Lint with type-checking disabled (like scripts/); type-aware coverage happens in the destination project.
-const TEMPLATES_NON_TYPED = {
+// templates/ is verbatim scaffolding. Type-aware-lint it against its own tsconfig (templates/tsconfig.json)
+// so the same rules game-kit applies to its own src/ — including type-aware ones — catch the #260 class of
+// destination-only bugs (no-unnecessary-type-assertion, no-unsafe-call, no-confusing-void-expression). The
+// game-dir profile (null/exports-last/size/complexity) already reaches templates/src/lib/game/** via the
+// PERMANENT_OVERRIDES and GAME_COMPLEXITY_OVERRIDES blocks — so no template-specific rules are needed here,
+// only the project pointer. Resolution needs dist/ (the package self-import maps to dist/index.d.ts), CI builds
+// before lint and local `josh lint` needs a prior `pnpm build`. Overriding only parserOptions keeps the
+// kit's per-extension parsers (TS for .ts, svelte for .svelte) intact (#261).
+const TEMPLATES_TYPED = {
 	files: ['templates/**/*.ts', 'templates/**/*.svelte'],
+	// hooks.server.ts reads ../package.json, which does not resolve in the templates project — keep it
+	// non-type-aware below.
+	ignores: ['templates/src/hooks.server.ts'],
+	languageOptions: {
+		parserOptions: {
+			projectService: false,
+			project: './templates/tsconfig.json',
+			tsconfigRootDir: import.meta.dirname,
+		},
+	},
+}
+
+// hooks.server.ts stays non-type-aware: its `../package.json` import does not resolve here (#261).
+const TEMPLATES_NON_TYPED = {
+	files: ['templates/src/hooks.server.ts'],
 	...tseslint.configs.disableTypeChecked,
 	languageOptions: {
 		...tseslint.configs.disableTypeChecked.languageOptions,
@@ -99,6 +120,8 @@ export default create_sveltekit_config({
 	{ rules: PERMANENT_OVERRIDES },
 	SCRIPTS_TYPED,
 	SCRIPTS_TESTS_UNTYPED_MOCKS,
+	// Type-aware templates first, then carve hooks.server.ts back out as non-type-aware.
+	TEMPLATES_TYPED,
 	TEMPLATES_NON_TYPED,
 	// After PERMANENT_OVERRIDES so test files reclaim the higher size budget.
 	TEST_SIZE_CAPS,
