@@ -38,8 +38,8 @@ const COPY_PAIRS: ReadonlyArray<TemplateSourcePair> = [
 // Tripwire pairs: the template intentionally diverges from the root source
 // (e.g. templates/vite.config.ts omits the in-repo Vitest config). A source
 // edit trips the guard and forces a conscious re-check; propagation stays a
-// human decision recorded by `reconcile`. When adding a pair to either list,
-// also add its files to the template-source-parity glob in lefthook.yml.
+// human decision recorded by `reconcile`. Adding a pair to either list needs
+// no other wiring — the lefthook pre-commit guard runs `--check` unconditionally.
 const TRIPWIRE_PAIRS: ReadonlyArray<TemplateSourcePair> = [
 	{ template: 'templates/vite.config.ts', source: 'vite.config.ts' },
 ]

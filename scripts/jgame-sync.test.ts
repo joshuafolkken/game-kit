@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { jgame_root_files } from './jgame-root-files.ts'
 
 vi.mock('node:fs', async () => {
 	// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- vi.importActual generic needs an inline import type
@@ -44,7 +45,8 @@ const EXPECTED_SYNC_ENTRIES = [
 // Byte-identical, import-decoupled files single-sourced at the repo root: jgame
 // sync copies them directly from the package root, not from templates/ (they no
 // longer exist there). Destination path equals the package-relative source path.
-const EXPECTED_ROOT_SYNC_FILES = ['src/app.d.ts', 'svelte.config.js'] as const
+// Derived from the production list so the two cannot drift apart.
+const EXPECTED_ROOT_SYNC_FILES = jgame_root_files.ROOT_COPY_FILES
 
 // Resolve the real templates/ dir and repo root from this test file's location
 // so the source-existence guards do not depend on the mocked PROJECT_ROOT.

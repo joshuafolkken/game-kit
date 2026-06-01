@@ -4,8 +4,10 @@ extends:
 pre-commit:
   commands:
     # Guard the copy/tripwire pairs declared in scripts/template-source-logic.ts.
+    # No glob: --check is fast and self-scoping (it derives its own file set from
+    # the pair lists), so running it unconditionally avoids a hand-listed glob
+    # that would silently drift out of sync with COPY_PAIRS / TRIPWIRE_PAIRS.
     template-source-parity:
-      glob: '{.npmrc,vite.config.ts,src/routes/layout.css,src/lib/game/Score.svelte.ts,templates/npmrc,templates/vite.config.ts,templates/src/routes/layout.css,templates/src/lib/game/Score.svelte.ts,.template-source-manifest.json}'
       run: pnpm exec tsx scripts/reconcile-templates.ts --check
 
 pre-push:
