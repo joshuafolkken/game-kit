@@ -1,5 +1,11 @@
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- shared with root eslint.config.js, which (being a .js) cannot import a scripts/.ts sibling; the profile must live at the repo root (#261)
+import { eslint_game_overrides } from '../eslint-game-overrides.js'
+
+// The game-dir cap values come from the shared profile so game-kit's own lint
+// (eslint.config.js) and this scaffold generator cannot drift (#261).
+const { GAME_DIR_CAPS } = eslint_game_overrides
 
 // Single source of truth for the scaffold's eslint.config.js. Both `jgame init` (new projects)
 // and `jgame sync` (existing projects self-heal) write this so they cannot drift (#260).
@@ -11,10 +17,10 @@ import path from 'node:path'
 const SCAFFOLD_ESLINT_CONFIG = `import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
 import svelteConfig from './svelte.config.js'
 
-const GAME_COMPLEXITY = 7
-const GAME_FN_LINES = 50
-const GAME_FN_STATEMENTS = 20
-const GAME_FILE_LINES = 400
+const GAME_COMPLEXITY = ${String(GAME_DIR_CAPS.complexity)}
+const GAME_FN_LINES = ${String(GAME_DIR_CAPS.fn_lines)}
+const GAME_FN_STATEMENTS = ${String(GAME_DIR_CAPS.fn_statements)}
+const GAME_FILE_LINES = ${String(GAME_DIR_CAPS.file_lines)}
 
 function lines_cap(max) {
 	return ['error', { max, skipBlankLines: true, skipComments: true }]
