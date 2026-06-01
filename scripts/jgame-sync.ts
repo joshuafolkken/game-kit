@@ -5,6 +5,7 @@ import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
+import { jgame_root_files } from './jgame-root-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 
@@ -24,6 +25,9 @@ interface SyncEntry {
 // `src` is used when the source filename inside templates/ must differ from the
 // destination. .npmrc lives at templates/npmrc because npm always strips
 // `.npmrc` from published packages regardless of the package.json `files` field.
+// Byte-identical files (svelte.config.js, src/app.d.ts, src/routes/layout.css)
+// are NOT in templates/: they are sourced directly from the package root via
+// jgame_root_files — sync_file routes those to PACKAGE_DIR.
 const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: '.npmrc', src: 'npmrc' },
 	{ dest: 'src/app.d.ts' },
@@ -35,12 +39,19 @@ const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: 'vite.config.ts' },
 ]
 
+function sync_source_path(entry: SyncEntry): string {
+	if (jgame_root_files.is_root_copy_file(entry.dest)) {
+		return path.join(jgame_paths.PACKAGE_DIR, entry.dest)
+	}
+
+	return path.join(jgame_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
+}
+
 function sync_file(entry: SyncEntry): void {
-	const source = path.join(jgame_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
 	const destination = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
 
 	mkdirSync(path.dirname(destination), { recursive: true })
-	cpSync(source, destination)
+	cpSync(sync_source_path(entry), destination)
 	console.info(`  ✔ synced   ${entry.dest}`)
 }
 

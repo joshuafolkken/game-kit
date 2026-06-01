@@ -1,6 +1,13 @@
 extends:
   - node_modules/@joshuafolkken/kit/lefthook/sveltekit.yml
 
+pre-commit:
+  commands:
+    # Guard the copy/tripwire pairs declared in scripts/template-source-logic.ts.
+    template-source-parity:
+      glob: '{.npmrc,vite.config.ts,src/routes/layout.css,src/lib/game/Score.svelte.ts,templates/npmrc,templates/vite.config.ts,templates/src/routes/layout.css,templates/src/lib/game/Score.svelte.ts,.template-source-manifest.json}'
+      run: pnpm exec tsx scripts/reconcile-templates.ts --check
+
 pre-push:
   commands:
     test-e2e:

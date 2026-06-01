@@ -26,27 +26,30 @@ vi.mock('./jgame-paths.ts', () => ({
 
 const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
 
-// Framework / app-shell files that jgame sync refreshes on every run. Each
-// entry pairs the destination path inside the user project with the source
-// filename inside templates/. .npmrc is shipped as `npmrc` because npm strips
-// .npmrc from published packages regardless of the `files` field.
+// Framework / app-shell files that jgame sync refreshes from templates/ on every
+// run. Each entry pairs the destination path inside the user project with the
+// source filename inside templates/. .npmrc is shipped as `npmrc` because npm
+// strips .npmrc from published packages regardless of the `files` field.
 const EXPECTED_SYNC_ENTRIES = [
 	{ dest: '.npmrc', src: 'npmrc' },
-	{ dest: 'src/app.d.ts', src: 'src/app.d.ts' },
 	{ dest: 'src/app.html', src: 'src/app.html' },
 	{ dest: 'src/hooks.server.ts', src: 'src/hooks.server.ts' },
 	{ dest: 'src/routes/+layout.svelte', src: 'src/routes/+layout.svelte' },
+	// layout.css stays under templates/ as a COPY_PAIR because +layout.svelte
+	// (still a template) imports it; it is regenerated from the root source.
 	{ dest: 'src/routes/layout.css', src: 'src/routes/layout.css' },
-	{ dest: 'svelte.config.js', src: 'svelte.config.js' },
 	{ dest: 'vite.config.ts', src: 'vite.config.ts' },
 ] as const
 
-// Resolve the real templates/ dir from this test file's location so the
-// "template source must exist" guard does not depend on the mocked PROJECT_ROOT.
-const REAL_TEMPLATES_DIR = path.resolve(
-	path.dirname(fileURLToPath(import.meta.url)),
-	'../templates',
-)
+// Byte-identical, import-decoupled files single-sourced at the repo root: jgame
+// sync copies them directly from the package root, not from templates/ (they no
+// longer exist there). Destination path equals the package-relative source path.
+const EXPECTED_ROOT_SYNC_FILES = ['src/app.d.ts', 'svelte.config.js'] as const
+
+// Resolve the real templates/ dir and repo root from this test file's location
+// so the source-existence guards do not depend on the mocked PROJECT_ROOT.
+const REAL_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const REAL_TEMPLATES_DIR = path.join(REAL_REPO_ROOT, 'templates')
 
 function stub_readFileSync_by_path(
 	read: ReturnType<typeof vi.fn>,
@@ -157,6 +160,29 @@ describe('jgame_sync.run', () => {
 	it.each(EXPECTED_SYNC_ENTRIES)('has a real templates/$src source file to copy', ({ src }) => {
 		// Guard against SYNC_FILES drift away from the actual templates directory.
 		expect(existsSync(path.join(REAL_TEMPLATES_DIR, src))).toBe(true)
+	})
+
+	it.each(EXPECTED_ROOT_SYNC_FILES)(
+		'syncs %s from the package root to PROJECT_ROOT',
+		async (destination) => {
+			const { cpSync } = await import('node:fs')
+			const { jgame_sync } = await import('./jgame-sync.ts')
+
+			jgame_sync.run()
+			expect(cpSync).toHaveBeenCalledWith(`/pkg/${destination}`, `/project/${destination}`)
+		},
+	)
+
+	it.each(EXPECTED_ROOT_SYNC_FILES)(
+		'has a real package-root %s source file to copy',
+		(destination) => {
+			expect(existsSync(path.join(REAL_REPO_ROOT, destination))).toBe(true)
+		},
+	)
+
+	it.each(EXPECTED_ROOT_SYNC_FILES)('no longer ships %s inside templates/', (destination) => {
+		// Single-sourced from the repo root; must not be reintroduced as a duplicate.
+		expect(existsSync(path.join(REAL_TEMPLATES_DIR, destination))).toBe(false)
 	})
 
 	it('pre-syncs pnpm-workspace.yaml BEFORE invoking pnpm josh sync (regression for #182)', async () => {

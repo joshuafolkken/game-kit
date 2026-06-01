@@ -1,12 +1,14 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.126.0",
+	"version": "0.127.0",
 	"keywords": [
 		"svelte"
 	],
 	"files": [
 		"dist",
 		"templates",
+		"svelte.config.js",
+		"src/app.d.ts",
 		"!dist/**/*.test.*",
 		"!templates/tsconfig.json"
 	],
@@ -32,6 +34,7 @@
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
 		"prepare": "svelte-kit sync || echo ''; command -v lefthook >/dev/null 2>&1 && lefthook install; command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true",
 		"build:scripts": "pnpm exec esbuild scripts/jgame.ts --bundle --platform=node --packages=external --outdir=dist/scripts/ --format=esm --banner:js='#!/usr/bin/env node'",
+		"reconcile-templates": "tsx scripts/reconcile-templates.ts",
 		"prepack": "svelte-kit sync && svelte-package && pnpm run build:scripts && publint",
 		"gen:pre": "node -e \"const fs=require('node:fs');const d='.svelte-kit/cloudflare';if(fs.existsSync(d))fs.readdirSync(d).forEach(f=>f.startsWith('_worker.')&&fs.rmSync(d+'/'+f,{force:true}))\"",
 		"gen": "pnpm gen:pre && wrangler types",
@@ -44,7 +47,7 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.208.0",
+		"@joshuafolkken/kit": "0.212.0",
 		"@playwright/test": "1.60.0",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
