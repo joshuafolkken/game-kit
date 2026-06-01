@@ -57,7 +57,6 @@
 			{game_data}
 			{is_alt}
 			text_gameover={messages.game_gameover}
-			text_round={messages.game_round}
 			text_start={messages.game_start}
 		/>
 	{/snippet}

@@ -22,7 +22,18 @@
 	const BACKING_RADIUS = 0.85
 	const CENTER_RADIUS = 0.22
 	const BACKING_Z = -0.01
-	const FONT_SIZE = 0.08
+	const FONT_SIZE = 0.13
+	// Per-line size used by GAME OVER (the only multi-line center label).
+	// Two short stacked lines have more horizontal room than the single-line layout, so the
+	// per-line size can be bumped above the single-line FONT_SIZE without overflowing the board.
+	const MULTILINE_FONT_SIZE = 0.16
+	// Large size for the digit-only ROUND display: a single number reads well at high size
+	// and is the focal information during play.
+	const ROUND_DIGIT_FONT_SIZE = 0.2
+	// Multiplier (relative to fontSize) used as Troika Text's lineHeight on GAME OVER so the
+	// two stacked lines have a little breathing room rather than sitting flush together.
+	const MULTILINE_LINE_HEIGHT = 1.4
+	const SINGLE_LINE_HEIGHT = 1
 	const EMISSIVE_INTENSITY = 0.8
 	const CYBER_EMISSIVE_INTENSITY = 1.5
 
@@ -39,7 +50,6 @@
 		game_data: GameBoardData
 		is_alt: boolean
 		text_gameover: string
-		text_round: string
 		text_start: string
 	}
 
@@ -78,7 +88,7 @@
 		},
 	] as const satisfies ReadonlyArray<ButtonConfig>
 
-	const { game_data, is_alt, text_gameover, text_round, text_start }: Props = $props()
+	const { game_data, is_alt, text_gameover, text_start }: Props = $props()
 
 	function is_lit(color: ButtonColor): boolean {
 		return (
@@ -97,12 +107,20 @@
 	}
 
 	function get_center_text(): string {
-		if (game_data.phase === 'gameover') return text_gameover
-		if (game_data.round > 0) return `${text_round} ${String(game_data.round)}`
+		if (game_data.phase === 'gameover') return text_gameover.replace(' ', '\n')
+		if (game_data.round > 0) return String(game_data.round)
 
 		return text_start
 	}
 
+	function get_center_base_font_size(): number {
+		if (game_data.phase === 'gameover') return MULTILINE_FONT_SIZE
+		if (game_data.round > 0) return ROUND_DIGIT_FONT_SIZE
+
+		return FONT_SIZE
+	}
+
+	const is_multiline_center = $derived(game_data.phase === 'gameover')
 	const center_text = $derived(get_center_text())
 	const emissive_intensity = $derived(
 		(is_alt ? CYBER_EMISSIVE_INTENSITY : EMISSIVE_INTENSITY) * game_data.flash_intensity,
@@ -110,8 +128,12 @@
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
 	const should_use_alt_font = $derived(!crt.is_crt_enabled)
 	const current_font = $derived(fonts.get_font(should_use_alt_font))
+	const center_base_font_size = $derived(get_center_base_font_size())
 	const current_font_size = $derived(
-		FONT_SIZE * fonts.get_font_size_multiplier(should_use_alt_font),
+		center_base_font_size * fonts.get_font_size_multiplier(should_use_alt_font),
+	)
+	const current_line_height = $derived(
+		is_multiline_center ? MULTILINE_LINE_HEIGHT : SINGLE_LINE_HEIGHT,
 	)
 </script>
 
@@ -163,6 +185,7 @@
 			text={center_text}
 			font={current_font}
 			fontSize={current_font_size}
+			lineHeight={current_line_height}
 			color="#ffffff"
 			anchorX="center"
 			anchorY="middle"
