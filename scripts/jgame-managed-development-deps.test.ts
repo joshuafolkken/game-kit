@@ -13,12 +13,14 @@ const KIT_DEV_DEPS = {
 	'@joshuafolkken/kit': '0.162.0',
 	cspell: '^10.0.0',
 	eslint: '^10.4.0',
+	lefthook: '^2.1.9',
 	prettier: '^3.8.3',
 	'prettier-plugin-svelte': '^4.0.1',
 	'prettier-plugin-tailwindcss': '^0.8.0',
 	'@ianvs/prettier-plugin-sort-imports': '^4.7.1',
 	'@sveltejs/kit': '^2.0.0',
 	svelte: '^5.0.0',
+	tsx: '^4.22.4',
 	vite: '^6.0.0',
 }
 
@@ -33,6 +35,29 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 		expect(required).toContain('prettier-plugin-tailwindcss')
 		expect(required).toContain('@ianvs/prettier-plugin-sort-imports')
 		expect(required).toContain('cspell')
+	})
+
+	it('includes lefthook + tsx so the generated prepare guards have tools to run (#272)', async () => {
+		// Regression for #272: the scaffold's `prepare` runs
+		// `command -v lefthook ... && lefthook install` and
+		// `command -v tsx ... && tsx fix-gh-packages.ts`. Without these as direct
+		// devDeps the guards skip silently, so git hooks and the GH Packages lockfile
+		// fix never run in scaffolded projects.
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const required = jgame_managed_dev_deps.REQUIRED_DEV_DEPS
+
+		expect(required).toContain('lefthook')
+		expect(required).toContain('tsx')
+	})
+
+	it('resolves lefthook + tsx to pinned versions, never the wildcard fallback (#272)', async () => {
+		// game-kit MUST declare lefthook + tsx in its own devDependencies so the
+		// pinned versions flow into scaffolds; a `*` here means the source pin is missing.
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+
+		expect(result.lefthook).toBe('^2.1.9')
+		expect(result.tsx).toBe('^4.22.4')
 	})
 
 	it('stays alphabetically sorted so additions are insertion-stable', async () => {

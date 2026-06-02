@@ -11,6 +11,7 @@ const PACKAGE_JSON_PATH = path.join(
 
 interface PackageJsonShape {
 	scripts: Record<string, string | undefined>
+	devDependencies?: Record<string, string | undefined>
 	pnpm?: unknown
 }
 
@@ -27,6 +28,23 @@ describe('package.json lifecycle scripts', () => {
 
 	it('runs fix-gh-packages in prepare so it fires only for the package owner', () => {
 		expect(package_.scripts.prepare).toMatch(/fix-gh-packages/u)
+	})
+
+	it('declares lefthook + tsx as direct devDeps so prepare is self-contained (#272)', () => {
+		// Regression for #272: game-kit's prepare invokes lefthook + tsx. Relying on a
+		// brew-global lefthook / transitive tsx leaves the version unpinned, and the
+		// scaffolder's REQUIRED_DEV_DEPS sources its pins from these entries — a missing
+		// entry would propagate an unpinned `*` into every scaffolded project.
+		expect(package_.devDependencies?.lefthook).toBeDefined()
+		expect(package_.devDependencies?.tsx).toBeDefined()
+	})
+
+	it('guards every owner-only tool in prepare so a missing binary cannot fail install (#272)', () => {
+		const prepare = package_.scripts.prepare ?? ''
+
+		expect(prepare).toMatch(/command -v lefthook >\/dev\/null 2>&1 && lefthook install/u)
+		expect(prepare).toMatch(/command -v tsx >\/dev\/null 2>&1 && tsx /u)
+		expect(prepare.trim()).toMatch(/;\s*true$/u)
 	})
 
 	it('does not reference jgame-install-bin in any lifecycle script', () => {

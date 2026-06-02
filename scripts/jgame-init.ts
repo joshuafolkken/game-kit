@@ -106,8 +106,10 @@ function build_scripts(package_: GameKitPackage): Record<string, string> {
 		dev: 'vite dev',
 		build: 'vite build',
 		preview: managed.preview,
-		postinstall:
-			'lefthook install && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
+		// `prepare` (not `postinstall`): owner-only setup, `command -v`-guarded so a
+		// missing tool skips instead of failing `pnpm install`. lefthook + tsx ship as
+		// managed devDeps so the guards actually run. Single-sourced from game-kit. See #272.
+		prepare: managed.prepare,
 		jgame: 'jgame',
 		josh: 'josh',
 	}

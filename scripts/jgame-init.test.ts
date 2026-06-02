@@ -16,6 +16,8 @@ vi.mock('./jgame-paths.ts', () => ({
 }))
 
 const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
+const CANONICAL_PREPARE =
+	"svelte-kit sync || echo ''; command -v lefthook >/dev/null 2>&1 && lefthook install; command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true"
 const MOCK_HOST_PNPM_VERSION = '11.3.0'
 const MAX_LINE_LENGTH = 100
 
@@ -23,17 +25,19 @@ const MAX_LINE_LENGTH = 100
 // fixture mirrors the published shape (only `devEngines.packageManager` remains).
 const MOCK_PKG = {
 	version: '1.0.0',
-	scripts: { preview: CANONICAL_PREVIEW },
+	scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
 	devDependencies: {
 		'@ianvs/prettier-plugin-sort-imports': '^4.7.1',
 		'@joshuafolkken/kit': '0.162.0',
 		'@sveltejs/kit': '^2.0.0',
 		cspell: '^10.0.0',
 		eslint: '^10.4.0',
+		lefthook: '^2.1.9',
 		prettier: '^3.8.3',
 		'prettier-plugin-svelte': '^4.0.1',
 		'prettier-plugin-tailwindcss': '^0.8.0',
 		svelte: '^5.0.0',
+		tsx: '^4.22.4',
 		vite: '^6.0.0',
 	},
 	devEngines: { packageManager: { name: 'pnpm', version: '>=11.0.0-0', onFail: 'error' } },
@@ -99,6 +103,33 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.scripts.dev).toBe('vite dev')
 		expect(result.scripts.jgame).toBe('jgame')
 		expect(result.scripts.josh).toBe('josh')
+	})
+
+	it('does not emit an unconditional postinstall that can fail pnpm install (#272)', async () => {
+		// Regression for #272: the old generated `postinstall` ran
+		// `lefthook install && tsx ...` unconditionally; with neither tool in the
+		// scaffold's managed devDeps, `pnpm install` aborted on a fresh scaffold.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
+		expect(result.scripts.postinstall).toBeUndefined()
+	})
+
+	it('emits a guarded prepare whose CLIs are all covered by managed devDeps (#272)', async () => {
+		// Acceptance criterion: scaffold-managed dependencies cover every CLI the
+		// generated setup script invokes, and each is `command -v`-guarded so a
+		// missing binary skips instead of failing install.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
+		for (const tool of ['lefthook', 'tsx'] as const) {
+			expect(result.scripts.prepare).toContain(`command -v ${tool} >/dev/null 2>&1 && ${tool}`)
+			expect(result.devDependencies[tool]).toBeDefined()
+		}
+
+		expect(result.devDependencies.lefthook).toBe('^2.1.9')
+		expect(result.devDependencies.tsx).toBe('^4.22.4')
+		expect(result.scripts.prepare).toMatch(/;\s*true\s*$/u)
 	})
 
 	it('emits packageManager derived from the host pnpm version', async () => {

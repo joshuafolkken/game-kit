@@ -8,7 +8,11 @@ import { jgame_paths } from './jgame-paths.ts'
 // cannot drift. `eslint` / `prettier` / the prettier plugins are kit's own
 // devDeps — they are NOT installed transitively for consumers, so they must be
 // direct devDeps of the scaffolded project for the binaries / plugin resolution
-// to work. See #184.
+// to work. See #184. `lefthook` / `tsx` are required by the generated `prepare`
+// script (`command -v lefthook ... && lefthook install`, `tsx fix-gh-packages.ts`);
+// they are not installed transitively for consumers, so without them as direct
+// devDeps the guards skip silently — losing git hooks and the GH Packages lockfile
+// fix. See #272.
 const REQUIRED_DEV_DEPS = [
 	'@ianvs/prettier-plugin-sort-imports',
 	'@joshuafolkken/kit',
@@ -25,6 +29,7 @@ const REQUIRED_DEV_DEPS = [
 	'@vite-pwa/sveltekit',
 	'cspell',
 	'eslint',
+	'lefthook',
 	'prettier',
 	'prettier-plugin-svelte',
 	'prettier-plugin-tailwindcss',
@@ -32,6 +37,7 @@ const REQUIRED_DEV_DEPS = [
 	'svelte-check',
 	'tailwindcss',
 	'three',
+	'tsx',
 	'typescript',
 	'vite',
 	'vite-plugin-pwa',
