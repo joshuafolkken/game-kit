@@ -10,7 +10,15 @@ import { jgame_paths } from './jgame-paths.ts'
 // only `wrangler dev .svelte-kit/cloudflare/_worker.js` boots the Worker runtime
 // that executes `hooks.server.ts` (CSP headers, redirects, HTML injection).
 // `vite preview` silently bypasses the Worker and breaks Worker-runtime E2E.
-const MANAGED_SCRIPT_KEYS = ['preview'] as const
+//
+// `prepare` is included so the scaffold inherits game-kit's own developer-setup
+// hook verbatim — `command -v`-guarded `lefthook install` + `tsx fix-gh-packages.ts`.
+// `prepare` (not `postinstall`) is correct because these are owner-only setup steps,
+// and the guards keep `pnpm install` from failing when a tool is absent. Making it a
+// managed key lets `jgame sync` write the canonical `prepare` to existing consumers;
+// sync also deletes their superseded unconditional `postinstall` (see jgame-sync.ts),
+// so the self-heal is complete rather than additive. See #272.
+const MANAGED_SCRIPT_KEYS = ['preview', 'prepare'] as const
 
 type ManagedScriptKey = (typeof MANAGED_SCRIPT_KEYS)[number]
 type ManagedScripts = Record<ManagedScriptKey, string>

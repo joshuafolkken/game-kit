@@ -61,12 +61,27 @@ interface ConsumerPackage {
 	[key: string]: unknown
 }
 
+// The pre-#272 scaffolder emitted this unconditional postinstall. It is superseded
+// by the guarded `prepare`, so sync removes it — otherwise an existing consumer keeps
+// running both (double `lefthook install` + `fix-gh-packages`) and the unguarded form
+// survives. Exact-match only, so a consumer's own custom postinstall is never touched.
+const SUPERSEDED_POSTINSTALL =
+	'lefthook install && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts'
+
+function remove_superseded_scripts(scripts: Record<string, string>): boolean {
+	if (scripts.postinstall !== SUPERSEDED_POSTINSTALL) return false
+
+	delete scripts.postinstall
+
+	return true
+}
+
 function apply_managed_scripts(
 	package_: ConsumerPackage,
 	canonical: Record<string, string>,
 ): boolean {
 	const scripts = package_.scripts ?? {}
-	let did_change = false
+	let did_change = remove_superseded_scripts(scripts)
 
 	for (const key of jgame_managed_scripts.MANAGED_SCRIPT_KEYS) {
 		if (scripts[key] !== canonical[key]) {
