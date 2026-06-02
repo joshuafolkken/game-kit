@@ -2,8 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs', () => ({
 	cpSync: vi.fn(),
+	existsSync: vi.fn(),
 	mkdirSync: vi.fn(),
+	readdirSync: vi.fn(),
 	readFileSync: vi.fn(),
+	statSync: vi.fn(),
 	writeFileSync: vi.fn(),
 }))
 vi.mock('node:child_process', () => ({ execSync: vi.fn() }))
@@ -270,9 +273,16 @@ describe('jgame_init.generate_game_config', () => {
 })
 
 async function setup_run_mocks(): Promise<void> {
-	const { readFileSync } = await import('node:fs')
+	const { readFileSync, existsSync, readdirSync, statSync } = await import('node:fs')
 	const { execSync } = await import('node:child_process')
 
+	// Default to a clean target (does not exist) so the preflight guard (#273) is a no-op
+	// for the happy-path scaffold tests; guard tests override existsSync/readdirSync/statSync.
+	vi.mocked(existsSync).mockReturnValue(false)
+	vi.mocked(readdirSync).mockReturnValue([])
+	vi.mocked(statSync).mockReturnValue({ isDirectory: () => true } as unknown as ReturnType<
+		typeof statSync
+	>)
 	vi.mocked(readFileSync).mockReturnValue(JSON.stringify(MOCK_PKG))
 	vi.mocked(execSync).mockImplementation((command: string | Uint8Array) => {
 		if (command === 'pnpm --version') return Buffer.from(`${MOCK_HOST_PNPM_VERSION}\n`)
@@ -443,5 +453,69 @@ describe('jgame_init.run', () => {
 
 		expect(calls).toContain('cd tic-tac-toe')
 		expect(calls).toContain('pnpm dev')
+	})
+})
+
+describe('jgame_init.run preflight guard (#273)', () => {
+	// Clear accumulated mock-call history so `not.toHaveBeenCalled()` assertions see a
+	// clean slate (the other run() tests share the same vi.fn instances across the file).
+	beforeEach(async () => {
+		vi.clearAllMocks()
+		await setup_run_mocks()
+	})
+
+	it('refuses to scaffold into an existing non-empty directory before any writes', async () => {
+		// Regression for #273: a name collision must not silently overwrite real user files.
+		const { existsSync, readdirSync, mkdirSync, writeFileSync, cpSync } = await import('node:fs')
+		const { execSync } = await import('node:child_process')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readdirSync).mockReturnValue(['package.json'] as unknown as ReturnType<
+			typeof readdirSync
+		>)
+		const { jgame_init } = await import('./jgame-init.ts')
+
+		expect(() => {
+			jgame_init.run('tic-tac-toe')
+		}).toThrow('process.exit called')
+		expect(process.exit).toHaveBeenCalledWith(1)
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('already exists'))
+		// No mutation may happen once the guard fires.
+		expect(mkdirSync).not.toHaveBeenCalled()
+		expect(writeFileSync).not.toHaveBeenCalled()
+		expect(cpSync).not.toHaveBeenCalled()
+		expect(execSync).not.toHaveBeenCalledWith('git init', expect.anything())
+	})
+
+	it('refuses with a friendly error when the target path is an existing file, not a directory', async () => {
+		// A file named like the kebab name must not crash with a raw ENOTDIR from readdirSync;
+		// the isDirectory() short-circuit routes it to the same friendly guard error.
+		const { existsSync, statSync, mkdirSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(statSync).mockReturnValue({ isDirectory: () => false } as unknown as ReturnType<
+			typeof statSync
+		>)
+		const { jgame_init } = await import('./jgame-init.ts')
+
+		expect(() => {
+			jgame_init.run('tic-tac-toe')
+		}).toThrow('process.exit called')
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('already exists'))
+		expect(mkdirSync).not.toHaveBeenCalled()
+	})
+
+	it('proceeds when the target directory exists but is empty', async () => {
+		const { existsSync, readdirSync, statSync, mkdirSync } = await import('node:fs')
+		const { jgame_init } = await import('./jgame-init.ts')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(statSync).mockReturnValue({ isDirectory: () => true } as unknown as ReturnType<
+			typeof statSync
+		>)
+		vi.mocked(readdirSync).mockReturnValue([])
+
+		jgame_init.run('tic-tac-toe')
+		expect(mkdirSync).toHaveBeenCalledWith('/project/tic-tac-toe', { recursive: true })
 	})
 })
