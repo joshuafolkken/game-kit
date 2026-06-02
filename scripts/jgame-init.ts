@@ -1,5 +1,13 @@
 import { execSync } from 'node:child_process'
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+	cpSync,
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs'
 import path from 'node:path'
 import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
@@ -207,6 +215,23 @@ function write_npmrc(project_directory: string): void {
 	console.info(`  ✔ wrote    ${NPMRC_DEST_NAME}`)
 }
 
+// Preflight guard (#273): refuse to scaffold onto an existing target so a stray name
+// collision cannot silently overwrite real user files. Must run BEFORE any mkdirSync /
+// writeFileSync / cpSync / execSync touches the target. An existing EMPTY directory is
+// fine (the common "I made the folder first" case); an existing file or a non-empty
+// directory is refused. The `isDirectory()` short-circuit keeps readdirSync from
+// throwing ENOTDIR when the path is a file.
+function assert_empty_target(project_directory: string, kebab: string): void {
+	if (!existsSync(project_directory)) return
+
+	const is_empty_directory =
+		statSync(project_directory).isDirectory() && readdirSync(project_directory).length === 0
+	if (is_empty_directory) return
+
+	console.error(`Error: "${kebab}" already exists. Remove it or choose a different name.`)
+	process.exit(1)
+}
+
 // eslint-disable-next-line max-statements -- CLI entry point: a linear validate -> scaffold -> write sequence that reads better as one run() than fragmented. See #250.
 function run(game_name_raw?: string): void {
 	if (!game_name_raw) {
@@ -225,6 +250,8 @@ function run(game_name_raw?: string): void {
 
 	const project_directory = path.join(jgame_paths.PROJECT_ROOT, names.kebab)
 	const opts = { ...SPAWN_OPTIONS, cwd: project_directory }
+
+	assert_empty_target(project_directory, names.kebab)
 
 	console.info('\n🎮 jgame init — Scaffolding new game project\n')
 	mkdirSync(project_directory, { recursive: true })
