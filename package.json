@@ -1,12 +1,13 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.135.0",
+	"version": "0.136.0",
 	"keywords": [
 		"svelte"
 	],
 	"files": [
 		"dist",
 		"templates",
+		"cspell",
 		"svelte.config.js",
 		"src/app.d.ts",
 		"!dist/**/*.test.*",
@@ -16,7 +17,8 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
-		}
+		},
+		"./cspell/game": "./cspell/game.yaml"
 	},
 	"bin": {
 		"jgame": "dist/scripts/jgame.js"
@@ -47,7 +49,7 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.218.0",
+		"@joshuafolkken/kit": "0.219.0",
 		"@playwright/test": "1.60.0",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",

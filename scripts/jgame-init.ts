@@ -9,6 +9,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import path from 'node:path'
+import { jgame_cspell_config } from './jgame-cspell-config.ts'
 import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
@@ -298,6 +299,10 @@ function run(game_name_raw?: string): void {
 	// src/lib/game/** (#260). `josh sync` never overwrites an existing eslint.config.js, so this
 	// stays put on the user's later syncs.
 	jgame_eslint_config.write_eslint_config(project_directory)
+	// Override the bare cspell.config.yaml `josh init` wrote with one that pulls the game-aware
+	// word set from `@joshuafolkken/game-kit/cspell/game`, so the scaffold passes `josh cspell:dot`
+	// out of the box (#286). `josh sync` never overwrites an existing cspell.config.yaml.
+	jgame_cspell_config.write_cspell_config(project_directory)
 	console.info(build_done_message(names.kebab))
 }
 

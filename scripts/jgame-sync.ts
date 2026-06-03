@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { jgame_cspell_config } from './jgame-cspell-config.ts'
 import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
 import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
@@ -174,6 +175,9 @@ function run(): void {
 	// Rewrite it here (framework-generated, like svelte.config.js/vite.config.ts) so existing
 	// projects pick up the src/lib/game/** lint overrides on the next sync.
 	jgame_eslint_config.write_eslint_config(jgame_paths.PROJECT_ROOT)
+	// Same self-heal for the bare cspell.config.yaml: rewrite it to pull the game-aware word set
+	// from `@joshuafolkken/game-kit/cspell/game` so existing projects pass `josh cspell:dot` (#286).
+	jgame_cspell_config.write_cspell_config(jgame_paths.PROJECT_ROOT)
 	console.info('\nGame-specific files:')
 	for (const entry of SYNC_FILES) sync_file(entry)
 	sync_managed_scripts()

@@ -461,6 +461,19 @@ describe('jgame_init.run', () => {
 		expect(sync_index).toBeGreaterThan(init_index)
 	})
 
+	it('overwrites the bare cspell.config.yaml with the game-aware import (#286)', async () => {
+		// josh init writes a bare cspell.config.yaml that trips on every game-template word;
+		// jgame init must rewrite it to pull the word set from @joshuafolkken/game-kit/cspell/game.
+		const { writeFileSync } = await import('node:fs')
+		const { jgame_init } = await import('./jgame-init.ts')
+
+		jgame_init.run('tic-tac-toe')
+		expect(writeFileSync).toHaveBeenCalledWith(
+			'/project/tic-tac-toe/cspell.config.yaml',
+			expect.stringContaining('@joshuafolkken/game-kit/cspell/game'),
+		)
+	})
+
 	it('prints next-steps message with cd and pnpm dev', async () => {
 		const { jgame_init } = await import('./jgame-init.ts')
 
