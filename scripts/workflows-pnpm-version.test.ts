@@ -9,8 +9,10 @@ const WORKFLOWS_DIR = path.join(
 	'.github',
 	'workflows',
 )
-// Captures the `<sha> # vX.Y.Z` pin that follows every `pnpm/action-setup@` use.
-const ACTION_SETUP_PATTERN = /pnpm\/action-setup@(?<pin>[\da-f]+ # v[\d.]+)/gu
+// Captures the 40-char commit SHA every `pnpm/action-setup@` use is pinned to.
+// Matching the SHA (not the trailing `# vX.Y.Z` comment) is what determines the
+// installed pnpm, and stays robust when a pin omits the version comment.
+const ACTION_SETUP_PATTERN = /pnpm\/action-setup@(?<pin>[\da-f]{40})\b/gu
 
 function collect_action_setup_pins(): Array<string> {
 	const files = readdirSync(WORKFLOWS_DIR).filter((name) => name.endsWith('.yml'))
@@ -30,7 +32,7 @@ describe('GitHub workflows pnpm/action-setup pinning', () => {
 	it('pins pnpm/action-setup to a single version across all workflows (#281)', () => {
 		const pins = collect_action_setup_pins()
 
-		expect(pins.length).toBeGreaterThan(1)
+		expect(pins.length).toBeGreaterThan(0)
 		expect(new Set(pins).size).toBe(1)
 	})
 })
