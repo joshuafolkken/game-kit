@@ -265,6 +265,19 @@ describe('jgame_sync.run', () => {
 			expect.stringContaining("files: ['src/lib/game/**']"),
 		)
 	})
+
+	it('overwrites cspell.config.yaml with the game-aware import so existing projects self-heal (#286)', async () => {
+		// josh sync/init never overwrite an existing cspell.config.yaml, so a project scaffolded
+		// before #286 keeps a bare config that trips on the verbatim game-template words.
+		const { writeFileSync } = await import('node:fs')
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		jgame_sync.run()
+		expect(writeFileSync).toHaveBeenCalledWith(
+			'/project/cspell.config.yaml',
+			expect.stringContaining('@joshuafolkken/game-kit/cspell/game'),
+		)
+	})
 })
 
 describe('jgame_sync managed package.json scripts', () => {
