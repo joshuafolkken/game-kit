@@ -1,0 +1,19 @@
+version: '0.2'
+# Game-aware cspell config distributed to scaffolded projects (#286).
+# Scaffolded projects import this via `@joshuafolkken/game-kit/cspell/game`, so the
+# game-template words and the credits ignore flow automatically on a dependency bump —
+# no template re-sync. game-kit's own root cspell.config.yaml imports it too, so the
+# game-common word set is single-sourced here and cannot drift between repo and scaffold.
+import:
+  - '@joshuafolkken/kit/cspell/sveltekit'
+words:
+  - COEFF
+  - gameover
+  - jgame
+  - Orbitron
+  - SAMEORIGIN
+  - threlte
+  - trycloudflare
+  - viewbox
+ignorePaths:
+  - '**/game/credits.ts'

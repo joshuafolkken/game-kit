@@ -1,36 +1,32 @@
 version: "0.2"
+# game-common words + the credits.ts ignore are single-sourced in cspell/game.yaml (also
+# distributed to scaffolded projects via `@joshuafolkken/game-kit/cspell/game`). It chains
+# `@joshuafolkken/kit/cspell/sveltekit`, so only repo-specific words/ignorePaths live here.
 import:
-  - "@joshuafolkken/kit/cspell/sveltekit"
+  - "./cspell/game.yaml"
 ignorePaths:
   - "**/credits-config.ts"
-  - "**/game/credits.ts"
   - "**/game/credits.test.ts"
 words:
   - Baer
   - bilinearly
   - Boisclair
-  - COEFF
   - dotless
-  - gameover
   - GHSA
   - Inerney
-  - jgame
   - MCGA
   - moiré
   - mrdoob
   - MSAA
   - multicriteria
   - mygame
-  - narratively
   - NTSC
-  - Orbitron
   - Pixabay
   - Raycaster
   - raycaster
   - constructibility
   - inferrable
   - retuned
-  - SAMEORIGIN
   - scaffolder
   - GLSL
   - glsl
@@ -40,15 +36,12 @@ words:
   - tonemap
   - spacebar
   - texels
-  - threlte
-  - trycloudflare
   - Upscales
   - upscales
   - neighbour
   - neighbours
   - colour
   - unstub
-  - viewbox
   - viewports
   - vsize
   - WASD

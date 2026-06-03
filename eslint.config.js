@@ -81,6 +81,16 @@ const TEMPLATES_NON_TYPED = {
 	},
 }
 
+// SvelteKit route files export page options as named consts (`export const ssr = false`); kit allows
+// this via its `src/routes/**/+*.ts` route exception. The verbatim template mirrors live at
+// templates/src/routes/** — outside that glob — so the same no-restricted-syntax relaxation is applied
+// here, letting the template drop its eslint-disable (which the scaffold, where the file lands at
+// src/routes/, reports as an unused directive) (#286).
+const TEMPLATES_ROUTES = {
+	files: ['templates/src/routes/**/+*.ts'],
+	rules: { 'no-restricted-syntax': 'off' },
+}
+
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
@@ -91,6 +101,8 @@ export default create_sveltekit_config({
 	SCRIPTS_TYPED,
 	SCRIPTS_TESTS_UNTYPED_MOCKS,
 	TEMPLATES_NON_TYPED,
+	// After TEMPLATES_NON_TYPED so template route files keep the no-restricted-syntax relaxation.
+	TEMPLATES_ROUTES,
 	// After PERMANENT_OVERRIDES so test files reclaim the higher size budget.
 	TEST_SIZE_CAPS,
 	// Last: templates/src/lib/game/** also matches TEMPLATES_NON_TYPED, so this wins the complexity cap (#244).
