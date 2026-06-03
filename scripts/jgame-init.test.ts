@@ -24,11 +24,15 @@ const CANONICAL_PREPARE =
 const MOCK_HOST_PNPM_VERSION = '11.3.0'
 const MAX_LINE_LENGTH = 100
 
-// `pnpm pack` strips the top-level `packageManager` field on publish, so the
-// fixture mirrors the published shape (only `devEngines.packageManager` remains).
+// `pnpm pack` strips both the top-level `packageManager` field AND the `prepare`
+// lifecycle script on publish, so the fixture mirrors that published shape: only
+// `devEngines.packageManager` remains, and `scripts` carries NO `prepare` (init must
+// emit the canonical prepare from CANONICAL_PREPARE, not from the manifest). The
+// pre-#279 fixture wrongly kept `prepare` here, so the unit suite passed while the
+// real published init crashed (#279).
 const MOCK_PKG = {
 	version: '1.0.0',
-	scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+	scripts: { preview: CANONICAL_PREVIEW },
 	devDependencies: {
 		'@ianvs/prettier-plugin-sort-imports': '^4.7.1',
 		'@joshuafolkken/kit': '0.162.0',
@@ -133,6 +137,9 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.devDependencies.lefthook).toBe('^2.1.9')
 		expect(result.devDependencies.tsx).toBe('^4.22.4')
 		expect(result.scripts.prepare).toMatch(/;\s*true\s*$/u)
+		// Regression for #279: MOCK_PKG mirrors the published shape (no `prepare`),
+		// yet init MUST still emit the canonical guarded prepare from CANONICAL_PREPARE.
+		expect(result.scripts.prepare).toBe(CANONICAL_PREPARE)
 	})
 
 	it('emits packageManager derived from the host pnpm version', async () => {
