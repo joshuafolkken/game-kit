@@ -44,12 +44,14 @@ describe('jgame_managed_scripts.pick_managed_scripts', () => {
 		)
 	})
 
-	it('throws when the prepare managed key is missing (#272)', async () => {
+	// Regression for #279: `pnpm pack` STRIPS `prepare` from the published
+	// package.json, so the runtime must NOT require it in the input — it comes from
+	// the CANONICAL_PREPARE constant. The pre-#279 code threw here, crashing init.
+	it('supplies the canonical prepare from the constant when the input omits it (#279)', async () => {
 		const { jgame_managed_scripts } = await import('./jgame-managed-scripts.ts')
+		const result = jgame_managed_scripts.pick_managed_scripts({ preview: CANONICAL_PREVIEW })
 
-		expect(() =>
-			jgame_managed_scripts.pick_managed_scripts({ preview: CANONICAL_PREVIEW }),
-		).toThrow(/missing scripts\.prepare/u)
+		expect(result).toEqual({ preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE })
 	})
 })
 
@@ -83,6 +85,43 @@ describe('jgame_managed_scripts.read_canonical_scripts', () => {
 		expect(() => jgame_managed_scripts.read_canonical_scripts()).toThrow(
 			/missing scripts\.preview/u,
 		)
+	})
+
+	// Regression for #279: the published package.json has `prepare` STRIPPED by
+	// `pnpm pack`. Reading that real published shape must succeed and fill `prepare`
+	// from the constant — not throw the way 0.131.0 did.
+	it('reads a published manifest with prepare stripped without throwing (#279)', async () => {
+		const { readFileSync } = await import('node:fs')
+
+		vi.mocked(readFileSync).mockReturnValue(
+			JSON.stringify({ scripts: { preview: CANONICAL_PREVIEW } }),
+		)
+		const { jgame_managed_scripts } = await import('./jgame-managed-scripts.ts')
+		const result = jgame_managed_scripts.read_canonical_scripts()
+
+		expect(result.preview).toBe(CANONICAL_PREVIEW)
+		expect(result.prepare).toBe(CANONICAL_PREPARE)
+	})
+})
+
+describe('jgame_managed_scripts.CANONICAL_PREPARE (drift tripwire)', () => {
+	// `prepare` cannot be read from the published package.json (stripped on publish),
+	// so its canonical value is pinned as a constant. This tripwire fails if the
+	// constant ever drifts from the repo-root package.json#scripts.prepare — keeping
+	// game-kit's own developer hook and the scaffolded one byte-identical. See #279.
+	it('stays byte-identical to the repo-root package.json prepare', async () => {
+		// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- vi.importActual generic needs an inline import type
+		const { readFileSync: real_read } = await vi.importActual<typeof import('node:fs')>('node:fs')
+		// eslint-disable-next-line unicorn/import-style -- dynamic import is required after vi.resetModules in this test
+		const path = await import('node:path')
+		const { fileURLToPath } = await import('node:url')
+		const this_directory = path.dirname(fileURLToPath(import.meta.url))
+		const raw = real_read(path.join(this_directory, '..', 'package.json'), 'utf8')
+		const root_prepare = (JSON.parse(raw) as { scripts: Record<string, string> }).scripts.prepare
+		const { jgame_managed_scripts } = await import('./jgame-managed-scripts.ts')
+
+		expect(jgame_managed_scripts.CANONICAL_PREPARE).toBe(root_prepare)
+		expect(jgame_managed_scripts.CANONICAL_PREPARE).toBe(CANONICAL_PREPARE)
 	})
 })
 
