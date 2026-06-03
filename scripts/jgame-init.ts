@@ -38,11 +38,21 @@ const USER_TSCONFIG = {
 	},
 }
 
+interface PackageManagerEngine {
+	name: string
+	version: string
+	onFail?: string
+}
+
+interface DevelopmentEngines {
+	packageManager: PackageManagerEngine
+}
+
 interface GameKitPackage {
 	version: string
 	scripts: Record<string, string>
 	devDependencies: Record<string, string>
-	devEngines: unknown
+	devEngines: DevelopmentEngines
 }
 
 interface GameNames {
@@ -100,10 +110,25 @@ function read_game_kit_package(): GameKitPackage {
 
 // `pnpm pack` strips the `packageManager` field from the published `package.json`,
 // so the kit cannot supply its own pin to scaffolded projects. Falling back to the
-// host pnpm gives an exact-semver value that Node v25 / pnpm 11 accept, while the
-// `devEngines.packageManager.version` range still expresses the floor declaratively.
+// host pnpm gives an exact-semver value that Node v25 / pnpm 11 accept for the
+// generated `packageManager`, paired with a host-floor `devEngines` (see below).
 function detect_host_pnpm_version(): string {
 	return execSync('pnpm --version').toString().trim()
+}
+
+// The scaffold's `packageManager` is pinned to the host's exact pnpm. game-kit's own
+// `devEngines` pins an EXACT version (its internal toolchain), so copying it verbatim
+// made the scaffold's `pnpm install` abort under `onFail: error` whenever the host pnpm
+// differed by even a patch (e.g. host 11.5.1 vs copied 11.5.0). Emitting a host-floor
+// range instead keeps the generated `packageManager` (pnpm@<host>) always satisfying the
+// generated `devEngines` (>=<host>), independent of game-kit's internal pin. See #283.
+function build_development_engines(
+	source: DevelopmentEngines,
+	host_pnpm_version: string,
+): DevelopmentEngines {
+	return {
+		packageManager: { ...source.packageManager, version: `>=${host_pnpm_version}` },
+	}
 }
 
 function build_scripts(package_: GameKitPackage): Record<string, string> {
@@ -124,6 +149,8 @@ function build_scripts(package_: GameKitPackage): Record<string, string> {
 }
 
 function build_package_json(package_: GameKitPackage, game_name: string): object {
+	const host_pnpm_version = detect_host_pnpm_version()
+
 	return {
 		name: game_name,
 		version: '0.1.0',
@@ -132,8 +159,8 @@ function build_package_json(package_: GameKitPackage, game_name: string): object
 		scripts: build_scripts(package_),
 		dependencies: { '@joshuafolkken/game-kit': `^${package_.version}` },
 		devDependencies: jgame_managed_development_deps.pick_required_deps(package_.devDependencies),
-		packageManager: `pnpm@${detect_host_pnpm_version()}`,
-		devEngines: package_.devEngines,
+		packageManager: `pnpm@${host_pnpm_version}`,
+		devEngines: build_development_engines(package_.devEngines, host_pnpm_version),
 	}
 }
 
