@@ -158,11 +158,20 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.packageManager).toBe(`pnpm@${MOCK_HOST_PNPM_VERSION}`)
 	})
 
-	it('preserves devEngines.packageManager range alongside the host-derived packageManager', async () => {
+	it('derives a host-floor devEngines that the generated packageManager satisfies (#283)', async () => {
+		// Regression for #283: the scaffold pinned `packageManager` to the host pnpm
+		// (e.g. 11.5.1) but copied game-kit's EXACT `devEngines` version (11.5.0)
+		// verbatim, so `pnpm install` aborted under `onFail: error` whenever the host
+		// pnpm was not exactly 11.5.0. Deriving `>=<host>` keeps packageManager and
+		// devEngines consistent by construction, regardless of game-kit's own pin.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 
-		expect(result.devEngines.packageManager.version).toBe('>=11.0.0-0')
+		expect(result.packageManager).toBe(`pnpm@${MOCK_HOST_PNPM_VERSION}`)
+		expect(result.devEngines.packageManager.version).toBe(`>=${MOCK_HOST_PNPM_VERSION}`)
+		// name/onFail are preserved from game-kit; only the version is host-derived.
+		expect(result.devEngines.packageManager.name).toBe('pnpm')
+		expect(result.devEngines.packageManager.onFail).toBe('error')
 	})
 
 	it('emits the canonical Cloudflare Worker preview script (not vite preview)', async () => {
