@@ -1,9 +1,9 @@
 import { realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { jgame_init } from './jgame-init.ts'
-import { jgame_sync } from './jgame-sync.ts'
-import { jgame_version_check } from './jgame-version-check.ts'
-import { jgame_version_upgrade } from './jgame-version-upgrade.ts'
+import { jgame_init } from './init/jgame-init.ts'
+import { jgame_sync } from './init/jgame-sync.ts'
+import { jgame_version_check } from './version/jgame-version-check.ts'
+import { jgame_version_upgrade } from './version/jgame-version-upgrade.ts'
 
 const USAGE = 'Usage: jgame <init|sync|version|v|version:upgrade|vu> [name]'
 
