@@ -116,7 +116,7 @@ describe('jgame_managed_scripts.CANONICAL_PREPARE (drift tripwire)', () => {
 		const path = await import('node:path')
 		const { fileURLToPath } = await import('node:url')
 		const this_directory = path.dirname(fileURLToPath(import.meta.url))
-		const raw = real_read(path.join(this_directory, '..', 'package.json'), 'utf8')
+		const raw = real_read(path.join(this_directory, '..', '..', 'package.json'), 'utf8')
 		const root_prepare = (JSON.parse(raw) as { scripts: Record<string, string> }).scripts.prepare
 		const { jgame_managed_scripts } = await import('./jgame-managed-scripts.ts')
 
@@ -133,7 +133,10 @@ describe('jgame_managed_scripts canonical value (integration with real package.j
 		const path = await import('node:path')
 		const { fileURLToPath } = await import('node:url')
 		const this_directory = path.dirname(fileURLToPath(import.meta.url))
-		const real_package_json = real_read(path.join(this_directory, '..', 'package.json'), 'utf8')
+		const real_package_json = real_read(
+			path.join(this_directory, '..', '..', 'package.json'),
+			'utf8',
+		)
 		const { readFileSync } = await import('node:fs')
 
 		vi.mocked(readFileSync).mockReturnValue(real_package_json)
@@ -152,7 +155,10 @@ describe('jgame_managed_scripts canonical value (integration with real package.j
 		const path = await import('node:path')
 		const { fileURLToPath } = await import('node:url')
 		const this_directory = path.dirname(fileURLToPath(import.meta.url))
-		const real_package_json = real_read(path.join(this_directory, '..', 'package.json'), 'utf8')
+		const real_package_json = real_read(
+			path.join(this_directory, '..', '..', 'package.json'),
+			'utf8',
+		)
 		const { readFileSync } = await import('node:fs')
 
 		vi.mocked(readFileSync).mockReturnValue(real_package_json)

@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports -- shared with root eslint.config.js, which (being a .js) cannot import a scripts/.ts sibling; the profile must live at the repo root (#261)
-import { eslint_game_overrides } from '../eslint-game-overrides.js'
+import { eslint_game_overrides } from '../../eslint-game-overrides.js'
 
 // The game-dir cap values come from the shared profile so game-kit's own lint
 // (eslint.config.js) and this scaffold generator cannot drift (#261).

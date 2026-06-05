@@ -4,10 +4,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // Maintainer-only guard. Resolves the repo root from this file's own location
-// (scripts/ -> ..) so it works under `tsx` source execution and Vitest, where
-// jgame_paths.PACKAGE_DIR (tuned for the compiled dist/ layout) would not point
-// at the repo root.
-const REPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
+// (scripts/templates/ -> ../..) so it works under `tsx` source execution and
+// Vitest, where jgame_paths.PACKAGE_DIR (tuned for the compiled dist/ layout)
+// would not point at the repo root.
+const REPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 function repo_path(relative_path: string): string {
 	return path.join(REPO_ROOT, relative_path)

@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { jgame_root_files } from '#scripts/init/jgame-root-files.ts'
 import { describe, expect, it } from 'vitest'
-import { jgame_root_files } from './jgame-root-files.ts'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const TEMPLATES_DIR = path.join(HERE, '..', 'templates')
+const TEMPLATES_DIR = path.join(HERE, '..', '..', 'templates')
 const TEMPLATES_GAME_DIR = path.join(TEMPLATES_DIR, 'src', 'lib', 'game')
 
 // Byte-identical, import-decoupled files single-sourced at the repo root (#266).
@@ -43,7 +43,7 @@ describe('templates/src/lib/game/Board.svelte has the #137 readability behavior 
 })
 
 describe('templates board-config scoreboard depth matches root (#267)', () => {
-	const ROOT_GAME_DIR = path.join(HERE, '..', 'src', 'lib', 'game')
+	const ROOT_GAME_DIR = path.join(HERE, '..', '..', 'src', 'lib', 'game')
 
 	function read_z_offset(directory: string): string {
 		const source = readFileSync(path.join(directory, 'board-config.ts'), 'utf8')

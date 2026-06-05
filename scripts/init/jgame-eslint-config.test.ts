@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports -- the shared profile lives at the repo root so eslint.config.js (a .js) can import it too (#261)
-import { eslint_game_overrides } from '../eslint-game-overrides.js'
+import { eslint_game_overrides } from '../../eslint-game-overrides.js'
 
 vi.mock('node:fs', () => ({ writeFileSync: vi.fn() }))
 
