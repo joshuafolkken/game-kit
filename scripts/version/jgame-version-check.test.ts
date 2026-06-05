@@ -22,24 +22,18 @@ describe('jgame_version_check.parse_version', () => {
 
 describe('jgame_version_check.resolve_package_json_path', () => {
 	const distribution_scripts = path.join('pkg', 'dist', 'scripts')
-	const source_scripts = path.join('pkg', 'scripts')
-	const other_scripts = path.join('elsewhere', 'scripts')
+	const source_scripts = path.join('pkg', 'scripts', 'version')
 	const package_json = path.join('pkg', 'package.json')
-	const other_package_json = path.join('elsewhere', 'package.json')
 
-	it('returns <pkg>/package.json when script is at dist/scripts (built layout)', () => {
+	it('returns <pkg>/package.json from the bundled dist/scripts layout', () => {
 		expect(jgame_version_check.resolve_package_json_path(distribution_scripts)).toBe(package_json)
 	})
 
-	it('returns <pkg>/package.json when script is at scripts (source layout)', () => {
+	it('returns <pkg>/package.json from the scripts/version source layout', () => {
 		expect(jgame_version_check.resolve_package_json_path(source_scripts)).toBe(package_json)
 	})
 
-	it('treats a non-dist scripts segment as source layout (one level up)', () => {
-		expect(jgame_version_check.resolve_package_json_path(other_scripts)).toBe(other_package_json)
-	})
-
-	it('handles trailing separator on dist/scripts path', () => {
+	it('normalizes a trailing separator on the script directory', () => {
 		expect(jgame_version_check.resolve_package_json_path(distribution_scripts + path.sep)).toBe(
 			package_json,
 		)

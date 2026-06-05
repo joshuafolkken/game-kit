@@ -1,5 +1,5 @@
 // Single source of truth for the game-dir ESLint relaxations (#261). Consumed by
-// both eslint.config.js (game-kit's own lint) and scripts/jgame-eslint-config.ts
+// both eslint.config.js (game-kit's own lint) and scripts/init/jgame-eslint-config.ts
 // (the scaffold's generated eslint.config.js), so the two cannot drift. Like the
 // other root config files it is not itself linted (see FILE_IGNORES).
 //
