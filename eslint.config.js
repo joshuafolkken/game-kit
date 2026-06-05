@@ -5,7 +5,7 @@ import svelteConfig from './svelte.config.js'
 
 // The game-dir relaxation profile (null idiom #232, definition-site exports #248,
 // size caps #250, complexity #244) is single-sourced with the scaffold generator
-// (scripts/jgame-eslint-config.ts) so the two cannot drift (#261).
+// (scripts/init/jgame-eslint-config.ts) so the two cannot drift (#261).
 const { GAME_DIR_CAPS, lines_cap, game_idiom_rules, game_complexity_rules } = eslint_game_overrides
 
 // Test files run long by nature (integration it() bodies, table-driven cases) — higher budget than the

@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.136.0",
+	"version": "0.137.0",
 	"keywords": [
 		"svelte"
 	],
@@ -20,6 +20,9 @@
 		},
 		"./cspell/game": "./cspell/game.yaml"
 	},
+	"imports": {
+		"#scripts/*": "./scripts/*"
+	},
 	"bin": {
 		"jgame": "dist/scripts/jgame.js"
 	},
@@ -36,7 +39,7 @@
 		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
 		"prepare": "svelte-kit sync || echo ''; command -v lefthook >/dev/null 2>&1 && lefthook install; command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true",
 		"build:scripts": "pnpm exec esbuild scripts/jgame.ts --bundle --platform=node --packages=external --outdir=dist/scripts/ --format=esm --banner:js='#!/usr/bin/env node'",
-		"reconcile-templates": "tsx scripts/reconcile-templates.ts",
+		"reconcile-templates": "tsx scripts/templates/reconcile-templates.ts",
 		"prepack": "svelte-kit sync && svelte-package && pnpm run build:scripts && publint",
 		"gen:pre": "node -e \"const fs=require('node:fs');const d='.svelte-kit/cloudflare';if(fs.existsSync(d))fs.readdirSync(d).forEach(f=>f.startsWith('_worker.')&&fs.rmSync(d+'/'+f,{force:true}))\"",
 		"gen": "pnpm gen:pre && wrangler types",
@@ -49,12 +52,12 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/kit": "0.219.0",
+		"@joshuafolkken/kit": "0.221.0",
 		"@playwright/test": "1.60.0",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
-		"@sveltejs/kit": "^2.61.1",
-		"@sveltejs/package": "^2.5.7",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/package": "^2.5.8",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/typography": "^0.5.19",
@@ -93,7 +96,7 @@
 		"vitest-browser-svelte": "^2.1.1",
 		"workbox-build": "^7.4.1",
 		"workbox-window": "^7.4.1",
-		"wrangler": "^4.96.0"
+		"wrangler": "^4.97.0"
 	},
 	"peerDependencies": {
 		"@threlte/core": ">=8.0.0",

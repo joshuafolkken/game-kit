@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { jgame_cspell_config } from './jgame-cspell-config.ts'
 
 function read_repo_file(relative_path: string): string {
-	return readFileSync(fileURLToPath(new URL(`../${relative_path}`, import.meta.url)), 'utf8')
+	return readFileSync(fileURLToPath(new URL(`../../${relative_path}`, import.meta.url)), 'utf8')
 }
 
 describe('jgame_cspell_config.generate_cspell_config', () => {

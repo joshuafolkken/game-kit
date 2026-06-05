@@ -52,7 +52,7 @@ const EXPECTED_ROOT_SYNC_FILES = jgame_root_files.ROOT_COPY_FILES
 
 // Resolve the real templates/ dir and repo root from this test file's location
 // so the source-existence guards do not depend on the mocked PROJECT_ROOT.
-const REAL_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const REAL_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const REAL_TEMPLATES_DIR = path.join(REAL_REPO_ROOT, 'templates')
 
 function stub_readFileSync_by_path(

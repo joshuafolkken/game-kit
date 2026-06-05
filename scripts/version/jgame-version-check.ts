@@ -4,20 +4,16 @@ import { fileURLToPath } from 'node:url'
 import { jgame_version_api } from './jgame-version-api.ts'
 import { jgame_version_check_logic } from './jgame-version-check-logic.ts'
 
-// eslint-disable-next-line sonarjs/slow-regex -- bounded input (a filesystem path); trailing-separator match is safe
-const TRAILING_SEPARATOR_PATTERN = /[/\\]+$/u
-
-const DIST_SCRIPTS_DEPTH = 2
-const PACKAGE_ROOT_DEPTH = 1
+// This module is bundled to dist/scripts/jgame.js and also runs from source at
+// scripts/version/jgame-version-check.ts. In BOTH layouts package.json sits exactly two
+// directory levels above this file's directory, so resolve it from that fixed depth
+// (path.join normalizes any trailing separator on the input).
+const PACKAGE_ROOT_DEPTH = 2
 
 function resolve_package_json_path(script_directory: string): string {
-	const trimmed = script_directory.replace(TRAILING_SEPARATOR_PATTERN, '')
-	const segments = trimmed.split(path.sep)
-	const is_distribution =
-		segments.at(-DIST_SCRIPTS_DEPTH) === 'dist' && segments.at(-1) === 'scripts'
-	const levels_up = is_distribution ? DIST_SCRIPTS_DEPTH : PACKAGE_ROOT_DEPTH
+	const ascent = Array.from({ length: PACKAGE_ROOT_DEPTH }, () => '..')
 
-	return path.join(trimmed, ...Array.from({ length: levels_up }, () => '..'), 'package.json')
+	return path.join(script_directory, ...ascent, 'package.json')
 }
 
 const PACKAGE_JSON_PATH = resolve_package_json_path(path.dirname(fileURLToPath(import.meta.url)))
