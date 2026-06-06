@@ -1,22 +1,21 @@
 {
 	"recommendations": [
-		"svelte.svelte-vscode",
 		"esbenp.prettier-vscode",
 		"dbaeumer.vscode-eslint",
-		"bradlc.vscode-tailwindcss",
-		"ms-playwright.playwright",
-		"vitest.explorer",
-		"lokalise.i18n-ally",
 		"streetsidesoftware.code-spell-checker",
-		"github.vscode-pull-request-github",
-		"github.vscode-github-actions",
 		"pkief.material-icon-theme",
 		"mhutchie.git-graph",
 		"usernamehw.errorlens",
 		"yoavbls.pretty-ts-errors",
-		"naumovs.color-highlight",
-		"vincaslt.highlight-matching-tag",
 		"eamodio.gitlens",
-		"sonarsource.sonarlint-vscode"
+		"sonarsource.sonarlint-vscode",
+		"vitest.explorer",
+		"anthropic.claude-code",
+		"github.github-vscode-theme",
+		"ms-playwright.playwright",
+		"svelte.svelte-vscode",
+		"bradlc.vscode-tailwindcss",
+		"coderabbit.coderabbit-vscode",
+		"inlang.vs-code-extension"
 	]
 }
