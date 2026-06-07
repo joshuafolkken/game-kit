@@ -18,6 +18,7 @@ import { jgame_root_files } from './jgame-root-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
+const GAME_KIT_PACKAGE_NAME = '@joshuafolkken/game-kit'
 // npm strips `.npmrc` from published packages regardless of the `files` field,
 // so the template is shipped under a non-dotfile name and renamed on copy.
 const NPMRC_SRC_NAME = 'npmrc'
@@ -149,6 +150,23 @@ function build_scripts(package_: GameKitPackage): Record<string, string> {
 	}
 }
 
+// Generated games are SvelteKit apps that bundle game-kit at build time (it is not
+// re-published as a library), so game-kit belongs in `devDependencies` — and `jgame vu`
+// already enforces this via `pnpm add -D`. Scaffolding it here too means the first
+// `jgame vu` produces no dependency-field churn. Keys are sorted lexicographically so
+// game-kit lands in the same slot `pnpm add -D` would place it (right before
+// `@joshuafolkken/kit`), avoiding key-order churn as well. See #301.
+function build_development_dependencies(package_: GameKitPackage): Record<string, string> {
+	const merged = {
+		...jgame_managed_development_deps.pick_required_deps(package_.devDependencies),
+		[GAME_KIT_PACKAGE_NAME]: `^${package_.version}`,
+	}
+
+	return Object.fromEntries(
+		Object.entries(merged).toSorted(([left], [right]) => (left < right ? -1 : 1)),
+	)
+}
+
 function build_package_json(package_: GameKitPackage, game_name: string): object {
 	const host_pnpm_version = detect_host_pnpm_version()
 
@@ -158,8 +176,7 @@ function build_package_json(package_: GameKitPackage, game_name: string): object
 		private: true,
 		type: 'module',
 		scripts: build_scripts(package_),
-		dependencies: { '@joshuafolkken/game-kit': `^${package_.version}` },
-		devDependencies: jgame_managed_development_deps.pick_required_deps(package_.devDependencies),
+		devDependencies: build_development_dependencies(package_),
 		packageManager: `pnpm@${host_pnpm_version}`,
 		devEngines: build_development_engines(package_.devEngines, host_pnpm_version),
 	}

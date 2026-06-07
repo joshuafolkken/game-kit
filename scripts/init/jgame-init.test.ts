@@ -59,11 +59,37 @@ describe('jgame_init.generate_package_json', () => {
 		vi.mocked(execSync).mockReturnValue(Buffer.from(`${MOCK_HOST_PNPM_VERSION}\n`))
 	})
 
-	it('includes game-kit as dependency with current version', async () => {
+	it('includes game-kit in devDependencies with current version (#301)', async () => {
+		// game-kit is bundled at build time by the generated SvelteKit app, so it lives
+		// in devDependencies — matching what `jgame vu` (`pnpm add -D`) already enforces.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 
-		expect(result.dependencies['@joshuafolkken/game-kit']).toBe('^1.0.0')
+		expect(result.devDependencies['@joshuafolkken/game-kit']).toBe('^1.0.0')
+	})
+
+	it('does not place game-kit in a `dependencies` field (#301)', async () => {
+		// Regression for #301: `jgame init` previously scaffolded game-kit into
+		// `dependencies`, so the first `jgame vu` silently relocated it to
+		// `devDependencies`, producing unexpected dependency-field churn.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
+		expect(result.dependencies).toBeUndefined()
+	})
+
+	it('sorts game-kit lexicographically into devDependencies to avoid `jgame vu` churn (#301)', async () => {
+		// `jgame vu` runs `pnpm add -D`, which re-sorts devDependencies keys. Emitting
+		// the same lexicographic order here means the first upgrade produces no key churn:
+		// game-kit lands immediately before @joshuafolkken/kit.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const parsed = JSON.parse(jgame_init.generate_package_json('my-game')) as {
+			devDependencies: Record<string, string>
+		}
+		const keys = Object.keys(parsed.devDependencies)
+
+		expect(keys).toEqual([...keys].toSorted((left, right) => (left < right ? -1 : 1)))
+		expect(keys.indexOf('@joshuafolkken/game-kit')).toBe(keys.indexOf('@joshuafolkken/kit') - 1)
 	})
 
 	it('uses supplied game name as package name', async () => {
