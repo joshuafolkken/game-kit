@@ -1,8 +1,10 @@
+import path from 'node:path'
+
 const PACKAGE_NAME = '@joshuafolkken/game-kit'
 const UPGRADE_COMMAND = 'pnpm'
 const UPGRADE_ARGS_PREFIX = ['add', '-D'] as const
 const GLOBAL_UPGRADE_ARGS_PREFIX = ['add', '-g'] as const
-const DEP_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'] as const
+const LOCAL_MODULES_DIR = 'node_modules'
 
 interface PackageJsonWithPnpmOverrides {
 	pnpm?: { overrides?: Record<string, string> }
@@ -60,31 +62,16 @@ function format_upgrade_command(latest: string): string {
 	return [UPGRADE_COMMAND, ...build_upgrade_args(latest)].join(' ')
 }
 
-function try_parse_json(raw: string): unknown {
-	try {
-		return JSON.parse(raw)
-	} catch {
-		return undefined
-	}
-}
+// The running binary is the single source of truth, mirroring @joshuafolkken/kit:
+// local (`pnpm jgame` / `node_modules/.bin/jgame`) when the executing binary lives under
+// `<cwd>/node_modules` → update with `-D`; global (`jgame` from the pnpm global store)
+// otherwise → update with `-g`. Keying off package.json contents misfires because
+// `jgame init` scaffolds game-kit into devDependencies, so it is always listed.
+function is_local_install(cwd: string, self_directory: string): boolean {
+	const local_modules = path.resolve(cwd, LOCAL_MODULES_DIR)
+	const normalized_self = path.resolve(self_directory)
 
-function has_game_kit_in_dep_field(value: object, field: (typeof DEP_FIELDS)[number]): boolean {
-	const map: unknown = Reflect.get(value, field)
-	if (typeof map !== 'object' || map === null) return false
-
-	return PACKAGE_NAME in map
-}
-
-function has_game_kit_in_any_dep_field(parsed: object): boolean {
-	return DEP_FIELDS.some((field) => has_game_kit_in_dep_field(parsed, field))
-}
-
-function is_consumer_project_context(raw: string | undefined): raw is string {
-	if (raw === undefined) return false
-	const parsed = try_parse_json(raw)
-	if (typeof parsed !== 'object' || parsed === null) return false
-
-	return has_game_kit_in_any_dep_field(parsed)
+	return normalized_self === local_modules || normalized_self.startsWith(local_modules + path.sep)
 }
 
 function build_global_upgrade_args(latest: string): Array<string> {
@@ -110,7 +97,7 @@ const jgame_version_upgrade_logic = {
 	format_capped_message,
 	build_upgrade_args,
 	format_upgrade_command,
-	is_consumer_project_context,
+	is_local_install,
 	build_global_upgrade_args,
 	format_global_upgrade_command,
 	is_enoent_error,

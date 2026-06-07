@@ -76,43 +76,33 @@ describe('jgame_version_upgrade_logic.format_upgrade_command', () => {
 	})
 })
 
-describe('jgame_version_upgrade_logic.is_consumer_project_context', () => {
-	it('returns true when game-kit is in dependencies', () => {
-		const raw = JSON.stringify({ dependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
-
-		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
+describe('jgame_version_upgrade_logic.is_local_install', () => {
+	it('returns true when the binary dir is exactly <cwd>/node_modules', () => {
+		expect(jgame_version_upgrade_logic.is_local_install('/proj', '/proj/node_modules')).toBe(true)
 	})
 
-	it('returns true when game-kit is in devDependencies', () => {
-		const raw = JSON.stringify({ devDependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
-
-		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
+	it('returns true when the binary dir is nested under <cwd>/node_modules', () => {
+		expect(
+			jgame_version_upgrade_logic.is_local_install(
+				'/proj',
+				'/proj/node_modules/@joshuafolkken/game-kit/dist/scripts',
+			),
+		).toBe(true)
 	})
 
-	it('returns true when game-kit is in peerDependencies', () => {
-		const raw = JSON.stringify({ peerDependencies: { '@joshuafolkken/game-kit': '^0.1.0' } })
-
-		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(true)
+	it('returns false when the binary dir lives in the global pnpm store', () => {
+		expect(
+			jgame_version_upgrade_logic.is_local_install(
+				'/proj',
+				'/usr/local/share/pnpm/global/5/node_modules/@joshuafolkken/game-kit/dist/scripts',
+			),
+		).toBe(false)
 	})
 
-	it('returns false when game-kit is not in any dependency field', () => {
-		const raw = JSON.stringify({ dependencies: { 'other-pkg': '^1.0.0' } })
-
-		expect(jgame_version_upgrade_logic.is_consumer_project_context(raw)).toBe(false)
-	})
-
-	it('returns false when raw is undefined (file missing)', () => {
-		expect(jgame_version_upgrade_logic.is_consumer_project_context(undefined)).toBe(false)
-	})
-
-	it('returns false when raw is malformed JSON', () => {
-		expect(jgame_version_upgrade_logic.is_consumer_project_context('not valid {{{')).toBe(false)
-	})
-
-	it('returns false when raw parses to a non-object', () => {
-		expect(jgame_version_upgrade_logic.is_consumer_project_context('"plain-string"')).toBe(false)
-		expect(jgame_version_upgrade_logic.is_consumer_project_context('42')).toBe(false)
-		expect(jgame_version_upgrade_logic.is_consumer_project_context('null')).toBe(false)
+	it('returns false for a sibling dir sharing the node_modules name prefix', () => {
+		expect(
+			jgame_version_upgrade_logic.is_local_install('/proj', '/proj/node_modules_other/pkg'),
+		).toBe(false)
 	})
 })
 
