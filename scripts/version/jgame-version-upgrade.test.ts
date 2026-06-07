@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { jgame_version_upgrade_logic } from './jgame-version-upgrade-logic.ts'
 
 vi.mock('node:fs', () => ({ readFileSync: vi.fn() }))
 vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }))
@@ -49,14 +50,13 @@ describe('jgame_version_upgrade', () => {
 		expect(typeof jgame_version_upgrade.exec_pnpm_global_add).toBe('function')
 	})
 
-	it('takes the consumer path with pnpm add -D when cwd has game-kit as a dep and no override cap', async () => {
+	it('uses pnpm add -D when the running binary is a local install', async () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
 
-		vi.mocked(readFileSync).mockReturnValue(
-			JSON.stringify({ devDependencies: { '@joshuafolkken/game-kit': '^0.55.0' } }),
-		)
+		vi.spyOn(jgame_version_upgrade_logic, 'is_local_install').mockReturnValue(true)
+		vi.mocked(readFileSync).mockReturnValue(JSON.stringify({ name: 'consumer' }))
 		vi.mocked(jgame_version_api.fetch_latest_version).mockReturnValue(LATEST_VERSION)
 		vi.mocked(spawnSync).mockReturnValue(mock_spawn_result(0))
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
@@ -70,15 +70,13 @@ describe('jgame_version_upgrade', () => {
 		)
 	})
 
-	it('respects the pnpm.overrides cap in consumer context (no spawn)', async () => {
+	it('respects the pnpm.overrides cap on the local path (no spawn)', async () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 
+		vi.spyOn(jgame_version_upgrade_logic, 'is_local_install').mockReturnValue(true)
 		vi.mocked(readFileSync).mockReturnValue(
-			JSON.stringify({
-				devDependencies: { '@joshuafolkken/game-kit': '^0.55.0' },
-				pnpm: { overrides: { '@joshuafolkken/game-kit': '<1.0.0' } },
-			}),
+			JSON.stringify({ pnpm: { overrides: { '@joshuafolkken/game-kit': '<1.0.0' } } }),
 		)
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
 
@@ -88,11 +86,12 @@ describe('jgame_version_upgrade', () => {
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('Skipping upgrade'))
 	})
 
-	it('falls back to global upgrade with pnpm add -g when package.json is missing', async () => {
+	it('proceeds with pnpm add -D on the local path when package.json is missing', async () => {
 		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
 
+		vi.spyOn(jgame_version_upgrade_logic, 'is_local_install').mockReturnValue(true)
 		vi.mocked(readFileSync).mockImplementation(() => {
 			throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
 		})
@@ -104,19 +103,16 @@ describe('jgame_version_upgrade', () => {
 
 		expect(spawnSync).toHaveBeenCalledWith(
 			'pnpm',
-			['add', '-g', `@joshuafolkken/game-kit@${LATEST_VERSION}`],
+			['add', '-D', `@joshuafolkken/game-kit@${LATEST_VERSION}`],
 			expect.anything(),
 		)
 	})
 
-	it('falls back to global upgrade when cwd package.json has no game-kit dep', async () => {
-		const { readFileSync } = await import('node:fs')
+	it('uses pnpm add -g when the running binary is a global install', async () => {
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
 
-		vi.mocked(readFileSync).mockReturnValue(
-			JSON.stringify({ devDependencies: { unrelated: '^1.0.0' } }),
-		)
+		vi.spyOn(jgame_version_upgrade_logic, 'is_local_install').mockReturnValue(false)
 		vi.mocked(jgame_version_api.fetch_latest_version).mockReturnValue(LATEST_VERSION)
 		vi.mocked(spawnSync).mockReturnValue(mock_spawn_result(0))
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
@@ -130,9 +126,25 @@ describe('jgame_version_upgrade', () => {
 		)
 	})
 
-	it('rethrows non-ENOENT errors from readFileSync instead of falling back to global', async () => {
+	it('does not read package.json on the global path', async () => {
+		const { readFileSync } = await import('node:fs')
+		const { spawnSync } = await import('node:child_process')
+		const { jgame_version_api } = await import('./jgame-version-api.ts')
+
+		vi.spyOn(jgame_version_upgrade_logic, 'is_local_install').mockReturnValue(false)
+		vi.mocked(jgame_version_api.fetch_latest_version).mockReturnValue(LATEST_VERSION)
+		vi.mocked(spawnSync).mockReturnValue(mock_spawn_result(0))
+		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
+
+		jgame_version_upgrade.run()
+
+		expect(readFileSync).not.toHaveBeenCalled()
+	})
+
+	it('rethrows non-ENOENT errors from readFileSync on the local path', async () => {
 		const { readFileSync } = await import('node:fs')
 
+		vi.spyOn(jgame_version_upgrade_logic, 'is_local_install').mockReturnValue(true)
 		vi.mocked(readFileSync).mockImplementation(() => {
 			throw Object.assign(new Error('permission denied'), { code: 'EACCES' })
 		})
@@ -144,13 +156,10 @@ describe('jgame_version_upgrade', () => {
 	})
 
 	it('warns and skips spawn when fetch_latest_version returns undefined', async () => {
-		const { readFileSync } = await import('node:fs')
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_version_api } = await import('./jgame-version-api.ts')
 
-		vi.mocked(readFileSync).mockImplementation(() => {
-			throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
-		})
+		vi.spyOn(jgame_version_upgrade_logic, 'is_local_install').mockReturnValue(false)
 		vi.mocked(jgame_version_api.fetch_latest_version).mockReturnValue(undefined)
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
 

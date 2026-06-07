@@ -1,10 +1,12 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { jgame_version_api } from './jgame-version-api.ts'
 import { jgame_version_upgrade_logic } from './jgame-version-upgrade-logic.ts'
 
 const PROJECT_PACKAGE_JSON = path.join(process.cwd(), 'package.json')
+const SELF_DIR = path.dirname(fileURLToPath(import.meta.url))
 
 function read_project_package_json_or_undefined(): string | undefined {
 	try {
@@ -58,9 +60,17 @@ function fetch_and_exec(exec: (latest: string) => number): void {
 	if (status !== 0) process.exit(status)
 }
 
-function run_consumer_upgrade(raw: string): void {
+function find_override_cap(): string | undefined {
+	const raw = read_project_package_json_or_undefined()
+	if (raw === undefined) return undefined
+
 	const overrides = jgame_version_upgrade_logic.parse_overrides_from_package(raw)
-	const capped_value = jgame_version_upgrade_logic.extract_game_kit_override(overrides)
+
+	return jgame_version_upgrade_logic.extract_game_kit_override(overrides)
+}
+
+function run_local_upgrade(): void {
+	const capped_value = find_override_cap()
 
 	if (capped_value !== undefined) {
 		console.info(jgame_version_upgrade_logic.format_capped_message(capped_value))
@@ -72,10 +82,8 @@ function run_consumer_upgrade(raw: string): void {
 }
 
 function run(): void {
-	const raw = read_project_package_json_or_undefined()
-
-	if (jgame_version_upgrade_logic.is_consumer_project_context(raw)) {
-		run_consumer_upgrade(raw)
+	if (jgame_version_upgrade_logic.is_local_install(process.cwd(), SELF_DIR)) {
+		run_local_upgrade()
 
 		return
 	}
