@@ -136,3 +136,18 @@ describe('templates/src/routes/+page.svelte GameScene props track the GameScene 
 		expect(extract_game_scene_tag(template_page)).not.toContain(property)
 	})
 })
+
+describe('.gitignore ignores generated .svelte-kit at any depth (regression for #296)', () => {
+	const gitignore_source = readFileSync(path.join(REPO_ROOT, '.gitignore'), 'utf8')
+
+	it('ignores .svelte-kit with an un-anchored pattern so templates/.svelte-kit is covered too', () => {
+		// An un-anchored pattern (no leading slash) matches .svelte-kit at any depth,
+		// including the generated templates/.svelte-kit that the npm tarball ships.
+		expect(gitignore_source).toMatch(/^\.svelte-kit\/?$/mu)
+	})
+
+	it('does not keep the old root-anchored /.svelte-kit pattern that missed templates/', () => {
+		// A leading slash anchors to the repo root and leaves templates/.svelte-kit tracked.
+		expect(gitignore_source).not.toMatch(/^\/\.svelte-kit(\/|$)/mu)
+	})
+})
