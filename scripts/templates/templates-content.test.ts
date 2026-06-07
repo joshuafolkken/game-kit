@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -28,18 +27,6 @@ function extract_properties_interface(source: string): string {
 
 function collect_label_properties(text: string): Array<string> {
 	return [...text.matchAll(/\blabel_\w+/gu)].map((occurrence) => occurrence[0])
-}
-
-// `git check-ignore` exits 0 when the path is ignored and 1 when it is not
-// (execFileSync throws on the non-zero exit), so a thrown call means "tracked".
-function is_git_ignored(relative_path: string): boolean {
-	try {
-		execFileSync('git', ['check-ignore', relative_path], { cwd: REPO_ROOT, stdio: 'pipe' })
-
-		return true
-	} catch {
-		return false
-	}
 }
 
 // Byte-identical, import-decoupled files single-sourced at the repo root (#266).
@@ -151,11 +138,16 @@ describe('templates/src/routes/+page.svelte GameScene props track the GameScene 
 })
 
 describe('.gitignore ignores generated .svelte-kit at any depth (regression for #296)', () => {
-	it('ignores generated artifacts under templates/.svelte-kit (was tracked and could leak into the npm tarball)', () => {
-		expect(is_git_ignored('templates/.svelte-kit/env.d.ts')).toBe(true)
+	const gitignore_source = readFileSync(path.join(REPO_ROOT, '.gitignore'), 'utf8')
+
+	it('ignores .svelte-kit with an un-anchored pattern so templates/.svelte-kit is covered too', () => {
+		// An un-anchored pattern (no leading slash) matches .svelte-kit at any depth,
+		// including the generated templates/.svelte-kit that the npm tarball ships.
+		expect(gitignore_source).toMatch(/^\.svelte-kit\/?$/mu)
 	})
 
-	it('still ignores the repo-root .svelte-kit (no regression from un-anchoring the pattern)', () => {
-		expect(is_git_ignored('.svelte-kit/output')).toBe(true)
+	it('does not keep the old root-anchored /.svelte-kit pattern that missed templates/', () => {
+		// A leading slash anchors to the repo root and leaves templates/.svelte-kit tracked.
+		expect(gitignore_source).not.toMatch(/^\/\.svelte-kit(\/|$)/mu)
 	})
 })
