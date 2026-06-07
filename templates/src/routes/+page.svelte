@@ -25,10 +25,6 @@
 <GameScene
 	{hint_text}
 	label_jump={messages.jump_button}
-	label_move={messages.controls_move}
-	label_look={messages.controls_look}
-	label_action={messages.controls_action}
-	label_return={messages.controls_return}
 	label_game={messages.game_application_label}
 	label_game_started={messages.game_started_announcement}
 	label_pause={messages.pause_button}

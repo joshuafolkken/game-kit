@@ -5,8 +5,29 @@ import { jgame_root_files } from '#scripts/init/jgame-root-files.ts'
 import { describe, expect, it } from 'vitest'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const TEMPLATES_DIR = path.join(HERE, '..', '..', 'templates')
+const REPO_ROOT = path.join(HERE, '..', '..')
+const TEMPLATES_DIR = path.join(REPO_ROOT, 'templates')
 const TEMPLATES_GAME_DIR = path.join(TEMPLATES_DIR, 'src', 'lib', 'game')
+const TEMPLATE_PAGE_PATH = path.join(TEMPLATES_DIR, 'src', 'routes', '+page.svelte')
+const GAME_SCENE_PATH = path.join(REPO_ROOT, 'src', 'lib', 'game-kit', 'GameScene.svelte')
+
+function extract_game_scene_tag(source: string): string {
+	const match = /<GameScene\b([^>]*)>/u.exec(source)
+	if (match === null) throw new Error('GameScene opening tag not found')
+
+	return match[1]
+}
+
+function extract_properties_interface(source: string): string {
+	const match = /interface Props \{([\s\S]*?)\}/u.exec(source)
+	if (match === null) throw new Error('GameScene Props interface not found')
+
+	return match[1]
+}
+
+function collect_label_properties(text: string): Array<string> {
+	return [...text.matchAll(/\blabel_\w+/gu)].map((occurrence) => occurrence[0])
+}
 
 // Byte-identical, import-decoupled files single-sourced at the repo root (#266).
 // They are copied directly from the package root by jgame init / sync and MUST
@@ -95,5 +116,23 @@ describe('templates/pnpm-workspace.yaml minimumReleaseAgeExclude (regression for
 		// Guard against accidental @version-pinned form sneaking in instead.
 		// eslint-disable-next-line sonarjs/slow-regex -- bounded input (a small workspace yaml); anchored line match is safe
 		expect(yaml_source).not.toMatch(/^\s*-\s*["']?@joshuafolkken\/game-kit@\d/mu)
+	})
+})
+
+describe('templates/src/routes/+page.svelte GameScene props track the GameScene API (regression for #294)', () => {
+	const REMOVED_PROPS = ['label_move', 'label_look', 'label_action', 'label_return'] as const
+	const template_page = readFileSync(TEMPLATE_PAGE_PATH, 'utf8')
+	const game_scene = readFileSync(GAME_SCENE_PATH, 'utf8')
+
+	it('only passes label_* props that GameScene declares in its Props interface', () => {
+		const declared = new Set(collect_label_properties(extract_properties_interface(game_scene)))
+		const passed = collect_label_properties(extract_game_scene_tag(template_page))
+		const unknown = passed.filter((name) => !declared.has(name))
+
+		expect(unknown).toEqual([])
+	})
+
+	it.each(REMOVED_PROPS)('does not pass the removed %s prop', (property) => {
+		expect(extract_game_scene_tag(template_page)).not.toContain(property)
 	})
 })
