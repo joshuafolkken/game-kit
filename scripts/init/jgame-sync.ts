@@ -9,6 +9,14 @@ import { jgame_paths } from './jgame-paths.ts'
 import { jgame_root_files } from './jgame-root-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
+// Resolvability probe: `josh help` exits 0 when the bin is reachable and non-zero
+// otherwise. `ignore` keeps the probe silent so it does not pollute sync output.
+const JOSH_PROBE_OPTIONS = { stdio: 'ignore' as const }
+
+const FORCE_FLAG = '--force'
+const JOSH_MISSING_MESSAGE =
+	'\n❌ jgame sync: the `josh` command from @joshuafolkken/kit is not resolvable.\n' +
+	'   Ensure @joshuafolkken/kit is installed (run `pnpm install`), then re-run `jgame sync`.\n'
 
 interface SyncEntry {
 	dest: string
@@ -162,11 +170,41 @@ function pre_sync_pnpm_workspace_yaml(): void {
 	sync_file({ dest: 'pnpm-workspace.yaml' })
 }
 
+function is_josh_resolvable(): boolean {
+	try {
+		execSync('pnpm josh help', JOSH_PROBE_OPTIONS)
+
+		return true
+	} catch {
+		return false
+	}
+}
+
+// Delegate the kit-owned portion of the sync to `josh sync`. Guard first so a
+// missing/unresolvable `josh` bin yields an actionable message and a non-zero
+// exit, rather than an opaque pnpm error or a silent skip of kit-managed files.
+// `--force` is forwarded so kit-owned files are overwritten too; josh sync reads
+// `process.argv.includes('--force')` itself.
+function delegate_to_josh_sync(): void {
+	if (!is_josh_resolvable()) {
+		console.error(JOSH_MISSING_MESSAGE)
+		process.exit(1)
+	}
+
+	if (process.argv.includes(FORCE_FLAG)) {
+		execSync('pnpm josh sync --force', SPAWN_OPTIONS)
+
+		return
+	}
+
+	execSync('pnpm josh sync', SPAWN_OPTIONS)
+}
+
 function run(): void {
 	console.info('\n🔄 jgame sync\n')
 	sync_managed_development_deps()
 	pre_sync_pnpm_workspace_yaml()
-	execSync('pnpm josh sync', SPAWN_OPTIONS)
+	delegate_to_josh_sync()
 	// `josh sync` early-returns for missing configs (#184); `josh init` is the
 	// canonical scaffolder and is idempotent on existing files.
 	execSync('pnpm josh init --type sveltekit', SPAWN_OPTIONS)
@@ -188,5 +226,6 @@ const jgame_sync = {
 	run,
 	apply_managed_scripts,
 	apply_managed_dev_deps: apply_managed_development_deps,
+	is_josh_resolvable,
 }
 export { jgame_sync }
