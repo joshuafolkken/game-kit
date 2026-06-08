@@ -541,6 +541,100 @@ describe('jgame_sync.apply_managed_dev_deps', () => {
 	})
 })
 
+describe('jgame_sync.is_josh_resolvable', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('returns true when the josh probe command succeeds', async () => {
+		const { execSync } = await import('node:child_process')
+
+		vi.mocked(execSync).mockReturnValue(Buffer.from(''))
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		expect(jgame_sync.is_josh_resolvable()).toBe(true)
+		expect(execSync).toHaveBeenCalledWith('pnpm josh help', expect.any(Object))
+	})
+
+	it('returns false when the josh probe command throws (bin unresolvable)', async () => {
+		const { execSync } = await import('node:child_process')
+
+		vi.mocked(execSync).mockImplementation(() => {
+			throw new Error('command not found: josh')
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		expect(jgame_sync.is_josh_resolvable()).toBe(false)
+	})
+})
+
+describe('jgame_sync.run josh sync delegation', () => {
+	beforeEach(async () => {
+		vi.clearAllMocks()
+		// clearAllMocks keeps implementations; reset execSync so a throwing probe
+		// from the is_josh_resolvable suite does not leak into the default path here.
+		const { execSync } = await import('node:child_process')
+
+		vi.mocked(execSync).mockReset()
+		vi.spyOn(console, 'info').mockImplementation(() => {
+			/* no-op */
+		})
+		const { readFileSync } = await import('node:fs')
+		const package_json = JSON.stringify({
+			scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+			devDependencies: KIT_DEV_DEPS_FIXTURE,
+		})
+
+		stub_readFileSync_by_path(vi.mocked(readFileSync), {
+			'/pkg/package.json': package_json,
+			'/project/package.json': package_json,
+		})
+	})
+
+	it('forwards --force to the delegated josh sync when invoked with --force', async () => {
+		const { execSync } = await import('node:child_process')
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const original_argv = process.argv
+
+		process.argv = ['node', 'jgame', 'sync', '--force']
+
+		try {
+			jgame_sync.run()
+			expect(execSync).toHaveBeenCalledWith('pnpm josh sync --force', expect.any(Object))
+		} finally {
+			process.argv = original_argv
+		}
+	})
+
+	it('logs an actionable error and exits non-zero when josh is unresolvable', async () => {
+		// Bin absent: the resolvability probe (pnpm josh help) throws. jgame sync must
+		// surface an actionable message naming @joshuafolkken/kit and exit non-zero,
+		// rather than silently skipping the kit-owned files or emitting an opaque error.
+		const { execSync } = await import('node:child_process')
+
+		vi.mocked(execSync).mockImplementation((command) => {
+			if (command === 'pnpm josh help') throw new Error('command not found: josh')
+
+			return Buffer.from('')
+		})
+		const error_spy = vi.spyOn(console, 'error').mockImplementation(() => {
+			/* no-op */
+		})
+
+		vi.spyOn(process, 'exit').mockImplementation(() => {
+			throw new Error('process.exit called')
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		expect(() => {
+			jgame_sync.run()
+		}).toThrow('process.exit called')
+		expect(process.exit).toHaveBeenCalledWith(1)
+		expect(error_spy).toHaveBeenCalledWith(expect.stringContaining('@joshuafolkken/kit'))
+		expect(execSync).not.toHaveBeenCalledWith('pnpm josh sync', expect.anything())
+	})
+})
+
 describe('jgame_sync.apply_managed_scripts', () => {
 	it('reports no change when consumer already has canonical values', async () => {
 		const { jgame_sync } = await import('./jgame-sync.ts')
