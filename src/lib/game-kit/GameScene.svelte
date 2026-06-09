@@ -111,7 +111,7 @@
 	}
 
 	function on_key_down(event: KeyboardEvent): void {
-		if (event.key === 'Escape' || event.key === 'z' || event.key === 'Z') {
+		if (['Escape', 'z', 'Z'].includes(event.key)) {
 			if (session.is_session_started) {
 				event.preventDefault()
 				session.reset_session()

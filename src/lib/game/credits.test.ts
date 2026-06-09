@@ -75,7 +75,7 @@ describe('credits', () => {
 		})
 
 		it('includes Special Thanks new contributors after the section header', () => {
-			const special_thanks_block = CREDITS_TEXT.split('SPECIAL THANKS')[1] ?? ''
+			const special_thanks_block = CREDITS_TEXT.split('SPECIAL THANKS', 2)[1] ?? ''
 
 			expect(special_thanks_block).toContain('Incognito')
 			expect(special_thanks_block).toContain('Daisuke')
