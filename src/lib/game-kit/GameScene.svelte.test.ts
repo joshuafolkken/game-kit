@@ -223,6 +223,18 @@ describe('ESC / Z key — return to start', () => {
 		expect(session.is_session_started).toBe(false)
 	})
 
+	it('pressing uppercase Z while session is active calls reset_session', () => {
+		const { container } = render_scene()
+		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
+
+		expect(scene).toBeTruthy()
+		if (!scene) return
+		scene.click()
+		expect(session.is_session_started).toBe(true)
+		scene.dispatchEvent(new KeyboardEvent('keydown', { key: 'Z', bubbles: true }))
+		expect(session.is_session_started).toBe(false)
+	})
+
 	it('pressing ESC while session is not active does not start the game', () => {
 		const { container } = render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
