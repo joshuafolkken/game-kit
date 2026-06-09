@@ -20,19 +20,31 @@ vi.mock('./jgame-paths.ts', () => ({
 
 const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
 const CANONICAL_PREPARE =
-	"svelte-kit sync || echo ''; command -v lefthook >/dev/null 2>&1 && lefthook install; command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true"
+	'pnpm prepare:gen && pnpm prepare:sync && pnpm prepare:lefthook && pnpm prepare:gh-packages'
+// The orchestrated sub-scripts `prepare` delegates to — these SURVIVE `pnpm pack`
+// (only the bare `prepare` key is stripped), so they mirror the published shape.
+const PUBLISHED_SUB_SCRIPTS = {
+	'prepare:gen': '[ -f wrangler.jsonc ] && pnpm gen; true',
+	'prepare:sync': "svelte-kit sync || echo ''",
+	'prepare:lefthook': 'command -v lefthook >/dev/null 2>&1 && lefthook install; true',
+	'prepare:gh-packages':
+		'command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true',
+	gen: 'pnpm gen:pre && wrangler types',
+	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
+}
 const MOCK_HOST_PNPM_VERSION = '11.3.0'
 const MAX_LINE_LENGTH = 100
 
-// `pnpm pack` strips both the top-level `packageManager` field AND the `prepare`
+// `pnpm pack` strips both the top-level `packageManager` field AND the bare `prepare`
 // lifecycle script on publish, so the fixture mirrors that published shape: only
-// `devEngines.packageManager` remains, and `scripts` carries NO `prepare` (init must
-// emit the canonical prepare from CANONICAL_PREPARE, not from the manifest). The
-// pre-#279 fixture wrongly kept `prepare` here, so the unit suite passed while the
-// real published init crashed (#279).
+// `devEngines.packageManager` remains, and `scripts` carries NO bare `prepare` (init
+// must emit the orchestrator from CANONICAL_PREPARE, not from the manifest). The
+// colon-namespaced `prepare:*` sub-scripts + `gen` / `gen:pre` DO survive publish, so
+// they are present here and init reads them through. The pre-#279 fixture wrongly kept
+// `prepare`, so the unit suite passed while the real published init crashed (#279).
 const MOCK_PKG = {
 	version: '1.0.0',
-	scripts: { preview: CANONICAL_PREVIEW },
+	scripts: { preview: CANONICAL_PREVIEW, ...PUBLISHED_SUB_SCRIPTS },
 	devDependencies: {
 		'@ianvs/prettier-plugin-sort-imports': '^4.7.1',
 		'@joshuafolkken/kit': '0.162.0',
@@ -148,24 +160,44 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.scripts.postinstall).toBeUndefined()
 	})
 
-	it('emits a guarded prepare whose CLIs are all covered by managed devDeps (#272)', async () => {
+	it('emits an orchestrated prepare that delegates to guarded prepare:* sub-scripts (#311)', async () => {
+		// Regression for #279: MOCK_PKG mirrors the published shape (no bare `prepare`),
+		// yet init MUST still emit the canonical orchestrator from CANONICAL_PREPARE.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
+		expect(result.scripts.prepare).toBe(CANONICAL_PREPARE)
+		expect(result.scripts['prepare:sync']).toBe(PUBLISHED_SUB_SCRIPTS['prepare:sync'])
+		expect(result.scripts.gen).toBe(PUBLISHED_SUB_SCRIPTS.gen)
+		expect(result.scripts['gen:pre']).toBe(PUBLISHED_SUB_SCRIPTS['gen:pre'])
+	})
+
+	it('emits guarded prepare:* sub-scripts whose CLIs are all covered by managed devDeps (#272)', async () => {
 		// Acceptance criterion: scaffold-managed dependencies cover every CLI the
-		// generated setup script invokes, and each is `command -v`-guarded so a
+		// generated setup sub-scripts invoke, and each is `command -v`-guarded so a
 		// missing binary skips instead of failing install.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 
-		for (const tool of ['lefthook', 'tsx'] as const) {
-			expect(result.scripts.prepare).toContain(`command -v ${tool} >/dev/null 2>&1 && ${tool}`)
-			expect(result.devDependencies[tool]).toBeDefined()
-		}
-
+		expect(result.scripts['prepare:lefthook']).toContain(
+			'command -v lefthook >/dev/null 2>&1 && lefthook',
+		)
+		expect(result.scripts['prepare:gh-packages']).toContain('command -v tsx >/dev/null 2>&1 && tsx')
 		expect(result.devDependencies.lefthook).toBe('^2.1.9')
 		expect(result.devDependencies.tsx).toBe('^4.22.4')
-		expect(result.scripts.prepare).toMatch(/;\s*true\s*$/u)
-		// Regression for #279: MOCK_PKG mirrors the published shape (no `prepare`),
-		// yet init MUST still emit the canonical guarded prepare from CANONICAL_PREPARE.
-		expect(result.scripts.prepare).toBe(CANONICAL_PREPARE)
+		expect(result.scripts['prepare:lefthook']).toMatch(/;\s*true\s*$/u)
+		expect(result.scripts['prepare:gh-packages']).toMatch(/;\s*true\s*$/u)
+	})
+
+	it('guards prepare:gen on wrangler.jsonc so the first scaffold install no-ops (#311)', async () => {
+		// The scaffold's first `pnpm install` fires `prepare` BEFORE `josh sync` writes
+		// wrangler.jsonc, so an unguarded `wrangler types` would abort install. The guard
+		// makes gen skip until the config exists, then run on later installs.
+		const { jgame_init } = await import('./jgame-init.ts')
+		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
+
+		expect(result.scripts['prepare:gen']).toMatch(/\[ -f wrangler\.jsonc \] && pnpm gen/u)
+		expect(result.scripts['prepare:gen']).toMatch(/;\s*true\s*$/u)
 	})
 
 	it('emits packageManager derived from the host pnpm version', async () => {
