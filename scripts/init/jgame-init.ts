@@ -133,6 +133,13 @@ function build_development_engines(
 	}
 }
 
+// `prepare` (not `postinstall`): owner-only setup that ORCHESTRATES guarded `prepare:*`
+// sub-scripts, single-sourced from game-kit (#272, #311). Each sub-script is guarded
+// (`command -v` for lefthook/tsx, `[ -f wrangler.jsonc ]` for gen) so a missing tool or
+// config skips instead of failing `pnpm install`. The gen guard matters because the
+// scaffold's first `pnpm install` fires before `josh sync` writes wrangler.jsonc — gen
+// must no-op then and only run once the config exists. The referenced sub-scripts +
+// `gen` / `gen:pre` are emitted here too, or `prepare` would call missing scripts.
 function build_scripts(package_: GameKitPackage): Record<string, string> {
 	const managed = jgame_managed_scripts.pick_managed_scripts(package_.scripts)
 
@@ -141,10 +148,13 @@ function build_scripts(package_: GameKitPackage): Record<string, string> {
 		dev: 'vite dev',
 		build: 'vite build',
 		preview: managed.preview,
-		// `prepare` (not `postinstall`): owner-only setup, `command -v`-guarded so a
-		// missing tool skips instead of failing `pnpm install`. lefthook + tsx ship as
-		// managed devDeps so the guards actually run. Single-sourced from game-kit. See #272.
 		prepare: managed.prepare,
+		'prepare:gen': managed['prepare:gen'],
+		'prepare:sync': managed['prepare:sync'],
+		'prepare:lefthook': managed['prepare:lefthook'],
+		'prepare:gh-packages': managed['prepare:gh-packages'],
+		gen: managed.gen,
+		'gen:pre': managed['gen:pre'],
 		jgame: 'jgame',
 		josh: 'josh',
 	}

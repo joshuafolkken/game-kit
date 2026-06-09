@@ -27,7 +27,26 @@ vi.mock('./jgame-paths.ts', () => ({
 
 const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
 const CANONICAL_PREPARE =
-	"svelte-kit sync || echo ''; command -v lefthook >/dev/null 2>&1 && lefthook install; command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true"
+	'pnpm prepare:gen && pnpm prepare:sync && pnpm prepare:lefthook && pnpm prepare:gh-packages'
+// The orchestrated sub-scripts `prepare` delegates to. All SURVIVE `pnpm pack` (only the
+// bare `prepare` key is stripped), so they are part of game-kit's published shape.
+const PUBLISHED_SUB_SCRIPTS = {
+	'prepare:gen': '[ -f wrangler.jsonc ] && pnpm gen; true',
+	'prepare:sync': "svelte-kit sync || echo ''",
+	'prepare:lefthook': 'command -v lefthook >/dev/null 2>&1 && lefthook install; true',
+	'prepare:gh-packages':
+		'command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true',
+	gen: 'pnpm gen:pre && wrangler types',
+	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
+}
+// The full canonical script set game-kit owns (the published shape plus the pinned bare
+// `prepare`). Used both as the /pkg source `read_canonical_scripts` reads and as the
+// "already canonical" consumer baseline so a fully-synced consumer triggers no rewrite.
+const CANONICAL_SCRIPTS = {
+	preview: CANONICAL_PREVIEW,
+	prepare: CANONICAL_PREPARE,
+	...PUBLISHED_SUB_SCRIPTS,
+}
 
 // Framework / app-shell files that jgame sync refreshes from templates/ on every
 // run. Each entry pairs the destination path inside the user project with the
@@ -117,11 +136,11 @@ describe('jgame_sync.run', () => {
 		})
 		const { readFileSync } = await import('node:fs')
 		const game_kit_package = JSON.stringify({
-			scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+			scripts: CANONICAL_SCRIPTS,
 			devDependencies: KIT_DEV_DEPS_FIXTURE,
 		})
 		const consumer_package = JSON.stringify({
-			scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+			scripts: CANONICAL_SCRIPTS,
 			devDependencies: KIT_DEV_DEPS_FIXTURE,
 		})
 
@@ -296,7 +315,7 @@ describe('jgame_sync managed package.json scripts', () => {
 
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
@@ -328,12 +347,12 @@ describe('jgame_sync managed package.json scripts', () => {
 
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE, dev: 'vite dev' },
+				scripts: { ...CANONICAL_SCRIPTS, dev: 'vite dev' },
 				devDependencies: development_deps,
 			}),
 		})
@@ -357,7 +376,7 @@ describe('jgame_sync managed package.json scripts', () => {
 
 		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
@@ -385,13 +404,45 @@ describe('jgame_sync managed package.json scripts', () => {
 		expect(written.devDependencies.tsx).toBeDefined()
 	})
 
+	it('self-heals an existing consumer that lacks the orchestrated prepare:* sub-scripts (#311)', async () => {
+		// A consumer scaffolded before #311 has the old inline `prepare` but none of the
+		// `prepare:*` / `gen` sub-scripts it now delegates to. jgame sync must add them so
+		// the orchestrated prepare does not call missing scripts on the next install.
+		const { readFileSync, writeFileSync } = await import('node:fs')
+
+		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
+			'/pkg/package.json': JSON.stringify({
+				scripts: CANONICAL_SCRIPTS,
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: { preview: CANONICAL_PREVIEW, prepare: 'svelte-kit sync || echo ""' },
+				devDependencies: { '@joshuafolkken/kit': '0.150.0' },
+			}),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		jgame_sync.run()
+		const package_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
+
+		expect(written.scripts.prepare).toBe(CANONICAL_PREPARE)
+
+		for (const [key, value] of Object.entries(PUBLISHED_SUB_SCRIPTS)) {
+			expect(written.scripts[key]).toBe(value)
+		}
+	})
+
 	it('adds the canonical preview script when the consumer has no scripts field', async () => {
 		const { readFileSync, writeFileSync } = await import('node:fs')
 		const development_deps = await build_complete_consumer_development_deps()
 
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
@@ -429,12 +480,12 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: { '@joshuafolkken/kit': '0.150.0' },
 			}),
 		})
@@ -459,7 +510,7 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
@@ -485,12 +536,12 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
-				scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+				scripts: CANONICAL_SCRIPTS,
 				devDependencies: development_deps,
 			}),
 		})
@@ -581,7 +632,7 @@ describe('jgame_sync.run josh sync delegation', () => {
 		})
 		const { readFileSync } = await import('node:fs')
 		const package_json = JSON.stringify({
-			scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE },
+			scripts: CANONICAL_SCRIPTS,
 			devDependencies: KIT_DEV_DEPS_FIXTURE,
 		})
 
