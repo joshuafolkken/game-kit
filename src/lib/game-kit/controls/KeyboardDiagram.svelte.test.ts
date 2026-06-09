@@ -77,7 +77,7 @@ describe('KeyboardDiagram', () => {
 					.getAttribute('points')
 					?.trim()
 					.split(/\s+/u)
-					.map((pt) => Number(pt.split(',')[1])) ?? [],
+					.map((pt) => Number(pt.split(',', 2)[1])) ?? [],
 		)
 		const span = Math.max(...all_y_values) - Math.min(...all_y_values)
 
