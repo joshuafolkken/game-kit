@@ -137,6 +137,36 @@ describe('templates/src/routes/+page.svelte GameScene props track the GameScene 
 	})
 })
 
+describe('templates/vite.config.ts ships the vitest test config required by josh test:unit (regression for #322)', () => {
+	const vite_config_source = readFileSync(path.join(TEMPLATES_DIR, 'vite.config.ts'), 'utf8')
+
+	it('imports defineConfig from vitest/config and the playwright browser provider', () => {
+		expect(vite_config_source).toContain("import { defineConfig } from 'vitest/config'")
+		expect(vite_config_source).toContain("import { playwright } from '@vitest/browser-playwright'")
+		// The pre-#322 form imported defineConfig from plain vite, which drops the
+		// `test` typing and silently accepts a vitest run with no test config.
+		expect(vite_config_source).not.toContain("import { defineConfig } from 'vite'")
+	})
+
+	it('requires assertions in every test', () => {
+		expect(vite_config_source).toContain('expect: { requireAssertions: true }')
+	})
+
+	it('defines the client browser project running svelte specs in headless chromium', () => {
+		expect(vite_config_source).toContain("name: 'client'")
+		expect(vite_config_source).toContain('provider: playwright()')
+		expect(vite_config_source).toContain("instances: [{ browser: 'chromium', headless: true }]")
+		expect(vite_config_source).toContain("include: ['src/**/*.svelte.{test,spec}.{js,ts}']")
+	})
+
+	it('defines the server node project excluding the svelte specs', () => {
+		expect(vite_config_source).toContain("name: 'server'")
+		expect(vite_config_source).toContain("environment: 'node'")
+		expect(vite_config_source).toContain("include: ['src/**/*.{test,spec}.{js,ts}']")
+		expect(vite_config_source).toContain("exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']")
+	})
+})
+
 describe('.gitignore ignores generated .svelte-kit at any depth (regression for #296)', () => {
 	const gitignore_source = readFileSync(path.join(REPO_ROOT, '.gitignore'), 'utf8')
 
