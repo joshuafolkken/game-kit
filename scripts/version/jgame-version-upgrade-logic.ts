@@ -53,10 +53,17 @@ function parse_override_line(line: string): [string, string] | undefined {
 	return [key, value]
 }
 
+// A key with no value (`pkg:`) is YAML null, not a usable override — dropping such pairs
+// keeps an empty string out of the overrides map, so the upgrade cap is not falsely
+// triggered by `extract_game_kit_override` returning '' (which is !== undefined).
+function is_usable_override(entry: [string, string] | undefined): entry is [string, string] {
+	return entry !== undefined && entry[0] !== '' && entry[1] !== ''
+}
+
 function parse_overrides_from_workspace(raw: string): Record<string, string> {
 	const entries = extract_overrides_block(raw)
 		.map((line) => parse_override_line(line))
-		.filter((entry): entry is [string, string] => entry !== undefined)
+		.filter(is_usable_override)
 
 	return Object.fromEntries(entries)
 }

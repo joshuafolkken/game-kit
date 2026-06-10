@@ -25,6 +25,14 @@ describe('jgame_version_upgrade_logic.parse_overrides_from_workspace', () => {
 		})
 	})
 
+	it('drops a key with no value so a malformed entry cannot become a false cap', () => {
+		const yaml = "overrides:\n  '@joshuafolkken/game-kit':\n  cookie: ^0.7.0\n"
+
+		expect(jgame_version_upgrade_logic.parse_overrides_from_workspace(yaml)).toEqual({
+			cookie: '^0.7.0',
+		})
+	})
+
 	it('ignores trailing comments and stops at the next top-level block', () => {
 		const yaml =
 			'overrides:\n  cookie: ^0.7.0 # patched\n  # a comment line\n  ws: ">=8.20.1"\nallowBuilds:\n  esbuild: true\n'
