@@ -14,13 +14,14 @@ vi.mock('./init/jgame-init.ts', () => ({
 }))
 vi.mock('./init/jgame-sync.ts', () => ({ jgame_sync: { run: vi.fn() } }))
 vi.mock('./version/jgame-version-check.ts', () => ({
-	jgame_version_check: { run: vi.fn(), parse_version: vi.fn() },
+	jgame_version_check: { run: vi.fn(), read_running_binary: vi.fn() },
 }))
 vi.mock('./version/jgame-version-upgrade.ts', () => ({
 	jgame_version_upgrade: {
 		run: vi.fn(),
 		read_project_overrides: vi.fn(),
-		exec_pnpm_add: vi.fn(),
+		exec_global_upgrade: vi.fn(),
+		exec_project_upgrade: vi.fn(),
 	},
 }))
 
@@ -38,28 +39,26 @@ describe('route_command', () => {
 	it('routes init to jgame_init.run without name', async () => {
 		const { jgame_init } = await import('./init/jgame-init.ts')
 
-		jgame.route_command('init')
+		await jgame.route_command('init')
 		expect(jgame_init.run).toHaveBeenCalledWith(undefined)
 	})
 
 	it('routes init to jgame_init.run with game name', async () => {
 		const { jgame_init } = await import('./init/jgame-init.ts')
 
-		jgame.route_command('init', 'tic-tac-toe')
+		await jgame.route_command('init', 'tic-tac-toe')
 		expect(jgame_init.run).toHaveBeenCalledWith('tic-tac-toe')
 	})
 
 	it('routes sync to jgame_sync.run', async () => {
 		const { jgame_sync } = await import('./init/jgame-sync.ts')
 
-		jgame.route_command('sync')
+		await jgame.route_command('sync')
 		expect(jgame_sync.run).toHaveBeenCalledOnce()
 	})
 
-	it('treats install as unknown command', () => {
-		expect(() => {
-			jgame.route_command('install')
-		}).toThrow('process.exit called')
+	it('treats install as unknown command', async () => {
+		await expect(jgame.route_command('install')).rejects.toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Unknown command: install'))
 	})
@@ -67,43 +66,47 @@ describe('route_command', () => {
 	it('routes version to jgame_version_check.run', async () => {
 		const { jgame_version_check } = await import('./version/jgame-version-check.ts')
 
-		jgame.route_command('version')
+		await jgame.route_command('version')
 		expect(jgame_version_check.run).toHaveBeenCalledOnce()
 	})
 
 	it('routes v as alias for version', async () => {
 		const { jgame_version_check } = await import('./version/jgame-version-check.ts')
 
-		jgame.route_command('v')
+		await jgame.route_command('v')
 		expect(jgame_version_check.run).toHaveBeenCalledOnce()
 	})
 
 	it('routes version:upgrade to jgame_version_upgrade.run', async () => {
 		const { jgame_version_upgrade } = await import('./version/jgame-version-upgrade.ts')
 
-		jgame.route_command('version:upgrade')
+		await jgame.route_command('version:upgrade')
 		expect(jgame_version_upgrade.run).toHaveBeenCalledOnce()
 	})
 
 	it('routes vu as alias for version:upgrade', async () => {
 		const { jgame_version_upgrade } = await import('./version/jgame-version-upgrade.ts')
 
-		jgame.route_command('vu')
+		await jgame.route_command('vu')
 		expect(jgame_version_upgrade.run).toHaveBeenCalledOnce()
 	})
 
-	it('exits with code 1 for unknown command and prints jgame usage', () => {
-		expect(() => {
-			jgame.route_command('unknown')
-		}).toThrow('process.exit called')
+	it('awaits an async handler and surfaces its rejection', async () => {
+		const { jgame_version_upgrade } = await import('./version/jgame-version-upgrade.ts')
+
+		vi.mocked(jgame_version_upgrade.run).mockRejectedValueOnce(new Error('upgrade failed'))
+
+		await expect(jgame.route_command('vu')).rejects.toThrow('upgrade failed')
+	})
+
+	it('exits with code 1 for unknown command and prints jgame usage', async () => {
+		await expect(jgame.route_command('unknown')).rejects.toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('jgame'))
 	})
 
-	it('exits with code 1 when no command given', () => {
-		expect(() => {
-			jgame.route_command(undefined)
-		}).toThrow('process.exit called')
+	it('exits with code 1 when no command given', async () => {
+		await expect(jgame.route_command(undefined)).rejects.toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 	})
 })
