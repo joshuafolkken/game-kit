@@ -27,9 +27,9 @@ interface SyncEntry {
 // Scope: framework / app-shell config that should evolve with game-kit. Scaffold
 // files that projects own and customize (src/lib/<game>/, src/routes/+page.svelte,
 // static/branding, src/lib/game-config.ts) remain init-only. tsconfig.json is
-// intentionally excluded because jgame init writes it via write_tsconfig
-// (USER_TSCONFIG) rather than copying templates/tsconfig.json — syncing the
-// template here would silently override that generated form.
+// intentionally excluded because `pnpm josh init` owns the consumer's tsconfig.json
+// (extends-only, reaching the kit base) — templates/tsconfig.json only type-checks
+// the templates/ directory inside game-kit and must never reach consumers (#326).
 //
 // `src` is used when the source filename inside templates/ must differ from the
 // destination. .npmrc lives at templates/npmrc because npm always strips

@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.152.0",
+	"version": "0.153.0",
 	"keywords": [
 		"svelte"
 	],
@@ -80,7 +80,7 @@
 		"globals": "^17.6.0",
 		"lefthook": "^2.1.9",
 		"playwright": "^1.60.0",
-		"prettier": "^3.8.3",
+		"prettier": "^3.8.4",
 		"prettier-plugin-svelte": "^4.1.0",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"publint": "^0.3.21",
@@ -99,7 +99,7 @@
 		"vitest-browser-svelte": "^2.1.1",
 		"workbox-build": "^7.4.1",
 		"workbox-window": "^7.4.1",
-		"wrangler": "^4.98.0"
+		"wrangler": "^4.99.0"
 	},
 	"peerDependencies": {
 		"@threlte/core": ">=8.0.0",
