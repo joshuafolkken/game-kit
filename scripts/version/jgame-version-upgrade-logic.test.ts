@@ -25,6 +25,14 @@ describe('jgame_version_upgrade_logic.parse_overrides_from_workspace', () => {
 		})
 	})
 
+	it('matches an overrides header that carries a trailing inline comment', () => {
+		const yaml = 'overrides: # pinned deps\n  cookie: ^0.7.0\n'
+
+		expect(jgame_version_upgrade_logic.parse_overrides_from_workspace(yaml)).toEqual({
+			cookie: '^0.7.0',
+		})
+	})
+
 	it('drops a key with no value so a malformed entry cannot become a false cap', () => {
 		const yaml = "overrides:\n  '@joshuafolkken/game-kit':\n  cookie: ^0.7.0\n"
 

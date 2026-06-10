@@ -6,7 +6,9 @@ const GLOBAL_UPGRADE_ARGS_PREFIX = ['add', '-g'] as const
 // `pnpm.overrides` field (which it ignores). The upgrade cap therefore inspects the
 // YAML `overrides:` block. We parse only that block by hand — no YAML dependency is on
 // the critical install path, mirroring jgame-fix-gh-packages-logic's lock-file parsing.
-const OVERRIDES_HEADER = 'overrides:'
+// Matches a TOP-LEVEL `overrides:` header (no leading indentation, so a nested key is not
+// mistaken for it), tolerating a trailing YAML inline comment like `overrides: # pinned`.
+const OVERRIDES_HEADER_PATTERN = /^overrides:\s*(?:#.*)?$/u
 
 function is_indented(line: string): boolean {
 	return /^\s/u.test(line)
@@ -16,7 +18,7 @@ function is_indented(line: string): boolean {
 // indented under the header up to the next top-level (non-indented) line.
 function extract_overrides_block(raw: string): Array<string> {
 	const lines = raw.split('\n')
-	const start = lines.findIndex((line) => line.trimEnd() === OVERRIDES_HEADER)
+	const start = lines.findIndex((line) => OVERRIDES_HEADER_PATTERN.test(line))
 	if (start === -1) return []
 
 	const rest = lines.slice(start + 1)
