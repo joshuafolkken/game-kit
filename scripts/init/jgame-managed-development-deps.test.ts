@@ -11,9 +11,12 @@ vi.mock('./jgame-paths.ts', () => ({
 
 const KIT_DEV_DEPS = {
 	'@joshuafolkken/kit': '0.162.0',
+	'@playwright/test': '1.60.0',
+	'@vitest/browser-playwright': '^4.1.8',
 	cspell: '^10.0.0',
 	eslint: '^10.4.0',
 	lefthook: '^2.1.9',
+	playwright: '^1.60.0',
 	prettier: '^3.8.3',
 	'prettier-plugin-svelte': '^4.0.1',
 	'prettier-plugin-tailwindcss': '^0.8.0',
@@ -22,6 +25,8 @@ const KIT_DEV_DEPS = {
 	svelte: '^5.0.0',
 	tsx: '^4.22.4',
 	vite: '^6.0.0',
+	vitest: '^4.1.8',
+	'vitest-browser-svelte': '^2.1.1',
 }
 
 describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
@@ -58,6 +63,34 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 
 		expect(result.lefthook).toBe('^2.1.9')
 		expect(result.tsx).toBe('^4.22.4')
+	})
+
+	it('includes the vitest browser-mode toolchain backing the synced vite.config.ts test block (#322)', async () => {
+		// Regression for #322: the synced vite.config.ts imports `vitest/config` and
+		// `@vitest/browser-playwright`, and its client project runs in chromium via
+		// playwright. Without these as direct devDeps `josh test:unit` (a plain
+		// `vitest run`) fails in scaffolded projects after a sync.
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const required = jgame_managed_dev_deps.REQUIRED_DEV_DEPS
+
+		expect(required).toContain('vitest')
+		expect(required).toContain('@vitest/browser-playwright')
+		expect(required).toContain('vitest-browser-svelte')
+		expect(required).toContain('@playwright/test')
+		expect(required).toContain('playwright')
+	})
+
+	it('resolves the vitest browser-mode toolchain to pinned versions, never the wildcard fallback (#322)', async () => {
+		// game-kit MUST declare the toolchain in its own devDependencies so pinned
+		// versions flow into scaffolds; a `*` here means the source pin is missing.
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+
+		expect(result.vitest).toBe('^4.1.8')
+		expect(result['@vitest/browser-playwright']).toBe('^4.1.8')
+		expect(result['vitest-browser-svelte']).toBe('^2.1.1')
+		expect(result['@playwright/test']).toBe('1.60.0')
+		expect(result.playwright).toBe('^1.60.0')
 	})
 
 	it('stays alphabetically sorted so additions are insertion-stable', async () => {

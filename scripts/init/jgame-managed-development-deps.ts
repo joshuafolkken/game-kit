@@ -12,10 +12,15 @@ import { jgame_paths } from './jgame-paths.ts'
 // script (`command -v lefthook ... && lefthook install`, `tsx fix-gh-packages.ts`);
 // they are not installed transitively for consumers, so without them as direct
 // devDeps the guards skip silently — losing git hooks and the GH Packages lockfile
-// fix. See #272.
+// fix. See #272. The vitest browser-mode toolchain (`vitest`,
+// `@vitest/browser-playwright`, `vitest-browser-svelte`, `@playwright/test`,
+// `playwright`) backs the `test` block in the synced vite.config.ts — without
+// these as direct devDeps `josh test:unit` cannot run in scaffolded projects.
+// See #322.
 const REQUIRED_DEV_DEPS = [
 	'@ianvs/prettier-plugin-sort-imports',
 	'@joshuafolkken/kit',
+	'@playwright/test',
 	'@sveltejs/adapter-cloudflare',
 	'@sveltejs/kit',
 	'@sveltejs/vite-plugin-svelte',
@@ -27,9 +32,11 @@ const REQUIRED_DEV_DEPS = [
 	'@types/node',
 	'@types/three',
 	'@vite-pwa/sveltekit',
+	'@vitest/browser-playwright',
 	'cspell',
 	'eslint',
 	'lefthook',
+	'playwright',
 	'prettier',
 	'prettier-plugin-svelte',
 	'prettier-plugin-tailwindcss',
@@ -41,6 +48,8 @@ const REQUIRED_DEV_DEPS = [
 	'typescript',
 	'vite',
 	'vite-plugin-pwa',
+	'vitest',
+	'vitest-browser-svelte',
 	'workbox-build',
 	'workbox-window',
 	'wrangler',
