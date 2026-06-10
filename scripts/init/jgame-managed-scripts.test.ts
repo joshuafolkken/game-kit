@@ -14,9 +14,9 @@ const CANONICAL_PREPARE =
 const PUBLISHED_SUB_SCRIPTS = {
 	'prepare:gen': '[ ! -f wrangler.jsonc ] || pnpm gen',
 	'prepare:sync': "svelte-kit sync || echo ''",
-	'prepare:lefthook': '! command -v lefthook >/dev/null 2>&1 || lefthook install',
+	'prepare:lefthook': '[ -n "$CI" ] || ! command -v lefthook >/dev/null 2>&1 || lefthook install',
 	'prepare:gh-packages':
-		'! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
+		'[ -n "$CI" ] || ! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
 	gen: 'pnpm gen:pre && wrangler types',
 	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
 }
@@ -192,15 +192,18 @@ describe('jgame_managed_scripts canonical value (integration with real package.j
 		const { jgame_managed_scripts } = await import('./jgame-managed-scripts.ts')
 		const result = jgame_managed_scripts.read_canonical_scripts()
 
-		// Regression for #272/#311/#323: each owner-only tool MUST be guarded so a missing
-		// binary or config skips instead of aborting `pnpm install`, using the `! guard || cmd`
-		// form — which skips on absence yet propagates a real tool failure (no `; true` mask).
+		// Regression for #272/#311/#323: owner-only steps (lefthook/gh-packages) carry a
+		// `[ -n "$CI" ] ||` guard so they skip in CI yet propagate a real local failure; gen
+		// stays `$CI`-agnostic so wrangler-types breakage surfaces everywhere. No `; true` mask.
 		expect(result['prepare:lefthook']).toMatch(
-			/! command -v lefthook >\/dev\/null 2>&1 \|\| lefthook install/u,
+			/\[ -n "\$CI" \] \|\| ! command -v lefthook >\/dev\/null 2>&1 \|\| lefthook install/u,
 		)
-		expect(result['prepare:gh-packages']).toMatch(/! command -v tsx >\/dev\/null 2>&1 \|\| tsx /u)
+		expect(result['prepare:gh-packages']).toMatch(
+			/\[ -n "\$CI" \] \|\| ! command -v tsx >\/dev\/null 2>&1 \|\| tsx /u,
+		)
 		expect(result['prepare:gh-packages']).toMatch(/fix-gh-packages/u)
 		expect(result['prepare:gen']).toMatch(/\[ ! -f wrangler\.jsonc \] \|\| pnpm gen/u)
+		expect(result['prepare:gen']).not.toMatch(/\$CI/u)
 		expect(result['prepare:lefthook'].trim()).not.toMatch(/;\s*true$/u)
 		expect(result['prepare:gh-packages'].trim()).not.toMatch(/;\s*true$/u)
 		expect(result['prepare:gen'].trim()).not.toMatch(/;\s*true$/u)

@@ -45,27 +45,35 @@ describe('package.json lifecycle scripts', () => {
 		expect(package_.devDependencies?.tsx).toBeDefined()
 	})
 
-	it('guards every owner-only tool in the prepare:* sub-scripts so a missing binary skips without failing install (#272/#323)', () => {
-		// The `! guard || cmd` form skips when the binary is absent (the negated probe
-		// short-circuits to success) yet propagates a real failure of the tool itself —
-		// unlike the old `guard && cmd; true`, which swallowed every non-zero exit (#323).
+	it('skips owner-only prepare:* steps in CI yet propagates a real local failure (#272/#323)', () => {
+		// lefthook install / fix-gh-packages mutate git hooks + the lockfile — owner-machine-only
+		// setup that cannot run in CI (lefthook install hits git "dubious ownership", exit 128). The
+		// `[ -n "$CI" ] ||` guard skips them in CI/consumer-CI; the `! probe ||` guard skips on a
+		// missing binary; otherwise the tool runs and a real failure propagates (no `; true` mask).
 		const lefthook = package_.scripts['prepare:lefthook'] ?? ''
 		const gh_packages = package_.scripts['prepare:gh-packages'] ?? ''
 
-		expect(lefthook).toMatch(/! command -v lefthook >\/dev\/null 2>&1 \|\| lefthook install/u)
-		expect(gh_packages).toMatch(/! command -v tsx >\/dev\/null 2>&1 \|\| tsx /u)
+		expect(lefthook).toMatch(
+			/\[ -n "\$CI" \] \|\| ! command -v lefthook >\/dev\/null 2>&1 \|\| lefthook install/u,
+		)
+		expect(gh_packages).toMatch(
+			/\[ -n "\$CI" \] \|\| ! command -v tsx >\/dev\/null 2>&1 \|\| tsx /u,
+		)
 		expect(lefthook.trim()).not.toMatch(/;\s*true$/u)
 		expect(gh_packages.trim()).not.toMatch(/;\s*true$/u)
 	})
 
-	it('guards prepare:gen on wrangler.jsonc but propagates a real gen failure (#311/#323)', () => {
+	it('guards prepare:gen on wrangler.jsonc but propagates a real gen failure, in CI too (#311/#323)', () => {
 		// The scaffold's first `pnpm install` fires `prepare` BEFORE `josh sync` writes
 		// wrangler.jsonc, so gen must skip until the config exists. The `[ ! -f … ] || pnpm gen`
 		// form keeps that skip while letting a genuine `pnpm gen` failure fail install (#323).
+		// Unlike the owner-only steps, gen generates types and is environment-agnostic, so it is
+		// NOT `$CI`-guarded — wrangler-types breakage must surface in CI as well.
 		const prepare_gen = package_.scripts['prepare:gen'] ?? ''
 
 		expect(prepare_gen).toMatch(/\[ ! -f wrangler\.jsonc \] \|\| pnpm gen/u)
 		expect(prepare_gen.trim()).not.toMatch(/;\s*true$/u)
+		expect(prepare_gen).not.toMatch(/\$CI/u)
 	})
 
 	it('does not reference jgame-install-bin in any lifecycle script', () => {

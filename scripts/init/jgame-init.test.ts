@@ -26,9 +26,9 @@ const CANONICAL_PREPARE =
 const PUBLISHED_SUB_SCRIPTS = {
 	'prepare:gen': '[ ! -f wrangler.jsonc ] || pnpm gen',
 	'prepare:sync': "svelte-kit sync || echo ''",
-	'prepare:lefthook': '! command -v lefthook >/dev/null 2>&1 || lefthook install',
+	'prepare:lefthook': '[ -n "$CI" ] || ! command -v lefthook >/dev/null 2>&1 || lefthook install',
 	'prepare:gh-packages':
-		'! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
+		'[ -n "$CI" ] || ! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
 	gen: 'pnpm gen:pre && wrangler types',
 	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
 }
@@ -172,18 +172,18 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.scripts['gen:pre']).toBe(PUBLISHED_SUB_SCRIPTS['gen:pre'])
 	})
 
-	it('emits guarded prepare:* sub-scripts whose CLIs are all covered by managed devDeps (#272/#323)', async () => {
-		// Acceptance criterion: scaffold-managed dependencies cover every CLI the
-		// generated setup sub-scripts invoke, each guarded with the `! probe || cmd` form so a
-		// missing binary skips while a real tool failure still fails install (no `; true` mask).
+	it('emits CI-guarded owner-only prepare:* sub-scripts whose CLIs are covered by managed devDeps (#272/#323)', async () => {
+		// Acceptance criterion: scaffold-managed dependencies cover every CLI the generated setup
+		// sub-scripts invoke. The owner-only steps carry a `[ -n "$CI" ] ||` guard so they skip in
+		// CI yet propagate a real local failure (no `; true` mask); a missing binary still skips.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 
 		expect(result.scripts['prepare:lefthook']).toContain(
-			'! command -v lefthook >/dev/null 2>&1 || lefthook',
+			'[ -n "$CI" ] || ! command -v lefthook >/dev/null 2>&1 || lefthook',
 		)
 		expect(result.scripts['prepare:gh-packages']).toContain(
-			'! command -v tsx >/dev/null 2>&1 || tsx',
+			'[ -n "$CI" ] || ! command -v tsx >/dev/null 2>&1 || tsx',
 		)
 		expect(result.devDependencies.lefthook).toBe('^2.1.9')
 		expect(result.devDependencies.tsx).toBe('^4.22.4')
@@ -191,15 +191,17 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.scripts['prepare:gh-packages']).not.toMatch(/;\s*true\s*$/u)
 	})
 
-	it('guards prepare:gen on wrangler.jsonc but propagates a real gen failure (#311/#323)', async () => {
+	it('guards prepare:gen on wrangler.jsonc, not on CI, so gen runs once the config exists (#311/#323)', async () => {
 		// The scaffold's first `pnpm install` fires `prepare` BEFORE `josh sync` writes
 		// wrangler.jsonc, so gen must skip until the config exists. The `[ ! -f … ] || pnpm gen`
-		// form keeps that skip while letting a genuine `pnpm gen` failure fail install.
+		// form keeps that skip while letting a genuine `pnpm gen` failure fail install — in CI too,
+		// since gen generates types and is NOT `$CI`-guarded (unlike the owner-only steps).
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 
 		expect(result.scripts['prepare:gen']).toMatch(/\[ ! -f wrangler\.jsonc \] \|\| pnpm gen/u)
 		expect(result.scripts['prepare:gen']).not.toMatch(/;\s*true\s*$/u)
+		expect(result.scripts['prepare:gen']).not.toMatch(/\$CI/u)
 	})
 
 	it('emits packageManager derived from the host pnpm version', async () => {

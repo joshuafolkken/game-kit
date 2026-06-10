@@ -33,9 +33,9 @@ const CANONICAL_PREPARE =
 const PUBLISHED_SUB_SCRIPTS = {
 	'prepare:gen': '[ ! -f wrangler.jsonc ] || pnpm gen',
 	'prepare:sync': "svelte-kit sync || echo ''",
-	'prepare:lefthook': '! command -v lefthook >/dev/null 2>&1 || lefthook install',
+	'prepare:lefthook': '[ -n "$CI" ] || ! command -v lefthook >/dev/null 2>&1 || lefthook install',
 	'prepare:gh-packages':
-		'! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
+		'[ -n "$CI" ] || ! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
 	gen: 'pnpm gen:pre && wrangler types',
 	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
 }
