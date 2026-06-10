@@ -59,8 +59,19 @@ type RequiredDevelopmentDep = (typeof REQUIRED_DEV_DEPS)[number]
 
 const WILDCARD_VERSION = '*'
 
+// game-kit exact-pins some of its own devDeps (e.g. @joshuafolkken/kit, @playwright/test)
+// for its internal toolchain, but consumers must receive caret ranges — an exact pin in a
+// scaffolded package.json blocks patch/minor updates until a manual bump (#326). Exact
+// versions start with a digit; anything else (^, ~, >=, *) is already a range and passes
+// through untouched.
+function to_caret_range(version: string): string {
+	return /^\d/u.test(version) ? `^${version}` : version
+}
+
 function pick_required_deps(source: Record<string, string>): Record<string, string> {
-	return Object.fromEntries(REQUIRED_DEV_DEPS.map((k) => [k, source[k] ?? WILDCARD_VERSION]))
+	return Object.fromEntries(
+		REQUIRED_DEV_DEPS.map((k) => [k, to_caret_range(source[k] ?? WILDCARD_VERSION)]),
+	)
 }
 
 function read_required_deps_from_kit(): Record<string, string> {
