@@ -7,14 +7,14 @@ import { jgame_version_check_logic } from './jgame-version-check-logic.ts'
 import { jgame_version_targets } from './jgame-version-targets.ts'
 import { jgame_version_upgrade_logic } from './jgame-version-upgrade-logic.ts'
 
-const PROJECT_PACKAGE_JSON = path.join(process.cwd(), 'package.json')
+const PROJECT_WORKSPACE_YAML = path.join(process.cwd(), 'pnpm-workspace.yaml')
 const FAILURE_EXIT_CODE = 1
 const ALREADY_UP_TO_DATE = '✓ Up to date'
 const PNPM = 'pnpm'
 
-function read_project_package_json_or_undefined(): string | undefined {
+function read_workspace_yaml_or_undefined(): string | undefined {
 	try {
-		return readFileSync(PROJECT_PACKAGE_JSON, 'utf8')
+		return readFileSync(PROJECT_WORKSPACE_YAML, 'utf8')
 	} catch (error) {
 		if (jgame_version_upgrade_logic.is_enoent_error(error)) return undefined
 		throw error
@@ -22,15 +22,14 @@ function read_project_package_json_or_undefined(): string | undefined {
 }
 
 function read_project_overrides(): Record<string, string> {
-	const raw = readFileSync(PROJECT_PACKAGE_JSON, 'utf8')
+	const raw = read_workspace_yaml_or_undefined()
+	if (raw === undefined) return {}
 
-	return jgame_version_upgrade_logic.parse_overrides_from_package(raw)
+	return jgame_version_upgrade_logic.parse_overrides_from_workspace(raw)
 }
 
 function find_override_cap(): string | undefined {
-	const raw = read_project_package_json_or_undefined()
-	if (raw === undefined) return undefined
-	const overrides = jgame_version_upgrade_logic.parse_overrides_from_package(raw)
+	const overrides = read_project_overrides()
 
 	return jgame_version_upgrade_logic.extract_game_kit_override(overrides)
 }
@@ -50,7 +49,7 @@ function exec_project_upgrade(latest: string): number {
 	return exec_pnpm(jgame_version_upgrade_logic.build_upgrade_args(latest), true, latest)
 }
 
-// Upgrade the project (local) install unless it is pinned in pnpm.overrides; on success repair the
+// Upgrade the project (local) install unless it is pinned in pnpm-workspace.yaml overrides; on success repair the
 // lockfile's GitHub Packages tarball URLs in-process (mirrors kit's fix-gh-packages chain).
 async function upgrade_project(latest: string): Promise<number> {
 	const capped = find_override_cap()

@@ -1,29 +1,54 @@
 import { describe, expect, it } from 'vitest'
 import { jgame_version_upgrade_logic } from './jgame-version-upgrade-logic.ts'
 
-describe('jgame_version_upgrade_logic.parse_overrides_from_package', () => {
-	it('returns empty record when pnpm field is absent', () => {
-		expect(jgame_version_upgrade_logic.parse_overrides_from_package('{"name":"x"}')).toEqual({})
-	})
-
-	it('returns empty record when pnpm.overrides is absent', () => {
-		expect(jgame_version_upgrade_logic.parse_overrides_from_package('{"pnpm":{}}')).toEqual({})
-	})
-
-	it('returns overrides map when present', () => {
+describe('jgame_version_upgrade_logic.parse_overrides_from_workspace', () => {
+	it('returns empty record when no overrides block is present', () => {
 		expect(
-			jgame_version_upgrade_logic.parse_overrides_from_package(
-				'{"pnpm":{"overrides":{"foo":">=1.0.0","bar":"2.0.0"}}}',
-			),
-		).toEqual({ foo: '>=1.0.0', bar: '2.0.0' })
+			jgame_version_upgrade_logic.parse_overrides_from_workspace('allowBuilds:\n  esbuild: true\n'),
+		).toEqual({})
 	})
 
-	it('throws when overrides values are not all strings', () => {
-		expect(() =>
-			jgame_version_upgrade_logic.parse_overrides_from_package(
-				'{"pnpm":{"overrides":{"foo":123}}}',
-			),
-		).toThrow(/unexpected/u)
+	it('parses the overrides block into a key/value map', () => {
+		const yaml = 'overrides:\n  cookie: ^0.7.0\n  ws: ">=8.20.1"\n'
+
+		expect(jgame_version_upgrade_logic.parse_overrides_from_workspace(yaml)).toEqual({
+			cookie: '^0.7.0',
+			ws: '>=8.20.1',
+		})
+	})
+
+	it('strips quotes from scoped keys and quoted version values', () => {
+		const yaml = "overrides:\n  '@joshuafolkken/game-kit': '<1.0.0'\n"
+
+		expect(jgame_version_upgrade_logic.parse_overrides_from_workspace(yaml)).toEqual({
+			'@joshuafolkken/game-kit': '<1.0.0',
+		})
+	})
+
+	it('matches an overrides header that carries a trailing inline comment', () => {
+		const yaml = 'overrides: # pinned deps\n  cookie: ^0.7.0\n'
+
+		expect(jgame_version_upgrade_logic.parse_overrides_from_workspace(yaml)).toEqual({
+			cookie: '^0.7.0',
+		})
+	})
+
+	it('drops a key with no value so a malformed entry cannot become a false cap', () => {
+		const yaml = "overrides:\n  '@joshuafolkken/game-kit':\n  cookie: ^0.7.0\n"
+
+		expect(jgame_version_upgrade_logic.parse_overrides_from_workspace(yaml)).toEqual({
+			cookie: '^0.7.0',
+		})
+	})
+
+	it('ignores trailing comments and stops at the next top-level block', () => {
+		const yaml =
+			'overrides:\n  cookie: ^0.7.0 # patched\n  # a comment line\n  ws: ">=8.20.1"\nallowBuilds:\n  esbuild: true\n'
+
+		expect(jgame_version_upgrade_logic.parse_overrides_from_workspace(yaml)).toEqual({
+			cookie: '^0.7.0',
+			ws: '>=8.20.1',
+		})
 	})
 })
 
@@ -54,7 +79,7 @@ describe('jgame_version_upgrade_logic.format_capped_message', () => {
 
 		expect(message).toContain('@joshuafolkken/game-kit')
 		expect(message).toContain('<1.0.0')
-		expect(message).toContain('pnpm.overrides')
+		expect(message).toContain('pnpm-workspace.yaml')
 	})
 })
 
