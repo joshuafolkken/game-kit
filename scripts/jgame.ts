@@ -10,7 +10,9 @@ const USAGE = 'Usage: jgame <init|sync|version|v|version:upgrade|vu> [name]'
 const COMMAND_ARG_INDEX = 2
 const NAME_ARG_INDEX = 3
 
-const COMMAND_HANDLERS: Record<string, (argument?: string) => void> = {
+const ROUTING_FAILURE_EXIT_CODE = 1
+
+const COMMAND_HANDLERS: Record<string, (argument?: string) => void | Promise<void>> = {
 	init: jgame_init.run,
 	sync: jgame_sync.run,
 	version: jgame_version_check.run,
@@ -32,12 +34,14 @@ function is_invoked_directly(argv_path: string, module_path: string): boolean {
 	}
 }
 
-function route_command(command: string | undefined, argument?: string): void {
+// Handlers may be sync (`version`) or async (`version:upgrade`, which awaits an in-process
+// lockfile repair); await covers both so an async failure surfaces instead of floating.
+async function route_command(command: string | undefined, argument?: string): Promise<void> {
 	const resolved = resolve_command(command)
 	const handler = resolved === undefined ? undefined : COMMAND_HANDLERS[resolved]
 
 	if (handler) {
-		handler(argument)
+		await handler(argument)
 
 		return
 	}
@@ -52,5 +56,10 @@ const jgame = { route_command, is_invoked_directly, resolve_command }
 export { jgame }
 
 if (is_invoked_directly(process.argv[1] ?? '', fileURLToPath(import.meta.url))) {
-	route_command(process.argv[COMMAND_ARG_INDEX], process.argv[NAME_ARG_INDEX])
+	try {
+		await route_command(process.argv[COMMAND_ARG_INDEX], process.argv[NAME_ARG_INDEX])
+	} catch (error) {
+		console.error(error)
+		process.exit(ROUTING_FAILURE_EXIT_CODE)
+	}
 }

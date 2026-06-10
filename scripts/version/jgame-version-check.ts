@@ -1,60 +1,46 @@
-import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { jgame_running_binary } from './jgame-running-binary.ts'
 import { jgame_version_api } from './jgame-version-api.ts'
-import { jgame_version_check_logic } from './jgame-version-check-logic.ts'
+import { jgame_version_check_logic, type RunningBinary } from './jgame-version-check-logic.ts'
+import { jgame_version_targets } from './jgame-version-targets.ts'
 
-// This module is bundled to dist/scripts/jgame.js and also runs from source at
-// scripts/version/jgame-version-check.ts. In BOTH layouts package.json sits exactly two
-// directory levels above this file's directory, so resolve it from that fixed depth
-// (path.join normalizes any trailing separator on the input).
-const PACKAGE_ROOT_DEPTH = 2
+const SELF_DIR = path.dirname(fileURLToPath(import.meta.url))
 
-function resolve_package_json_path(script_directory: string): string {
-	const ascent = Array.from({ length: PACKAGE_ROOT_DEPTH }, () => '..')
+// The running binary is the single source of truth: report the version/path of the install that
+// actually executed, alongside the global/project breakdown.
+function read_running_binary(): RunningBinary | undefined {
+	const version = jgame_running_binary.read_running_version(SELF_DIR)
+	if (version === undefined) return undefined
 
-	return path.join(script_directory, ...ascent, 'package.json')
-}
-
-const PACKAGE_JSON_PATH = resolve_package_json_path(path.dirname(fileURLToPath(import.meta.url)))
-
-function is_package_json_with_version(value: unknown): value is { version: string } {
-	if (typeof value !== 'object' || value === null) return false
-	if (!('version' in value)) return false
-
-	return typeof value.version === 'string'
-}
-
-function parse_version(raw: string): string {
-	const parsed: unknown = JSON.parse(raw)
-
-	if (!is_package_json_with_version(parsed)) {
-		throw new Error('package.json does not contain a string "version" field')
-	}
-
-	return parsed.version
-}
-
-function read_current_version(): string {
-	const raw = readFileSync(PACKAGE_JSON_PATH, 'utf8')
-
-	return parse_version(raw)
+	return { version, path: jgame_running_binary.running_package_directory(SELF_DIR) }
 }
 
 function run(): void {
-	const current = read_current_version()
+	const global_version = jgame_version_targets.read_global_version()
+	const project_version = jgame_version_targets.read_project_version(process.cwd())
+	const running = read_running_binary()
 	const latest = jgame_version_api.fetch_latest_version()
 
 	if (latest === undefined) {
-		console.warn(`Current: ${current}`)
-		console.warn('⚠ Failed to fetch latest version (is `gh` authenticated?)')
+		console.warn(jgame_version_check_logic.FETCH_FAILED_WARNING)
+		console.info(
+			jgame_version_check_logic.format_offline_output(global_version, project_version, running),
+		)
 
 		return
 	}
 
-	console.info(jgame_version_check_logic.format_version_output(current, latest))
+	console.info(
+		jgame_version_check_logic.format_dual_version_output(
+			global_version,
+			project_version,
+			latest,
+			running,
+		),
+	)
 }
 
-const jgame_version_check = { run, parse_version, resolve_package_json_path }
+const jgame_version_check = { run, read_running_binary }
 
 export { jgame_version_check }
