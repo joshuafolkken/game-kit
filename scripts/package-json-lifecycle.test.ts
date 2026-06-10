@@ -45,24 +45,27 @@ describe('package.json lifecycle scripts', () => {
 		expect(package_.devDependencies?.tsx).toBeDefined()
 	})
 
-	it('guards every owner-only tool in the prepare:* sub-scripts so a missing binary cannot fail install (#272)', () => {
+	it('guards every owner-only tool in the prepare:* sub-scripts so a missing binary skips without failing install (#272/#323)', () => {
+		// The `! guard || cmd` form skips when the binary is absent (the negated probe
+		// short-circuits to success) yet propagates a real failure of the tool itself —
+		// unlike the old `guard && cmd; true`, which swallowed every non-zero exit (#323).
 		const lefthook = package_.scripts['prepare:lefthook'] ?? ''
 		const gh_packages = package_.scripts['prepare:gh-packages'] ?? ''
 
-		expect(lefthook).toMatch(/command -v lefthook >\/dev\/null 2>&1 && lefthook install/u)
-		expect(gh_packages).toMatch(/command -v tsx >\/dev\/null 2>&1 && tsx /u)
-		expect(lefthook.trim()).toMatch(/;\s*true$/u)
-		expect(gh_packages.trim()).toMatch(/;\s*true$/u)
+		expect(lefthook).toMatch(/! command -v lefthook >\/dev\/null 2>&1 \|\| lefthook install/u)
+		expect(gh_packages).toMatch(/! command -v tsx >\/dev\/null 2>&1 \|\| tsx /u)
+		expect(lefthook.trim()).not.toMatch(/;\s*true$/u)
+		expect(gh_packages.trim()).not.toMatch(/;\s*true$/u)
 	})
 
-	it('guards prepare:gen on wrangler.jsonc so the first scaffold install no-ops (#311)', () => {
+	it('guards prepare:gen on wrangler.jsonc but propagates a real gen failure (#311/#323)', () => {
 		// The scaffold's first `pnpm install` fires `prepare` BEFORE `josh sync` writes
-		// wrangler.jsonc, so an unguarded `wrangler types` would abort install. The guard
-		// makes gen skip until the config exists, then run on later installs.
+		// wrangler.jsonc, so gen must skip until the config exists. The `[ ! -f … ] || pnpm gen`
+		// form keeps that skip while letting a genuine `pnpm gen` failure fail install (#323).
 		const prepare_gen = package_.scripts['prepare:gen'] ?? ''
 
-		expect(prepare_gen).toMatch(/\[ -f wrangler\.jsonc \] && pnpm gen/u)
-		expect(prepare_gen.trim()).toMatch(/;\s*true$/u)
+		expect(prepare_gen).toMatch(/\[ ! -f wrangler\.jsonc \] \|\| pnpm gen/u)
+		expect(prepare_gen.trim()).not.toMatch(/;\s*true$/u)
 	})
 
 	it('does not reference jgame-install-bin in any lifecycle script', () => {

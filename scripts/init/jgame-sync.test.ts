@@ -31,11 +31,11 @@ const CANONICAL_PREPARE =
 // The orchestrated sub-scripts `prepare` delegates to. All SURVIVE `pnpm pack` (only the
 // bare `prepare` key is stripped), so they are part of game-kit's published shape.
 const PUBLISHED_SUB_SCRIPTS = {
-	'prepare:gen': '[ -f wrangler.jsonc ] && pnpm gen; true',
+	'prepare:gen': '[ ! -f wrangler.jsonc ] || pnpm gen',
 	'prepare:sync': "svelte-kit sync || echo ''",
-	'prepare:lefthook': 'command -v lefthook >/dev/null 2>&1 && lefthook install; true',
+	'prepare:lefthook': '! command -v lefthook >/dev/null 2>&1 || lefthook install',
 	'prepare:gh-packages':
-		'command -v tsx >/dev/null 2>&1 && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts; true',
+		'! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
 	gen: 'pnpm gen:pre && wrangler types',
 	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
 }
@@ -554,6 +554,45 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		expect(package_writes).toHaveLength(0)
 	})
+
+	it('drops the legacy pnpm field and de-duplicates a runtime-listed dep on a full sync (#323)', async () => {
+		// Reproduces the mnemecha state. @threlte/core is listed only under runtime
+		// `dependencies` (move, range preserved); `three` is in BOTH sections (de-dup,
+		// devDeps range wins); a stale package.json `pnpm` field that pnpm 11 ignores lingers.
+		const { readFileSync, writeFileSync } = await import('node:fs')
+		const all_deps = await build_complete_consumer_development_deps()
+		const development_deps = Object.fromEntries(
+			Object.entries(all_deps).filter(([key]) => key !== '@threlte/core'),
+		)
+
+		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
+			'/pkg/package.json': JSON.stringify({
+				scripts: CANONICAL_SCRIPTS,
+				devDependencies: KIT_DEV_DEPS_FIXTURE,
+			}),
+			'/project/package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: CANONICAL_SCRIPTS,
+				dependencies: { '@threlte/core': '^8.0.0', three: '^0.170.0', 'my-runtime-lib': '^2.0.0' },
+				devDependencies: development_deps,
+				pnpm: { overrides: { cookie: '^0.7.0' } },
+			}),
+		})
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		jgame_sync.run()
+		const package_writes = vi
+			.mocked(writeFileSync)
+			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
+
+		expect(written.pnpm).toBeUndefined()
+		// Moved dep keeps its runtime range; de-duped dep keeps the devDeps range; the
+		// consumer's own non-managed runtime dep survives under dependencies.
+		expect(written.devDependencies['@threlte/core']).toBe('^8.0.0')
+		expect(written.devDependencies.three).toBe(all_deps.three)
+		expect(written.dependencies).toEqual({ 'my-runtime-lib': '^2.0.0' })
+	})
 })
 
 describe('jgame_sync.apply_managed_dev_deps', () => {
@@ -589,6 +628,21 @@ describe('jgame_sync.apply_managed_dev_deps', () => {
 
 		expect(did_change).toBe(true)
 		expect(package_.devDependencies).toEqual({ prettier: '^3.8.3' })
+	})
+})
+
+describe('jgame_sync.remove_legacy_pnpm_field', () => {
+	it('removes a legacy pnpm field but leaves a package without one unchanged (#323)', async () => {
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const with_field: { pnpm?: unknown; name?: string } = {
+			name: 'consumer',
+			pnpm: { overrides: { cookie: '^0.7.0' } },
+		}
+
+		expect(jgame_sync.remove_legacy_pnpm_field(with_field)).toBe(true)
+		expect('pnpm' in with_field).toBe(false)
+		expect(with_field.name).toBe('consumer')
+		expect(jgame_sync.remove_legacy_pnpm_field({})).toBe(false)
 	})
 })
 

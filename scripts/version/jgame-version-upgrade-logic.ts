@@ -2,40 +2,63 @@ const PACKAGE_NAME = '@joshuafolkken/game-kit'
 const UPGRADE_ARGS_PREFIX = ['add', '-D'] as const
 const GLOBAL_UPGRADE_ARGS_PREFIX = ['add', '-g'] as const
 
-interface PackageJsonWithPnpmOverrides {
-	pnpm?: { overrides?: Record<string, string> }
+// pnpm >= 11 reads dependency overrides from pnpm-workspace.yaml, not the package.json
+// `pnpm.overrides` field (which it ignores). The upgrade cap therefore inspects the
+// YAML `overrides:` block. We parse only that block by hand — no YAML dependency is on
+// the critical install path, mirroring jgame-fix-gh-packages-logic's lock-file parsing.
+const OVERRIDES_HEADER = 'overrides:'
+
+function is_indented(line: string): boolean {
+	return /^\s/u.test(line)
 }
 
-function is_overrides_record(value: unknown): value is Record<string, string> {
-	if (typeof value !== 'object' || value === null) return false
+// Returns the non-blank member lines of the top-level `overrides:` block: everything
+// indented under the header up to the next top-level (non-indented) line.
+function extract_overrides_block(raw: string): Array<string> {
+	const lines = raw.split('\n')
+	const start = lines.findIndex((line) => line.trimEnd() === OVERRIDES_HEADER)
+	if (start === -1) return []
 
-	return Object.values(value).every((entry) => typeof entry === 'string')
+	const rest = lines.slice(start + 1)
+	const end = rest.findIndex((line) => line.trim() !== '' && !is_indented(line))
+	const members = end === -1 ? rest : rest.slice(0, end)
+
+	return members.filter((line) => line.trim() !== '')
 }
 
-function has_object_pnpm(value: object): value is { pnpm: object } {
-	if (!('pnpm' in value)) return false
+function strip_quotes(token: string): string {
+	const first = token.at(0)
+	const is_quoted = (first === "'" || first === '"') && token.at(-1) === first
 
-	return typeof value.pnpm === 'object' && value.pnpm !== null
+	return is_quoted ? token.slice(1, -1) : token
 }
 
-function is_package_json_with_pnpm_overrides(
-	value: unknown,
-): value is PackageJsonWithPnpmOverrides {
-	if (typeof value !== 'object' || value === null) return false
-	if (!has_object_pnpm(value)) return true
-	if (!('overrides' in value.pnpm)) return true
+// Drops a trailing `# comment` from an unquoted value; a quoted value is returned as-is
+// so a `#` inside quotes is preserved.
+function strip_value_comment(value: string): string {
+	if (value.startsWith("'") || value.startsWith('"')) return value
+	const hash = value.indexOf('#')
 
-	return is_overrides_record(value.pnpm.overrides)
+	return hash === -1 ? value : value.slice(0, hash).trim()
 }
 
-function parse_overrides_from_package(raw: string): Record<string, string> {
-	const parsed: unknown = JSON.parse(raw)
+function parse_override_line(line: string): [string, string] | undefined {
+	const trimmed = line.trim()
+	if (trimmed === '' || trimmed.startsWith('#')) return undefined
+	const colon = trimmed.indexOf(':')
+	if (colon === -1) return undefined
+	const key = strip_quotes(trimmed.slice(0, colon).trim())
+	const value = strip_quotes(strip_value_comment(trimmed.slice(colon + 1).trim()))
 
-	if (!is_package_json_with_pnpm_overrides(parsed)) {
-		throw new Error('package.json pnpm.overrides has unexpected shape')
-	}
+	return [key, value]
+}
 
-	return parsed.pnpm?.overrides ?? {}
+function parse_overrides_from_workspace(raw: string): Record<string, string> {
+	const entries = extract_overrides_block(raw)
+		.map((line) => parse_override_line(line))
+		.filter((entry): entry is [string, string] => entry !== undefined)
+
+	return Object.fromEntries(entries)
 }
 
 function extract_game_kit_override(overrides: Record<string, string>): string | undefined {
@@ -44,7 +67,7 @@ function extract_game_kit_override(overrides: Record<string, string>): string | 
 
 function format_capped_message(override_value: string): string {
 	return [
-		`⏭ Skipping upgrade: ${PACKAGE_NAME} is pinned in pnpm.overrides`,
+		`⏭ Skipping upgrade: ${PACKAGE_NAME} is pinned in pnpm-workspace.yaml overrides`,
 		`  Override: ${PACKAGE_NAME} → ${override_value}`,
 		'  Remove or relax the override before upgrading.',
 	].join('\n')
@@ -67,7 +90,7 @@ function is_enoent_error(value: unknown): boolean {
 
 const jgame_version_upgrade_logic = {
 	PACKAGE_NAME,
-	parse_overrides_from_package,
+	parse_overrides_from_workspace,
 	extract_game_kit_override,
 	format_capped_message,
 	build_upgrade_args,
