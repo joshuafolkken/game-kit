@@ -66,7 +66,9 @@ function sync_file(entry: SyncEntry): void {
 
 interface ConsumerPackage {
 	scripts?: Record<string, string>
+	dependencies?: Record<string, string>
 	devDependencies?: Record<string, string>
+	pnpm?: unknown
 	[key: string]: unknown
 }
 
@@ -121,22 +123,77 @@ function sync_managed_scripts(): void {
 	console.info('  ✔ synced   package.json scripts')
 }
 
-// Preserves existing pins so consumers who upgraded individual packages are not
-// silently downgraded — only fills in missing entries. Mutates `pkg`.
+// A consumer that listed a managed dep under runtime `dependencies` (e.g. mnemecha with
+// @threlte/core / three) must end up with it ONLY in devDependencies — never the same
+// package in both sections with independently drifting ranges (#323). Split the runtime
+// deps into the managed ones to relocate and the unrelated ones the consumer keeps.
+function partition_runtime_required_deps(
+	dependencies: Record<string, string>,
+	required: Record<string, string>,
+): { moved: Record<string, string>; remaining: Record<string, string> } {
+	const moved: Record<string, string> = {}
+	const remaining: Record<string, string> = {}
+
+	for (const [key, value] of Object.entries(dependencies)) {
+		if (key in required) moved[key] = value
+		else remaining[key] = value
+	}
+
+	return { moved, remaining }
+}
+
+// Fills in only the missing entries with game-kit's canonical ranges. Preserves
+// existing pins so consumers who upgraded individual packages are not downgraded.
+function add_missing_required_deps(
+	development_deps: Record<string, string>,
+	required: Record<string, string>,
+): boolean {
+	const missing = Object.entries(required).filter(([key]) => !(key in development_deps))
+
+	for (const [key, value] of missing) development_deps[key] = value
+
+	return missing.length > 0
+}
+
+// Writes the reconciled `dependencies` back, dropping the field entirely when it has
+// emptied out (so a move never leaves a bare `"dependencies": {}`). Mutates `package_`.
+function reconcile_dependencies_field(
+	package_: ConsumerPackage,
+	dependencies: Record<string, string>,
+): void {
+	if (Object.keys(dependencies).length > 0) {
+		package_.dependencies = dependencies
+
+		return
+	}
+
+	delete package_.dependencies
+}
+
+// Mutates `package_` so every managed dep lives only in devDependencies. A managed dep
+// already pinned under devDependencies keeps that range (it wins over the runtime copy).
 function apply_managed_development_deps(
 	package_: ConsumerPackage,
 	required: Record<string, string>,
 ): boolean {
-	const existing = package_.devDependencies ?? {}
-	const missing = Object.entries(required).filter(([key]) => !(key in existing))
+	const dependencies = package_.dependencies ?? {}
+	const { moved, remaining } = partition_runtime_required_deps(dependencies, required)
+	const development_deps = { ...moved, ...package_.devDependencies }
+	const added = add_missing_required_deps(development_deps, required)
 
-	if (missing.length === 0) {
-		package_.devDependencies = existing
+	package_.devDependencies = development_deps
+	reconcile_dependencies_field(package_, remaining)
 
-		return false
-	}
+	return Object.keys(moved).length > 0 || added
+}
 
-	package_.devDependencies = { ...existing, ...Object.fromEntries(missing) }
+// pnpm >= 11 no longer reads the package.json `pnpm` field (settings live in
+// pnpm-workspace.yaml) and WARNs on every command while it lingers. Once sync has
+// written the workspace yaml, the legacy field is dead weight — remove it (#323).
+function remove_legacy_pnpm_field(package_: ConsumerPackage): boolean {
+	if (!('pnpm' in package_)) return false
+
+	delete package_.pnpm
 
 	return true
 }
@@ -147,9 +204,10 @@ function sync_managed_development_deps(): void {
 	const raw = readFileSync(package_path, 'utf8')
 	const package_ = JSON.parse(raw) as ConsumerPackage
 	const required = jgame_managed_development_deps.read_required_deps_from_kit()
-	const did_change = apply_managed_development_deps(package_, required)
+	const deps_changed = apply_managed_development_deps(package_, required)
+	const pnpm_removed = remove_legacy_pnpm_field(package_)
 
-	if (!did_change) {
+	if (!deps_changed && !pnpm_removed) {
 		console.info('  ✔ checked  package.json devDependencies (up-to-date)')
 
 		return
@@ -226,6 +284,7 @@ const jgame_sync = {
 	run,
 	apply_managed_scripts,
 	apply_managed_dev_deps: apply_managed_development_deps,
+	remove_legacy_pnpm_field,
 	is_josh_resolvable,
 }
 export { jgame_sync }

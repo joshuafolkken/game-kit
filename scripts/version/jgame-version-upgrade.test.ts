@@ -38,7 +38,7 @@ async function setup(options: {
 	global_version: string | undefined
 	project_version: string | undefined
 	latest?: string | undefined
-	package_json?: string
+	workspace_yaml?: string
 }): Promise<void> {
 	const { readFileSync } = await import('node:fs')
 	const { spawnSync } = await import('node:child_process')
@@ -50,7 +50,7 @@ async function setup(options: {
 	vi.mocked(jgame_version_api.fetch_latest_version).mockReturnValue(
 		'latest' in options ? options.latest : LATEST,
 	)
-	vi.mocked(readFileSync).mockReturnValue(options.package_json ?? JSON.stringify({ name: 'c' }))
+	vi.mocked(readFileSync).mockReturnValue(options.workspace_yaml ?? 'packages:\n')
 	vi.mocked(spawnSync).mockReturnValue(mock_spawn_result(0))
 }
 
@@ -132,14 +132,14 @@ describe('jgame_version_upgrade', () => {
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('Up to date'))
 	})
 
-	it('skips the stale project upgrade when game-kit is pinned in pnpm.overrides', async () => {
+	it('skips the stale project upgrade when game-kit is pinned in pnpm-workspace.yaml overrides', async () => {
 		const { spawnSync } = await import('node:child_process')
 		const { jgame_fix_gh_packages } = await import('./jgame-fix-gh-packages.ts')
 
 		await setup({
 			global_version: LATEST,
 			project_version: OLD,
-			package_json: JSON.stringify({ pnpm: { overrides: { [PKG]: '<1.0.0' } } }),
+			workspace_yaml: `overrides:\n  '${PKG}': '<1.0.0'\n`,
 		})
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
 
@@ -156,7 +156,7 @@ describe('jgame_version_upgrade', () => {
 		await setup({
 			global_version: OLD,
 			project_version: OLD,
-			package_json: JSON.stringify({ pnpm: { overrides: { [PKG]: '<1.0.0' } } }),
+			workspace_yaml: `overrides:\n  '${PKG}': '<1.0.0'\n`,
 		})
 		const { jgame_version_upgrade } = await import('./jgame-version-upgrade.ts')
 
