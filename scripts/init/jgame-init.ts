@@ -17,28 +17,17 @@ import { jgame_paths } from './jgame-paths.ts'
 import { jgame_root_files } from './jgame-root-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
+// templates/tsconfig.json only type-checks the templates/ directory inside game-kit
+// itself; the scaffolded project's tsconfig.json is owned by `pnpm josh init` (an
+// extends-only config reaching the kit base), so the template must never be copied —
+// its compilerOptions would survive the kit's extends-merge and contradict the base
+// (e.g. noEmitOnError). See #326.
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
 const GAME_KIT_PACKAGE_NAME = '@joshuafolkken/game-kit'
 // npm strips `.npmrc` from published packages regardless of the `files` field,
 // so the template is shipped under a non-dotfile name and renamed on copy.
 const NPMRC_SRC_NAME = 'npmrc'
 const NPMRC_DEST_NAME = '.npmrc'
-
-const USER_TSCONFIG = {
-	extends: ['./.svelte-kit/tsconfig.json'],
-	compilerOptions: {
-		strict: true,
-		allowJs: true,
-		checkJs: true,
-		esModuleInterop: true,
-		forceConsistentCasingInFileNames: true,
-		resolveJsonModule: true,
-		skipLibCheck: true,
-		sourceMap: true,
-		moduleResolution: 'bundler',
-		noEmitOnError: false,
-	},
-}
 
 interface PackageManagerEngine {
 	name: string
@@ -196,10 +185,6 @@ function generate_package_json(game_name: string): string {
 	return JSON.stringify(build_package_json(read_game_kit_package(), game_name), null, '\t')
 }
 
-function generate_tsconfig(): string {
-	return JSON.stringify(USER_TSCONFIG, null, '\t')
-}
-
 function generate_game_config(names: GameNames): string {
 	return [
 		`const GAME_NAME = '${names.kebab}'`,
@@ -223,11 +208,6 @@ function generate_game_config(names: GameNames): string {
 function write_package_json(game_name: string, project_directory: string): void {
 	writeFileSync(path.join(project_directory, 'package.json'), generate_package_json(game_name))
 	console.info('  ✔ wrote    package.json')
-}
-
-function write_tsconfig(project_directory: string): void {
-	writeFileSync(path.join(project_directory, TSCONFIG_FILE_NAME), generate_tsconfig())
-	console.info('  ✔ wrote    tsconfig.json')
 }
 
 function write_game_config(names: GameNames, project_directory: string): void {
@@ -315,7 +295,6 @@ function run(game_name_raw?: string): void {
 	copy_root_files(project_directory)
 	write_npmrc(project_directory)
 	write_game_config(names, project_directory)
-	write_tsconfig(project_directory)
 	execSync('git init', opts)
 	execSync('pnpm install', opts)
 	// `josh sync` early-returns when destination files are missing, so eslint.config.js
@@ -336,7 +315,6 @@ function run(game_name_raw?: string): void {
 const jgame_init = {
 	run,
 	generate_package_json,
-	generate_tsconfig,
 	derive_names,
 	generate_game_config,
 }

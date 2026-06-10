@@ -89,7 +89,7 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 		expect(result.vitest).toBe('^4.1.8')
 		expect(result['@vitest/browser-playwright']).toBe('^4.1.8')
 		expect(result['vitest-browser-svelte']).toBe('^2.1.1')
-		expect(result['@playwright/test']).toBe('1.60.0')
+		expect(result['@playwright/test']).toBe('^1.60.0')
 		expect(result.playwright).toBe('^1.60.0')
 	})
 
@@ -109,7 +109,33 @@ describe('jgame_managed_dev_deps.pick_required_deps', () => {
 
 		expect(result.prettier).toBe('^3.8.3')
 		expect(result.eslint).toBe('^10.4.0')
-		expect(result['@joshuafolkken/kit']).toBe('0.162.0')
+	})
+
+	it('caret-normalizes exact pins so consumers can receive patch/minor updates (#326)', async () => {
+		// Regression for #326: game-kit exact-pins @joshuafolkken/kit (and @playwright/test)
+		// for its own toolchain; copying those verbatim froze freshly-init'd projects on one
+		// version while every other managed dep was caret-ranged.
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+
+		expect(result['@joshuafolkken/kit']).toBe('^0.162.0')
+		expect(result['@playwright/test']).toBe('^1.60.0')
+	})
+
+	it('passes existing ranges through unchanged (#326)', async () => {
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const source: Record<string, string> = {
+			eslint: '^10.4.0',
+			prettier: '~3.8.3',
+			svelte: '>=5.0.0',
+		}
+		const result = jgame_managed_dev_deps.pick_required_deps(source)
+
+		expect(result.eslint).toBe('^10.4.0')
+		expect(result.prettier).toBe('~3.8.3')
+		expect(result.svelte).toBe('>=5.0.0')
+		// Missing deps still fall back to the wildcard, never to a caret-wrapped wildcard.
+		expect(result.vite).toBe('*')
 	})
 
 	it('falls back to wildcard when the source is missing a required dep', async () => {

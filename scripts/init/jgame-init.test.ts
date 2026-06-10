@@ -111,11 +111,13 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.name).toBe('tic-tac-toe')
 	})
 
-	it('includes kit in devDependencies', async () => {
+	it('includes kit in devDependencies as a caret range, not an exact pin (#326)', async () => {
+		// Regression for #326: game-kit exact-pins @joshuafolkken/kit internally, and
+		// copying that verbatim froze consumers on one kit version until a manual bump.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 
-		expect(result.devDependencies['@joshuafolkken/kit']).toBe('0.162.0')
+		expect(result.devDependencies['@joshuafolkken/kit']).toBe('^0.162.0')
 	})
 
 	it('includes lint/format toolchain in devDependencies (#184)', async () => {
@@ -246,22 +248,6 @@ describe('jgame_init.generate_package_json', () => {
 
 		expect(result.scripts.preview).toBe(CANONICAL_PREVIEW)
 		expect(result.scripts.preview).not.toBe('vite preview')
-	})
-})
-
-describe('jgame_init.generate_tsconfig', () => {
-	it('extends .svelte-kit/tsconfig.json', async () => {
-		const { jgame_init } = await import('./jgame-init.ts')
-		const result = JSON.parse(jgame_init.generate_tsconfig())
-
-		expect(result.extends).toContain('./.svelte-kit/tsconfig.json')
-	})
-
-	it('enables strict mode', async () => {
-		const { jgame_init } = await import('./jgame-init.ts')
-		const result = JSON.parse(jgame_init.generate_tsconfig())
-
-		expect(result.compilerOptions.strict).toBe(true)
 	})
 })
 
@@ -433,15 +419,17 @@ describe('jgame_init.run', () => {
 		)
 	})
 
-	it('writes tsconfig.json into project subdirectory', async () => {
+	it('never writes its own tsconfig.json — josh init owns it (#326)', async () => {
+		// Regression for #326: jgame's old USER_TSCONFIG survived the kit's extends-merge,
+		// keeping noEmitOnError:false against the kit base's true. tsconfig.json creation
+		// is left entirely to `pnpm josh init --type sveltekit` (invocation covered above).
 		const { writeFileSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
 
 		jgame_init.run('tic-tac-toe')
-		expect(writeFileSync).toHaveBeenCalledWith(
-			'/project/tic-tac-toe/tsconfig.json',
-			expect.stringContaining('.svelte-kit/tsconfig.json'),
-		)
+		const written_paths = vi.mocked(writeFileSync).mock.calls.map(([target]) => String(target))
+
+		expect(written_paths).not.toContain('/project/tic-tac-toe/tsconfig.json')
 	})
 
 	it('copies templates into project subdirectory', async () => {
