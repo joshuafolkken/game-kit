@@ -456,6 +456,8 @@ describe('jgame_init.run', () => {
 		expect(filter('/pkg/templates/tsconfig.json', '/project/tic-tac-toe/tsconfig.json')).toBe(false)
 		expect(filter('/pkg/templates/npmrc', '/project/tic-tac-toe/npmrc')).toBe(false)
 		expect(filter('/pkg/templates/src/app.html', '/project/tic-tac-toe/src/app.html')).toBe(true)
+		// The example e2e must land at src/routes/page.e2e.ts in a fresh init (#327).
+		expect(filter('/pkg/templates/src/routes/page.e2e.ts', '/project/x/page.e2e.ts')).toBe(true)
 	})
 
 	it('writes .npmrc from templates/npmrc to bypass npm dotfile exclusion', async () => {
