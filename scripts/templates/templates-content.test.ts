@@ -167,6 +167,26 @@ describe('templates/vite.config.ts ships the vitest test config required by josh
 	})
 })
 
+describe('templates ship a co-located example e2e (regression for #327)', () => {
+	const example_e2e_path = path.join(TEMPLATES_DIR, 'src', 'routes', 'page.e2e.ts')
+
+	it('provides the example e2e at src/routes/page.e2e.ts, co-located with the route', () => {
+		expect(existsSync(example_e2e_path)).toBe(true)
+	})
+
+	it('defines runnable playwright tests matched by the *.e2e.ts testMatch convention', () => {
+		const example_e2e_source = readFileSync(example_e2e_path, 'utf8')
+
+		expect(example_e2e_source).toContain("from '@playwright/test'")
+		expect(example_e2e_source).toContain('test(')
+	})
+
+	it('ships no top-level tests/ directory, so jgame init cannot scaffold one', () => {
+		// Pre-0.144 inits scaffolded tests/home.e2e.ts; the co-located form replaces it.
+		expect(existsSync(path.join(TEMPLATES_DIR, 'tests'))).toBe(false)
+	})
+})
+
 describe('.gitignore ignores generated .svelte-kit at any depth (regression for #296)', () => {
 	const gitignore_source = readFileSync(path.join(REPO_ROOT, '.gitignore'), 'utf8')
 
