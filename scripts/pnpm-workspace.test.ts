@@ -26,6 +26,10 @@ describe('pnpm-workspace.yaml (game-kit root)', () => {
 	it('declares an allowBuilds section', () => {
 		expect(root_workspace).toMatch(/^allowBuilds:/mu)
 	})
+
+	it('enables trustLockfile so pnpm >=11.5 skips install-time supply-chain re-verification', () => {
+		expect(root_workspace).toMatch(/^trustLockfile:\s*true/mu)
+	})
 })
 
 describe('templates/pnpm-workspace.yaml (consumer scaffold)', () => {
@@ -44,5 +48,9 @@ describe('templates/pnpm-workspace.yaml (consumer scaffold)', () => {
 	it('declares allowBuilds including @joshuafolkken/game-kit so scaffolds can run its build script', () => {
 		expect(template_workspace).toMatch(/^allowBuilds:/mu)
 		expect(template_workspace).toMatch(/'@joshuafolkken\/game-kit':\s*true/u)
+	})
+
+	it('enables trustLockfile so scaffolded projects survive pnpm >=11.5 supply-chain re-verification on clean CI', () => {
+		expect(template_workspace).toMatch(/^trustLockfile:\s*true/mu)
 	})
 })

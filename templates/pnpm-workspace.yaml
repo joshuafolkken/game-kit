@@ -18,3 +18,9 @@ overrides:
   cookie: ^0.7.0
   serialize-javascript: '>=7.0.5'
   ws: '>=8.20.1'
+
+# pnpm >=11.5 re-verifies every lockfile entry against the registry at install time.
+# On clean CI without a usable token for private @joshuafolkken/* GitHub Packages this
+# fails (ERR_PNPM_TARBALL_URL_MISMATCH). trustLockfile skips that install-time re-check
+# for the already-committed lockfile; minimum-release-age still applies at resolution time.
+trustLockfile: true
