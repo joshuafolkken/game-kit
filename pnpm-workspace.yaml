@@ -19,3 +19,5 @@ overrides:
   # GHSA-58qx-3vcg-4xpx (moderate) is fixed in ws@8.20.1; force the whole tree onto the patched line.
   ws: '>=8.20.1'
   serialize-javascript: '>=7.0.5'
+
+trustLockfile: true
