@@ -70,3 +70,13 @@ The `jgame` binary exposes:
 | `jgame sync`                         | Sync managed config files from the latest published kit                                                           |
 | `jgame version` (`jgame v`)          | Show the global, project (node_modules), latest published, and running versions                                   |
 | `jgame version:upgrade` (`jgame vu`) | Upgrade whichever of the global / project install is behind latest (repairs the lockfile after a project upgrade) |
+
+### tsconfig normalization on `jgame sync`
+
+`jgame sync` keeps your project's `tsconfig.json` lean. It delegates to the underlying
+`josh sync`, which ensures the kit base preset is in `extends` and then strips every
+`compilerOptions` key whose value already equals that base — so per-project drift does
+not accumulate. Genuine overrides (a value that differs from the base, e.g.
+`"noEmitOnError": false`), project-specific keys, and `include` / `exclude` are always
+preserved. Game projects extend the kit base preset directly, so the redundancy check
+runs against that base.
