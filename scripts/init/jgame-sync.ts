@@ -31,6 +31,16 @@ interface SyncEntry {
 // (extends-only, reaching the kit base) — templates/tsconfig.json only type-checks
 // the templates/ directory inside game-kit and must never reach consumers (#326).
 //
+// Consumer tsconfig NORMALIZATION is delegated to the `pnpm josh sync` step
+// (delegate_to_josh_sync below), whose `sync_tsconfig` runs kit's
+// `strip_redundant_compiler_options` against the kit base preset that game-kit
+// consumers extend directly — dropping compilerOptions keys whose value equals the
+// base while preserving genuine overrides (e.g. `noEmitOnError: false`), project
+// keys, and `include`/`exclude` (kit #560, game-kit #333). game-kit layers no
+// preset of its own, so the kit base is the correct comparison target and no
+// game-kit-side strip is needed. Adding tsconfig.json here would shadow that strip
+// with a verbatim copy and clobber consumer overrides — so it must stay excluded.
+//
 // `src` is used when the source filename inside templates/ must differ from the
 // destination. .npmrc lives at templates/npmrc because npm always strips
 // `.npmrc` from published packages regardless of the package.json `files` field.
@@ -286,5 +296,8 @@ const jgame_sync = {
 	apply_managed_dev_deps: apply_managed_development_deps,
 	remove_legacy_pnpm_field,
 	is_josh_resolvable,
+	// Exposed so the tsconfig-normalization contract test can assert tsconfig.json is
+	// never managed here (its normalization is delegated to the josh sync step, #333).
+	SYNC_FILES,
 }
 export { jgame_sync }
