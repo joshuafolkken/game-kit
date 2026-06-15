@@ -62,6 +62,20 @@ describe('FloorCredits', () => {
 
 		expect(container).toBeTruthy()
 	})
+
+	it('renders without error when an explicit color override is supplied', () => {
+		const { container } = render(FloorCredits, {
+			props: {
+				is_alt: false,
+				credits: SAMPLE_CREDITS,
+				scroll_start_z: START_Z,
+				scroll_end_z: END_Z,
+				color: '#ff3b30',
+			},
+		})
+
+		expect(container).toBeTruthy()
+	})
 })
 
 describe('FloorCredits font override — optional font prop', () => {
@@ -73,6 +87,19 @@ describe('FloorCredits font override — optional font prop', () => {
 
 	it('passes the resolved font into the Text', () => {
 		expect(FLOOR_CREDITS_SOURCE).toMatch(/font=\{resolved_font\}/u)
+	})
+})
+
+describe('FloorCredits color override — optional color prop', () => {
+	it('resolves the color from the prop, falling back to the is_alt default', () => {
+		expect(FLOOR_CREDITS_SOURCE).toMatch(
+			/(?:let|const)\s+resolved_color\s*=\s*\$derived\(\s*color\s*\?\?\s*default_color\s*\)/u,
+		)
+	})
+
+	it('passes the resolved color into the Text fill and outline', () => {
+		expect(FLOOR_CREDITS_SOURCE).toMatch(/color=\{resolved_color\}/u)
+		expect(FLOOR_CREDITS_SOURCE).toMatch(/outlineColor=\{resolved_color\}/u)
 	})
 })
 
@@ -95,8 +122,10 @@ describe('FloorCredits font selection — driven by CRT, not CYBER (is_alt)', ()
 		)
 	})
 
-	it('keeps is_alt prop driving the credits color (CYBER vs normal)', () => {
-		expect(FLOOR_CREDITS_SOURCE).toMatch(/(?:let|const)\s+color\s*=\s*\$derived\(\s*is_alt\s*\?/u)
+	it('keeps is_alt prop driving the default credits color (CYBER vs normal)', () => {
+		expect(FLOOR_CREDITS_SOURCE).toMatch(
+			/(?:let|const)\s+default_color\s*=\s*\$derived\(\s*is_alt\s*\?/u,
+		)
 	})
 
 	it('does not pass is_alt directly into fonts helpers', () => {
