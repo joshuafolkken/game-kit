@@ -48,6 +48,32 @@ describe('FloorCredits', () => {
 
 		expect(container).toBeTruthy()
 	})
+
+	it('renders without error when an explicit font override is supplied', () => {
+		const { container } = render(FloorCredits, {
+			props: {
+				is_alt: false,
+				credits: SAMPLE_CREDITS,
+				scroll_start_z: START_Z,
+				scroll_end_z: END_Z,
+				font: '/fonts/Custom.ttf',
+			},
+		})
+
+		expect(container).toBeTruthy()
+	})
+})
+
+describe('FloorCredits font override — optional font prop', () => {
+	it('resolves the font from the prop, falling back to the CRT-driven font', () => {
+		expect(FLOOR_CREDITS_SOURCE).toMatch(
+			/(?:let|const)\s+resolved_font\s*=\s*\$derived\(\s*font\s*\?\?\s*current_font\s*\)/u,
+		)
+	})
+
+	it('passes the resolved font into the Text', () => {
+		expect(FLOOR_CREDITS_SOURCE).toMatch(/font=\{resolved_font\}/u)
+	})
 })
 
 describe('FloorCredits font selection — driven by CRT, not CYBER (is_alt)', () => {

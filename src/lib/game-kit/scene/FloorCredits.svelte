@@ -22,13 +22,16 @@
 		credits: string
 		scroll_start_z: number
 		scroll_end_z: number
+		font?: string
 	}
 
-	const { is_alt, credits, scroll_start_z, scroll_end_z }: Props = $props()
+	const { is_alt, credits, scroll_start_z, scroll_end_z, font }: Props = $props()
 
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
 	const should_use_alt_font = $derived(!crt.is_crt_enabled)
 	const current_font = $derived(fonts.get_font(should_use_alt_font))
+	// An explicit font prop overrides the CRT-driven default (e.g. a scene-specific title font).
+	const resolved_font = $derived(font ?? current_font)
 	const color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
 	let scroll_z = $state(untrack(() => scroll_start_z))
 
@@ -47,7 +50,7 @@
 
 <Text
 	text={credits}
-	font={current_font}
+	font={resolved_font}
 	fontSize={CREDITS_FONT_SIZE}
 	lineHeight={CREDITS_LINE_HEIGHT}
 	textAlign="center"
