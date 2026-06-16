@@ -4,7 +4,7 @@ const HALF_DIVISOR = 2
 
 export const PLAYER_RADIUS = 0.4
 
-type Clamp = (x: number, z: number) => { x: number; z: number }
+export type Clamp = (x: number, z: number) => { x: number; z: number }
 
 function make_clamp_to_room(room_width: number, room_depth: number): Clamp {
 	const x_max = room_width / HALF_DIVISOR - PLAYER_RADIUS
