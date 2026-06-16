@@ -1,4 +1,5 @@
 import { player_bounds } from '$lib/game-kit/player/player-bounds'
+import { ROOM_D, ROOM_W } from '$lib/game-kit/scene/room-config'
 import { describe, expect, it } from 'vitest'
 
 describe('player_bounds', () => {
@@ -45,5 +46,34 @@ describe('player_bounds', () => {
 
 		expect(x).toBe(player_bounds.X_MAX)
 		expect(z).toBe(player_bounds.Z_MAX)
+	})
+})
+
+describe('player_bounds.make_clamp_to_room', () => {
+	const CUSTOM_WIDTH = 20
+	const CUSTOM_DEPTH = 30
+	const CUSTOM_X_MAX = CUSTOM_WIDTH / 2 - player_bounds.PLAYER_RADIUS
+	const CUSTOM_Z_MAX = CUSTOM_DEPTH / 2 - player_bounds.PLAYER_RADIUS
+
+	it('clamps to bounds derived from the supplied room dimensions', () => {
+		const clamp = player_bounds.make_clamp_to_room(CUSTOM_WIDTH, CUSTOM_DEPTH)
+		const result = clamp(CUSTOM_X_MAX + 5, CUSTOM_Z_MAX + 5)
+
+		expect(result.x).toBe(CUSTOM_X_MAX)
+		expect(result.z).toBe(CUSTOM_Z_MAX)
+	})
+
+	it('does not clamp a position inside the custom room', () => {
+		const clamp = player_bounds.make_clamp_to_room(CUSTOM_WIDTH, CUSTOM_DEPTH)
+		const result = clamp(0, 0)
+
+		expect(result.x).toBe(0)
+		expect(result.z).toBe(0)
+	})
+
+	it('reproduces the default bounds when given the default room dimensions', () => {
+		const clamp = player_bounds.make_clamp_to_room(ROOM_W, ROOM_D)
+
+		expect(clamp(ROOM_W, ROOM_D)).toEqual({ x: player_bounds.X_MAX, z: player_bounds.Z_MAX })
 	})
 })

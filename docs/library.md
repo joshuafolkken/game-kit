@@ -33,6 +33,16 @@ pnpm add -D @joshuafolkken/game-kit
 
 For a full game (score display, credits, gameover overlay, switches), use `SceneObjects` and provide your game board via the `game_board` snippet. See [`templates/src/lib/game/Scene.svelte`](../templates/src/lib/game/Scene.svelte) for a complete reference.
 
+### Room dimensions
+
+`SceneObjects` accepts optional `room_width`, `room_depth`, and `room_height` props to override the room footprint and ceiling height (defaults: `ROOM_W` / `ROOM_D` / `ROOM_H`). Player movement bounds follow the configured `room_width` / `room_depth` automatically.
+
+```svelte
+<SceneObjects room_width={16} room_depth={16} room_height={4} {...} />
+```
+
+> When you set a custom `room_depth`, pass the matching half-depth (`room_depth / 2`) to `credits_scroll.make_credits_scroll_bounds` so the floor-credits scroll range stays aligned with the new room. The default `HALF_D` constant only matches the default depth.
+
 ## Exports
 
 ### Scene components

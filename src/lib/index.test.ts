@@ -76,6 +76,10 @@ describe('library index exports', () => {
 		expect(player_velocity).toBeDefined()
 	})
 
+	it('exposes the make_clamp_to_room factory on player_bounds', () => {
+		expect(typeof player_bounds.make_clamp_to_room).toBe('function')
+	})
+
 	it('exports credits_scroll with make_credits_scroll_bounds and advance_scroll', () => {
 		expect(typeof credits_scroll.make_credits_scroll_bounds).toBe('function')
 		expect(typeof credits_scroll.advance_scroll).toBe('function')
