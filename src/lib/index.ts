@@ -36,7 +36,7 @@ export { crt, create_crt, type CrtInstance } from './game-kit/Crt.svelte'
 export { device, create_device, type DeviceInstance } from './game-kit/Device.svelte'
 
 export { camera_shake } from './game-kit/player/CameraShake.svelte'
-export { player_bounds } from './game-kit/player/player-bounds'
+export { player_bounds, type Clamp } from './game-kit/player/player-bounds'
 export { player_jump } from './game-kit/player/player-jump'
 export { player_speed } from './game-kit/player/player-speed'
 export { player_step } from './game-kit/player/player-step'

@@ -181,3 +181,47 @@ describe('SceneObjects font selection — driven by CRT, not CYBER (is_alt)', ()
 		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/fonts\.get_font_size_multiplier\(\s*is_alt\s*\)/u)
 	})
 })
+
+describe('SceneObjects room dimensions — configurable via props', () => {
+	it('declares optional room_width / room_depth / room_height props with ROOM_* defaults', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/room_width\?\s*:\s*number/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/room_depth\?\s*:\s*number/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/room_height\?\s*:\s*number/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/room_width\s*=\s*ROOM_W/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/room_depth\s*=\s*ROOM_D/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/room_height\s*=\s*ROOM_H/u)
+	})
+
+	it('forwards room dimensions to the Room component', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/width=\{room_width\}/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/depth=\{room_depth\}/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/height=\{room_height\}/u)
+	})
+
+	it('forwards room footprint to the Player so movement bounds follow the room', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/<Player[^>]*\{room_width\}[^>]*\{room_depth\}/u)
+	})
+
+	it('does not hardcode ROOM_W / ROOM_D / ROOM_H on the Room element', () => {
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/width=\{ROOM_W\}/u)
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/depth=\{ROOM_D\}/u)
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/height=\{ROOM_H\}/u)
+	})
+
+	it('renders without error when explicit room dimensions are provided', () => {
+		const CUSTOM_WIDTH = 16
+		const CUSTOM_DEPTH = 16
+		const CUSTOM_HEIGHT = 4
+		const game_board = createRawSnippet(() => ({ render: () => EMPTY_SPAN }))
+		const { container } = render(SceneObjects, {
+			props: {
+				...make_properties(game_board),
+				room_width: CUSTOM_WIDTH,
+				room_depth: CUSTOM_DEPTH,
+				room_height: CUSTOM_HEIGHT,
+			},
+		})
+
+		expect(container).toBeTruthy()
+	})
+})

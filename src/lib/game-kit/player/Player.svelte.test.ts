@@ -1,5 +1,7 @@
 import { camera_shake } from '$lib/game-kit/player/CameraShake.svelte'
+import { player_bounds } from '$lib/game-kit/player/player-bounds'
 import { player_step } from '$lib/game-kit/player/player-step'
+import { ROOM_D, ROOM_W } from '$lib/game-kit/scene/room-config'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import Player from './Player.svelte'
@@ -35,8 +37,12 @@ vi.mock('@threlte/core', () => ({
 	}),
 }))
 vi.mock('$lib/game-kit/input/Input.svelte', () => ({ input: mock_input }))
+const { mock_clamp } = vi.hoisted(() => ({
+	mock_clamp: vi.fn((x: number, z: number) => ({ x, z })),
+}))
+
 vi.mock('$lib/game-kit/player/player-bounds', () => ({
-	player_bounds: { clamp_to_room: vi.fn((x: number, z: number) => ({ x, z })) },
+	player_bounds: { make_clamp_to_room: vi.fn(() => mock_clamp) },
 }))
 vi.mock('$lib/game-kit/player/player-jump', () => ({
 	player_jump: {
@@ -66,6 +72,7 @@ describe('Player', () => {
 	afterEach(() => {
 		vi.mocked(camera_shake.trigger).mockClear()
 		vi.mocked(player_step.compute_velocity_after_look).mockClear()
+		vi.mocked(player_bounds.make_clamp_to_room).mockClear()
 		mock_input.keys = { w: false, s: false, a: false, d: false }
 		mock_input.joystick_move = { x: 0, y: 0 }
 		mock_input.is_sprinting = false
@@ -115,5 +122,27 @@ describe('Player', () => {
 		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
 
 		expect(call?.forward).toBeCloseTo(1)
+	})
+
+	it('builds the room clamp from explicit room_width / room_depth props', () => {
+		const CUSTOM_WIDTH = 16
+		const CUSTOM_DEPTH = 24
+
+		render(Player, {
+			props: { is_gameover: false, room_width: CUSTOM_WIDTH, room_depth: CUSTOM_DEPTH },
+		})
+		tick_holder.fn?.(0.016)
+
+		expect(vi.mocked(player_bounds.make_clamp_to_room)).toHaveBeenCalledWith(
+			CUSTOM_WIDTH,
+			CUSTOM_DEPTH,
+		)
+	})
+
+	it('falls back to default room dimensions when props are omitted', () => {
+		render(Player, { props: { is_gameover: false } })
+		tick_holder.fn?.(0.016)
+
+		expect(vi.mocked(player_bounds.make_clamp_to_room)).toHaveBeenCalledWith(ROOM_W, ROOM_D)
 	})
 })

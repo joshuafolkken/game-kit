@@ -5,6 +5,7 @@
 	import { player_bounds } from '$lib/game-kit/player/player-bounds'
 	import { player_jump } from '$lib/game-kit/player/player-jump'
 	import { player_step } from '$lib/game-kit/player/player-step'
+	import { ROOM_D, ROOM_W } from '$lib/game-kit/scene/room-config'
 
 	const SPAWN_X = 0
 	const SPAWN_Y = 1
@@ -19,9 +20,12 @@
 
 	interface Props {
 		is_gameover: boolean
+		room_width?: number
+		room_depth?: number
 	}
 
-	const { is_gameover }: Props = $props()
+	const { is_gameover, room_width = ROOM_W, room_depth = ROOM_D }: Props = $props()
+	const clamp_to_room = $derived(player_bounds.make_clamp_to_room(room_width, room_depth))
 
 	let pos_x = $state(SPAWN_X)
 	let pos_y = $state(SPAWN_Y)
@@ -53,7 +57,7 @@
 	function apply_movement(vel_x: number, vel_z: number, delta: number): void {
 		const raw_x = pos_x + vel_x * delta
 		const raw_z = pos_z + vel_z * delta
-		const clamped = player_bounds.clamp_to_room(raw_x, raw_z)
+		const clamped = clamp_to_room(raw_x, raw_z)
 
 		pos_x = clamped.x
 		pos_z = clamped.z
