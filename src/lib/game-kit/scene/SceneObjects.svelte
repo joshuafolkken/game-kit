@@ -66,6 +66,9 @@
 		credits_end_z: number
 		messages: SceneObjectsMessages
 		score_display_z: number
+		room_width?: number
+		room_depth?: number
+		room_height?: number
 	}
 
 	const {
@@ -77,6 +80,9 @@
 		credits_end_z,
 		messages,
 		score_display_z,
+		room_width = ROOM_W,
+		room_depth = ROOM_D,
+		room_height = ROOM_H,
 	}: Props = $props()
 
 	const { camera } = useThrelte()
@@ -126,14 +132,21 @@
 	/>
 </T.Group>
 
-<Room width={ROOM_W} depth={ROOM_D} height={ROOM_H} {floor_color} {wall_color} {ceiling_color} />
+<Room
+	width={room_width}
+	depth={room_depth}
+	height={room_height}
+	{floor_color}
+	{wall_color}
+	{ceiling_color}
+/>
 <FloorCredits
 	{is_alt}
 	credits={credits_text}
 	scroll_start_z={credits_start_z}
 	scroll_end_z={credits_end_z}
 />
-<Player {is_gameover} />
+<Player {is_gameover} {room_width} {room_depth} />
 {@render game_board()}
 <ScoreDisplay
 	{score_data}
