@@ -27,7 +27,11 @@ words:
   - Raycaster
   - raycaster
   - constructibility
+  - destructures
   - inferrable
+  - precache
+  - precached
+  - precaches
   - retuned
   - scaffolder
   - GLSL

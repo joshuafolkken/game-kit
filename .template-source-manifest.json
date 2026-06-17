@@ -1,5 +1,5 @@
 {
-	"vite.config.ts": "bc68bb4f7ab611fedd87c8f3fe7436e1598974c5135ff34c546e237521955463",
+	"vite.config.ts": "d3dee96fc4d02dbe96b646d3b0100955bf43a515a22182c94781bbac724d50a1",
 	"src/app.html": "be1f5575e2daf9cff8eee03da181bfd4488342acdfe0c686cce28c35f8668996",
 	"src/hooks.server.ts": "ff893c4f9f61353fd7c6b6ec15fc63ef1066d30e4d61d960695edd4b099c4d27",
 	"src/lib/game/messages.ts": "e9cf0c8e7a140744e0276bb64ca97d1b8245ba64d99043c0e96de4693fd6bb32",

@@ -45,6 +45,7 @@
 	interface Props {
 		children?: Snippet
 		hint_text?: string
+		hint_font?: string
 		on_start?: () => void
 		label_jump: string
 		label_game: string
@@ -55,6 +56,7 @@
 	const {
 		children,
 		hint_text = '',
+		hint_font,
 		on_start,
 		label_jump,
 		label_game,
@@ -201,7 +203,7 @@
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
-				<ControlsScene {hint_text} {is_touch} />
+				<ControlsScene {hint_text} {is_touch} {hint_font} />
 			{/if}
 		</Suspense>
 		<CrtDitherPass {lo_dpr} />

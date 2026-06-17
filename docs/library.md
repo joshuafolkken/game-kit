@@ -33,6 +33,17 @@ pnpm add -D @joshuafolkken/game-kit
 
 For a full game (score display, credits, gameover overlay, switches), use `SceneObjects` and provide your game board via the `game_board` snippet. See [`templates/src/lib/game/Scene.svelte`](../templates/src/lib/game/Scene.svelte) for a complete reference.
 
+### Controls-hint font
+
+`GameScene` accepts an optional `hint_font` prop — a font URL (`.woff` / `.ttf` / `.otf`) forwarded to the controls overlay and applied to both the start hint line and the WASD / ESC / Z keyboard letters. When omitted, the font follows the CRT state as before (CRT on → PressStart2P, CRT off → Orbitron), so existing consumers are unaffected.
+
+```svelte
+<GameScene {hint_text} hint_font="/fonts/MyTheme.woff">
+	<Room />
+	<Player />
+</GameScene>
+```
+
 ### Room dimensions
 
 `SceneObjects` accepts optional `room_width`, `room_depth`, and `room_height` props to override the room footprint and ceiling height (defaults: `ROOM_W` / `ROOM_D` / `ROOM_H`). Player movement bounds follow the configured `room_width` / `room_depth` automatically.

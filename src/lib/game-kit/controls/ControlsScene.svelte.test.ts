@@ -13,6 +13,7 @@ const ATTR_BACKDROP_OPACITY = 'opacity={BACKDROP_OPACITY}'
 const ATTR_BACKDROP_BACK_RENDER_ORDER = 'renderOrder={BACKDROP_BACK_RENDER_ORDER}'
 const ATTR_DOUBLE_SIDE = 'side={DoubleSide}'
 const ATTR_MOUSE_POSITION = 'position={[MOUSE_X, MOUSE_Y, 0]}'
+const ATTR_RESOLVED_FONT = 'font={resolved_font}'
 
 function find_mesh_open_tag(source: string, position_marker: string): string {
 	const start_index = source.indexOf(position_marker)
@@ -263,13 +264,13 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 		expect(SOURCE).toMatch(/\{#each\s+KEYBOARD_LETTERS\s+as\s+letter/u)
 	})
 
-	it('letter Text uses font={current_font} so it matches the hint text font exactly', () => {
+	it('letter Text uses font={resolved_font} so it matches the hint text font exactly', () => {
 		const each_block = /\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u.exec(SOURCE)
 
 		expect(each_block).not.toBeNull()
 		const block = each_block?.[0] ?? ''
 
-		expect(block).toContain('font={current_font}')
+		expect(block).toContain(ATTR_RESOLVED_FONT)
 		expect(block).toContain('fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}')
 		expect(block).toContain('color={letter.color}')
 		expect(block).toContain('fillOpacity={letter.opacity}')
@@ -296,6 +297,40 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 	it('does not regenerate the keyboard texture on font change (texture is static; only Text overlays react)', () => {
 		expect(SOURCE).not.toMatch(/function\s+make_keyboard_svg\s*\(/u)
 		expect(SOURCE).not.toMatch(/old_tex\?\.dispose\(\)/u)
+	})
+})
+
+describe('ControlsScene hint_font override — optional font prop forwarded by GameScene', () => {
+	it('declares an optional hint_font prop in the Props interface', () => {
+		expect(SOURCE).toMatch(/interface\s+Props\s*\{[\s\S]*?hint_font\?\s*:\s*string[\s\S]*?\}/u)
+	})
+
+	it('destructures hint_font from $props', () => {
+		expect(SOURCE).toMatch(/const\s*\{[^}]*\bhint_font\b[^}]*\}\s*:\s*Props\s*=\s*\$props\(\)/u)
+	})
+
+	it('resolves the font from the prop, falling back to the CRT-driven current_font', () => {
+		expect(SOURCE).toMatch(
+			/(?:let|const)\s+resolved_font\s*=\s*\$derived\(\s*hint_font\s*\?\?\s*current_font\s*\)/u,
+		)
+	})
+
+	it('passes resolved_font into the hint Text', () => {
+		const hint_block = /<Text\s+text=\{hint_text\}[\s\S]*?\/>/u.exec(SOURCE)
+
+		expect(hint_block).not.toBeNull()
+		expect(hint_block?.[0] ?? '').toContain(ATTR_RESOLVED_FONT)
+	})
+
+	it('passes resolved_font into each keyboard letter Text', () => {
+		const each_block = /\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u.exec(SOURCE)
+
+		expect(each_block).not.toBeNull()
+		expect(each_block?.[0] ?? '').toContain(ATTR_RESOLVED_FONT)
+	})
+
+	it('does not hardcode font={current_font} on the hint or letter Text (override path would break)', () => {
+		expect(SOURCE).not.toMatch(/font=\{current_font\}/u)
 	})
 })
 

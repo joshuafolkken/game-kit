@@ -11,18 +11,31 @@ const TEMPLATES_GAME_DIR = path.join(TEMPLATES_DIR, 'src', 'lib', 'game')
 const TEMPLATE_PAGE_PATH = path.join(TEMPLATES_DIR, 'src', 'routes', '+page.svelte')
 const GAME_SCENE_PATH = path.join(REPO_ROOT, 'src', 'lib', 'game-kit', 'GameScene.svelte')
 
-function extract_game_scene_tag(source: string): string {
-	const match = /<GameScene\b([^>]*)>/u.exec(source)
-	if (match === null) throw new Error('GameScene opening tag not found')
+function extract_capture_group(source: string, pattern: RegExp, missing_message: string): string {
+	const match = pattern.exec(source)
+	if (match === null) throw new Error(missing_message)
 
 	return match[1]
 }
 
-function extract_properties_interface(source: string): string {
-	const match = /interface Props \{([\s\S]*?)\}/u.exec(source)
-	if (match === null) throw new Error('GameScene Props interface not found')
+function extract_game_scene_tag(source: string): string {
+	return extract_capture_group(source, /<GameScene\b([^>]*)>/u, 'GameScene opening tag not found')
+}
 
-	return match[1]
+function extract_properties_interface(source: string): string {
+	return extract_capture_group(
+		source,
+		/interface Props \{([\s\S]*?)\}/u,
+		'GameScene Props interface not found',
+	)
+}
+
+function extract_glob_patterns(source: string): string {
+	return extract_capture_group(
+		source,
+		/globPatterns:\s*\[([^\]]*)\]/u,
+		'workbox globPatterns not found',
+	)
 }
 
 function collect_label_properties(text: string): Array<string> {
@@ -164,6 +177,23 @@ describe('templates/vite.config.ts ships the vitest test config required by josh
 		expect(vite_config_source).toContain("environment: 'node'")
 		expect(vite_config_source).toContain("include: ['src/**/*.{test,spec}.{js,ts}']")
 		expect(vite_config_source).toContain("exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']")
+	})
+})
+
+describe('PWA precache covers Troika font formats so hint_font assets work offline (#346)', () => {
+	// The GameScene hint_font prop forwards a font URL (.woff / .ttf / .otf) to the controls
+	// overlay. For those fonts to load offline they must be precached by the service worker, so
+	// the workbox globPatterns must list every accepted format alongside the existing woff2.
+	const FONT_PRECACHE_FORMATS = ['woff2', 'woff', 'ttf', 'otf']
+	const root_vite_config = readFileSync(path.join(REPO_ROOT, 'vite.config.ts'), 'utf8')
+	const template_vite_config = readFileSync(path.join(TEMPLATES_DIR, 'vite.config.ts'), 'utf8')
+
+	it.each(FONT_PRECACHE_FORMATS)('root vite.config.ts precaches .%s fonts', (format) => {
+		expect(extract_glob_patterns(root_vite_config)).toContain(format)
+	})
+
+	it.each(FONT_PRECACHE_FORMATS)('templates/vite.config.ts precaches .%s fonts', (format) => {
+		expect(extract_glob_patterns(template_vite_config)).toContain(format)
 	})
 })
 
