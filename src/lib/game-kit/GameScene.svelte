@@ -45,7 +45,9 @@
 	interface Props {
 		children?: Snippet
 		hint_text?: string
-		hint_font?: string
+		// `| undefined` (exactOptionalPropertyTypes): lets consumers forward a
+		// `string | undefined` variable, and matches ControlsScene's hint_font prop.
+		hint_font?: string | undefined
 		on_start?: () => void
 		label_jump: string
 		label_game: string

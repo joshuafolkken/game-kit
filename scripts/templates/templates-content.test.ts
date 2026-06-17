@@ -38,6 +38,11 @@ function extract_glob_patterns(source: string): string {
 	)
 }
 
+// Word-boundary match so a bare `woff` assertion is not satisfied by the `woff2` token.
+function expect_precaches(config: string, format: string): void {
+	expect(extract_glob_patterns(config)).toMatch(new RegExp(String.raw`\b${format}\b`, 'u'))
+}
+
 function collect_label_properties(text: string): Array<string> {
 	return [...text.matchAll(/\blabel_\w+/gu)].map((occurrence) => occurrence[0])
 }
@@ -189,11 +194,11 @@ describe('PWA precache covers Troika font formats so hint_font assets work offli
 	const template_vite_config = readFileSync(path.join(TEMPLATES_DIR, 'vite.config.ts'), 'utf8')
 
 	it.each(FONT_PRECACHE_FORMATS)('root vite.config.ts precaches .%s fonts', (format) => {
-		expect(extract_glob_patterns(root_vite_config)).toContain(format)
+		expect_precaches(root_vite_config, format)
 	})
 
 	it.each(FONT_PRECACHE_FORMATS)('templates/vite.config.ts precaches .%s fonts', (format) => {
-		expect(extract_glob_patterns(template_vite_config)).toContain(format)
+		expect_precaches(template_vite_config, format)
 	})
 })
 
