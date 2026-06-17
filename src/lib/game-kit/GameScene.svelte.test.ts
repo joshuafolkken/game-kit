@@ -89,8 +89,24 @@ it('renders <ControlsScene /> in the canvas, guarded by !is_started', () => {
 	expect(GAME_SCENE_SOURCE).toMatch(/\{#if\s+!is_started\}[\s\S]*<ControlsScene[\s\S]*\{\/if\}/u)
 })
 
-it('passes hint_text and is_touch into <ControlsScene />', () => {
-	expect(GAME_SCENE_SOURCE).toMatch(/<ControlsScene\s+\{hint_text\}\s+\{is_touch\}\s*\/>/u)
+it('passes hint_text, is_touch and hint_font into <ControlsScene />', () => {
+	expect(GAME_SCENE_SOURCE).toMatch(
+		/<ControlsScene\s+\{hint_text\}\s+\{is_touch\}\s+\{hint_font\}\s*\/>/u,
+	)
+})
+
+describe('hint_font override — optional font prop forwarded to ControlsScene', () => {
+	it('declares an optional hint_font prop in the Props interface', () => {
+		expect(GAME_SCENE_SOURCE).toMatch(
+			/interface\s+Props\s*\{[\s\S]*?hint_font\?\s*:\s*string[\s\S]*?\}/u,
+		)
+	})
+
+	it('destructures hint_font from $props so it can be forwarded', () => {
+		expect(GAME_SCENE_SOURCE).toMatch(
+			/const\s*\{[\s\S]*?\bhint_font\b[\s\S]*?\}\s*:\s*Props\s*=\s*\$props\(\)/u,
+		)
+	})
 })
 
 it('calls on_start callback when user first clicks', () => {
