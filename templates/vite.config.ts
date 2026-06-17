@@ -30,7 +30,7 @@ export default defineConfig({
 			registerType: 'autoUpdate',
 			injectRegister: null,
 			manifest: PWA_MANIFEST,
-			workbox: { globPatterns: ['**/*.{js,css,html,ico,png,svg,opus,woff2}'] },
+			workbox: { globPatterns: ['**/*.{js,css,html,ico,png,svg,opus,woff2,woff,ttf,otf}'] },
 		}),
 	],
 	server: {

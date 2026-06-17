@@ -74,9 +74,12 @@
 	interface Props {
 		hint_text: string
 		is_touch: boolean
+		// `| undefined` (exactOptionalPropertyTypes): GameScene forwards its own optional
+		// hint_font, whose value is `string | undefined`, straight through to this prop.
+		hint_font?: string | undefined
 	}
 
-	const { hint_text, is_touch }: Props = $props()
+	const { hint_text, is_touch, hint_font }: Props = $props()
 
 	const { size } = useThrelte()
 
@@ -84,6 +87,8 @@
 	// aesthetic; CRT OFF switches to the modern Orbitron font.
 	const should_use_alt_font = $derived(!crt.is_crt_enabled)
 	const current_font = $derived(fonts.get_font(should_use_alt_font))
+	// An explicit hint_font prop overrides the CRT-driven default (e.g. a scene-specific theme font).
+	const resolved_font = $derived(hint_font ?? current_font)
 	const current_font_size_mul = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
 	const viewport_aspect = $derived($size.width / $size.height)
 	const view_width_at_plane = $derived(TOUCH_VIEW_HEIGHT_AT_PLANE * viewport_aspect)
@@ -272,7 +277,7 @@
 <T.Group position={[HINT_X, HINT_Y, HINT_Z]} scale={pc_scale}>
 	<Text
 		text={hint_text}
-		font={current_font}
+		font={resolved_font}
 		fontSize={HINT_FONT_SIZE}
 		color={HINT_COLOR}
 		anchorX="center"
@@ -309,7 +314,7 @@
 			{#each KEYBOARD_LETTERS as letter (letter.text)}
 				<Text
 					text={letter.text}
-					font={current_font}
+					font={resolved_font}
 					fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}
 					color={letter.color}
 					fillOpacity={letter.opacity}
