@@ -5,7 +5,7 @@ version: '0.2'
 # no template re-sync. game-kit's own root cspell.config.yaml imports it too, so the
 # game-common word set is single-sourced here and cannot drift between repo and scaffold.
 import:
-  - '@joshuafolkken/kit/cspell/sveltekit'
+  - '@joshuafolkken/app-kit/cspell/sveltekit'
 words:
   - COEFF
   - gameover

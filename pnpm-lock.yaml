@@ -224,6 +224,9 @@ importers:
       '@ianvs/prettier-plugin-sort-imports':
         specifier: ^4.7.1
         version: 4.7.1(prettier@3.8.4)
+      '@joshuafolkken/app-kit':
+        specifier: 0.18.0
+        version: 0.18.0(@joshuafolkken/kit@0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3))(svelte@5.56.4(@typescript-eslint/types@8.62.0))
       '@joshuafolkken/kit':
         specifier: 0.280.0
         version: 0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3)
@@ -1577,6 +1580,13 @@ packages:
   '@isaacs/cliui@9.0.0':
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
     engines: {node: '>=18'}
+
+  '@joshuafolkken/app-kit@0.18.0':
+    resolution: {integrity: sha512-OdT+mo/XrS8rYeldcpiN8edHXaUJwk6U7xNXY2uT79F4n80Xv3QpVmHFyRam8vvoXrdCw5hdasAlU6Sl3ZNEMg==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/app-kit/0.18.0/c14553514f2be5bfac6f1079b22dfa3ccec25c75}
+    hasBin: true
+    peerDependencies:
+      '@joshuafolkken/kit': '>=0.279.0'
+      svelte: ^5.0.0
 
   '@joshuafolkken/kit@0.280.0':
     resolution: {integrity: sha512-EHFuzWejpri/DkQs3seX72wIJmjVWjzdAGH1QrRewJSVDbVTZoArTVxfQuYMIc3aQ7KY6Yo26ZvaBieBG4aYHg==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/0.280.0/bc6a1aa6bd55bce635d62e5cc5178f78a19cc2eb}
@@ -5934,6 +5944,11 @@ snapshots:
     optional: true
 
   '@isaacs/cliui@9.0.0': {}
+
+  '@joshuafolkken/app-kit@0.18.0(@joshuafolkken/kit@0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3))(svelte@5.56.4(@typescript-eslint/types@8.62.0))':
+    dependencies:
+      '@joshuafolkken/kit': 0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3)
+      svelte: 5.56.4(@typescript-eslint/types@8.62.0)
 
   '@joshuafolkken/kit@0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3)':
     dependencies:

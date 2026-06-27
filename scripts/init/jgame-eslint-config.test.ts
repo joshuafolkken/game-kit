@@ -13,6 +13,14 @@ describe('jgame_eslint_config.generate_eslint_config', () => {
 		expect(result).toContain('.concat(game_overrides)')
 	})
 
+	it('imports create_sveltekit_config from app-kit, not kit (#355)', async () => {
+		const { jgame_eslint_config } = await import('./jgame-eslint-config.ts')
+		const result = jgame_eslint_config.generate_eslint_config()
+
+		expect(result).toContain("from '@joshuafolkken/app-kit/eslint/sveltekit'")
+		expect(result).not.toContain("from '@joshuafolkken/kit/eslint/sveltekit'")
+	})
+
 	it('relaxes the strict defaults the verbatim game templates rely on (#260)', async () => {
 		const { jgame_eslint_config } = await import('./jgame-eslint-config.ts')
 		const result = jgame_eslint_config.generate_eslint_config()
