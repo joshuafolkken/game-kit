@@ -1,4 +1,12 @@
 {
 	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		// scripts/ are Node CLIs. They extend the SvelteKit app tsconfig for its strict
+		// compilerOptions, but that chain pulls in `.svelte-kit/tsconfig.json`'s app-relative
+		// `rootDirs`/`paths`, which — re-based against scripts/ — break TypeScript's automatic
+		// `@types/node` discovery (every `node:` import resolves to `any`, flooding ESLint with
+		// `no-unsafe-*`). Declaring the node types explicitly restores them for the CLI program.
+		"types": ["node"]
+	},
 	"include": ["**/*.ts"]
 }

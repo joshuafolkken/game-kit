@@ -57,9 +57,11 @@ function make_pointer_event_with_offsets(
 ): PointerEvent {
 	const created_event = new PointerEvent('pointerdown', { button: 0, bubbles: true })
 
-	Object.defineProperty(created_event, 'target', { value: target })
-	Object.defineProperty(created_event, 'offsetX', { value: offset_x, configurable: true })
-	Object.defineProperty(created_event, 'offsetY', { value: offset_y, configurable: true })
+	Object.defineProperties(created_event, {
+		target: { value: target },
+		offsetX: { value: offset_x, configurable: true },
+		offsetY: { value: offset_y, configurable: true },
+	})
 
 	return created_event
 }
@@ -135,7 +137,7 @@ describe('input — mouse drag (look)', () => {
 	it('window blur clears is_dragging_look so drag does not stay latched', () => {
 		start_right_drag()
 		expect(input.is_dragging_look).toBe(true)
-		globalThis.dispatchEvent(new Event('blur'))
+		dispatchEvent(new Event('blur'))
 		expect(input.is_dragging_look).toBe(false)
 		dispatch_mouse('mousemove', { movementX: 100, movementY: 50 })
 		expect(input.yaw).toBe(0)
@@ -179,9 +181,9 @@ describe('input — drag offset & synthetic pointer', () => {
 	it('synthesizes pointerdown on canvas when left mousedown fires during drag', () => {
 		const received: Array<string> = []
 
-		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
-			received.push(`${e.type}:${String(e.button)}`),
-		)
+		canvas_element.addEventListener('pointerdown', (e: PointerEvent) => {
+			received.push(`${e.type}:${String(e.button)}`)
+		})
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		dispatch_mouse('mousedown', { button: LEFT_BUTTON })
 
@@ -191,9 +193,9 @@ describe('input — drag offset & synthetic pointer', () => {
 	it('synthesizes pointerup on canvas when left mouseup fires during drag', () => {
 		const received: Array<string> = []
 
-		canvas_element.addEventListener('pointerup', (e: PointerEvent) =>
-			received.push(`${e.type}:${String(e.button)}`),
-		)
+		canvas_element.addEventListener('pointerup', (e: PointerEvent) => {
+			received.push(`${e.type}:${String(e.button)}`)
+		})
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		dispatch_mouse('mouseup', { button: LEFT_BUTTON })
 
@@ -203,9 +205,9 @@ describe('input — drag offset & synthetic pointer', () => {
 	it('does not synthesize pointer events when not dragging', () => {
 		const received: Array<string> = []
 
-		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
-			received.push(`${e.type}:${String(e.button)}`),
-		)
+		canvas_element.addEventListener('pointerdown', (e: PointerEvent) => {
+			received.push(`${e.type}:${String(e.button)}`)
+		})
 		dispatch_mouse('mousedown', { button: LEFT_BUTTON })
 
 		expect(received).toHaveLength(0)
@@ -214,14 +216,14 @@ describe('input — drag offset & synthetic pointer', () => {
 	it('does not synthesize pointer events for right mousedown during drag', () => {
 		const received: Array<string> = []
 
-		canvas_element.addEventListener('pointerdown', (e: PointerEvent) =>
-			received.push(`${e.type}:${String(e.button)}`),
-		)
+		canvas_element.addEventListener('pointerdown', (e: PointerEvent) => {
+			received.push(`${e.type}:${String(e.button)}`)
+		})
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON, clientX: 200, clientY: 150 })
 		const start_count = received.length
 
 		dispatch_mouse('mousedown', { button: RIGHT_BUTTON })
-		expect(received.length).toBe(start_count)
+		expect(received).toHaveLength(start_count)
 	})
 })
 
@@ -414,7 +416,7 @@ describe('input — lifecycle & state', () => {
 	it('resets keys on window blur to prevent stuck movement', () => {
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }))
 		expect(input.keys.w).toBe(true)
-		globalThis.dispatchEvent(new Event('blur'))
+		dispatchEvent(new Event('blur'))
 		expect(input.keys.w).toBe(false)
 	})
 
@@ -469,7 +471,7 @@ describe('input — lifecycle & state', () => {
 	it('blur clears is_sprinting and is_jump_requested via reset_transient_input', () => {
 		input.set_sprinting(true)
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }))
-		globalThis.dispatchEvent(new Event('blur'))
+		dispatchEvent(new Event('blur'))
 		expect(input.is_sprinting).toBe(false)
 		expect(input.is_jump_requested).toBe(false)
 	})

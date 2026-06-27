@@ -27,8 +27,10 @@ function make_camera(): { current: PerspectiveCamera } {
 function make_target(client_w: number, client_h: number, rect_left = 0, rect_top = 0): HTMLElement {
 	const element = document.createElement('div')
 
-	Object.defineProperty(element, 'clientWidth', { get: () => client_w })
-	Object.defineProperty(element, 'clientHeight', { get: () => client_h })
+	Object.defineProperties(element, {
+		clientWidth: { get: () => client_w },
+		clientHeight: { get: () => client_h },
+	})
 	element.getBoundingClientRect = (): DOMRect => ({
 		left: rect_left,
 		top: rect_top,

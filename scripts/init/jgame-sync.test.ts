@@ -80,7 +80,7 @@ function stub_readFileSync_by_path(
 ): void {
 	read.mockImplementation((file: string) => {
 		const key = file
-		if (key in overrides) return overrides[key]
+		if (Object.hasOwn(overrides, key)) return overrides[key]
 		throw new Error(`unexpected readFileSync(${key})`)
 	})
 }
@@ -97,7 +97,7 @@ function stub_fs_roundtrip(
 	const store: Record<string, string> = { ...initial }
 
 	read.mockImplementation((file: string) => {
-		if (file in store) return store[file]
+		if (Object.hasOwn(store, file)) return store[file]
 		throw new Error(`unexpected readFileSync(${file})`)
 	})
 	write.mockImplementation((file: string, data: string) => {

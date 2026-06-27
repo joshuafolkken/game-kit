@@ -9,8 +9,7 @@ function create_device(): Device {
 	// `MediaQueryList | null` union — matchMedia is absent under SSR / Node test envs,
 	// even though lib.dom types it as always present. Covers both "missing" and
 	// "present but undefined" (e.g. vi.stubGlobal('matchMedia', undefined)).
-	const mql =
-		typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia(TOUCH_PRIMARY_QUERY) : null
+	const mql = typeof matchMedia === 'function' ? matchMedia(TOUCH_PRIMARY_QUERY) : null
 	let is_touch = $state(mql?.matches ?? false)
 
 	mql?.addEventListener('change', (e: MediaQueryListEvent) => {

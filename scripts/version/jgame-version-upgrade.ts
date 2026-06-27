@@ -88,16 +88,16 @@ async function run(): Promise<void> {
 
 	const global_version = jgame_version_targets.read_global_version()
 	const project_version = jgame_version_targets.read_project_version(process.cwd())
-	const global_stale = jgame_version_check_logic.is_target_stale(global_version, latest)
-	const project_stale = jgame_version_check_logic.is_target_stale(project_version, latest)
+	const is_global_stale = jgame_version_check_logic.is_target_stale(global_version, latest)
+	const is_project_stale = jgame_version_check_logic.is_target_stale(project_version, latest)
 
-	if (!global_stale && !project_stale) {
+	if (!is_global_stale && !is_project_stale) {
 		console.info(ALREADY_UP_TO_DATE)
 
 		return
 	}
 
-	const status = await run_upgrades(global_stale, project_stale, latest)
+	const status = await run_upgrades(is_global_stale, is_project_stale, latest)
 	if (status !== 0) process.exit(status)
 }
 

@@ -94,10 +94,12 @@ test('pseudo-fullscreen class is applied when native API is unavailable on touch
 	await page.evaluate((sel) => {
 		const scene = document.querySelector<HTMLElement>(sel)
 		if (!scene) return
-		Object.defineProperty(scene, 'requestFullscreen', { value: undefined, configurable: true })
-		Object.defineProperty(scene, 'webkitRequestFullscreen', {
-			value: undefined,
-			configurable: true,
+		Object.defineProperties(scene, {
+			requestFullscreen: { value: undefined, configurable: true },
+			webkitRequestFullscreen: {
+				value: undefined,
+				configurable: true,
+			},
 		})
 		scene.click()
 	}, SEL_GAME_SCENE)
@@ -157,7 +159,9 @@ test('high score persists in localStorage across page reload', async ({ page }) 
 test('game scene loads without shadow-related WebGL errors', async ({ page }) => {
 	const errors: Array<string> = []
 
-	page.on('pageerror', (error) => errors.push(error.message))
+	page.on('pageerror', (error) => {
+		errors.push(error.message)
+	})
 	await page.goto('/')
 	await expect(page.locator('[data-testid="loading-overlay"]')).toBeHidden({
 		timeout: LOADING_OVERLAY_TIMEOUT_MS,

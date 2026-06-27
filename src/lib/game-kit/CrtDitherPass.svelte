@@ -141,7 +141,7 @@
 		render_pass.camera = context.camera.current
 	})
 
-	const hi_drawing_buf = new Vector2()
+	const hi_drawing_buffer = new Vector2()
 	useTask(
 		// eslint-disable-next-line max-statements -- per-frame render scheduler: one cohesive CRT/no-CRT branch sequence; splitting the task callback fragments the frame logic. See #250.
 		(delta) => {
@@ -173,15 +173,15 @@
 			// Stage 2: CRT effects at full canvas resolution.
 			hi_composer.setSize(context.size.current.width, context.size.current.height)
 			hi_composer.setPixelRatio(context.dpr.current)
-			context.renderer.getDrawingBufferSize(hi_drawing_buf)
-			scanline_uniforms.u_resolution.value.copy(hi_drawing_buf)
+			context.renderer.getDrawingBufferSize(hi_drawing_buffer)
+			scanline_uniforms.u_resolution.value.copy(hi_drawing_buffer)
 			// Scale scanline period so one cycle spans one virtual lo-res dot row.
-			const is_portrait = hi_drawing_buf.x < hi_drawing_buf.y
+			const is_portrait = hi_drawing_buffer.x < hi_drawing_buffer.y
 
 			scanline_uniforms.u_scanline_axis.value.set(is_portrait ? 1 : 0, is_portrait ? 0 : 1)
 
 			if (lo_h > 0) {
-				const hi_lo_ratio = is_portrait ? hi_drawing_buf.x / lo_w : hi_drawing_buf.y / lo_h
+				const hi_lo_ratio = is_portrait ? hi_drawing_buffer.x / lo_w : hi_drawing_buffer.y / lo_h
 				const period = Math.max(
 					DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE,
 					Math.round(DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE * hi_lo_ratio),
@@ -195,7 +195,7 @@
 			}
 
 			barrel_uniforms.u_aspect.value =
-				hi_drawing_buf.y > 0 ? hi_drawing_buf.x / hi_drawing_buf.y : 1
+				hi_drawing_buffer.y > 0 ? hi_drawing_buffer.x / hi_drawing_buffer.y : 1
 			hi_composer.render(delta)
 		},
 		{ stage: context.renderStage, autoInvalidate: false },

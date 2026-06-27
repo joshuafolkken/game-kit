@@ -25,7 +25,7 @@ describe('TouchDiagram', () => {
 		const { container } = render(TouchDiagram, { props: PROPS })
 
 		expect(container.querySelector('[data-testid="touch-diagram-frame"]')).toBeTruthy()
-		expect(container.querySelectorAll('.frame .half')).toHaveLength(2)
+		expect(container.querySelectorAll(':scope .frame .half')).toHaveLength(2)
 	})
 
 	it('renders move-gesture and look-gesture as separate fixed-size SVGs', () => {
@@ -53,8 +53,8 @@ describe('TouchDiagram', () => {
 
 	it('gesture strokes use cyber-purple color (matches PC keyboard/mouse diagrams)', () => {
 		const { container } = render(TouchDiagram, { props: PROPS })
-		const path = container.querySelector('svg.move-gesture path')
-		const ring = container.querySelector('svg.move-gesture circle')
+		const path = container.querySelector(':scope svg.move-gesture path')
+		const ring = container.querySelector(':scope svg.move-gesture circle')
 
 		expect(path?.getAttribute('stroke')).toContain(COLOR_CYBER_PURPLE)
 		expect(ring?.getAttribute('stroke')).toContain(COLOR_CYBER_PURPLE)

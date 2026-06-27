@@ -110,7 +110,7 @@ function collect_section_packages(
 	section: string,
 	packages: Record<string, LockfilePackage>,
 ): void {
-	const matches = [...section.matchAll(ENTRY_HEADER_PATTERN)]
+	const matches = section.matchAll(ENTRY_HEADER_PATTERN).toArray()
 
 	for (const [index, match] of matches.entries()) {
 		const raw_key = match[KEY_CAPTURE_GROUP]
