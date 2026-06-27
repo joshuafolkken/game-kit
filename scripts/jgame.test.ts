@@ -13,15 +13,13 @@ vi.mock('./init/jgame-init.ts', () => ({
 	},
 }))
 vi.mock('./init/jgame-sync.ts', () => ({ jgame_sync: { run: vi.fn() } }))
-vi.mock('./version/jgame-version-check.ts', () => ({
-	jgame_version_check: { run: vi.fn(), read_running_binary: vi.fn() },
-}))
-vi.mock('./version/jgame-version-upgrade.ts', () => ({
-	jgame_version_upgrade: {
-		run: vi.fn(),
-		read_project_overrides: vi.fn(),
-		exec_global_upgrade: vi.fn(),
-		exec_project_upgrade: vi.fn(),
+vi.mock('./version/jgame-version.ts', () => ({
+	jgame_version: {
+		run_check: vi.fn(),
+		run_upgrade: vi.fn().mockReturnValue(0),
+		build_config: vi.fn(),
+		PACKAGE_NAME: '@joshuafolkken/game-kit',
+		VERSIONS_ENDPOINT: '',
 	},
 }))
 
@@ -63,40 +61,41 @@ describe('route_command', () => {
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Unknown command: install'))
 	})
 
-	it('routes version to jgame_version_check.run', async () => {
-		const { jgame_version_check } = await import('./version/jgame-version-check.ts')
+	it('routes version to jgame_version.run_check', async () => {
+		const { jgame_version } = await import('./version/jgame-version.ts')
 
 		await jgame.route_command('version')
-		expect(jgame_version_check.run).toHaveBeenCalledOnce()
+		expect(jgame_version.run_check).toHaveBeenCalledOnce()
 	})
 
 	it('routes v as alias for version', async () => {
-		const { jgame_version_check } = await import('./version/jgame-version-check.ts')
+		const { jgame_version } = await import('./version/jgame-version.ts')
 
 		await jgame.route_command('v')
-		expect(jgame_version_check.run).toHaveBeenCalledOnce()
+		expect(jgame_version.run_check).toHaveBeenCalledOnce()
 	})
 
-	it('routes version:upgrade to jgame_version_upgrade.run', async () => {
-		const { jgame_version_upgrade } = await import('./version/jgame-version-upgrade.ts')
+	it('routes version:upgrade to jgame_version.run_upgrade', async () => {
+		const { jgame_version } = await import('./version/jgame-version.ts')
 
 		await jgame.route_command('version:upgrade')
-		expect(jgame_version_upgrade.run).toHaveBeenCalledOnce()
+		expect(jgame_version.run_upgrade).toHaveBeenCalledOnce()
 	})
 
 	it('routes vu as alias for version:upgrade', async () => {
-		const { jgame_version_upgrade } = await import('./version/jgame-version-upgrade.ts')
+		const { jgame_version } = await import('./version/jgame-version.ts')
 
 		await jgame.route_command('vu')
-		expect(jgame_version_upgrade.run).toHaveBeenCalledOnce()
+		expect(jgame_version.run_upgrade).toHaveBeenCalledOnce()
 	})
 
-	it('awaits an async handler and surfaces its rejection', async () => {
-		const { jgame_version_upgrade } = await import('./version/jgame-version-upgrade.ts')
+	it('exits with the upgrade code when version:upgrade returns non-zero', async () => {
+		const { jgame_version } = await import('./version/jgame-version.ts')
 
-		vi.mocked(jgame_version_upgrade.run).mockRejectedValueOnce(new Error('upgrade failed'))
+		vi.mocked(jgame_version.run_upgrade).mockReturnValueOnce(2)
 
-		await expect(jgame.route_command('vu')).rejects.toThrow('upgrade failed')
+		await expect(jgame.route_command('vu')).rejects.toThrow('process.exit called')
+		expect(process.exit).toHaveBeenCalledWith(2)
 	})
 
 	it('exits with code 1 for unknown command and prints jgame usage', async () => {
