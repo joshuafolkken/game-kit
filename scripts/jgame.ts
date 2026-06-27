@@ -48,8 +48,9 @@ function is_invoked_directly(argv_path: string, module_path: string): boolean {
 	}
 }
 
-// Handlers may be sync (`version`) or async (`version:upgrade`, which awaits an in-process
-// lockfile repair); await covers both so an async failure surfaces instead of floating.
+// Handlers may be sync (`version` / `version:upgrade`, which delegate to kit's synchronous
+// version library) or async (`init` / `sync`, which await pnpm subprocesses); await covers both
+// so an async failure surfaces instead of floating.
 async function route_command(command: string | undefined, argument?: string): Promise<void> {
 	const resolved = resolve_command(command)
 	const handler = resolved === undefined ? undefined : COMMAND_HANDLERS[resolved]
