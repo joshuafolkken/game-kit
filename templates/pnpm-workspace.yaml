@@ -1,4 +1,5 @@
 allowBuilds:
+  '@joshuafolkken/app-kit': false # consumed for its config presets + josh-app bin; preinstall (safe-chain) is redundant with the project's own
   '@joshuafolkken/game-kit': true
   '@joshuafolkken/kit': true
   esbuild: true
@@ -11,6 +12,7 @@ allowBuilds:
 # @joshuafolkken/* packages are first-party — the supply-chain age policy is overkill for self-published utility packages.
 minimumReleaseAgeExclude:
   - vite
+  - '@joshuafolkken/app-kit'
   - '@joshuafolkken/kit'
   - '@joshuafolkken/game-kit'
 

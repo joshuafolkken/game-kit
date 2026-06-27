@@ -9,7 +9,12 @@ import path from 'node:path'
 // would be redundant here — there is only one copy (the root file itself), so
 // it cannot drift. Import-coupled byte copies (layout.css, Score.svelte.ts)
 // stay under templates/ as COPY_PAIRS instead (see template-source-logic.ts).
-const ROOT_COPY_FILES: ReadonlyArray<string> = ['svelte.config.js', 'src/app.d.ts']
+//
+// `src/app.d.ts` is intentionally NOT copied: app-kit's `josh-app init` overlay seeds a
+// Cloudflare-aware app.d.ts (Platform/Env via worker-configuration.d.ts) that game-kit's
+// bare default lacks, and seeding only happens when the file is absent — so jgame leaves
+// it for app-kit to own (#357).
+const ROOT_COPY_FILES: ReadonlyArray<string> = ['svelte.config.js']
 
 const ROOT_COPY_FILE_SET: ReadonlySet<string> = new Set(ROOT_COPY_FILES)
 

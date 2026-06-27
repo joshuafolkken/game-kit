@@ -50,6 +50,16 @@ describe('templates/pnpm-workspace.yaml (consumer scaffold)', () => {
 		expect(template_workspace).toMatch(/'@joshuafolkken\/game-kit':\s*true/u)
 	})
 
+	it('lists @joshuafolkken/app-kit in allowBuilds so the scaffold install does not error on its build script (#357)', () => {
+		// app-kit became a scaffold devDep in #355; without an explicit allowBuilds entry pnpm
+		// fails the first `pnpm install` with ERR_PNPM_IGNORED_BUILDS.
+		expect(template_workspace).toMatch(/'@joshuafolkken\/app-kit':\s*false/u)
+	})
+
+	it('excludes @joshuafolkken/app-kit from the minimum-release-age policy like the other first-party packages (#357)', () => {
+		expect(template_workspace).toMatch(/^[ \t]*-[ \t]+'@joshuafolkken\/app-kit'/mu)
+	})
+
 	it('enables trustLockfile so scaffolded projects survive pnpm >=11.5 supply-chain re-verification on clean CI', () => {
 		expect(template_workspace).toMatch(/^trustLockfile:\s*true/mu)
 	})
