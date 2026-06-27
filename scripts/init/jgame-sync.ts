@@ -191,12 +191,12 @@ function apply_managed_development_deps(
 	const dependencies = package_.dependencies ?? {}
 	const { moved, remaining } = partition_runtime_required_deps(dependencies, required)
 	const development_deps = { ...moved, ...package_.devDependencies }
-	const isAdded = add_missing_required_deps(development_deps, required)
+	const is_added = add_missing_required_deps(development_deps, required)
 
 	package_.devDependencies = development_deps
 	reconcile_dependencies_field(package_, remaining)
 
-	return Object.keys(moved).length > 0 || isAdded
+	return Object.keys(moved).length > 0 || is_added
 }
 
 // pnpm >= 11 no longer reads the package.json `pnpm` field (settings live in
@@ -216,10 +216,10 @@ function sync_managed_development_deps(): void {
 	const raw = readFileSync(package_path, 'utf8')
 	const package_ = JSON.parse(raw) as ConsumerPackage
 	const required = jgame_managed_development_deps.read_required_deps_from_kit()
-	const isDependencies_changed = apply_managed_development_deps(package_, required)
-	const isPnpm_removed = remove_legacy_pnpm_field(package_)
+	const is_dependencies_changed = apply_managed_development_deps(package_, required)
+	const is_pnpm_removed = remove_legacy_pnpm_field(package_)
 
-	if (!isDependencies_changed && !isPnpm_removed) {
+	if (!is_dependencies_changed && !is_pnpm_removed) {
 		console.info('  ✔ checked  package.json devDependencies (up-to-date)')
 
 		return
