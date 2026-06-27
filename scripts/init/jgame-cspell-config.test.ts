@@ -26,8 +26,8 @@ describe('jgame_cspell_config.generate_cspell_config', () => {
 describe('distributed cspell/game.yaml', () => {
 	const game_dictionary = read_repo_file('cspell/game.yaml')
 
-	it('chains kit cspell so the scaffold inherits base + sveltekit words', () => {
-		expect(game_dictionary).toContain("- '@joshuafolkken/kit/cspell/sveltekit'")
+	it('chains app-kit cspell so the scaffold inherits kit base + sveltekit words', () => {
+		expect(game_dictionary).toContain("- '@joshuafolkken/app-kit/cspell/sveltekit'")
 	})
 
 	it.each(['gameover', 'threlte', 'COEFF', 'SAMEORIGIN', 'trycloudflare', 'Orbitron', 'viewbox'])(

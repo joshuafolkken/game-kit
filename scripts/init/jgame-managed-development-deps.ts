@@ -19,6 +19,7 @@ import { jgame_paths } from './jgame-paths.ts'
 // See #322.
 const REQUIRED_DEV_DEPS = [
 	'@ianvs/prettier-plugin-sort-imports',
+	'@joshuafolkken/app-kit',
 	'@joshuafolkken/kit',
 	'@playwright/test',
 	'@sveltejs/adapter-cloudflare',

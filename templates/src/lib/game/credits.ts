@@ -129,6 +129,7 @@ export const CREDITS_LINES = [
 	'pnpm',
 	'Lefthook',
 	'@joshuafolkken/game-kit',
+	'@joshuafolkken/app-kit',
 	'@joshuafolkken/kit',
 	'',
 	'',

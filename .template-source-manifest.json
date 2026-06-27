@@ -13,6 +13,6 @@
 	"src/lib/game/board-config.ts": "dd03a83990cde59324c5ea17c45184cfef9620987f48a636904115a9aa5a5b5a",
 	"src/lib/game/board-input.ts": "738f3c6f512e27a06e47a04cf376654402deed1bb188dbbccaf8c1fd94c5802a",
 	"src/lib/game/audio.ts": "bbc1e149e27861a44e8f4355fcfa58d0b113d313361114f00e4b25ccc600a0a5",
-	"src/lib/game/credits.ts": "6ab13a4a5e40ddac1221a701d98ba13af21d74feb2d306f18cd2dc1be4277648",
+	"src/lib/game/credits.ts": "53542cc1249e7a642b4de346b07ba282320552c062e679428223a931eb598cff",
 	"src/lib/game/flash.ts": "001523e112281419f5d2820e2747d8b1518c51506fc3eab569f60d7f293b2470"
 }
