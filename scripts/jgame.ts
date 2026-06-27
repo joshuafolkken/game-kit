@@ -1,9 +1,9 @@
 import { realpathSync } from 'node:fs'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { jgame_init } from './init/jgame-init.ts'
 import { jgame_sync } from './init/jgame-sync.ts'
-import { jgame_version_check } from './version/jgame-version-check.ts'
-import { jgame_version_upgrade } from './version/jgame-version-upgrade.ts'
+import { jgame_version } from './version/jgame-version.ts'
 
 const USAGE = 'Usage: jgame <init|sync|version|v|version:upgrade|vu> [name]'
 
@@ -12,11 +12,25 @@ const NAME_ARG_INDEX = 3
 
 const ROUTING_FAILURE_EXIT_CODE = 1
 
+// The running bin's own directory, passed to kit's version library so the report can show the
+// running install. This module is bundled to dist/scripts/jgame.js (the published bin entry).
+const SELF_DIR = path.dirname(fileURLToPath(import.meta.url))
+
+function run_version(): void {
+	jgame_version.run_check(SELF_DIR)
+}
+
+// kit's run_upgrade is synchronous and returns the exit code; the CLI owns the process exit.
+function run_version_upgrade(): void {
+	const code = jgame_version.run_upgrade(SELF_DIR)
+	if (code !== 0) process.exit(code)
+}
+
 const COMMAND_HANDLERS: Record<string, (argument?: string) => void | Promise<void>> = {
 	init: jgame_init.run,
 	sync: jgame_sync.run,
-	version: jgame_version_check.run,
-	'version:upgrade': jgame_version_upgrade.run,
+	version: run_version,
+	'version:upgrade': run_version_upgrade,
 }
 
 function resolve_command(input: string | undefined): string | undefined {
