@@ -44,7 +44,10 @@ function expect_precaches(config: string, format: string): void {
 }
 
 function collect_label_properties(text: string): Array<string> {
-	return [...text.matchAll(/\blabel_\w+/gu)].map((occurrence) => occurrence[0])
+	return text
+		.matchAll(/\blabel_\w+/gu)
+		.map((occurrence) => occurrence[0])
+		.toArray()
 }
 
 // Byte-identical, import-decoupled files single-sourced at the repo root (#266).
@@ -129,11 +132,9 @@ describe('templates/pnpm-workspace.yaml minimumReleaseAgeExclude (regression for
 
 		// pnpm honors bare-name entries for lockfile verification; version-pinned
 		// entries written by loose-mode resolution do NOT bypass the verify step.
-		// eslint-disable-next-line sonarjs/slow-regex -- bounded input (a small workspace yaml); anchored line match is safe
-		expect(yaml_source).toMatch(/^\s*-\s*["']?@joshuafolkken\/game-kit["']?\s*$/mu)
+		expect(yaml_source).toMatch(/^[ \t]*-[ \t]+["']?@joshuafolkken\/game-kit["']?[ \t]*$/mu)
 		// Guard against accidental @version-pinned form sneaking in instead.
-		// eslint-disable-next-line sonarjs/slow-regex -- bounded input (a small workspace yaml); anchored line match is safe
-		expect(yaml_source).not.toMatch(/^\s*-\s*["']?@joshuafolkken\/game-kit@\d/mu)
+		expect(yaml_source).not.toMatch(/^[ \t]*-[ \t]+["']?@joshuafolkken\/game-kit@\d/mu)
 	})
 })
 

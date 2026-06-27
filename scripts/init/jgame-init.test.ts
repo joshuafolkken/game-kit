@@ -100,7 +100,7 @@ describe('jgame_init.generate_package_json', () => {
 		}
 		const keys = Object.keys(parsed.devDependencies)
 
-		expect(keys).toEqual([...keys].toSorted((left, right) => (left < right ? -1 : 1)))
+		expect(keys).toEqual([...keys].toSorted((left, right) => left.localeCompare(right)))
 		expect(keys.indexOf('@joshuafolkken/game-kit')).toBe(keys.indexOf('@joshuafolkken/kit') - 1)
 	})
 

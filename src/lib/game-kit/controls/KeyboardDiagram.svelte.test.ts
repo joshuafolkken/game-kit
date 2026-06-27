@@ -42,7 +42,7 @@ describe('KeyboardDiagram', () => {
 
 	it('places A/S/D keys with same gap as W-to-S gap', () => {
 		const { container } = render(KeyboardDiagram, { props: PROPS })
-		const s_rect = container.querySelector('.key-s rect')
+		const s_rect = container.querySelector(':scope .key-s rect')
 
 		expect(s_rect?.getAttribute('y')).toBe('46')
 	})

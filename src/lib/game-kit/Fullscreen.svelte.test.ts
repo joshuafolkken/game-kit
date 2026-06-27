@@ -34,10 +34,12 @@ describe('fullscreen', () => {
 	})
 
 	it('falls back to pseudo fullscreen when native API is unavailable', async () => {
-		Object.defineProperty(element, 'requestFullscreen', { value: undefined, configurable: true })
-		Object.defineProperty(element, 'webkitRequestFullscreen', {
-			value: undefined,
-			configurable: true,
+		Object.defineProperties(element, {
+			requestFullscreen: { value: undefined, configurable: true },
+			webkitRequestFullscreen: {
+				value: undefined,
+				configurable: true,
+			},
 		})
 		await fullscreen.request(element)
 		expect(fullscreen.is_pseudo_fullscreen).toBe(true)
@@ -51,10 +53,12 @@ describe('fullscreen', () => {
 	})
 
 	it('skips re-requesting when already in pseudo fullscreen', async () => {
-		Object.defineProperty(element, 'requestFullscreen', { value: undefined, configurable: true })
-		Object.defineProperty(element, 'webkitRequestFullscreen', {
-			value: undefined,
-			configurable: true,
+		Object.defineProperties(element, {
+			requestFullscreen: { value: undefined, configurable: true },
+			webkitRequestFullscreen: {
+				value: undefined,
+				configurable: true,
+			},
 		})
 		await fullscreen.request(element)
 		expect(fullscreen.is_pseudo_fullscreen).toBe(true)
@@ -67,10 +71,12 @@ describe('fullscreen', () => {
 	})
 
 	it('exit clears pseudo fullscreen', async () => {
-		Object.defineProperty(element, 'requestFullscreen', { value: undefined, configurable: true })
-		Object.defineProperty(element, 'webkitRequestFullscreen', {
-			value: undefined,
-			configurable: true,
+		Object.defineProperties(element, {
+			requestFullscreen: { value: undefined, configurable: true },
+			webkitRequestFullscreen: {
+				value: undefined,
+				configurable: true,
+			},
 		})
 		await fullscreen.request(element)
 		expect(fullscreen.is_pseudo_fullscreen).toBe(true)
@@ -124,10 +130,12 @@ describe('create_fullscreen isolation', () => {
 		const instance_b = create_fullscreen()
 		const element = document.createElement('div')
 
-		Object.defineProperty(element, 'requestFullscreen', { value: undefined, configurable: true })
-		Object.defineProperty(element, 'webkitRequestFullscreen', {
-			value: undefined,
-			configurable: true,
+		Object.defineProperties(element, {
+			requestFullscreen: { value: undefined, configurable: true },
+			webkitRequestFullscreen: {
+				value: undefined,
+				configurable: true,
+			},
 		})
 		await instance_a.request(element)
 		expect(instance_a.is_pseudo_fullscreen).toBe(true)

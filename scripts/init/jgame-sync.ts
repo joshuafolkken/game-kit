@@ -105,10 +105,12 @@ function apply_managed_scripts(
 	let did_change = remove_superseded_scripts(scripts)
 
 	for (const key of jgame_managed_scripts.MANAGED_SCRIPT_KEYS) {
-		if (scripts[key] !== canonical[key]) {
-			scripts[key] = canonical[key]
-			did_change = true
+		if (scripts[key] === canonical[key]) {
+			continue
 		}
+
+		scripts[key] = canonical[key]
+		did_change = true
 	}
 
 	package_.scripts = scripts
@@ -145,7 +147,7 @@ function partition_runtime_required_deps(
 	const remaining: Record<string, string> = {}
 
 	for (const [key, value] of Object.entries(dependencies)) {
-		if (key in required) moved[key] = value
+		if (Object.hasOwn(required, key)) moved[key] = value
 		else remaining[key] = value
 	}
 
@@ -158,7 +160,7 @@ function add_missing_required_deps(
 	development_deps: Record<string, string>,
 	required: Record<string, string>,
 ): boolean {
-	const missing = Object.entries(required).filter(([key]) => !(key in development_deps))
+	const missing = Object.entries(required).filter(([key]) => !Object.hasOwn(development_deps, key))
 
 	for (const [key, value] of missing) development_deps[key] = value
 
@@ -189,12 +191,12 @@ function apply_managed_development_deps(
 	const dependencies = package_.dependencies ?? {}
 	const { moved, remaining } = partition_runtime_required_deps(dependencies, required)
 	const development_deps = { ...moved, ...package_.devDependencies }
-	const added = add_missing_required_deps(development_deps, required)
+	const is_added = add_missing_required_deps(development_deps, required)
 
 	package_.devDependencies = development_deps
 	reconcile_dependencies_field(package_, remaining)
 
-	return Object.keys(moved).length > 0 || added
+	return Object.keys(moved).length > 0 || is_added
 }
 
 // pnpm >= 11 no longer reads the package.json `pnpm` field (settings live in
@@ -214,10 +216,10 @@ function sync_managed_development_deps(): void {
 	const raw = readFileSync(package_path, 'utf8')
 	const package_ = JSON.parse(raw) as ConsumerPackage
 	const required = jgame_managed_development_deps.read_required_deps_from_kit()
-	const deps_changed = apply_managed_development_deps(package_, required)
-	const pnpm_removed = remove_legacy_pnpm_field(package_)
+	const is_dependencies_changed = apply_managed_development_deps(package_, required)
+	const is_pnpm_removed = remove_legacy_pnpm_field(package_)
 
-	if (!deps_changed && !pnpm_removed) {
+	if (!is_dependencies_changed && !is_pnpm_removed) {
 		console.info('  ✔ checked  package.json devDependencies (up-to-date)')
 
 		return

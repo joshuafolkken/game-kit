@@ -49,7 +49,7 @@ describe('crt-dither constants', () => {
 	})
 
 	it('exposes SCANLINE_BLEED_FULL_PERIOD as a positive integer above the minimum period', () => {
-		expect(Number.isInteger(SCANLINE_BLEED_FULL_PERIOD)).toBe(true)
+		expect(Number.isSafeInteger(SCANLINE_BLEED_FULL_PERIOD)).toBe(true)
 		// Must exceed the minimum possible period (DOTS_PER_SCANLINE * 2 = 2) so that
 		// proportional scaling has a meaningful effect on small-viewport screens.
 		expect(SCANLINE_BLEED_FULL_PERIOD).toBeGreaterThan(DOTS_PER_SCANLINE * 2)
@@ -69,7 +69,7 @@ describe('crt-dither constants', () => {
 	})
 
 	it('exposes DOTS_PER_SCANLINE as a positive integer', () => {
-		expect(Number.isInteger(DOTS_PER_SCANLINE)).toBe(true)
+		expect(Number.isSafeInteger(DOTS_PER_SCANLINE)).toBe(true)
 		expect(DOTS_PER_SCANLINE).toBeGreaterThan(0)
 	})
 
@@ -180,7 +180,7 @@ describe('BAYER_MATRIX', () => {
 
 		for (const row of BAYER_MATRIX) {
 			for (const value of row) {
-				expect(Number.isInteger(value)).toBe(true)
+				expect(Number.isSafeInteger(value)).toBe(true)
 				expect(value).toBeGreaterThanOrEqual(0)
 				expect(value).toBeLessThan(SQUARED_BAYER_SIZE)
 				seen.add(value)
@@ -194,7 +194,8 @@ describe('BAYER_MATRIX', () => {
 describe('crt_dither.quantize_with_dither_2d', () => {
 	const MID_GREY = 0.5
 	const VERY_DARK = 0
-	const BAYER_LOW = 0 / SQUARED_BAYER_SIZE
+	// Low end of the normalized Bayer range (0 / SQUARED_BAYER_SIZE), mirroring BAYER_HIGH.
+	const BAYER_LOW = 0
 	const BAYER_HIGH = MAX_BAYER_VALUE / SQUARED_BAYER_SIZE
 
 	it('always returns a value ≥ BLACK_FLOOR for every channel (never collapses to pure black)', () => {

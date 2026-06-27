@@ -55,7 +55,7 @@ const REQUIRED_DEV_DEPS = [
 	'wrangler',
 ] as const
 
-type RequiredDevelopmentDep = (typeof REQUIRED_DEV_DEPS)[number]
+type RequiredDevelopmentDependency = (typeof REQUIRED_DEV_DEPS)[number]
 
 const WILDCARD_VERSION = '*'
 
@@ -88,4 +88,4 @@ const jgame_managed_development_deps = {
 }
 
 export { jgame_managed_development_deps as jgame_managed_dev_deps }
-export type { RequiredDevelopmentDep as RequiredDevDep }
+export type { RequiredDevelopmentDependency as RequiredDevDep }

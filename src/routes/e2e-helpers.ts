@@ -5,7 +5,7 @@ const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 async function stub_touch_primary(page: Page, is_touch: boolean): Promise<void> {
 	await page.addInitScript(
 		([query, matches]) => {
-			const original = globalThis.matchMedia.bind(globalThis)
+			const original = matchMedia.bind(globalThis)
 
 			globalThis.matchMedia = function patched(input: string): MediaQueryList {
 				if (input === query) {

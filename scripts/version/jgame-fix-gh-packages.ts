@@ -32,7 +32,7 @@ function get_effective_auth_token(npmrc: string): string | undefined {
 function read_object_property(value: unknown, key: string): unknown {
 	if (typeof value !== 'object' || value === null) return undefined
 
-	return key in value ? (value as Record<string, unknown>)[key] : undefined
+	return Object.hasOwn(value, key) ? (value as Record<string, unknown>)[key] : undefined
 }
 
 // Navigate the npm packument JSON (versions → <version> → dist → tarball) without a schema library.

@@ -55,15 +55,13 @@ interface GameNames {
 }
 
 function to_kebab(raw: string): string {
-	return (
-		raw
-			.toLowerCase()
-			.trim()
-			.replaceAll(/\s+/gu, '-')
-			.replaceAll(/[^\da-z-]/gu, '')
-			// eslint-disable-next-line sonarjs/slow-regex -- bounded input (a short slug string); anchored alternation is safe
-			.replaceAll(/^-+|-+$/gu, '')
-	)
+	return raw
+		.toLowerCase()
+		.trim()
+		.replaceAll(/\s+/gu, '-')
+		.replaceAll(/[^\da-z-]/gu, '')
+		.replaceAll(/^-+/gu, '')
+		.replaceAll(/(?<=[^-]|^)-+$/gu, '')
 }
 
 function build_done_message(kebab: string): string {

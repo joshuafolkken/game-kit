@@ -10,6 +10,8 @@ const MARKER_TOUCH = '[0, TOUCH_Y, TOUCH_Z]'
 const MARKER_KEYBOARD = '[KEYBOARD_X, 0, 0]'
 const MARKER_MOUSE = '[MOUSE_X, MOUSE_Y, 0]'
 const ATTR_BACKDROP_OPACITY = 'opacity={BACKDROP_OPACITY}'
+const ATTR_BACKDROP_RENDER_ORDER = 'renderOrder={BACKDROP_RENDER_ORDER}'
+const ATTR_FOREGROUND_RENDER_ORDER = 'renderOrder={FOREGROUND_RENDER_ORDER}'
 const ATTR_BACKDROP_BACK_RENDER_ORDER = 'renderOrder={BACKDROP_BACK_RENDER_ORDER}'
 const ATTR_DOUBLE_SIDE = 'side={DoubleSide}'
 const ATTR_MOUSE_POSITION = 'position={[MOUSE_X, MOUSE_Y, 0]}'
@@ -59,26 +61,26 @@ describe('ControlsScene render order — regression for camera-angle brightness 
 	it('backdrop mesh declares renderOrder=0 so it draws before foreground icons', () => {
 		const block = find_mesh_open_tag(SOURCE, 'BACKDROP_X, BACKDROP_Y, BACKDROP_Z')
 
-		expect(block).toContain(`renderOrder={BACKDROP_RENDER_ORDER}`)
+		expect(block).toContain(ATTR_BACKDROP_RENDER_ORDER)
 		expect(SOURCE).toContain(`const BACKDROP_RENDER_ORDER = ${String(BACKDROP_RENDER_ORDER_VALUE)}`)
 	})
 
 	it('touch icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
 		const block = find_mesh_open_tag(SOURCE, MARKER_TOUCH)
 
-		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
+		expect(block).toContain(ATTR_FOREGROUND_RENDER_ORDER)
 	})
 
 	it('keyboard icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
 		const block = find_mesh_open_tag(SOURCE, MARKER_KEYBOARD)
 
-		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
+		expect(block).toContain(ATTR_FOREGROUND_RENDER_ORDER)
 	})
 
 	it('mouse icon mesh declares renderOrder=1 so it draws after the backdrop', () => {
 		const block = find_mesh_open_tag(SOURCE, MARKER_MOUSE)
 
-		expect(block).toContain(`renderOrder={FOREGROUND_RENDER_ORDER}`)
+		expect(block).toContain(ATTR_FOREGROUND_RENDER_ORDER)
 	})
 
 	it('foreground render order is greater than backdrop render order', () => {
@@ -91,7 +93,7 @@ describe('ControlsScene render order — regression for camera-angle brightness 
 
 describe('ControlsScene dual-backdrop — icons dim through backdrop from both sides', () => {
 	it('front-facing backdrop uses FrontSide so it draws only when camera is in front', () => {
-		const blocks = find_mesh_blocks_by_render_order(SOURCE, 'renderOrder={BACKDROP_RENDER_ORDER}')
+		const blocks = find_mesh_blocks_by_render_order(SOURCE, ATTR_BACKDROP_RENDER_ORDER)
 
 		expect(blocks).toHaveLength(1)
 		expect(blocks[0]).toContain('side={FrontSide}')
@@ -542,7 +544,7 @@ describe('ControlsScene touch SVG gesture centering — illustration vertically 
 
 		expect(svg_match).not.toBeNull()
 		const svg_body = svg_match?.[1] ?? ''
-		const translate_matches = [...svg_body.matchAll(/transform="translate\(\d+,(-?\d+)\)"/gu)]
+		const translate_matches = svg_body.matchAll(/transform="translate\(\d+,(-?\d+)\)"/gu).toArray()
 
 		expect(translate_matches).toHaveLength(TOUCH_SVG_GESTURE_GROUP_COUNT)
 

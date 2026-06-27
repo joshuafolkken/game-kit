@@ -32,13 +32,13 @@ function html_escape(string_: string): string {
 }
 
 function inject_version(html: string): string {
-	return html.replaceAll(APP_VERSION_PLACEHOLDER, version)
+	return html.replaceAll(APP_VERSION_PLACEHOLDER, () => version)
 }
 
 function inject_game_name(html: string): string {
 	return html
-		.replaceAll(GAME_NAME_DISPLAY_PLACEHOLDER, html_escape(game_config.GAME_NAME_DISPLAY))
-		.replaceAll(GAME_NAME_UPPER_PLACEHOLDER, html_escape(game_config.GAME_NAME_UPPER))
+		.replaceAll(GAME_NAME_DISPLAY_PLACEHOLDER, () => html_escape(game_config.GAME_NAME_DISPLAY))
+		.replaceAll(GAME_NAME_UPPER_PLACEHOLDER, () => html_escape(game_config.GAME_NAME_UPPER))
 }
 
 function inject_security_headers(response: Response): void {

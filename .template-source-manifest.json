@@ -1,7 +1,7 @@
 {
 	"vite.config.ts": "d3dee96fc4d02dbe96b646d3b0100955bf43a515a22182c94781bbac724d50a1",
 	"src/app.html": "be1f5575e2daf9cff8eee03da181bfd4488342acdfe0c686cce28c35f8668996",
-	"src/hooks.server.ts": "ff893c4f9f61353fd7c6b6ec15fc63ef1066d30e4d61d960695edd4b099c4d27",
+	"src/hooks.server.ts": "447d139de364a084218719cf53aa48214a4d60b09b6a84ff53aad2d814d4dc47",
 	"src/lib/game/messages.ts": "e9cf0c8e7a140744e0276bb64ca97d1b8245ba64d99043c0e96de4693fd6bb32",
 	"src/routes/+layout.svelte": "469ce60fbdc09c47cd560dfcffeca340672a5bc19313f605633b05cd5c12a704",
 	"src/routes/+page.svelte": "2cd2b749259686729a20528c8d784a13215cdf88b9c7b04174c0ca535f64e700",

@@ -362,7 +362,7 @@ describe('mobile pause button', () => {
 
 		expect(pause_button).toBeTruthy()
 		if (!pause_button) return
-		const style = globalThis.getComputedStyle(pause_button)
+		const style = getComputedStyle(pause_button)
 
 		expect(style.bottom).toBe('16px')
 		expect(style.right).toBe('16px')
@@ -425,7 +425,7 @@ describe('CRT filter overlay — scanlines + vignette over the whole game screen
 
 		expect(overlay).toBeTruthy()
 		if (!overlay) return
-		const style = globalThis.getComputedStyle(overlay)
+		const style = getComputedStyle(overlay)
 
 		expect(style.pointerEvents).toBe('none')
 	})
