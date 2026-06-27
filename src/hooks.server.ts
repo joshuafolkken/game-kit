@@ -23,13 +23,13 @@ const CSP_POLICY = [
 const PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), payment=()'
 
 function inject_version(html: string): string {
-	return html.replaceAll(APP_VERSION_PLACEHOLDER, version)
+	return html.replaceAll(APP_VERSION_PLACEHOLDER, () => version)
 }
 
 function inject_game_name(html: string): string {
 	return html
-		.replaceAll(GAME_NAME_DISPLAY_PLACEHOLDER, GAME_NAME_DISPLAY)
-		.replaceAll(GAME_NAME_PLACEHOLDER, GAME_NAME)
+		.replaceAll(GAME_NAME_DISPLAY_PLACEHOLDER, () => GAME_NAME_DISPLAY)
+		.replaceAll(GAME_NAME_PLACEHOLDER, () => GAME_NAME)
 }
 
 function inject_security_headers(response: Response): void {

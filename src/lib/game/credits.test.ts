@@ -143,7 +143,7 @@ describe('credits', () => {
 
 	describe('CREDITS_LINE_COUNT', () => {
 		it('is a positive integer', () => {
-			expect(Number.isInteger(CREDITS_LINE_COUNT)).toBe(true)
+			expect(Number.isSafeInteger(CREDITS_LINE_COUNT)).toBe(true)
 			expect(CREDITS_LINE_COUNT).toBeGreaterThan(0)
 		})
 

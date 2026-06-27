@@ -98,6 +98,38 @@ const TEMPLATES_ROUTES = {
 	rules: { 'no-restricted-syntax': 'off' },
 }
 
+// kit 0.280's unicorn/sonarjs bump enabled several rules that false-positive on idiomatic
+// game / test / CLI code. The scoped relaxations below are local stop-gaps; an upstream kit
+// issue tracks scoping them properly in the preset so these can be dropped later (#358).
+
+// Test files assert exact, deterministic values via vitest matchers (`toBe(0.05)`), which
+// `no-floating-point-equality` misreads as fragile float `===`; `no-trivial-assertions`
+// misreads design-invariant equality checks (two independently-derived gaps must match).
+// Both would force weaker assertions. Browser-context mocks also assign global properties
+// (matchMedia / dispatchEvent stubs) by design. Relax these for test/e2e files only.
+const TEST_NEW_RULE_RELAXATIONS = {
+	files: ['**/*.test.ts', '**/*.spec.ts', '**/*.e2e.ts', 'src/routes/e2e-helpers.ts'],
+	rules: {
+		'sonarjs/no-floating-point-equality': 'off',
+		'sonarjs/no-trivial-assertions': 'off',
+		'unicorn/no-global-object-property-assignment': 'off',
+	},
+}
+
+// Web Audio / game-state singletons must be created lazily inside functions — an AudioContext
+// cannot be constructed at module load under the browser autoplay policy — so assigning to a
+// module-level binding from inside a function is required here, not a smell (#358).
+const GAME_SINGLETON_ASSIGNMENT_OFF = {
+	files: ['src/lib/game/**', 'src/lib/game-kit/**', 'templates/src/lib/game/**'],
+	rules: { 'unicorn/no-top-level-assignment-in-function': 'off' },
+}
+
+// `consistent-boolean-name` false-positives on external-API-reserved names that cannot be
+// renamed — SvelteKit's `ssr`/`csr`/`prerender` route exports, Three.js `antialias`, the
+// MediaQueryList `matches` mock — and on action functions returning a did-change status.
+// Disable repo-wide pending upstream kit scoping, parallel to PREFER_HTTPS_OFF (#358).
+const CONSISTENT_BOOLEAN_NAME_OFF = { rules: { 'unicorn/consistent-boolean-name': 'off' } }
+
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
 	tsconfig_root_dir: import.meta.dirname,
@@ -115,4 +147,8 @@ export default create_sveltekit_config({
 	TEST_SIZE_CAPS,
 	// Last: templates/src/lib/game/** also matches TEMPLATES_NON_TYPED, so this wins the complexity cap (#244).
 	GAME_COMPLEXITY_OVERRIDES,
+	// kit 0.280 unicorn/sonarjs scoped relaxations (#358).
+	CONSISTENT_BOOLEAN_NAME_OFF,
+	GAME_SINGLETON_ASSIGNMENT_OFF,
+	TEST_NEW_RULE_RELAXATIONS,
 )

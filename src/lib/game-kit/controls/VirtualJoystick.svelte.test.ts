@@ -53,8 +53,10 @@ describe('VirtualJoystick', () => {
 	it('renders jump button inside overlay but not inside any joystick zone', () => {
 		const { container } = render_joystick()
 
-		expect(container.querySelector('.joystick-overlay [data-testid="jump-btn"]')).toBeTruthy()
-		expect(container.querySelector('.joystick-zone [data-testid="jump-btn"]')).toBeNull()
+		expect(
+			container.querySelector(':scope .joystick-overlay [data-testid="jump-btn"]'),
+		).toBeTruthy()
+		expect(container.querySelector(':scope .joystick-zone [data-testid="jump-btn"]')).toBeNull()
 	})
 
 	it('jump button has aria-label and svg icon instead of visible text', () => {

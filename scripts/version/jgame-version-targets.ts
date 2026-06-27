@@ -17,7 +17,7 @@ function safe_json_parse(raw: string): unknown {
 
 function read_string_property(value: unknown, key: string): string | undefined {
 	if (typeof value !== 'object' || value === null) return undefined
-	if (!(key in value)) return undefined
+	if (!Object.hasOwn(value, key)) return undefined
 	const property: unknown = (value as Record<string, unknown>)[key]
 
 	return typeof property === 'string' ? property : undefined
@@ -26,7 +26,7 @@ function read_string_property(value: unknown, key: string): string | undefined {
 function read_object_property(value: unknown, key: string): unknown {
 	if (typeof value !== 'object' || value === null) return undefined
 
-	return key in value ? (value as Record<string, unknown>)[key] : undefined
+	return Object.hasOwn(value, key) ? (value as Record<string, unknown>)[key] : undefined
 }
 
 // Read the globally installed version from `pnpm ls -g --json` output. The command prints an array

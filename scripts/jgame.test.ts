@@ -119,7 +119,9 @@ describe('is_invoked_directly', () => {
 	/* eslint-enable init-declarations */
 
 	beforeEach(() => {
-		temporary_directory = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'jgame-test-')))
+		const temporary_directory_prefix = path.join(os.tmpdir(), 'jgame-test-')
+
+		temporary_directory = realpathSync(mkdtempSync(temporary_directory_prefix))
 		real_file = path.join(temporary_directory, 'jgame.js')
 		symlink_path = path.join(temporary_directory, 'jgame-link')
 		writeFileSync(real_file, '')

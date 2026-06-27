@@ -55,7 +55,8 @@ function find_redundant_keys(
 	return Object.entries(own_options)
 		.filter(
 			([key, value]) =>
-				key in base_options && JSON.stringify(base_options[key]) === JSON.stringify(value),
+				Object.hasOwn(base_options, key) &&
+				JSON.stringify(base_options[key]) === JSON.stringify(value),
 		)
 		.map(([key]) => key)
 }

@@ -20,7 +20,10 @@ function collect_action_setup_pins(): Array<string> {
 	return files.flatMap((file) => {
 		const content = readFileSync(path.join(WORKFLOWS_DIR, file), 'utf8')
 
-		return [...content.matchAll(ACTION_SETUP_PATTERN)].map((match) => match.groups?.pin ?? '')
+		return content
+			.matchAll(ACTION_SETUP_PATTERN)
+			.map((match) => match.groups?.pin ?? '')
+			.toArray()
 	})
 }
 
