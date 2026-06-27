@@ -18,33 +18,17 @@ vi.mock('./jgame-paths.ts', () => ({
 	},
 }))
 
-const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
-const CANONICAL_PREPARE =
-	'pnpm prepare:gen && pnpm prepare:sync && pnpm prepare:lefthook && pnpm prepare:gh-packages'
-// The orchestrated sub-scripts `prepare` delegates to — these SURVIVE `pnpm pack`
-// (only the bare `prepare` key is stripped), so they mirror the published shape.
-const PUBLISHED_SUB_SCRIPTS = {
-	'prepare:gen': '[ ! -f wrangler.jsonc ] || pnpm gen',
-	'prepare:sync': "svelte-kit sync || echo ''",
-	'prepare:lefthook': '[ -n "$CI" ] || ! command -v lefthook >/dev/null 2>&1 || lefthook install',
-	'prepare:gh-packages':
-		'[ -n "$CI" ] || ! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
-	gen: 'pnpm gen:pre && wrangler types',
-	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
-}
 const MOCK_HOST_PNPM_VERSION = '11.3.0'
 const MAX_LINE_LENGTH = 100
 
-// `pnpm pack` strips both the top-level `packageManager` field AND the bare `prepare`
-// lifecycle script on publish, so the fixture mirrors that published shape: only
-// `devEngines.packageManager` remains, and `scripts` carries NO bare `prepare` (init
-// must emit the orchestrator from CANONICAL_PREPARE, not from the manifest). The
-// colon-namespaced `prepare:*` sub-scripts + `gen` / `gen:pre` DO survive publish, so
-// they are present here and init reads them through. The pre-#279 fixture wrongly kept
-// `prepare`, so the unit suite passed while the real published init crashed (#279).
+// `pnpm pack` strips the top-level `packageManager` field on publish, so the fixture
+// mirrors that published shape: only `devEngines.packageManager` remains. The Cloudflare
+// lifecycle scripts (preview / prepare / prepare:* / gen / gen:pre) are no longer emitted
+// by game-kit's `build_scripts` — app-kit's `josh-app init` overlay adds them (#357), so
+// the fixture's `scripts` need not carry them.
 const MOCK_PKG = {
 	version: '1.0.0',
-	scripts: { preview: CANONICAL_PREVIEW, ...PUBLISHED_SUB_SCRIPTS },
+	scripts: {},
 	devDependencies: {
 		'@ianvs/prettier-plugin-sort-imports': '^4.7.1',
 		'@joshuafolkken/kit': '0.162.0',
@@ -143,67 +127,23 @@ describe('jgame_init.generate_package_json', () => {
 		expect(result.pnpm).toBeUndefined()
 	})
 
-	it('includes required scripts', async () => {
+	it('emits only the game-specific scripts; the Cloudflare lifecycle is owned by app-kit (#357)', async () => {
+		// build_scripts now emits ONLY the game layer (preinstall/dev/build/jgame/josh).
+		// The Cloudflare lifecycle (preview / prepare / prepare:* / gen / gen:pre) moved to
+		// app-kit's `josh-app init` overlay, so it must be absent from the initial package.json.
 		const { jgame_init } = await import('./jgame-init.ts')
 		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
 
+		expect(result.scripts.preinstall).toBe('pnpm dlx @aikidosec/safe-chain setup-ci')
 		expect(result.scripts.dev).toBe('vite dev')
+		expect(result.scripts.build).toBe('vite build')
 		expect(result.scripts.jgame).toBe('jgame')
 		expect(result.scripts.josh).toBe('josh')
-	})
-
-	it('does not emit an unconditional postinstall that can fail pnpm install (#272)', async () => {
-		// Regression for #272: the old generated `postinstall` ran
-		// `lefthook install && tsx ...` unconditionally; with neither tool in the
-		// scaffold's managed devDeps, `pnpm install` aborted on a fresh scaffold.
-		const { jgame_init } = await import('./jgame-init.ts')
-		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
-
+		expect(result.scripts.preview).toBeUndefined()
+		expect(result.scripts.prepare).toBeUndefined()
+		expect(result.scripts['prepare:gen']).toBeUndefined()
+		expect(result.scripts.gen).toBeUndefined()
 		expect(result.scripts.postinstall).toBeUndefined()
-	})
-
-	it('emits an orchestrated prepare that delegates to guarded prepare:* sub-scripts (#311)', async () => {
-		// Regression for #279: MOCK_PKG mirrors the published shape (no bare `prepare`),
-		// yet init MUST still emit the canonical orchestrator from CANONICAL_PREPARE.
-		const { jgame_init } = await import('./jgame-init.ts')
-		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
-
-		expect(result.scripts.prepare).toBe(CANONICAL_PREPARE)
-		expect(result.scripts['prepare:sync']).toBe(PUBLISHED_SUB_SCRIPTS['prepare:sync'])
-		expect(result.scripts.gen).toBe(PUBLISHED_SUB_SCRIPTS.gen)
-		expect(result.scripts['gen:pre']).toBe(PUBLISHED_SUB_SCRIPTS['gen:pre'])
-	})
-
-	it('emits CI-guarded owner-only prepare:* sub-scripts whose CLIs are covered by managed devDeps (#272/#323)', async () => {
-		// Acceptance criterion: scaffold-managed dependencies cover every CLI the generated setup
-		// sub-scripts invoke. The owner-only steps carry a `[ -n "$CI" ] ||` guard so they skip in
-		// CI yet propagate a real local failure (no `; true` mask); a missing binary still skips.
-		const { jgame_init } = await import('./jgame-init.ts')
-		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
-
-		expect(result.scripts['prepare:lefthook']).toContain(
-			'[ -n "$CI" ] || ! command -v lefthook >/dev/null 2>&1 || lefthook',
-		)
-		expect(result.scripts['prepare:gh-packages']).toContain(
-			'[ -n "$CI" ] || ! command -v tsx >/dev/null 2>&1 || tsx',
-		)
-		expect(result.devDependencies.lefthook).toBe('^2.1.9')
-		expect(result.devDependencies.tsx).toBe('^4.22.4')
-		expect(result.scripts['prepare:lefthook']).not.toMatch(/;\s*true\s*$/u)
-		expect(result.scripts['prepare:gh-packages']).not.toMatch(/;\s*true\s*$/u)
-	})
-
-	it('guards prepare:gen on wrangler.jsonc, not on CI, so gen runs once the config exists (#311/#323)', async () => {
-		// The scaffold's first `pnpm install` fires `prepare` BEFORE `josh sync` writes
-		// wrangler.jsonc, so gen must skip until the config exists. The `[ ! -f … ] || pnpm gen`
-		// form keeps that skip while letting a genuine `pnpm gen` failure fail install — in CI too,
-		// since gen generates types and is NOT `$CI`-guarded (unlike the owner-only steps).
-		const { jgame_init } = await import('./jgame-init.ts')
-		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
-
-		expect(result.scripts['prepare:gen']).toMatch(/\[ ! -f wrangler\.jsonc \] \|\| pnpm gen/u)
-		expect(result.scripts['prepare:gen']).not.toMatch(/;\s*true\s*$/u)
-		expect(result.scripts['prepare:gen']).not.toMatch(/\$CI/u)
 	})
 
 	it('emits packageManager derived from the host pnpm version', async () => {
@@ -236,18 +176,6 @@ describe('jgame_init.generate_package_json', () => {
 		// name/onFail are preserved from game-kit; only the version is host-derived.
 		expect(result.devEngines.packageManager.name).toBe('pnpm')
 		expect(result.devEngines.packageManager.onFail).toBe('error')
-	})
-
-	it('emits the canonical Cloudflare Worker preview script (not vite preview)', async () => {
-		// Regression for #135: vite preview bypasses the Worker runtime, so
-		// hooks.server.ts (CSP, redirects, HTML injection) never executes and
-		// Worker-runtime E2E silently breaks. The value must come from game-kit's
-		// own package.json so the two paths cannot drift.
-		const { jgame_init } = await import('./jgame-init.ts')
-		const result = JSON.parse(jgame_init.generate_package_json('my-game'))
-
-		expect(result.scripts.preview).toBe(CANONICAL_PREVIEW)
-		expect(result.scripts.preview).not.toBe('vite preview')
 	})
 })
 
@@ -422,7 +350,7 @@ describe('jgame_init.run', () => {
 	it('never writes its own tsconfig.json — josh init owns it (#326)', async () => {
 		// Regression for #326: jgame's old USER_TSCONFIG survived the kit's extends-merge,
 		// keeping noEmitOnError:false against the kit base's true. tsconfig.json creation
-		// is left entirely to `pnpm josh init --type sveltekit` (invocation covered above).
+		// is left entirely to `pnpm josh-app init` (invocation covered above).
 		const { writeFileSync } = await import('node:fs')
 		const { jgame_init } = await import('./jgame-init.ts')
 
@@ -480,10 +408,15 @@ describe('jgame_init.run', () => {
 			'/pkg/svelte.config.js',
 			'/project/tic-tac-toe/svelte.config.js',
 		)
-		expect(cpSync).toHaveBeenCalledWith('/pkg/src/app.d.ts', '/project/tic-tac-toe/src/app.d.ts')
+		// src/app.d.ts is NOT copied: app-kit's `josh-app init` overlay seeds a
+		// Cloudflare-aware app.d.ts now (#357).
+		expect(cpSync).not.toHaveBeenCalledWith(
+			'/pkg/src/app.d.ts',
+			'/project/tic-tac-toe/src/app.d.ts',
+		)
 	})
 
-	it('runs git init, pnpm install, pnpm josh init, and pnpm josh sync with project cwd', async () => {
+	it('runs git init, pnpm install, pnpm josh-app init, and pnpm josh-app sync with project cwd (#357)', async () => {
 		const { execSync } = await import('node:child_process')
 		const { jgame_init } = await import('./jgame-init.ts')
 
@@ -492,22 +425,21 @@ describe('jgame_init.run', () => {
 
 		expect(execSync).toHaveBeenCalledWith('git init', opts)
 		expect(execSync).toHaveBeenCalledWith('pnpm install', opts)
-		expect(execSync).toHaveBeenCalledWith('pnpm josh init --type sveltekit', opts)
-		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', opts)
+		expect(execSync).toHaveBeenCalledWith('pnpm josh-app init', opts)
+		expect(execSync).toHaveBeenCalledWith('pnpm josh-app sync', opts)
 	})
 
-	it('invokes pnpm josh init before pnpm josh sync (#184)', async () => {
-		// Regression for #184: `josh sync` early-returns when destination configs
-		// do not exist, so eslint.config.js / prettier.config.js never get
-		// scaffolded. `josh init` MUST run first to create them, then `josh sync`
-		// updates anything already present.
+	it('invokes pnpm josh-app init before pnpm josh-app sync (#357)', async () => {
+		// `josh-app sync` (= `josh sync`) early-returns when destination configs do not
+		// exist, so the canonical `josh-app init` MUST run first to scaffold them; `sync`
+		// then refreshes anything already present.
 		const { execSync } = await import('node:child_process')
 		const { jgame_init } = await import('./jgame-init.ts')
 
 		jgame_init.run('tic-tac-toe')
 		const calls = vi.mocked(execSync).mock.calls.map(([cmd]) => cmd)
-		const init_index = calls.indexOf('pnpm josh init --type sveltekit')
-		const sync_index = calls.indexOf('pnpm josh sync')
+		const init_index = calls.indexOf('pnpm josh-app init')
+		const sync_index = calls.indexOf('pnpm josh-app sync')
 
 		expect(init_index).toBeGreaterThan(-1)
 		expect(sync_index).toBeGreaterThan(init_index)

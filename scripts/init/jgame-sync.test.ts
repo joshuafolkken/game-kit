@@ -25,28 +25,11 @@ vi.mock('./jgame-paths.ts', () => ({
 	},
 }))
 
-const CANONICAL_PREVIEW = 'wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173'
-const CANONICAL_PREPARE =
-	'pnpm prepare:gen && pnpm prepare:sync && pnpm prepare:lefthook && pnpm prepare:gh-packages'
-// The orchestrated sub-scripts `prepare` delegates to. All SURVIVE `pnpm pack` (only the
-// bare `prepare` key is stripped), so they are part of game-kit's published shape.
-const PUBLISHED_SUB_SCRIPTS = {
-	'prepare:gen': '[ ! -f wrangler.jsonc ] || pnpm gen',
-	'prepare:sync': "svelte-kit sync || echo ''",
-	'prepare:lefthook': '[ -n "$CI" ] || ! command -v lefthook >/dev/null 2>&1 || lefthook install',
-	'prepare:gh-packages':
-		'[ -n "$CI" ] || ! command -v tsx >/dev/null 2>&1 || tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
-	gen: 'pnpm gen:pre && wrangler types',
-	'gen:pre': 'node -e "clean .svelte-kit/cloudflare/_worker.*"',
-}
-// The full canonical script set game-kit owns (the published shape plus the pinned bare
-// `prepare`). Used both as the /pkg source `read_canonical_scripts` reads and as the
-// "already canonical" consumer baseline so a fully-synced consumer triggers no rewrite.
-const CANONICAL_SCRIPTS = {
-	preview: CANONICAL_PREVIEW,
-	prepare: CANONICAL_PREPARE,
-	...PUBLISHED_SUB_SCRIPTS,
-}
+// A minimal consumer `scripts` fixture. jgame sync no longer manages package.json
+// scripts (the Cloudflare lifecycle moved to app-kit's `josh-app sync` overlay, #357),
+// so the script content is irrelevant to the surviving devDeps / file-sync tests — this
+// stands in as a representative non-empty scripts field.
+const CONSUMER_SCRIPTS = { dev: 'vite dev' }
 
 // Framework / app-shell files that jgame sync refreshes from templates/ on every
 // run. Each entry pairs the destination path inside the user project with the
@@ -136,11 +119,11 @@ describe('jgame_sync.run', () => {
 		})
 		const { readFileSync } = await import('node:fs')
 		const game_kit_package = JSON.stringify({
-			scripts: CANONICAL_SCRIPTS,
+			scripts: CONSUMER_SCRIPTS,
 			devDependencies: KIT_DEV_DEPS_FIXTURE,
 		})
 		const consumer_package = JSON.stringify({
-			scripts: CANONICAL_SCRIPTS,
+			scripts: CONSUMER_SCRIPTS,
 			devDependencies: KIT_DEV_DEPS_FIXTURE,
 		})
 
@@ -150,36 +133,36 @@ describe('jgame_sync.run', () => {
 		})
 	})
 
-	it('calls josh sync', async () => {
+	it('delegates the framework sync to pnpm josh-app sync (#357)', async () => {
 		const { execSync } = await import('node:child_process')
 		const { jgame_sync } = await import('./jgame-sync.ts')
 
 		jgame_sync.run()
-		expect(execSync).toHaveBeenCalledWith('pnpm josh sync', expect.any(Object))
+		expect(execSync).toHaveBeenCalledWith('pnpm josh-app sync', expect.any(Object))
 	})
 
-	it('calls josh init --type sveltekit to self-heal missing configs (#186)', async () => {
-		// Regression for #186: projects scaffolded before #184 are missing
-		// eslint.config.js / prettier.config.js. jgame sync must invoke josh init
-		// to scaffold them, because josh sync early-returns on missing destinations.
+	it('calls pnpm josh-app init to self-heal missing configs (#357)', async () => {
+		// `josh-app sync` (= `josh sync`) early-returns on missing destinations, so the
+		// canonical `josh-app init` is invoked to scaffold eslint.config.js / etc. on
+		// projects that predate this layer.
 		const { execSync } = await import('node:child_process')
 		const { jgame_sync } = await import('./jgame-sync.ts')
 
 		jgame_sync.run()
-		expect(execSync).toHaveBeenCalledWith('pnpm josh init --type sveltekit', expect.any(Object))
+		expect(execSync).toHaveBeenCalledWith('pnpm josh-app init', expect.any(Object))
 	})
 
-	it('runs pnpm josh init AFTER pnpm josh sync (#186)', async () => {
-		// josh sync's preflight pnpm install installs the new devDeps that
-		// sync_managed_dev_deps just wrote into package.json; josh init then
+	it('runs pnpm josh-app init AFTER pnpm josh-app sync (#357)', async () => {
+		// `josh-app sync`'s preflight pnpm install installs the new devDeps that
+		// sync_managed_development_deps just wrote into package.json; `josh-app init` then
 		// scaffolds any missing config files with those deps already available.
 		const { execSync } = await import('node:child_process')
 		const { jgame_sync } = await import('./jgame-sync.ts')
 
 		jgame_sync.run()
 		const exec_calls = vi.mocked(execSync).mock.calls
-		const sync_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh sync')
-		const init_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh init --type sveltekit')
+		const sync_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh-app sync')
+		const init_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh-app init')
 
 		expect(sync_index).toBeGreaterThanOrEqual(0)
 		expect(init_index).toBeGreaterThanOrEqual(0)
@@ -228,11 +211,11 @@ describe('jgame_sync.run', () => {
 		expect(existsSync(path.join(REAL_TEMPLATES_DIR, destination))).toBe(false)
 	})
 
-	it('pre-syncs pnpm-workspace.yaml BEFORE invoking pnpm josh sync (regression for #182)', async () => {
+	it('pre-syncs pnpm-workspace.yaml BEFORE invoking pnpm josh-app sync (regression for #182)', async () => {
 		// pnpm 11 runs a deps-status check (pnpm install) before every pnpm script.
 		// If the consumer's pnpm-workspace.yaml lacks the bare-name @joshuafolkken/game-kit
 		// exclude, that pre-flight install fails on ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION
-		// and pnpm josh sync (which would have refreshed the yaml) never executes.
+		// and pnpm josh-app sync (which would have refreshed the yaml) never executes.
 		// jgame sync must therefore refresh pnpm-workspace.yaml itself, BEFORE invoking pnpm.
 		const { cpSync } = await import('node:fs')
 		const { execSync } = await import('node:child_process')
@@ -247,7 +230,7 @@ describe('jgame_sync.run', () => {
 				String(source) === '/pkg/templates/pnpm-workspace.yaml' &&
 				String(destination) === '/project/pnpm-workspace.yaml',
 		)
-		const josh_sync_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh sync')
+		const josh_sync_index = exec_calls.findIndex(([cmd]) => cmd === 'pnpm josh-app sync')
 		const yaml_cp_order = vi.mocked(cpSync).mock.invocationCallOrder[yaml_cp_index]
 		const josh_sync_order = vi.mocked(execSync).mock.invocationCallOrder[josh_sync_index]
 
@@ -299,168 +282,25 @@ describe('jgame_sync.run', () => {
 	})
 })
 
-describe('jgame_sync managed package.json scripts', () => {
-	beforeEach(() => {
-		vi.clearAllMocks()
-		vi.spyOn(console, 'info').mockImplementation(() => {
-			/* no-op */
-		})
+describe('jgame_sync.SYNC_FILES contract', () => {
+	it('does not manage tsconfig.json or src/app.d.ts (owned by the josh-app overlay, #326/#357)', async () => {
+		// tsconfig.json reconciliation is owned by `josh-app sync`, and src/app.d.ts is
+		// seeded by `josh-app init` (Cloudflare-aware). Adding either here would shadow the
+		// overlay with a verbatim template copy and clobber the app-kit-owned content.
+		const { jgame_sync } = await import('./jgame-sync.ts')
+		const destinations = jgame_sync.SYNC_FILES.map((entry) => entry.dest)
+
+		expect(destinations).not.toContain('tsconfig.json')
+		expect(destinations).not.toContain('src/app.d.ts')
 	})
 
-	it('rewrites a stale preview script to the canonical Worker-runtime value', async () => {
-		// Regression for #135: a project initialized before the fix has
-		// "preview": "vite preview" — jgame sync must correct it.
-		const { readFileSync, writeFileSync } = await import('node:fs')
-		const development_deps = await build_complete_consumer_development_deps()
-
-		stub_readFileSync_by_path(vi.mocked(readFileSync), {
-			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
-				devDependencies: KIT_DEV_DEPS_FIXTURE,
-			}),
-			'/project/package.json': JSON.stringify({
-				name: 'consumer',
-				scripts: { preview: 'vite preview', dev: 'vite dev' },
-				devDependencies: development_deps,
-			}),
-		})
+	it('still manages the game-owned app shell src/app.html', async () => {
+		// src/app.html is the game's rich shell (loading overlay, version/name placeholders)
+		// and intentionally overrides app-kit's generic seeded shell, so it stays managed here.
 		const { jgame_sync } = await import('./jgame-sync.ts')
+		const destinations = jgame_sync.SYNC_FILES.map((entry) => entry.dest)
 
-		jgame_sync.run()
-		const package_writes = vi
-			.mocked(writeFileSync)
-			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
-
-		expect(package_writes).toHaveLength(1)
-		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
-
-		expect(written.scripts.preview).toBe(CANONICAL_PREVIEW)
-		// Preserves consumer-owned scripts that are NOT in MANAGED_SCRIPT_KEYS.
-		expect(written.scripts.dev).toBe('vite dev')
-		// Preserves unrelated package.json fields.
-		expect(written.name).toBe('consumer')
-	})
-
-	it('does not rewrite package.json when scripts are already canonical', async () => {
-		const { readFileSync, writeFileSync } = await import('node:fs')
-		const development_deps = await build_complete_consumer_development_deps()
-
-		stub_readFileSync_by_path(vi.mocked(readFileSync), {
-			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
-				devDependencies: KIT_DEV_DEPS_FIXTURE,
-			}),
-			'/project/package.json': JSON.stringify({
-				name: 'consumer',
-				scripts: { ...CANONICAL_SCRIPTS, dev: 'vite dev' },
-				devDependencies: development_deps,
-			}),
-		})
-		const { jgame_sync } = await import('./jgame-sync.ts')
-
-		jgame_sync.run()
-		const package_writes = vi
-			.mocked(writeFileSync)
-			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
-
-		expect(package_writes).toHaveLength(0)
-	})
-
-	it('self-heals an existing consumer with the old failing postinstall (#272)', async () => {
-		// Regression for #272: a project scaffolded before the fix carries the old
-		// unconditional `postinstall` (`lefthook install && tsx ...`) and no `prepare`.
-		// jgame sync must add the guarded canonical `prepare`, and the devDeps pass must
-		// inject lefthook + tsx so the tools the old postinstall references actually exist
-		// (its `pnpm install` then stops failing).
-		const { readFileSync, writeFileSync } = await import('node:fs')
-
-		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
-			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
-				devDependencies: KIT_DEV_DEPS_FIXTURE,
-			}),
-			'/project/package.json': JSON.stringify({
-				name: 'consumer',
-				scripts: {
-					preview: CANONICAL_PREVIEW,
-					postinstall:
-						'lefthook install && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
-				},
-				devDependencies: { '@joshuafolkken/kit': '0.150.0' },
-			}),
-		})
-		const { jgame_sync } = await import('./jgame-sync.ts')
-
-		jgame_sync.run()
-		const package_writes = vi
-			.mocked(writeFileSync)
-			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
-		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
-
-		expect(written.scripts.prepare).toBe(CANONICAL_PREPARE)
-		// The superseded unconditional postinstall is removed, not left to double-run.
-		expect(written.scripts.postinstall).toBeUndefined()
-		expect(written.devDependencies.lefthook).toBeDefined()
-		expect(written.devDependencies.tsx).toBeDefined()
-	})
-
-	it('self-heals an existing consumer that lacks the orchestrated prepare:* sub-scripts (#311)', async () => {
-		// A consumer scaffolded before #311 has the old inline `prepare` but none of the
-		// `prepare:*` / `gen` sub-scripts it now delegates to. jgame sync must add them so
-		// the orchestrated prepare does not call missing scripts on the next install.
-		const { readFileSync, writeFileSync } = await import('node:fs')
-
-		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
-			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
-				devDependencies: KIT_DEV_DEPS_FIXTURE,
-			}),
-			'/project/package.json': JSON.stringify({
-				name: 'consumer',
-				scripts: { preview: CANONICAL_PREVIEW, prepare: 'svelte-kit sync || echo ""' },
-				devDependencies: { '@joshuafolkken/kit': '0.150.0' },
-			}),
-		})
-		const { jgame_sync } = await import('./jgame-sync.ts')
-
-		jgame_sync.run()
-		const package_writes = vi
-			.mocked(writeFileSync)
-			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
-		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
-
-		expect(written.scripts.prepare).toBe(CANONICAL_PREPARE)
-
-		for (const [key, value] of Object.entries(PUBLISHED_SUB_SCRIPTS)) {
-			expect(written.scripts[key]).toBe(value)
-		}
-	})
-
-	it('adds the canonical preview script when the consumer has no scripts field', async () => {
-		const { readFileSync, writeFileSync } = await import('node:fs')
-		const development_deps = await build_complete_consumer_development_deps()
-
-		stub_readFileSync_by_path(vi.mocked(readFileSync), {
-			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
-				devDependencies: KIT_DEV_DEPS_FIXTURE,
-			}),
-			'/project/package.json': JSON.stringify({
-				name: 'consumer',
-				devDependencies: development_deps,
-			}),
-		})
-		const { jgame_sync } = await import('./jgame-sync.ts')
-
-		jgame_sync.run()
-		const package_writes = vi
-			.mocked(writeFileSync)
-			.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
-
-		expect(package_writes).toHaveLength(1)
-		const written = JSON.parse(String(package_writes.at(-1)?.[1]))
-
-		expect(written.scripts.preview).toBe(CANONICAL_PREVIEW)
+		expect(destinations).toContain('src/app.html')
 	})
 })
 
@@ -480,12 +320,12 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
+				scripts: CONSUMER_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
-				scripts: CANONICAL_SCRIPTS,
+				scripts: CONSUMER_SCRIPTS,
 				devDependencies: { '@joshuafolkken/kit': '0.150.0' },
 			}),
 		})
@@ -510,12 +350,12 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
+				scripts: CONSUMER_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
-				scripts: { preview: CANONICAL_PREVIEW },
+				scripts: CONSUMER_SCRIPTS,
 				devDependencies: { prettier: '^3.99.0' },
 			}),
 		})
@@ -536,12 +376,12 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		stub_readFileSync_by_path(vi.mocked(readFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
+				scripts: CONSUMER_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
-				scripts: CANONICAL_SCRIPTS,
+				scripts: CONSUMER_SCRIPTS,
 				devDependencies: development_deps,
 			}),
 		})
@@ -567,12 +407,12 @@ describe('jgame_sync managed package.json devDependencies', () => {
 
 		stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
 			'/pkg/package.json': JSON.stringify({
-				scripts: CANONICAL_SCRIPTS,
+				scripts: CONSUMER_SCRIPTS,
 				devDependencies: KIT_DEV_DEPS_FIXTURE,
 			}),
 			'/project/package.json': JSON.stringify({
 				name: 'consumer',
-				scripts: CANONICAL_SCRIPTS,
+				scripts: CONSUMER_SCRIPTS,
 				dependencies: { '@threlte/core': '^8.0.0', three: '^0.170.0', 'my-runtime-lib': '^2.0.0' },
 				devDependencies: development_deps,
 				pnpm: { overrides: { cookie: '^0.7.0' } },
@@ -673,7 +513,7 @@ describe('jgame_sync.is_josh_resolvable', () => {
 	})
 })
 
-describe('jgame_sync.run josh sync delegation', () => {
+describe('jgame_sync.run josh-app delegation', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks()
 		// clearAllMocks keeps implementations; reset execSync so a throwing probe
@@ -686,7 +526,7 @@ describe('jgame_sync.run josh sync delegation', () => {
 		})
 		const { readFileSync } = await import('node:fs')
 		const package_json = JSON.stringify({
-			scripts: CANONICAL_SCRIPTS,
+			scripts: CONSUMER_SCRIPTS,
 			devDependencies: KIT_DEV_DEPS_FIXTURE,
 		})
 
@@ -694,21 +534,6 @@ describe('jgame_sync.run josh sync delegation', () => {
 			'/pkg/package.json': package_json,
 			'/project/package.json': package_json,
 		})
-	})
-
-	it('forwards --force to the delegated josh sync when invoked with --force', async () => {
-		const { execSync } = await import('node:child_process')
-		const { jgame_sync } = await import('./jgame-sync.ts')
-		const original_argv = process.argv
-
-		process.argv = ['node', 'jgame', 'sync', '--force']
-
-		try {
-			jgame_sync.run()
-			expect(execSync).toHaveBeenCalledWith('pnpm josh sync --force', expect.any(Object))
-		} finally {
-			process.argv = original_argv
-		}
 	})
 
 	it('logs an actionable error and exits non-zero when josh is unresolvable', async () => {
@@ -736,60 +561,6 @@ describe('jgame_sync.run josh sync delegation', () => {
 		}).toThrow('process.exit called')
 		expect(process.exit).toHaveBeenCalledWith(1)
 		expect(error_spy).toHaveBeenCalledWith(expect.stringContaining('@joshuafolkken/kit'))
-		expect(execSync).not.toHaveBeenCalledWith('pnpm josh sync', expect.anything())
-	})
-})
-
-describe('jgame_sync.apply_managed_scripts', () => {
-	it('reports no change when consumer already has canonical values', async () => {
-		const { jgame_sync } = await import('./jgame-sync.ts')
-		const package_ = { scripts: { preview: CANONICAL_PREVIEW } }
-		const did_change = jgame_sync.apply_managed_scripts(package_, { preview: CANONICAL_PREVIEW })
-
-		expect(did_change).toBe(false)
-		expect(package_.scripts.preview).toBe(CANONICAL_PREVIEW)
-	})
-
-	it('returns true and mutates scripts when a managed key is stale', async () => {
-		const { jgame_sync } = await import('./jgame-sync.ts')
-		const package_ = { scripts: { preview: 'vite preview' } }
-		const did_change = jgame_sync.apply_managed_scripts(package_, { preview: CANONICAL_PREVIEW })
-
-		expect(did_change).toBe(true)
-		expect(package_.scripts.preview).toBe(CANONICAL_PREVIEW)
-	})
-
-	it('removes the superseded unconditional postinstall (#272)', async () => {
-		const { jgame_sync } = await import('./jgame-sync.ts')
-		const package_ = {
-			scripts: {
-				preview: CANONICAL_PREVIEW,
-				postinstall:
-					'lefthook install && tsx node_modules/@joshuafolkken/kit/scripts/fix-gh-packages.ts',
-			},
-		}
-		const did_change = jgame_sync.apply_managed_scripts(package_, {
-			preview: CANONICAL_PREVIEW,
-			prepare: CANONICAL_PREPARE,
-		})
-
-		expect(did_change).toBe(true)
-		expect(package_.scripts.postinstall).toBeUndefined()
-		expect(package_.scripts.prepare).toBe(CANONICAL_PREPARE)
-	})
-
-	it('never touches a consumer-owned custom postinstall (#272)', async () => {
-		const { jgame_sync } = await import('./jgame-sync.ts')
-		const custom = 'node ./scripts/my-setup.js'
-		const package_ = {
-			scripts: { preview: CANONICAL_PREVIEW, prepare: CANONICAL_PREPARE, postinstall: custom },
-		}
-		const did_change = jgame_sync.apply_managed_scripts(package_, {
-			preview: CANONICAL_PREVIEW,
-			prepare: CANONICAL_PREPARE,
-		})
-
-		expect(did_change).toBe(false)
-		expect(package_.scripts.postinstall).toBe(custom)
+		expect(execSync).not.toHaveBeenCalledWith('pnpm josh-app sync', expect.anything())
 	})
 })

@@ -12,7 +12,6 @@ import path from 'node:path'
 import { jgame_cspell_config } from './jgame-cspell-config.ts'
 import { jgame_eslint_config } from './jgame-eslint-config.ts'
 import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
-import { jgame_managed_scripts } from './jgame-managed-scripts.ts'
 import { jgame_paths } from './jgame-paths.ts'
 import { jgame_root_files } from './jgame-root-files.ts'
 
@@ -120,28 +119,19 @@ function build_development_engines(
 	}
 }
 
-// `prepare` (not `postinstall`): owner-only setup that ORCHESTRATES guarded `prepare:*`
-// sub-scripts, single-sourced from game-kit (#272, #311). Each sub-script is guarded
-// (`command -v` for lefthook/tsx, `[ -f wrangler.jsonc ]` for gen) so a missing tool or
-// config skips instead of failing `pnpm install`. The gen guard matters because the
-// scaffold's first `pnpm install` fires before `josh sync` writes wrangler.jsonc — gen
-// must no-op then and only run once the config exists. The referenced sub-scripts +
-// `gen` / `gen:pre` are emitted here too, or `prepare` would call missing scripts.
-function build_scripts(package_: GameKitPackage): Record<string, string> {
-	const managed = jgame_managed_scripts.pick_managed_scripts(package_.scripts)
-
+// Only the game-specific scripts. The Cloudflare lifecycle (`preview`, `prepare`,
+// `prepare:gen`, `prepare:sync`, `prepare:lefthook`, `prepare:gh-packages`, `gen`,
+// `gen:pre`) is owned by app-kit and merged in by `josh-app init`'s overlay (#357,
+// app-kit#27) — game-kit no longer redefines those keys. They are absent from this
+// initial package.json, so the scaffold's first `pnpm install` has no CF `prepare` to
+// run before `josh-app init` seeds wrangler.jsonc; the overlay adds the lifecycle
+// afterward, and a later install runs the (fail-loud) `prepare:gen` against the now-valid
+// seeded config (app-kit#56).
+function build_scripts(): Record<string, string> {
 	return {
 		preinstall: 'pnpm dlx @aikidosec/safe-chain setup-ci',
 		dev: 'vite dev',
 		build: 'vite build',
-		preview: managed.preview,
-		prepare: managed.prepare,
-		'prepare:gen': managed['prepare:gen'],
-		'prepare:sync': managed['prepare:sync'],
-		'prepare:lefthook': managed['prepare:lefthook'],
-		'prepare:gh-packages': managed['prepare:gh-packages'],
-		gen: managed.gen,
-		'gen:pre': managed['gen:pre'],
 		jgame: 'jgame',
 		josh: 'josh',
 	}
@@ -172,7 +162,7 @@ function build_package_json(package_: GameKitPackage, game_name: string): object
 		version: '0.1.0',
 		private: true,
 		type: 'module',
-		scripts: build_scripts(package_),
+		scripts: build_scripts(),
 		devDependencies: build_development_dependencies(package_),
 		packageManager: `pnpm@${host_pnpm_version}`,
 		devEngines: build_development_engines(package_.devEngines, host_pnpm_version),
@@ -295,17 +285,21 @@ function run(game_name_raw?: string): void {
 	write_game_config(names, project_directory)
 	execSync('git init', opts)
 	execSync('pnpm install', opts)
-	// `josh sync` early-returns when destination files are missing, so eslint.config.js
-	// and prettier.config.js never get scaffolded; `josh init` is the canonical creator.
-	execSync('pnpm josh init --type sveltekit', opts)
-	execSync('pnpm josh sync', opts)
-	// Overwrite the bare config `josh init` wrote with one that relaxes the strict defaults for
-	// src/lib/game/** (#260). `josh sync` never overwrites an existing eslint.config.js, so this
-	// stays put on the user's later syncs.
+	// Delegate to app-kit's `josh-app` (= kit's `josh` base + the SvelteKit + Cloudflare
+	// overlay): `init` scaffolds and seeds the CF app-shell (app.html/app.d.ts/wrangler.jsonc),
+	// the CF managed-scripts, and reconciles cspell/tsconfig to app-kit's presets; `sync` then
+	// refreshes the kit-managed files (`josh sync` early-returns on missing configs, so the
+	// canonical `init` runs first) (#357, app-kit#27/#29). game-kit overlays only its game layer.
+	execSync('pnpm josh-app init', opts)
+	execSync('pnpm josh-app sync', opts)
+	// Overwrite the bare eslint.config.js the base wrote with one that relaxes the strict defaults
+	// for src/lib/game/** (#260). The base never overwrites an existing eslint.config.js, so this
+	// stays put on the user's later syncs. (app.html — the game shell — is overwritten by the
+	// templates copy above, taking precedence over app-kit's seeded generic shell.)
 	jgame_eslint_config.write_eslint_config(project_directory)
-	// Override the bare cspell.config.yaml `josh init` wrote with one that pulls the game-aware
-	// word set from `@joshuafolkken/game-kit/cspell/game`, so the scaffold passes `josh cspell:dot`
-	// out of the box (#286). `josh sync` never overwrites an existing cspell.config.yaml.
+	// Override the bare cspell.config.yaml with one that pulls the game-aware word set from
+	// `@joshuafolkken/game-kit/cspell/game` (which chains app-kit/cspell/sveltekit), so the scaffold
+	// passes `josh cspell:dot` out of the box (#286).
 	jgame_cspell_config.write_cspell_config(project_directory)
 	console.info(build_done_message(names.kebab))
 }
