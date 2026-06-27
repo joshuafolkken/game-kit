@@ -16,13 +16,14 @@ const ROUTING_FAILURE_EXIT_CODE = 1
 // running install. This module is bundled to dist/scripts/jgame.js (the published bin entry).
 const SELF_DIR = path.dirname(fileURLToPath(import.meta.url))
 
-function run_version(): void {
-	jgame_version.run_check(SELF_DIR)
+async function run_version(): Promise<void> {
+	await jgame_version.run_check(SELF_DIR)
 }
 
-// kit's run_upgrade is synchronous and returns the exit code; the CLI owns the process exit.
-function run_version_upgrade(): void {
-	const code = jgame_version.run_upgrade(SELF_DIR)
+// run_upgrade returns the exit code; the CLI owns the process exit. (jgame_version loads kit's
+// version library lazily, so init/sync never require kit — see jgame-version.ts.)
+async function run_version_upgrade(): Promise<void> {
+	const code = await jgame_version.run_upgrade(SELF_DIR)
 	if (code !== 0) process.exit(code)
 }
 

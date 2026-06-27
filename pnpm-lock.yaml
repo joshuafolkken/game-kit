@@ -225,8 +225,8 @@ importers:
         specifier: ^4.7.1
         version: 4.7.1(prettier@3.8.4)
       '@joshuafolkken/app-kit':
-        specifier: 0.18.0
-        version: 0.18.0(@joshuafolkken/kit@0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3))(svelte@5.56.4(@typescript-eslint/types@8.62.0))
+        specifier: 0.19.0
+        version: 0.19.0(@joshuafolkken/kit@0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3))(svelte@5.56.4(@typescript-eslint/types@8.62.0))
       '@joshuafolkken/kit':
         specifier: 0.280.0
         version: 0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3)
@@ -1581,8 +1581,8 @@ packages:
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
     engines: {node: '>=18'}
 
-  '@joshuafolkken/app-kit@0.18.0':
-    resolution: {integrity: sha512-OdT+mo/XrS8rYeldcpiN8edHXaUJwk6U7xNXY2uT79F4n80Xv3QpVmHFyRam8vvoXrdCw5hdasAlU6Sl3ZNEMg==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/app-kit/0.18.0/c14553514f2be5bfac6f1079b22dfa3ccec25c75}
+  '@joshuafolkken/app-kit@0.19.0':
+    resolution: {integrity: sha512-LfsF33nOzn3VyBUAez9rDmm33+HInxyAQV1u8e9GWtKPse5JTvGbdxVibuUVNhpEf8T5S4LfybL1kDIp6Xqjag==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/app-kit/0.19.0/76034db849de4dd1245caa6fa602e27955931dad}
     hasBin: true
     peerDependencies:
       '@joshuafolkken/kit': '>=0.279.0'
@@ -5945,7 +5945,7 @@ snapshots:
 
   '@isaacs/cliui@9.0.0': {}
 
-  '@joshuafolkken/app-kit@0.18.0(@joshuafolkken/kit@0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3))(svelte@5.56.4(@typescript-eslint/types@8.62.0))':
+  '@joshuafolkken/app-kit@0.19.0(@joshuafolkken/kit@0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3))(svelte@5.56.4(@typescript-eslint/types@8.62.0))':
     dependencies:
       '@joshuafolkken/kit': 0.280.0(@playwright/test@1.61.1)(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.5.0(jiti@2.7.0))(svelte@5.56.4(@typescript-eslint/types@8.62.0))(typescript@6.0.3)
       svelte: 5.56.4(@typescript-eslint/types@8.62.0)
