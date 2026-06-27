@@ -14,7 +14,7 @@ const { GAME_DIR_CAPS } = eslint_game_overrides
 // code legitimately uses null contracts, definition-site exports, and runs longer / more-branchy
 // than UI glue, so the verbatim game templates trip the strict defaults. We relax those rules for
 // src/lib/game/** only — the rest of the app keeps the strict caps.
-const SCAFFOLD_ESLINT_CONFIG = `import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
+const SCAFFOLD_ESLINT_CONFIG = `import { create_sveltekit_config } from '@joshuafolkken/app-kit/eslint/sveltekit'
 import svelteConfig from './svelte.config.js'
 
 const GAME_COMPLEXITY = ${String(GAME_DIR_CAPS.complexity)}

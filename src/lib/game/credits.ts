@@ -157,6 +157,7 @@ export const CREDITS_LINES = [
 	'Prettier',
 	'pnpm',
 	'Lefthook',
+	'@joshuafolkken/app-kit',
 	'@joshuafolkken/kit',
 	'',
 	'',

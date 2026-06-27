@@ -1,4 +1,4 @@
-import { create_sveltekit_config } from '@joshuafolkken/kit/eslint/sveltekit'
+import { create_sveltekit_config } from '@joshuafolkken/app-kit/eslint/sveltekit'
 import tseslint from 'typescript-eslint'
 import { eslint_game_overrides } from './eslint-game-overrides.js'
 import svelteConfig from './svelte.config.js'

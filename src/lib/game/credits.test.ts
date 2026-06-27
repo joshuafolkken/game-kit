@@ -19,6 +19,10 @@ describe('credits', () => {
 			expect(CREDITS_TEXT).toContain('@joshuafolkken/kit')
 		})
 
+		it('includes @joshuafolkken/app-kit credit (the SvelteKit + Cloudflare layer)', () => {
+			expect(CREDITS_TEXT).toContain('@joshuafolkken/app-kit')
+		})
+
 		it('includes deployment platform credit', () => {
 			expect(CREDITS_TEXT).toContain('Cloudflare')
 		})

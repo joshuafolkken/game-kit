@@ -42,6 +42,26 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 		expect(required).toContain('cspell')
 	})
 
+	it('includes app-kit so scaffolds resolve the app-kit/*/sveltekit presets (#355)', async () => {
+		// The scaffold's eslint.config.js imports `@joshuafolkken/app-kit/eslint/sveltekit`
+		// and its cspell dictionary chains `@joshuafolkken/app-kit/cspell/sveltekit`, so
+		// app-kit must be a direct devDep of every scaffolded project to resolve them.
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const required = jgame_managed_dev_deps.REQUIRED_DEV_DEPS
+
+		expect(required).toContain('@joshuafolkken/app-kit')
+	})
+
+	it('caret-normalizes app-kit so scaffolds receive patch/minor presets updates (#355)', async () => {
+		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const result = jgame_managed_dev_deps.pick_required_deps({
+			...KIT_DEV_DEPS,
+			'@joshuafolkken/app-kit': '0.18.0',
+		})
+
+		expect(result['@joshuafolkken/app-kit']).toBe('^0.18.0')
+	})
+
 	it('includes lefthook + tsx so the generated prepare guards have tools to run (#272)', async () => {
 		// Regression for #272: the scaffold's `prepare` runs
 		// `command -v lefthook ... && lefthook install` and
