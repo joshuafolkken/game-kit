@@ -265,7 +265,7 @@ describe('jgame_sync.run', () => {
 		jgame_sync.run()
 		expect(writeFileSync).toHaveBeenCalledWith(
 			'/project/eslint.config.js',
-			expect.stringContaining("files: ['src/lib/game/**']"),
+			expect.stringContaining("create_game_config } from '@joshuafolkken/game-kit/eslint/game'"),
 		)
 	})
 
