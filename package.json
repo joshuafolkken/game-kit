@@ -1,11 +1,12 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.166.0",
+	"version": "0.167.0",
 	"keywords": [
 		"svelte"
 	],
 	"files": [
 		"dist",
+		"eslint",
 		"templates",
 		"cspell",
 		"svelte.config.js",
@@ -18,6 +19,7 @@
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
 		},
+		"./eslint/game": "./eslint/game.js",
 		"./cspell/game": "./cspell/game.yaml"
 	},
 	"imports": {
@@ -81,7 +83,7 @@
 		"globals": "^17.7.0",
 		"lefthook": "^2.1.9",
 		"playwright": "^1.61.1",
-		"prettier": "^3.8.5",
+		"prettier": "^3.9.0",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"publint": "^0.3.21",
@@ -103,6 +105,7 @@
 		"wrangler": "^4.105.0"
 	},
 	"peerDependencies": {
+		"@joshuafolkken/app-kit": ">=0.20.0",
 		"@threlte/core": ">=8.0.0",
 		"@threlte/extras": ">=9.0.0",
 		"svelte": "^5.0.0",

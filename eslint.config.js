@@ -1,11 +1,12 @@
 import { create_sveltekit_config } from '@joshuafolkken/app-kit/eslint/sveltekit'
 import tseslint from 'typescript-eslint'
-import { eslint_game_overrides } from './eslint-game-overrides.js'
+import { eslint_game_overrides } from './eslint/game.js'
 import svelteConfig from './svelte.config.js'
 
 // The game-dir relaxation profile (null idiom #232, definition-site exports #248,
-// size caps #250, complexity #244) is single-sourced with the scaffold generator
-// (scripts/init/jgame-eslint-config.ts) so the two cannot drift (#261).
+// size caps #250, complexity #244) lives in the distributable preset eslint/game.js
+// (`@joshuafolkken/game-kit/eslint/game`). Both this config and the scaffold generator
+// (scripts/init/jgame-eslint-config.ts) source it from there so they cannot drift (#261, #368).
 const { GAME_DIR_CAPS, lines_cap, game_idiom_rules, game_complexity_rules } = eslint_game_overrides
 
 // Test files run long by nature (integration it() bodies, table-driven cases) — higher budget than the
@@ -44,11 +45,7 @@ const TEST_SIZE_CAPS = {
 // templates/ tooling config (vite/svelte) — kit owns those rules. The shared
 // game-dir profile is config-adjacent (like eslint.config.js itself, which kit
 // already ignores via *.config.*) so it is not linted either (#261).
-const FILE_IGNORES = [
-	'templates/**/*.config.*',
-	'scripts/__fixtures__/**',
-	'eslint-game-overrides.js',
-]
+const FILE_IGNORES = ['templates/**/*.config.*', 'scripts/__fixtures__/**', 'eslint/game.js']
 
 // scripts/ (CLI) sit outside the SvelteKit tsconfig, so point ESLint at scripts/tsconfig.json for
 // type-aware rules. no-duplicate-string + naming-convention off: path/fixture strings and Node/external
