@@ -1,58 +1,50 @@
 import { describe, expect, it, vi } from 'vitest'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- the shared profile lives at the repo root so eslint.config.js (a .js) can import it too (#261)
-import { eslint_game_overrides } from '../../eslint-game-overrides.js'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- the shared profile lives at the repo root (eslint/game.js) so eslint.config.js (a .js) can import it too (#261, #368)
+import { eslint_game_overrides } from '../../eslint/game.js'
 
 vi.mock('node:fs', () => ({ writeFileSync: vi.fn() }))
 
 describe('jgame_eslint_config.generate_eslint_config', () => {
-	it('scopes the relaxed rules to src/lib/game/** (#260)', async () => {
+	it('delegates to game-kit create_game_config, scoping happens in the preset (#368)', async () => {
 		const { jgame_eslint_config } = await import('./jgame-eslint-config.ts')
 		const result = jgame_eslint_config.generate_eslint_config()
 
-		expect(result).toContain("files: ['src/lib/game/**']")
-		expect(result).toContain('.concat(game_overrides)')
+		expect(result).toContain(
+			"import { create_game_config } from '@joshuafolkken/game-kit/eslint/game'",
+		)
+		expect(result).toContain('export default create_game_config({')
 	})
 
-	it('imports create_sveltekit_config from app-kit, not kit (#355)', async () => {
+	it('forwards the SvelteKit config options to create_game_config (#368)', async () => {
 		const { jgame_eslint_config } = await import('./jgame-eslint-config.ts')
 		const result = jgame_eslint_config.generate_eslint_config()
 
-		expect(result).toContain("from '@joshuafolkken/app-kit/eslint/sveltekit'")
-		expect(result).not.toContain("from '@joshuafolkken/kit/eslint/sveltekit'")
+		expect(result).toContain("gitignore_path: new URL('./.gitignore', import.meta.url)")
+		expect(result).toContain('tsconfig_root_dir: import.meta.dirname')
+		expect(result).toContain('svelte_config: svelteConfig')
 	})
 
-	it('relaxes the strict defaults the verbatim game templates rely on (#260)', async () => {
+	it('no longer carries the rule literals or cap constants inline (they live in the preset) (#368)', async () => {
 		const { jgame_eslint_config } = await import('./jgame-eslint-config.ts')
 		const result = jgame_eslint_config.generate_eslint_config()
 
-		expect(result).toContain("'unicorn/no-null': 'off'")
-		expect(result).toContain("'import/exports-last': 'off'")
-		expect(result).toContain("'max-statements': ['error', GAME_FN_STATEMENTS]")
-		expect(result).toContain('max-lines-per-function')
-		expect(result).toContain("complexity: ['error', GAME_COMPLEXITY]")
-		expect(result).toContain("'sonarjs/cognitive-complexity': ['error', GAME_COMPLEXITY]")
+		expect(result).not.toContain("'unicorn/no-null'")
+		expect(result).not.toContain("'sonarjs/cognitive-complexity'")
+		expect(result).not.toContain('GAME_COMPLEXITY')
+		expect(result).not.toContain('create_sveltekit_config')
 	})
 })
 
-describe('jgame_eslint_config single-sources the game-dir profile (#261)', () => {
-	const { GAME_DIR_CAPS, game_override_rules } = eslint_game_overrides
+describe('jgame_eslint_config single-sources the game-dir profile via the preset (#261, #368)', () => {
+	const { game_override_rules } = eslint_game_overrides
 
-	it('emits the shared GAME_DIR_CAPS values, not hardcoded duplicates', async () => {
+	it('does not duplicate any shared rule name into the generated config', async () => {
 		const { jgame_eslint_config } = await import('./jgame-eslint-config.ts')
 		const result = jgame_eslint_config.generate_eslint_config()
 
-		expect(result).toContain(`const GAME_COMPLEXITY = ${String(GAME_DIR_CAPS.complexity)}`)
-		expect(result).toContain(`const GAME_FN_LINES = ${String(GAME_DIR_CAPS.fn_lines)}`)
-		expect(result).toContain(`const GAME_FN_STATEMENTS = ${String(GAME_DIR_CAPS.fn_statements)}`)
-		expect(result).toContain(`const GAME_FILE_LINES = ${String(GAME_DIR_CAPS.file_lines)}`)
-	})
-
-	it('covers every rule name in the shared game_override_rules profile (no drift)', async () => {
-		const { jgame_eslint_config } = await import('./jgame-eslint-config.ts')
-		const result = jgame_eslint_config.generate_eslint_config()
-
+		// The generated config delegates to the preset, so none of the rule names appear inline.
 		for (const rule_name of Object.keys(game_override_rules())) {
-			expect(result).toContain(rule_name)
+			expect(result).not.toContain(rule_name)
 		}
 	})
 })
@@ -65,7 +57,7 @@ describe('jgame_eslint_config.write_eslint_config', () => {
 		jgame_eslint_config.write_eslint_config('/project')
 		expect(writeFileSync).toHaveBeenCalledWith(
 			'/project/eslint.config.js',
-			expect.stringContaining("files: ['src/lib/game/**']"),
+			expect.stringContaining('create_game_config'),
 		)
 	})
 })
