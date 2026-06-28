@@ -47,6 +47,7 @@ const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: '.npmrc', src: 'npmrc' },
 	{ dest: 'src/app.html' },
 	{ dest: 'src/hooks.server.ts' },
+	{ dest: 'src/lib/html-inject.ts' },
 	{ dest: 'src/routes/+layout.svelte' },
 	{ dest: 'src/routes/layout.css' },
 	{ dest: 'svelte.config.js' },

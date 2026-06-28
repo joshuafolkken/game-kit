@@ -39,6 +39,7 @@ const EXPECTED_SYNC_ENTRIES = [
 	{ dest: '.npmrc', src: 'npmrc' },
 	{ dest: 'src/app.html', src: 'src/app.html' },
 	{ dest: 'src/hooks.server.ts', src: 'src/hooks.server.ts' },
+	{ dest: 'src/lib/html-inject.ts', src: 'src/lib/html-inject.ts' },
 	{ dest: 'src/routes/+layout.svelte', src: 'src/routes/+layout.svelte' },
 	// layout.css stays under templates/ as a COPY_PAIR because +layout.svelte
 	// (still a template) imports it; it is regenerated from the root source.
