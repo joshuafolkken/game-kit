@@ -21,6 +21,15 @@ const config_options = {
 }
 
 describe('game_override_rules (the shared game-dir profile)', () => {
+	it('pins the game-dir cap values shipped to scaffolds (#368)', () => {
+		expect(GAME_DIR_CAPS).toEqual({
+			complexity: 7,
+			fn_lines: 50,
+			fn_statements: 20,
+			file_lines: 400,
+		})
+	})
+
 	it('relaxes the idiom rules and raises the caps from GAME_DIR_CAPS (#368)', () => {
 		const rules = game_override_rules()
 
