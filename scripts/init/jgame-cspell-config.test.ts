@@ -61,8 +61,11 @@ describe('package.json distribution wiring', () => {
 describe('root cspell single-sourcing', () => {
 	const root_config = read_repo_file('cspell.config.yaml')
 
+	// Quote style is owned by app-kit's `josh-app sync` (it quotes the @-scoped base
+	// import but leaves the relative path a plain scalar), so match the import
+	// without pinning the quote — a hard-coded quote would break on every sync.
 	it('imports the shared game dictionary so game-common words cannot drift', () => {
-		expect(root_config).toContain('- "./cspell/game.yaml"')
+		expect(root_config).toMatch(/- ["']?\.\/cspell\/game\.yaml["']?/u)
 	})
 
 	it('no longer duplicates a game-common word the shared dictionary already provides', () => {
