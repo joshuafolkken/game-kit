@@ -1,11 +1,8 @@
 import type { Handle } from '@sveltejs/kit'
-import { GAME_NAME, GAME_NAME_DISPLAY } from '$lib/game/game-name'
+import { html_inject } from '$lib/html-inject'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports -- reading own package.json version is the standard SvelteKit pattern for app-version injection
 import { version } from '../package.json'
 
-const APP_VERSION_PLACEHOLDER = '__APP_VERSION__'
-const GAME_NAME_DISPLAY_PLACEHOLDER = '__GAME_NAME_DISPLAY__'
-const GAME_NAME_PLACEHOLDER = '__GAME_NAME__'
 const CSP_POLICY = [
 	"default-src 'self'",
 	"script-src 'self' 'unsafe-inline' blob:",
@@ -22,16 +19,6 @@ const CSP_POLICY = [
 ].join('; ')
 const PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), payment=()'
 
-function inject_version(html: string): string {
-	return html.replaceAll(APP_VERSION_PLACEHOLDER, () => version)
-}
-
-function inject_game_name(html: string): string {
-	return html
-		.replaceAll(GAME_NAME_DISPLAY_PLACEHOLDER, () => GAME_NAME_DISPLAY)
-		.replaceAll(GAME_NAME_PLACEHOLDER, () => GAME_NAME)
-}
-
 function inject_security_headers(response: Response): void {
 	response.headers.set('X-Frame-Options', 'SAMEORIGIN')
 	response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -43,7 +30,7 @@ function inject_security_headers(response: Response): void {
 const handle: Handle = async function handle({ event, resolve }) {
 	const response = await resolve(event, {
 		transformPageChunk({ html }) {
-			return inject_game_name(inject_version(html))
+			return html_inject.inject_game_name(html_inject.inject_version(html, version))
 		},
 	})
 
@@ -52,4 +39,4 @@ const handle: Handle = async function handle({ event, resolve }) {
 	return response
 }
 
-export { inject_version, inject_game_name, handle }
+export { handle }

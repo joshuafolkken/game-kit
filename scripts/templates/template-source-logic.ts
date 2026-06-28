@@ -52,6 +52,7 @@ const TRIPWIRE_PAIRS: ReadonlyArray<TemplateSourcePair> = [
 	{ template: 'templates/vite.config.ts', source: 'vite.config.ts' },
 	{ template: 'templates/src/app.html', source: 'src/app.html' },
 	{ template: 'templates/src/hooks.server.ts', source: 'src/hooks.server.ts' },
+	{ template: 'templates/src/lib/html-inject.ts', source: 'src/lib/html-inject.ts' },
 	{ template: 'templates/src/lib/messages.ts', source: 'src/lib/game/messages.ts' },
 	{ template: 'templates/src/routes/+layout.svelte', source: 'src/routes/+layout.svelte' },
 	{ template: 'templates/src/routes/+page.svelte', source: 'src/routes/+page.svelte' },
