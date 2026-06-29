@@ -5,23 +5,23 @@ const TOUCH_PRIMARY_QUERY = '(hover: none) and (pointer: coarse)'
 
 type ChangeListener = (e: { matches: boolean }) => void
 
-type MockMql = MediaQueryList & { _fire: (matches_value: boolean) => void }
+type MockMql = MediaQueryList & { _fire: (is_matching: boolean) => void }
 
-function make_mock_mql(initial: boolean): MockMql {
+function make_mock_mql(is_initial: boolean): MockMql {
 	const listeners: Array<ChangeListener> = []
 
 	return {
-		matches: initial,
+		matches: is_initial,
 		addEventListener(_: string, function_: EventListenerOrEventListenerObject): void {
 			listeners.push(function_ as unknown as ChangeListener)
 		},
 		removeEventListener(): void {
 			/* no-op */
 		},
-		_fire(matches_value: boolean): void {
-			for (const listener of listeners) listener({ matches: matches_value })
+		_fire(is_matching: boolean): void {
+			for (const listener of listeners) listener({ matches: is_matching })
 		},
-	} as unknown as MediaQueryList & { _fire: (matches_value: boolean) => void }
+	} as unknown as MediaQueryList & { _fire: (is_matching: boolean) => void }
 }
 
 describe('device', () => {
