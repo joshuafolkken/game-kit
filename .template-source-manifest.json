@@ -12,8 +12,8 @@
 	"src/lib/game/Game.svelte.ts": "f994a561f8e15b46fdc04a0c3513a0e90ab26e9140947a82b2b1454801436d51",
 	"src/lib/game/types.ts": "61b3a3c854e2a9259649ddbce46fb5792e91b4a9d2b5ab867e7ce5cbe2e8b29c",
 	"src/lib/game/board-config.ts": "dd03a83990cde59324c5ea17c45184cfef9620987f48a636904115a9aa5a5b5a",
-	"src/lib/game/board-input.ts": "738f3c6f512e27a06e47a04cf376654402deed1bb188dbbccaf8c1fd94c5802a",
-	"src/lib/game/audio.ts": "bbc1e149e27861a44e8f4355fcfa58d0b113d313361114f00e4b25ccc600a0a5",
+	"src/lib/game/board-input.ts": "7de30cfacc5eb5bd8a1334f3664cde271b7e02f471995a586ce0a9a8df0d0a31",
+	"src/lib/game/audio.ts": "6c77e32f1a5f4364845b18500abfec141e3277199de562a22c53a051eac89543",
 	"src/lib/game/credits.ts": "53542cc1249e7a642b4de346b07ba282320552c062e679428223a931eb598cff",
 	"src/lib/game/flash.ts": "001523e112281419f5d2820e2747d8b1518c51506fc3eab569f60d7f293b2470"
 }

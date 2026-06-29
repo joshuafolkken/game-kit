@@ -296,7 +296,7 @@ interface InputApi {
 	setup_listeners: (canvas_element: HTMLCanvasElement | null) => () => void
 	set_joystick_move: (x: number, y: number) => void
 	set_joystick_look: (x: number, y: number) => void
-	set_sprinting: (value: boolean) => void
+	set_sprinting: (is_sprinting: boolean) => void
 	trigger_jump: () => void
 	clear_jump_request: () => void
 	apply_look_delta: (delta_yaw: number, delta_pitch: number) => void
@@ -368,8 +368,8 @@ function make_input_api(
 			jl.x = x
 			jl.y = y
 		},
-		set_sprinting: (value: boolean): void => {
-			state.is_sprinting = value
+		set_sprinting: (is_sprinting: boolean): void => {
+			state.is_sprinting = is_sprinting
 		},
 		trigger_jump: (): void => {
 			state.is_jump_requested = true

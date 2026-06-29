@@ -10,8 +10,6 @@ const GAIN_FLOOR = 0.001
 const NORMAL_WAVE: OscillatorType = 'sine'
 const CYBER_WAVE: OscillatorType = 'square'
 
-let active_osc: OscillatorNode | null = null
-
 interface OscGraph {
 	osc: OscillatorNode
 	gain: GainNode
@@ -34,26 +32,6 @@ function create_osc_graph(freq: number, is_alt: boolean): OscGraph | null {
 	return { osc, gain, ctx }
 }
 
-function stop_tone(): void {
-	if (!active_osc) return
-
-	try {
-		active_osc.stop()
-	} catch {
-		// already stopped
-	}
-
-	active_osc = null
-}
-
-function start_tone_raw(freq: number, is_alt: boolean): void {
-	stop_tone()
-	const nodes = create_osc_graph(freq, is_alt)
-	if (!nodes) return
-	nodes.osc.start(nodes.ctx.currentTime)
-	active_osc = nodes.osc
-}
-
 function play_raw_tone(freq: number, duration_ms: number, is_alt: boolean): void {
 	const nodes = create_osc_graph(freq, is_alt)
 	if (!nodes) return
@@ -64,9 +42,46 @@ function play_raw_tone(freq: number, duration_ms: number, is_alt: boolean): void
 	osc.stop(ctx.currentTime + duration_s)
 }
 
-function start_tone(color: ButtonColor, is_alt: boolean): void {
-	start_tone_raw(is_alt ? CYBER_FREQ[color] : FREQ[color], is_alt)
+interface ToneController {
+	start_tone: (color: ButtonColor, is_alt: boolean) => void
+	stop_tone: () => void
 }
+
+// The currently-playing oscillator is encapsulated in the factory closure (not a module-level
+// binding) so its reassignment lives inside the returned functions — the same pattern as
+// create_game_state in State.svelte.ts. Only this sustained-tone state is stateful; the
+// fire-and-forget play helpers above need no instance state and stay module-level.
+function create_tone_controller(): ToneController {
+	let active_osc: OscillatorNode | null = null
+
+	function stop_tone(): void {
+		if (!active_osc) return
+
+		try {
+			active_osc.stop()
+		} catch {
+			// already stopped
+		}
+
+		active_osc = null
+	}
+
+	function start_tone_raw(freq: number, is_alt: boolean): void {
+		stop_tone()
+		const nodes = create_osc_graph(freq, is_alt)
+		if (!nodes) return
+		nodes.osc.start(nodes.ctx.currentTime)
+		active_osc = nodes.osc
+	}
+
+	function start_tone(color: ButtonColor, is_alt: boolean): void {
+		start_tone_raw(is_alt ? CYBER_FREQ[color] : FREQ[color], is_alt)
+	}
+
+	return { start_tone, stop_tone }
+}
+
+const tone_controller = create_tone_controller()
 
 function play_tone(color: ButtonColor, duration_ms: number, is_alt: boolean): void {
 	play_raw_tone(is_alt ? CYBER_FREQ[color] : FREQ[color], duration_ms, is_alt)
@@ -79,7 +94,7 @@ function play_error_tone(duration_ms: number, is_alt: boolean): void {
 export const game_audio = {
 	play_tone,
 	play_error_tone,
-	start_tone,
-	stop_tone,
+	start_tone: tone_controller.start_tone,
+	stop_tone: tone_controller.stop_tone,
 	ERROR_FREQ,
 }
