@@ -30,13 +30,13 @@
 	const FALLBACK_DPR = 1 / FALLBACK_DPR_DIVISOR
 
 	function create_renderer_factory(
-		antialias: boolean,
+		is_antialias: boolean,
 	): (canvas: HTMLCanvasElement) => WebGLRenderer {
 		return function create_renderer(canvas: HTMLCanvasElement): WebGLRenderer {
 			return new WebGLRenderer({
 				canvas,
 				powerPreference: 'high-performance',
-				antialias,
+				antialias: is_antialias,
 				alpha: true,
 			})
 		}

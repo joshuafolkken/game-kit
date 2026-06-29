@@ -85,25 +85,33 @@ const TEMPLATES_NON_TYPED = {
 	},
 }
 
-// SvelteKit route files export page options as named consts (`export const ssr = false`); kit allows
-// this via its `src/routes/**/+*.ts` route exception. The verbatim template mirrors live at
-// templates/src/routes/** — outside that glob — so the same no-restricted-syntax relaxation is applied
-// here, letting the template drop its eslint-disable (which the scaffold, where the file lands at
-// src/routes/, reports as an unused directive) (#286).
+// SvelteKit route files export page options as named consts (`export const ssr = false`). app-kit's
+// preset scopes both `no-restricted-syntax` and `consistent-boolean-name` (the reserved ssr/csr/
+// prerender names) for these — but only under live `src/routes/**`. The verbatim template mirrors
+// live at templates/src/routes/** — outside that glob — so re-apply the same two relaxations here,
+// letting the template drop its eslint-disable (which the scaffold, where the file lands at
+// src/routes/, reports as an unused directive) (#286, #364). The ignore list mirrors app-kit's
+// (unexported) SVELTEKIT_RESERVED_BOOLEAN_OPTIONS; exporting it from app-kit would single-source it.
 const TEMPLATES_ROUTES = {
 	files: ['templates/src/routes/**/+*.ts'],
-	rules: { 'no-restricted-syntax': 'off' },
+	rules: {
+		'no-restricted-syntax': 'off',
+		'unicorn/consistent-boolean-name': ['error', { ignore: ['^ssr$', '^csr$', '^prerender$'] }],
+	},
 }
 
-// kit 0.280's unicorn/sonarjs bump enabled several rules that false-positive on idiomatic
-// game / test / CLI code. The scoped relaxations below are local stop-gaps; an upstream kit
-// issue tracks scoping them properly in the preset so these can be dropped later (#358).
+// app-kit 0.23.0 internalized the SvelteKit ESLint preset (app-kit#52), enabling unicorn/sonarjs
+// rules that the #358 stop-gaps blanket-disabled. C2 (#364) removed those blanket disables: the
+// consistent-boolean-name and no-top-level-assignment-in-function false positives were fixed at
+// the source (boolean-name renames + closure-factory singletons, mirroring create_game_state),
+// so only the two genuinely-unfixable test-file relaxations below remain.
 
-// Test files assert exact, deterministic values via vitest matchers (`toBe(0.05)`), which
-// `no-floating-point-equality` misreads as fragile float `===`; `no-trivial-assertions`
-// misreads design-invariant equality checks (two independently-derived gaps must match).
-// Both would force weaker assertions. Browser-context mocks also assign global properties
-// (matchMedia / dispatchEvent stubs) by design. Relax these for test/e2e files only.
+// Test files assert exact, deterministic config constants via vitest matchers (`toBe(0.05)`),
+// which `no-floating-point-equality` misreads as fragile float `===`; `no-trivial-assertions`
+// misreads design-invariant equality checks (two independently-derived gaps must match) — both
+// would force weaker assertions. Browser-context mocks also assign global properties
+// (matchMedia / dispatchEvent stubs) by design. These are generic testing idioms, not game
+// specifics, so an app-kit preset uplift could absorb them later; relax for test/e2e files only.
 const TEST_NEW_RULE_RELAXATIONS = {
 	files: ['**/*.test.ts', '**/*.spec.ts', '**/*.e2e.ts', 'src/routes/e2e-helpers.ts'],
 	rules: {
@@ -112,20 +120,6 @@ const TEST_NEW_RULE_RELAXATIONS = {
 		'unicorn/no-global-object-property-assignment': 'off',
 	},
 }
-
-// Web Audio / game-state singletons must be created lazily inside functions — an AudioContext
-// cannot be constructed at module load under the browser autoplay policy — so assigning to a
-// module-level binding from inside a function is required here, not a smell (#358).
-const GAME_SINGLETON_ASSIGNMENT_OFF = {
-	files: ['src/lib/game/**', 'src/lib/game-kit/**', 'templates/src/lib/game/**'],
-	rules: { 'unicorn/no-top-level-assignment-in-function': 'off' },
-}
-
-// `consistent-boolean-name` false-positives on external-API-reserved names that cannot be
-// renamed — SvelteKit's `ssr`/`csr`/`prerender` route exports, Three.js `antialias`, the
-// MediaQueryList `matches` mock — and on action functions returning a did-change status.
-// Disable repo-wide pending upstream kit scoping, parallel to PREFER_HTTPS_OFF (#358).
-const CONSISTENT_BOOLEAN_NAME_OFF = { rules: { 'unicorn/consistent-boolean-name': 'off' } }
 
 export default create_sveltekit_config({
 	gitignore_path: new URL('./.gitignore', import.meta.url),
@@ -144,8 +138,6 @@ export default create_sveltekit_config({
 	TEST_SIZE_CAPS,
 	// Last: templates/src/lib/game/** also matches TEMPLATES_NON_TYPED, so this wins the complexity cap (#244).
 	GAME_COMPLEXITY_OVERRIDES,
-	// kit 0.280 unicorn/sonarjs scoped relaxations (#358).
-	CONSISTENT_BOOLEAN_NAME_OFF,
-	GAME_SINGLETON_ASSIGNMENT_OFF,
+	// Test-file relaxations for generic vitest / browser-mock idioms (#358 → #364).
 	TEST_NEW_RULE_RELAXATIONS,
 )

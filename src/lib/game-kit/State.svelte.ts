@@ -4,7 +4,7 @@ interface GameStateApi {
 	readonly is_alt: boolean
 	reset_mode: () => void
 	toggle_alt: () => void
-	set_alt: (value: boolean) => void
+	set_alt: (is_alt_value: boolean) => void
 }
 
 function create_game_state(): GameStateApi {
@@ -18,8 +18,8 @@ function create_game_state(): GameStateApi {
 		is_alt = !is_alt
 	}
 
-	function set_alt(value: boolean): void {
-		is_alt = value
+	function set_alt(is_alt_value: boolean): void {
+		is_alt = is_alt_value
 	}
 
 	return {

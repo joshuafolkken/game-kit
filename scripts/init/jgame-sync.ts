@@ -104,7 +104,7 @@ function partition_runtime_required_deps(
 
 // Fills in only the missing entries with game-kit's canonical ranges. Preserves
 // existing pins so consumers who upgraded individual packages are not downgraded.
-function add_missing_required_deps(
+function did_add_missing_required_deps(
 	development_deps: Record<string, string>,
 	required: Record<string, string>,
 ): boolean {
@@ -132,14 +132,14 @@ function reconcile_dependencies_field(
 
 // Mutates `package_` so every managed dep lives only in devDependencies. A managed dep
 // already pinned under devDependencies keeps that range (it wins over the runtime copy).
-function apply_managed_development_deps(
+function did_apply_managed_development_deps(
 	package_: ConsumerPackage,
 	required: Record<string, string>,
 ): boolean {
 	const dependencies = package_.dependencies ?? {}
 	const { moved, remaining } = partition_runtime_required_deps(dependencies, required)
 	const development_deps = { ...moved, ...package_.devDependencies }
-	const is_added = add_missing_required_deps(development_deps, required)
+	const is_added = did_add_missing_required_deps(development_deps, required)
 
 	package_.devDependencies = development_deps
 	reconcile_dependencies_field(package_, remaining)
@@ -150,7 +150,7 @@ function apply_managed_development_deps(
 // pnpm >= 11 no longer reads the package.json `pnpm` field (settings live in
 // pnpm-workspace.yaml) and WARNs on every command while it lingers. Once sync has
 // written the workspace yaml, the legacy field is dead weight — remove it (#323).
-function remove_legacy_pnpm_field(package_: ConsumerPackage): boolean {
+function did_remove_legacy_pnpm_field(package_: ConsumerPackage): boolean {
 	if (!('pnpm' in package_)) return false
 
 	delete package_.pnpm
@@ -164,8 +164,8 @@ function sync_managed_development_deps(): void {
 	const raw = readFileSync(package_path, 'utf8')
 	const package_ = JSON.parse(raw) as ConsumerPackage
 	const required = jgame_managed_development_deps.read_required_deps_from_kit()
-	const is_dependencies_changed = apply_managed_development_deps(package_, required)
-	const is_pnpm_removed = remove_legacy_pnpm_field(package_)
+	const is_dependencies_changed = did_apply_managed_development_deps(package_, required)
+	const is_pnpm_removed = did_remove_legacy_pnpm_field(package_)
 
 	if (!is_dependencies_changed && !is_pnpm_removed) {
 		console.info('  ✔ checked  package.json devDependencies (up-to-date)')
@@ -234,8 +234,8 @@ function run(): void {
 
 const jgame_sync = {
 	run,
-	apply_managed_dev_deps: apply_managed_development_deps,
-	remove_legacy_pnpm_field,
+	apply_managed_dev_deps: did_apply_managed_development_deps,
+	remove_legacy_pnpm_field: did_remove_legacy_pnpm_field,
 	is_josh_resolvable,
 	// Exposed so the tsconfig-normalization contract test can assert tsconfig.json / app.d.ts are
 	// never managed here (their reconciliation is delegated to the josh-app overlay, #357).
