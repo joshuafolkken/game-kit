@@ -12,14 +12,18 @@ import path from 'node:path'
 //
 // Consumer project words (game nouns, character names) live in a SEPARATE, never-synced file
 // (project-words.txt) referenced as a custom dictionary, NOT inline in this config (game-kit#375).
-// That keeps cspell.config.yaml 100% game-kit-owned so jgame sync can refresh it every bump
-// without deleting the consumer's words.
+// Consumer ignorePaths live in a SEPARATE, never-synced cspell.project.yaml that this config
+// imports — cspell unions ignorePaths across the config and its imports (game-kit#385). Both keep
+// cspell.config.yaml 100% game-kit-owned so jgame sync can refresh it every bump without deleting
+// the consumer's words or ignore paths.
 const CONFIG_FILENAME = 'cspell.config.yaml'
 const PROJECT_WORDS_FILENAME = 'project-words.txt'
+const PROJECT_CSPELL_FILENAME = 'cspell.project.yaml'
 
 const SCAFFOLD_CSPELL_CONFIG = `version: '0.2'
 import:
   - '@joshuafolkken/game-kit/cspell/game'
+  - ./cspell.project.yaml
 dictionaryDefinitions:
   - name: project-words
     path: ./project-words.txt
@@ -35,6 +39,15 @@ ignorePaths: []
 const PROJECT_WORDS_HEADER = `# Project-specific cspell words — owned by this project.
 # jgame sync never overwrites this file, so game nouns, character names, and other project
 # terms added here survive every dependency bump (game-kit#375).
+`
+
+// Seeded once when cspell.project.yaml does not exist (migrating any ignorePaths out of a legacy
+// inline config), then consumer-owned and never overwritten — so project ignore entries survive
+// every bump (game-kit#385).
+const PROJECT_CSPELL_HEADER = `version: '0.2'
+# Project-specific cspell config — owned by this project. jgame sync never overwrites this file,
+# so ignorePaths added here survive every dependency bump (game-kit#385). cspell.config.yaml
+# imports it, and cspell unions ignorePaths across the config and its imports.
 `
 
 function generate_cspell_config(): string {
@@ -53,14 +66,15 @@ function unquote(value: string): string {
 	return value
 }
 
-// A bare `words:` line opens the inline block; `words: []` (no children) does not match.
-function is_words_block_header(line: string): boolean {
-	return /^words:\s*$/u.test(line)
+// A bare `<key>:` line opens the indented block; `<key>: []` / `<key>: [..]` (children on the
+// same line) do not match — those are the inline flow form, handled separately.
+function is_block_header(line: string, key: string): boolean {
+	return line.trimEnd() === `${key}:`
 }
 
 const LIST_ITEM_PREFIX = '- '
 
-// The word from a `  - foo` list item, or null when the line is not a list item. String-based
+// The scalar from a `  - foo` list item, or null when the line is not a list item. String-based
 // (not a regex) to sidestep catastrophic-backtracking lint on a `\s+-\s+(.+)` pattern.
 function parse_list_item(line: string): string | null {
 	const trimmed = line.trim()
@@ -69,16 +83,16 @@ function parse_list_item(line: string): string | null {
 	return unquote(trimmed.slice(LIST_ITEM_PREFIX.length).trim())
 }
 
-// A line starting in column 0 (e.g. `ignorePaths:`) ends the indented words block.
+// A line starting in column 0 (e.g. the next top-level key) ends the indented block.
 function is_block_terminator(line: string): boolean {
 	return /^\S/u.test(line)
 }
 
-// The lines of the indented `words:` block, or [] when the config has no such block. Sliced out
-// between the header and the first column-0 line so the parse stays flat (low complexity).
-function words_block_lines(config: string): Array<string> {
+// The indented child lines under a `<key>:` block header, or [] when there is no such block.
+// Sliced out between the header and the first column-0 line so the parse stays flat.
+function block_lines(config: string, key: string): Array<string> {
 	const lines = config.split('\n')
-	const header_index = lines.findIndex((line) => is_words_block_header(line))
+	const header_index = lines.findIndex((line) => is_block_header(line, key))
 	if (header_index === -1) return []
 
 	const body = lines.slice(header_index + 1)
@@ -87,38 +101,80 @@ function words_block_lines(config: string): Array<string> {
 	return end_index === -1 ? body : body.slice(0, end_index)
 }
 
-// Words from the indented block form (`words:` newline + `  - item` children).
-function extract_block_words(config: string): Array<string> {
-	return words_block_lines(config)
+// Items from the indented block form (`<key>:` newline + `  - item` children).
+function extract_block_list(config: string, key: string): Array<string> {
+	return block_lines(config, key)
 		.map((line) => parse_list_item(line))
-		.filter((word): word is string => word !== null)
+		.filter((item): item is string => item !== null)
 }
 
-const INLINE_WORDS_PREFIX = /^words:\s*\[/u
+function brace_delta(char: string): number {
+	if (char === '{') return 1
+	if (char === '}') return -1
 
-// Words from the inline flow form (`words: [waneccha, mnemecha]`). indexOf/slice (not a capturing
-// regex) keeps the bracket extraction free of catastrophic backtracking. `words: []` yields [].
-function extract_inline_words(config: string): Array<string> {
-	const line = config.split('\n').find((candidate) => INLINE_WORDS_PREFIX.test(candidate))
+	return 0
+}
+
+function is_top_level_comma(char: string, depth: number): boolean {
+	return char === ',' && depth === 0
+}
+
+// Splits an inline flow body on top-level commas only, leaving commas inside `{...}` intact so a
+// brace-expansion glob (e.g. `src/**/*.{gen,d}.ts`) is not shredded into corrupt fragments (#385).
+function split_top_level_commas(inner: string): Array<string> {
+	const items: Array<string> = []
+	let depth = 0
+	let current = ''
+
+	for (const char of inner) {
+		depth += brace_delta(char)
+
+		if (is_top_level_comma(char, depth)) {
+			items.push(current)
+			current = ''
+
+			continue
+		}
+
+		current += char
+	}
+
+	items.push(current)
+
+	return items
+}
+
+// Items from the inline flow form (`<key>: [a, b]`). indexOf/slice (not a capturing regex) keeps
+// the bracket extraction free of catastrophic backtracking. `<key>: []` yields [].
+function extract_inline_list(config: string, key: string): Array<string> {
+	const prefix = `${key}:`
+	const line = config
+		.split('\n')
+		.find((candidate) => candidate.startsWith(prefix) && candidate.includes('['))
 	if (line === undefined) return []
 
 	const open_index = line.indexOf('[')
 	const close_index = line.lastIndexOf(']')
 	if (close_index <= open_index) return []
 
-	return line
-		.slice(open_index + 1, close_index)
-		.split(',')
-		.map((word) => unquote(word.trim()))
-		.filter((word) => word.length > 0)
+	return split_top_level_commas(line.slice(open_index + 1, close_index))
+		.map((item) => unquote(item.trim()))
+		.filter((item) => item.length > 0)
 }
 
-// Pulls the words out of a legacy `words:` declaration (either the indented block form or the
-// inline flow form) so they can be migrated to project-words.txt before the config is overwritten.
-// Deliberately line-based (cspell `words` are flat string scalars) to avoid pulling a YAML parser
-// into the published bin.
+// Pulls a `<key>:` string list (indented block form or inline flow form) out of an existing cspell
+// config so consumer-owned entries can be migrated before the config is overwritten. Deliberately
+// line-based (cspell words/ignorePaths are flat string scalars) to avoid a YAML parser in the bin.
+function extract_list_from_config(config: string, key: string): Array<string> {
+	return [...extract_block_list(config, key), ...extract_inline_list(config, key)]
+}
+
 function extract_words_from_config(config: string): Array<string> {
-	return [...extract_block_words(config), ...extract_inline_words(config)]
+	return extract_list_from_config(config, 'words')
+}
+
+function extract_ignore_paths_from_config(config: string): Array<string> {
+	return extract_list_from_config(config, 'ignorePaths')
 }
 
 // The non-comment, non-blank word lines already present in a project-words.txt file.
@@ -158,18 +214,45 @@ function read_text_or_null(file_path: string): string | null {
 	return existsSync(file_path) ? readFileSync(file_path, 'utf8') : null
 }
 
+// The body of cspell.project.yaml for the given (migrated) ignore paths. Entries are single-quoted
+// because cspell ignorePaths are commonly globs (`**/x`), and an unquoted leading `*` is a YAML
+// alias indicator that fails to parse; `'` inside a value is escaped as `''` (game-kit#385).
+function render_project_cspell_config(ignore_paths: Array<string>): string {
+	const unique = dedupe(ignore_paths)
+	if (unique.length === 0) return `${PROJECT_CSPELL_HEADER}ignorePaths: []\n`
+
+	const entries = unique.map((entry) => `  - '${entry.replaceAll("'", "''")}'`).join('\n')
+
+	return `${PROJECT_CSPELL_HEADER}ignorePaths:\n${entries}\n`
+}
+
+// cspell.project.yaml is consumer-owned: seeded once (carrying any ignorePaths migrated out of a
+// legacy inline config) and never overwritten thereafter, so consumer ignore entries survive every
+// sync. After seeding, the synced config holds `ignorePaths: []`, so later syncs have nothing to
+// re-migrate and the file is left untouched (game-kit#385).
+function write_project_cspell_config(project_directory: string, ignore_paths: Array<string>): void {
+	const project_cspell_path = path.join(project_directory, PROJECT_CSPELL_FILENAME)
+	if (existsSync(project_cspell_path)) return
+
+	writeFileSync(project_cspell_path, render_project_cspell_config(ignore_paths))
+	console.info(`  ✔ wrote    ${PROJECT_CSPELL_FILENAME} (consumer-owned cspell ignorePaths)`)
+}
+
 function write_cspell_config(project_directory: string): void {
 	const config_path = path.join(project_directory, CONFIG_FILENAME)
 	const words_path = path.join(project_directory, PROJECT_WORDS_FILENAME)
 	const existing_config = read_text_or_null(config_path)
-	const migrated = existing_config === null ? [] : extract_words_from_config(existing_config)
-	const words_file = build_project_words_file(read_text_or_null(words_path), migrated)
+	const words = existing_config === null ? [] : extract_words_from_config(existing_config)
+	const ignore_paths =
+		existing_config === null ? [] : extract_ignore_paths_from_config(existing_config)
+	const words_file = build_project_words_file(read_text_or_null(words_path), words)
 
 	if (words_file !== null) {
 		writeFileSync(words_path, words_file)
 		console.info(`  ✔ wrote    ${PROJECT_WORDS_FILENAME} (consumer-owned cspell words)`)
 	}
 
+	write_project_cspell_config(project_directory, ignore_paths)
 	writeFileSync(config_path, generate_cspell_config())
 	console.info(`  ✔ wrote    ${CONFIG_FILENAME} (game-aware words via @joshuafolkken/game-kit)`)
 }
@@ -178,6 +261,8 @@ const jgame_cspell_config = {
 	generate_cspell_config,
 	write_cspell_config,
 	extract_words_from_config,
+	extract_ignore_paths_from_config,
 	build_project_words_file,
+	render_project_cspell_config,
 }
 export { jgame_cspell_config }
