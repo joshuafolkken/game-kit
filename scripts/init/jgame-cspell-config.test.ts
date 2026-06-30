@@ -25,8 +25,65 @@ describe('jgame_cspell_config.generate_cspell_config', () => {
 		expect(config).not.toContain('words:')
 	})
 
-	it('leaves ignorePaths empty (the credits ignore comes from the imported dictionary)', () => {
+	it('leaves ignorePaths empty inline and imports the never-synced cspell.project.yaml', () => {
+		// Consumer ignorePaths live in cspell.project.yaml (game-kit#385); the synced config keeps
+		// `ignorePaths: []` and imports the consumer file so cspell unions the two.
 		expect(config).toContain('ignorePaths: []')
+		expect(config).toContain('- ./cspell.project.yaml')
+	})
+})
+
+describe('jgame_cspell_config.extract_ignore_paths_from_config', () => {
+	it('extracts a block ignorePaths list, skipping interior comments', () => {
+		const config = [
+			'ignorePaths:',
+			'  # Generated base64 ROM tables — binary data, not natural-language text.',
+			'  - src/lib/game/generated/hp1345a-rom.ts',
+			'  - static/generated/**',
+		].join('\n')
+
+		expect(jgame_cspell_config.extract_ignore_paths_from_config(config)).toEqual([
+			'src/lib/game/generated/hp1345a-rom.ts',
+			'static/generated/**',
+		])
+	})
+
+	it('extracts an inline ignorePaths sequence and returns [] for an empty one', () => {
+		expect(
+			jgame_cspell_config.extract_ignore_paths_from_config('ignorePaths: [a.ts, "b/**"]'),
+		).toEqual(['a.ts', 'b/**'])
+		expect(jgame_cspell_config.extract_ignore_paths_from_config('ignorePaths: []')).toEqual([])
+	})
+
+	it('keeps a brace-expansion glob intact (does not split on commas inside {…})', () => {
+		expect(
+			jgame_cspell_config.extract_ignore_paths_from_config(
+				'ignorePaths: [src/**/*.{gen,d}.ts, x.ts]',
+			),
+		).toEqual(['src/**/*.{gen,d}.ts', 'x.ts'])
+	})
+})
+
+describe('jgame_cspell_config.render_project_cspell_config', () => {
+	it('renders an empty ignorePaths list when there is nothing to seed', () => {
+		const rendered = jgame_cspell_config.render_project_cspell_config([])
+
+		expect(rendered).toContain('ignorePaths: []')
+		expect(rendered).toContain("version: '0.2'")
+	})
+
+	it('renders a block ignorePaths list (deduped, single-quoted) for migrated entries', () => {
+		const rendered = jgame_cspell_config.render_project_cspell_config(['a.ts', 'b.ts', 'a.ts'])
+
+		expect(rendered).toContain("ignorePaths:\n  - 'a.ts'\n  - 'b.ts'\n")
+		expect(rendered).not.toContain("  - 'a.ts'\n  - 'b.ts'\n  - 'a.ts'")
+	})
+
+	it('single-quotes entries so glob ignorePaths (**/x) stay valid YAML (no alias parse error)', () => {
+		// An unquoted leading `*` is a YAML alias indicator and fails to parse — quoting is required.
+		const rendered = jgame_cspell_config.render_project_cspell_config(['**/*.gen.ts'])
+
+		expect(rendered).toContain("  - '**/*.gen.ts'")
 	})
 })
 
@@ -149,6 +206,44 @@ describe('jgame_cspell_config.write_cspell_config — migration (game-kit#375)',
 		jgame_cspell_config.write_cspell_config(project_directory)
 
 		expect(readFileSync(path.join(project_directory, 'project-words.txt'), 'utf8')).toBe(owned)
+	})
+
+	it('migrates a consumer ignorePaths entry into cspell.project.yaml and relayers the config (#385)', () => {
+		const legacy = [
+			"version: '0.2'",
+			"import:\n  - '@joshuafolkken/game-kit/cspell/game'",
+			'ignorePaths:',
+			'  - src/lib/game/generated/hp1345a-rom.ts',
+		].join('\n')
+
+		writeFileSync(path.join(project_directory, 'cspell.config.yaml'), legacy)
+		jgame_cspell_config.write_cspell_config(project_directory)
+
+		const project_cspell = readFileSync(path.join(project_directory, 'cspell.project.yaml'), 'utf8')
+		const config = readFileSync(path.join(project_directory, 'cspell.config.yaml'), 'utf8')
+
+		expect(project_cspell).toContain('src/lib/game/generated/hp1345a-rom.ts')
+		expect(config).toContain('- ./cspell.project.yaml')
+		expect(config).not.toContain('hp1345a-rom')
+	})
+
+	it('seeds a cspell.project.yaml even when the project has no ignorePaths to migrate', () => {
+		// The synced config imports cspell.project.yaml, so cspell errors if the file is absent —
+		// it must always be seeded (empty ignorePaths) on a pristine project.
+		jgame_cspell_config.write_cspell_config(project_directory)
+
+		const project_cspell = readFileSync(path.join(project_directory, 'cspell.project.yaml'), 'utf8')
+
+		expect(project_cspell).toContain('ignorePaths: []')
+	})
+
+	it('leaves an existing cspell.project.yaml untouched on a re-sync (consumer-owned)', () => {
+		const owned = "version: '0.2'\nignorePaths:\n  - my/own/path.ts\n"
+
+		writeFileSync(path.join(project_directory, 'cspell.project.yaml'), owned)
+		jgame_cspell_config.write_cspell_config(project_directory)
+
+		expect(readFileSync(path.join(project_directory, 'cspell.project.yaml'), 'utf8')).toBe(owned)
 	})
 })
 
