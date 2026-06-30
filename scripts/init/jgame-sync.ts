@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { jgame_cspell_config } from './jgame-cspell-config.ts'
 import { jgame_eslint_config } from './jgame-eslint-config.ts'
@@ -17,9 +17,15 @@ const JOSH_MISSING_MESSAGE =
 	'\n❌ jgame sync: the `josh-app` command (@joshuafolkken/app-kit) and its `josh` base\n' +
 	'   (@joshuafolkken/kit) are not resolvable. Run `pnpm install`, then re-run `jgame sync`.\n'
 
+const FORCE_FLAG = '--force'
+
 interface SyncEntry {
 	dest: string
 	src?: string
+	// Free-form files carry consumer additions (fonts, styling) alongside the game-kit baseline.
+	// They are never silently overwritten: an edited copy is skipped with a notice unless
+	// `jgame sync --force` is passed (game-kit#375). Managed files (default) overwrite freely.
+	free_form?: boolean
 }
 
 // Files copied from templates/ to the project root on every `jgame sync` run.
@@ -49,7 +55,10 @@ const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: 'src/hooks.server.ts' },
 	{ dest: 'src/lib/html-inject.ts' },
 	{ dest: 'src/routes/+layout.svelte' },
-	{ dest: 'src/routes/layout.css' },
+	// Free-form: consumers add game-specific @font-face / styling here, so it is protected
+	// from silent overwrite (game-kit#375). The CRT/RETRO initialization that used to force
+	// shell edits is now a GameScene prop (crt_initial), keeping +layout.svelte fully managed.
+	{ dest: 'src/routes/layout.css', free_form: true },
 	{ dest: 'svelte.config.js' },
 	{ dest: 'vite.config.ts' },
 ]
@@ -62,12 +71,54 @@ function sync_source_path(entry: SyncEntry): string {
 	return path.join(jgame_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
 }
 
+function copy_synced_file(entry: SyncEntry, destination: string): void {
+	mkdirSync(path.dirname(destination), { recursive: true })
+	cpSync(sync_source_path(entry), destination)
+}
+
 function sync_file(entry: SyncEntry): void {
 	const destination = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
 
-	mkdirSync(path.dirname(destination), { recursive: true })
-	cpSync(sync_source_path(entry), destination)
+	copy_synced_file(entry, destination)
 	console.info(`  ✔ synced   ${entry.dest}`)
+}
+
+// Free-form files (e.g. layout.css) may carry consumer additions, so they are never silently
+// overwritten (game-kit#375). A pristine or missing file is refreshed from the baseline; a
+// locally-modified file is skipped with a visible notice unless `is_force` is set.
+function sync_free_form_file(entry: SyncEntry, is_force: boolean): void {
+	const destination = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
+
+	if (!existsSync(destination)) {
+		copy_synced_file(entry, destination)
+		console.info(`  ✔ synced   ${entry.dest}`)
+
+		return
+	}
+
+	if (readFileSync(destination, 'utf8') === readFileSync(sync_source_path(entry), 'utf8')) {
+		console.info(`  ✔ checked  ${entry.dest} (up-to-date)`)
+
+		return
+	}
+
+	if (is_force) {
+		copy_synced_file(entry, destination)
+		console.info(`  ✔ forced   ${entry.dest} (overwrote local changes)`)
+
+		return
+	}
+
+	console.info(
+		`  ⚠ skipped  ${entry.dest} (local changes; run \`jgame sync --force\` to overwrite)`,
+	)
+}
+
+function sync_managed_files(is_force: boolean): void {
+	for (const entry of SYNC_FILES) {
+		if (entry.free_form) sync_free_form_file(entry, is_force)
+		else sync_file(entry)
+	}
 }
 
 interface ConsumerPackage {
@@ -211,7 +262,9 @@ function delegate_to_josh_app(): void {
 	execSync('pnpm josh-app sync', SPAWN_OPTIONS)
 }
 
-function run(): void {
+function run(argument?: string): void {
+	const is_force = argument === FORCE_FLAG
+
 	console.info('\n🔄 jgame sync\n')
 	sync_managed_development_deps()
 	pre_sync_pnpm_workspace_yaml()
@@ -228,7 +281,7 @@ function run(): void {
 	// from `@joshuafolkken/game-kit/cspell/game` so existing projects pass `josh cspell:dot` (#286).
 	jgame_cspell_config.write_cspell_config(jgame_paths.PROJECT_ROOT)
 	console.info('\nGame-specific files:')
-	for (const entry of SYNC_FILES) sync_file(entry)
+	sync_managed_files(is_force)
 	console.info('\n✅ Done.\n')
 }
 
@@ -237,6 +290,7 @@ const jgame_sync = {
 	apply_managed_dev_deps: did_apply_managed_development_deps,
 	remove_legacy_pnpm_field: did_remove_legacy_pnpm_field,
 	is_josh_resolvable,
+	sync_free_form_file,
 	// Exposed so the tsconfig-normalization contract test can assert tsconfig.json / app.d.ts are
 	// never managed here (their reconciliation is delegated to the josh-app overlay, #357).
 	SYNC_FILES,
