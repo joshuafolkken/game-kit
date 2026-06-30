@@ -16,7 +16,7 @@
 	import { session } from '$lib/game-kit/Session.svelte'
 	import { game_state } from '$lib/game-kit/State.svelte'
 	import { fullscreen_switch_input } from '$lib/game-kit/switch/fullscreen-switch-input'
-	import { onMount, type Snippet } from 'svelte'
+	import { onMount, untrack, type Snippet } from 'svelte'
 	import { WebGLRenderer } from 'three'
 
 	// DPR is calibrated so the shorter buffer edge targets TARGET_SHORT_EDGE_PIXELS for
@@ -48,6 +48,9 @@
 		// `| undefined` (exactOptionalPropertyTypes): lets consumers forward a
 		// `string | undefined` variable, and matches ControlsScene's hint_font prop.
 		hint_font?: string | undefined
+		// Initial CRT/RETRO mode. Lets a consumer start with the effect off without editing
+		// the synced app shell (game-kit#375). Omit to keep game-kit's default (on).
+		crt_initial?: 'on' | 'off'
 		on_start?: () => void
 		label_jump: string
 		label_game: string
@@ -59,12 +62,20 @@
 		children,
 		hint_text = '',
 		hint_font,
+		crt_initial,
 		on_start,
 		label_jump,
 		label_game,
 		label_game_started,
 		label_pause,
 	}: Props = $props()
+
+	// Apply the consumer's chosen initial CRT mode, once, before first paint (untrack reads the
+	// prop's initial value, not a live subscription). When omitted, GameScene deliberately leaves
+	// the shared crt state untouched: it stays on by default at first load, and force-resetting it
+	// on a later mount would clobber the user's runtime RETRO toggle (game-kit#375).
+	const initial_crt_mode = untrack(() => crt_initial)
+	if (initial_crt_mode !== undefined) crt.set_enabled(initial_crt_mode === 'on')
 
 	// eslint-disable-next-line init-declarations -- assigned by Svelte bind:this
 	let container: HTMLElement
