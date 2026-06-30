@@ -53,6 +53,21 @@ describe('jgame_sync.sync_free_form_file — never silently overwrite consumer e
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('up-to-date'))
 	})
 
+	it('treats a CRLF working copy of an LF baseline as up-to-date (no spurious skip)', async () => {
+		const { existsSync, readFileSync, cpSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation((file) =>
+			file === DEST_PATH ? 'line-a\r\nline-b\r\n' : 'line-a\nline-b\n',
+		)
+		const { jgame_sync } = await import('./jgame-sync.ts')
+
+		jgame_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+		expect(cpSync).not.toHaveBeenCalled()
+		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('up-to-date'))
+		expect(console.info).not.toHaveBeenCalledWith(expect.stringContaining('skipped'))
+	})
+
 	it('skips with a visible notice when the file has local changes and --force is absent', async () => {
 		const { existsSync, readFileSync, cpSync } = await import('node:fs')
 

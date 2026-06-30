@@ -22,9 +22,8 @@ const FORCE_FLAG = '--force'
 interface SyncEntry {
 	dest: string
 	src?: string
-	// Free-form files carry consumer additions (fonts, styling) alongside the game-kit baseline.
-	// They are never silently overwritten: an edited copy is skipped with a notice unless
-	// `jgame sync --force` is passed (game-kit#375). Managed files (default) overwrite freely.
+	// Free-form files carry consumer additions (fonts, styling) alongside the baseline, so an
+	// edited copy is skipped (notice) unless `jgame sync --force` (game-kit#375). Managed: overwrite.
 	free_form?: boolean
 }
 
@@ -55,9 +54,8 @@ const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: 'src/hooks.server.ts' },
 	{ dest: 'src/lib/html-inject.ts' },
 	{ dest: 'src/routes/+layout.svelte' },
-	// Free-form: consumers add game-specific @font-face / styling here, so it is protected
-	// from silent overwrite (game-kit#375). The CRT/RETRO initialization that used to force
-	// shell edits is now a GameScene prop (crt_initial), keeping +layout.svelte fully managed.
+	// Free-form: consumers add game-specific @font-face / styling here, so it is protected from
+	// silent overwrite (game-kit#375). CRT init moved to a GameScene prop, so +layout.svelte stays managed.
 	{ dest: 'src/routes/layout.css', free_form: true },
 	{ dest: 'svelte.config.js' },
 	{ dest: 'vite.config.ts' },
@@ -84,8 +82,7 @@ function sync_file(entry: SyncEntry): void {
 }
 
 // Free-form files (e.g. layout.css) may carry consumer additions, so they are never silently
-// overwritten (game-kit#375). A pristine or missing file is refreshed from the baseline; a
-// locally-modified file is skipped with a visible notice unless `is_force` is set.
+// overwritten (game-kit#375): missing/pristine is refreshed; a locally-edited copy is skipped.
 function sync_free_form_file(entry: SyncEntry, is_force: boolean): void {
 	const destination = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
 
@@ -96,7 +93,11 @@ function sync_free_form_file(entry: SyncEntry, is_force: boolean): void {
 		return
 	}
 
-	if (readFileSync(destination, 'utf8') === readFileSync(sync_source_path(entry), 'utf8')) {
+	// Normalize EOLs so a CRLF working copy of an LF baseline isn't misread as edited (#375).
+	const current = readFileSync(destination, 'utf8').replaceAll('\r\n', '\n')
+	const incoming = readFileSync(sync_source_path(entry), 'utf8').replaceAll('\r\n', '\n')
+
+	if (current === incoming) {
 		console.info(`  ✔ checked  ${entry.dest} (up-to-date)`)
 
 		return

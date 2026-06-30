@@ -74,7 +74,7 @@ function is_block_terminator(line: string): boolean {
 	return /^\S/u.test(line)
 }
 
-// The lines of the inline `words:` block, or [] when the config has no such block. Sliced out
+// The lines of the indented `words:` block, or [] when the config has no such block. Sliced out
 // between the header and the first column-0 line so the parse stays flat (low complexity).
 function words_block_lines(config: string): Array<string> {
 	const lines = config.split('\n')
@@ -87,13 +87,38 @@ function words_block_lines(config: string): Array<string> {
 	return end_index === -1 ? body : body.slice(0, end_index)
 }
 
-// Pulls the words out of a legacy inline `words:` block so they can be migrated to
-// project-words.txt before the config is overwritten. Deliberately line-based (cspell `words`
-// are flat string scalars) to avoid pulling a YAML parser into the published bin.
-function extract_words_from_config(config: string): Array<string> {
+// Words from the indented block form (`words:` newline + `  - item` children).
+function extract_block_words(config: string): Array<string> {
 	return words_block_lines(config)
 		.map((line) => parse_list_item(line))
 		.filter((word): word is string => word !== null)
+}
+
+const INLINE_WORDS_PREFIX = /^words:\s*\[/u
+
+// Words from the inline flow form (`words: [waneccha, mnemecha]`). indexOf/slice (not a capturing
+// regex) keeps the bracket extraction free of catastrophic backtracking. `words: []` yields [].
+function extract_inline_words(config: string): Array<string> {
+	const line = config.split('\n').find((candidate) => INLINE_WORDS_PREFIX.test(candidate))
+	if (line === undefined) return []
+
+	const open_index = line.indexOf('[')
+	const close_index = line.lastIndexOf(']')
+	if (close_index <= open_index) return []
+
+	return line
+		.slice(open_index + 1, close_index)
+		.split(',')
+		.map((word) => unquote(word.trim()))
+		.filter((word) => word.length > 0)
+}
+
+// Pulls the words out of a legacy `words:` declaration (either the indented block form or the
+// inline flow form) so they can be migrated to project-words.txt before the config is overwritten.
+// Deliberately line-based (cspell `words` are flat string scalars) to avoid pulling a YAML parser
+// into the published bin.
+function extract_words_from_config(config: string): Array<string> {
+	return [...extract_block_words(config), ...extract_inline_words(config)]
 }
 
 // The non-comment, non-blank word lines already present in a project-words.txt file.

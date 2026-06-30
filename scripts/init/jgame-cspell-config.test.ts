@@ -31,7 +31,7 @@ describe('jgame_cspell_config.generate_cspell_config', () => {
 })
 
 describe('jgame_cspell_config.extract_words_from_config', () => {
-	it('pulls plain and quoted words out of a legacy inline words list', () => {
+	it('pulls plain and quoted words out of a legacy block words list', () => {
 		const config = [
 			"version: '0.2'",
 			'import:',
@@ -46,6 +46,17 @@ describe('jgame_cspell_config.extract_words_from_config', () => {
 		expect(jgame_cspell_config.extract_words_from_config(config)).toEqual([
 			'waneccha',
 			'mnemecha',
+			'mygame',
+		])
+	})
+
+	it('pulls words out of an inline flow sequence (words: [a, b]), plain and quoted', () => {
+		expect(jgame_cspell_config.extract_words_from_config('words: [waneccha, mnemecha]')).toEqual([
+			'waneccha',
+			'mnemecha',
+		])
+		expect(jgame_cspell_config.extract_words_from_config(`words: ['waneccha', "mygame"]`)).toEqual([
+			'waneccha',
 			'mygame',
 		])
 	})
@@ -89,7 +100,7 @@ describe('jgame_cspell_config.write_cspell_config — migration (game-kit#375)',
 		rmSync(project_directory, { recursive: true, force: true })
 	})
 
-	it('migrates a legacy inline words list into project-words.txt and relayers the config', () => {
+	it('migrates a legacy block words list into project-words.txt and relayers the config', () => {
 		const legacy = [
 			"version: '0.2'",
 			'import:',
@@ -109,6 +120,25 @@ describe('jgame_cspell_config.write_cspell_config — migration (game-kit#375)',
 		expect(words).toContain('waneccha')
 		expect(words).toContain('mnemecha')
 		expect(config).toContain('path: ./project-words.txt')
+		expect(config).not.toContain('waneccha')
+	})
+
+	it('migrates a legacy inline words sequence (words: [a, b]) before rewriting the config', () => {
+		const legacy = [
+			"version: '0.2'",
+			"import:\n  - '@joshuafolkken/game-kit/cspell/game'",
+			'words: [waneccha, mnemecha]',
+			'ignorePaths: []',
+		].join('\n')
+
+		writeFileSync(path.join(project_directory, 'cspell.config.yaml'), legacy)
+		jgame_cspell_config.write_cspell_config(project_directory)
+
+		const words = readFileSync(path.join(project_directory, 'project-words.txt'), 'utf8')
+		const config = readFileSync(path.join(project_directory, 'cspell.config.yaml'), 'utf8')
+
+		expect(words).toContain('waneccha')
+		expect(words).toContain('mnemecha')
 		expect(config).not.toContain('waneccha')
 	})
 

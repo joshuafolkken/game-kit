@@ -70,10 +70,10 @@
 		label_pause,
 	}: Props = $props()
 
-	// Apply the consumer's chosen initial CRT mode once, before first paint. untrack documents
-	// that this reads the prop's initial value (not a live subscription) — the mode is an
-	// initializer, not a binding. Guarded so an omitted prop leaves the shared crt state at
-	// game-kit's default-on (game-kit#375).
+	// Apply the consumer's chosen initial CRT mode, once, before first paint (untrack reads the
+	// prop's initial value, not a live subscription). When omitted, GameScene deliberately leaves
+	// the shared crt state untouched: it stays on by default at first load, and force-resetting it
+	// on a later mount would clobber the user's runtime RETRO toggle (game-kit#375).
 	const initial_crt_mode = untrack(() => crt_initial)
 	if (initial_crt_mode !== undefined) crt.set_enabled(initial_crt_mode === 'on')
 

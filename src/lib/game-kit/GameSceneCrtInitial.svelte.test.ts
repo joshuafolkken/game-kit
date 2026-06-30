@@ -45,4 +45,13 @@ describe('GameScene crt_initial prop — pick the initial CRT mode without editi
 		expect(crt.is_crt_enabled).toBe(true)
 		expect(has_crt_active(container)).toBe(true)
 	})
+
+	it('leaves the shared CRT state untouched when crt_initial is omitted (no force-reset)', () => {
+		// Contract: an omitted prop must not clobber a prior runtime RETRO toggle. Disable CRT,
+		// then render without crt_initial — it must stay disabled, not be forced back on.
+		crt.set_enabled(false)
+		render(GameScene, { props: { ...BASE_LABELS } })
+
+		expect(crt.is_crt_enabled).toBe(false)
+	})
 })
