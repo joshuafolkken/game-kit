@@ -71,6 +71,7 @@ If pnpm is older than 11, upgrade with `pnpm self-update` (or via Corepack: `cor
 Some managed files are designed for you to extend, so `jgame sync` never silently reverts them:
 
 - **`project-words.txt`** — your project-specific cspell words (game nouns, character names) live here, not in `cspell.config.yaml`. The synced `cspell.config.yaml` references it as a dictionary, so it can be refreshed every bump while your words persist. A legacy inline `words:` list is migrated into `project-words.txt` automatically on the next sync.
+- **`cspell.project.yaml`** — your project-specific cspell `ignorePaths` (e.g. generated/binary files that aren't natural-language text) live here, not in `cspell.config.yaml`. The synced `cspell.config.yaml` imports it, and cspell unions the ignore paths, so it can be refreshed every bump while your ignore entries persist. A legacy inline `ignorePaths:` list is migrated into `cspell.project.yaml` automatically on the next sync.
 - **Free-form files (e.g. `src/routes/layout.css`)** — if you have edited one of these, `jgame sync` **skips it with a notice** rather than overwriting your changes. Run `jgame sync --force` to deliberately take the latest baseline (then re-apply your edits).
 - **CRT/RETRO initial mode** — start with the effect off via the `crt_initial="off"` prop on `<GameScene>` in your own `+page.svelte`, instead of editing the synced `src/routes/+layout.svelte` shell.
 
