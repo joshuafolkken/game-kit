@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.169.0",
+	"version": "0.170.0",
 	"keywords": [
 		"svelte"
 	],
@@ -58,7 +58,7 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/app-kit": "^0.23.0",
+		"@joshuafolkken/app-kit": "^0.25.0",
 		"@joshuafolkken/kit": "0.282.0",
 		"@playwright/test": "1.61.1",
 		"@size-limit/file": "^12.1.0",
@@ -83,7 +83,7 @@
 		"globals": "^17.7.0",
 		"lefthook": "^2.1.9",
 		"playwright": "^1.61.1",
-		"prettier": "^3.9.0",
+		"prettier": "^3.9.1",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"publint": "^0.3.21",
