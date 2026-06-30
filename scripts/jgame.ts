@@ -5,7 +5,9 @@ import { jgame_init } from './init/jgame-init.ts'
 import { jgame_sync } from './init/jgame-sync.ts'
 import { jgame_version } from './version/jgame-version.ts'
 
-const USAGE = 'Usage: jgame <init|sync|version|v|version:upgrade|vu> [name]'
+// `[name]` is the init project name; `sync` accepts `--force` to overwrite locally-modified
+// free-form files (e.g. layout.css) instead of skipping them (game-kit#375).
+const USAGE = 'Usage: jgame <init|sync|version|v|version:upgrade|vu> [name|--force]'
 
 const COMMAND_ARG_INDEX = 2
 const NAME_ARG_INDEX = 3

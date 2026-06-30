@@ -66,6 +66,14 @@ If pnpm is older than 11, upgrade with `pnpm self-update` (or via Corepack: `cor
 
 `jgame sync` overwrites managed config files (e.g. `playwright.config.ts`, CI workflow, `eslint.config.js`) with the latest published versions. The synced `eslint.config.js` relaxes a few lint rules for `src/lib/game/**` (game/Three.js/Web-Audio code legitimately uses `null` contracts, definition-site exports, and longer/branchier functions); the rest of the app keeps the strict defaults. If you intentionally customized one of these files, your change will be reverted. Keep local-only config in files **not** managed by the kit, or re-apply the change after syncing.
 
+### Files that preserve your customizations
+
+Some managed files are designed for you to extend, so `jgame sync` never silently reverts them:
+
+- **`project-words.txt`** — your project-specific cspell words (game nouns, character names) live here, not in `cspell.config.yaml`. The synced `cspell.config.yaml` references it as a dictionary, so it can be refreshed every bump while your words persist. A legacy inline `words:` list is migrated into `project-words.txt` automatically on the next sync.
+- **Free-form files (e.g. `src/routes/layout.css`)** — if you have edited one of these, `jgame sync` **skips it with a notice** rather than overwriting your changes. Run `jgame sync --force` to deliberately take the latest baseline (then re-apply your edits).
+- **CRT/RETRO initial mode** — start with the effect off via the `crt_initial="off"` prop on `<GameScene>` in your own `+page.svelte`, instead of editing the synced `src/routes/+layout.svelte` shell.
+
 ## Still stuck?
 
 - Re-read [authentication.md](./authentication.md) end to end — the ordering (token → env var → `.npmrc`) matters.
