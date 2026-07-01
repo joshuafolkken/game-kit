@@ -208,8 +208,10 @@
 	{#if is_alt}
 		<div class="cyber-glow" data-testid="cyber-glow" aria-hidden="true"></div>
 	{/if}
-	<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
 	{#if is_crt_enabled}
+		<!-- Glass/vignette overlay is a CRT cue, so it shares the single is_crt_enabled switch
+		     with <CrtChromaticFilter />. With CRT off it must be absent for a clean render. -->
+		<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
 		<CrtChromaticFilter />
 	{/if}
 	<Canvas dpr={1} createRenderer={create_renderer_factory(is_aa_enabled)}>
