@@ -24,13 +24,6 @@ function size_cap_rules(caps) {
 // Source-tier idiom + size relaxations, applied globally (#250).
 const PERMANENT_OVERRIDES = game_idiom_rules(GAME_DIR_CAPS)
 
-// unicorn@65's recommended set enables `prefer-https`, which false-positives on the SVG
-// namespace literal `xmlns="http://www.w3.org/2000/svg"` — a canonical XML namespace
-// identifier, not a fetchable URL (rewriting it to https breaks SVG rendering). Inline SVG
-// is pervasive across the game-kit components, so disable repo-wide. The kit should ideally
-// disable this upstream (parallel to the unicorn@65 checkDirectories fix in kit #528).
-const PREFER_HTTPS_OFF = { rules: { 'unicorn/prefer-https': 'off' } }
-
 // Game dirs raise the complexity cap above the kit default of 5 (#244).
 const GAME_COMPLEXITY_OVERRIDES = {
 	files: ['src/lib/game-kit/**', 'src/lib/game/**', 'templates/src/lib/game/**'],
@@ -128,7 +121,6 @@ export default create_sveltekit_config({
 }).concat(
 	{ ignores: FILE_IGNORES },
 	{ rules: PERMANENT_OVERRIDES },
-	PREFER_HTTPS_OFF,
 	SCRIPTS_TYPED,
 	SCRIPTS_TESTS_UNTYPED_MOCKS,
 	TEMPLATES_NON_TYPED,
