@@ -9,6 +9,7 @@ import GameScene from './GameScene.svelte'
 // shell — which jgame sync would clobber on the next bump.
 
 const SEL_GAME_SCENE = '[data-testid="game-scene"]'
+const SEL_CRT_OVERLAY = '[data-testid="crt-overlay"]'
 const CLASS_CRT_ACTIVE = 'crt-active'
 
 const BASE_LABELS = {
@@ -44,6 +45,20 @@ describe('GameScene crt_initial prop — pick the initial CRT mode without editi
 
 		expect(crt.is_crt_enabled).toBe(true)
 		expect(has_crt_active(container)).toBe(true)
+	})
+
+	it('renders the glass/vignette crt-overlay when crt_initial is "on"', () => {
+		const { container } = render_with_crt_initial('on')
+
+		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeTruthy()
+	})
+
+	it('omits the glass/vignette crt-overlay when crt_initial is "off" (clean render)', () => {
+		// Regression for game-kit#388: the overlay used to render unconditionally, so its
+		// corner darkening + center vignette + glass highlight persisted with CRT off.
+		const { container } = render_with_crt_initial('off')
+
+		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeNull()
 	})
 
 	it('leaves the shared CRT state untouched when crt_initial is omitted (no force-reset)', () => {
