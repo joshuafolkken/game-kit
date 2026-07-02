@@ -64,12 +64,12 @@ gh repo create my-game --private --source=. --push
 
 The `jgame` binary exposes:
 
-| Subcommand                           | Description                                                                                                       |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `jgame init <name>`                  | Scaffold a new game project                                                                                       |
-| `jgame sync`                         | Sync managed config files from the latest published kit                                                           |
-| `jgame version` (`jgame v`)          | Show the global, project (node_modules), latest published, and running versions                                   |
-| `jgame version:upgrade` (`jgame vu`) | Upgrade whichever of the global / project install is behind latest (repairs the lockfile after a project upgrade) |
+| Subcommand                           | Description                                                                                                                                                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jgame init <name>`                  | Scaffold a new game project                                                                                                                                                                               |
+| `jgame sync`                         | Sync managed config files from the latest published kit                                                                                                                                                   |
+| `jgame version` (`jgame v`)          | Show the global, project (node_modules), latest published, and running versions, plus the upstream `@joshuafolkken/app-kit` and `@joshuafolkken/kit` versions (project vs latest)                         |
+| `jgame version:upgrade` (`jgame vu`) | Upgrade whichever of the global / project install is behind latest (repairs the lockfile after a project upgrade), and upgrade stale `@joshuafolkken/app-kit` / `@joshuafolkken/kit` project dependencies |
 
 ### tsconfig normalization on `jgame sync`
 

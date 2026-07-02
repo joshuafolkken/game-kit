@@ -19,7 +19,7 @@ vi.mock('./version/jgame-version.ts', () => ({
 		run_upgrade: vi.fn().mockReturnValue(0),
 		build_config: vi.fn(),
 		PACKAGE_NAME: '@joshuafolkken/game-kit',
-		VERSIONS_ENDPOINT: '',
+		APP_KIT_PACKAGE_NAME: '@joshuafolkken/app-kit',
 	},
 }))
 
