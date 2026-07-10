@@ -97,8 +97,26 @@ function resolve_kit_version_url(create_resolver: CreateModuleResolver = createR
 	}
 }
 
+// The resolved kit must be recent enough to expose `resolve_effective_upstream_version` (kit#651).
+// An older kit resolvable from cwd would otherwise be accepted and then crash mid-report (missing
+// hook) or silently render blank effective versions — so validate the capability and fail clearly,
+// mirroring the missing-kit message. This guard doubles as the module-boundary type narrowing (no
+// blind `as KitVersionModule`).
+function has_effective_resolver(value: unknown): value is KitVersionModule {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		typeof (value as Partial<KitVersionModule>).resolve_effective_upstream_version === 'function'
+	)
+}
+
 async function load_kit_version(): Promise<KitVersionModule> {
-	return (await import(resolve_kit_version_url())) as KitVersionModule
+	const loaded: unknown = await import(resolve_kit_version_url())
+	if (has_effective_resolver(loaded)) return loaded
+
+	throw new Error(
+		`${KIT_PACKAGE_NAME} in this project is too old for jgame version. Upgrade it (e.g. \`jgame sync\`).`,
+	)
 }
 
 function running_bin_base_url(self_directory: string): string {
@@ -220,9 +238,11 @@ const jgame_version = {
 	KIT_PACKAGE_NAME,
 	build_config,
 	build_global_upgrade_command,
+	has_effective_resolver,
 	resolve_kit_version_url,
 	run_check,
 	run_upgrade,
 }
 
 export { jgame_version }
+export type { ModuleResolver }

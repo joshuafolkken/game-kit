@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { jgame_version } from './jgame-version.ts'
+import { jgame_version, type ModuleResolver } from './jgame-version.ts'
 
 const PACKAGE_NAME = '@joshuafolkken/game-kit'
 const APP_KIT_PACKAGE_NAME = '@joshuafolkken/app-kit'
@@ -37,12 +37,16 @@ function installed_version(package_name: string): string {
 // A createRequire stand-in whose `.resolve` always throws — simulates kit being unresolvable from
 // the project so the clear-error path is covered deterministically (real resolution can't fail
 // under vitest's shared module registry).
-function throwing_resolver(): { resolve: (id: string) => string } {
+function throwing_resolver(): ModuleResolver {
 	return {
 		resolve(): string {
 			throw new Error('module not found')
 		},
 	}
+}
+
+function noop_effective_resolver(): undefined {
+	return undefined
 }
 
 describe('jgame version commands', () => {
@@ -54,15 +58,52 @@ describe('jgame version commands', () => {
 		expect(config.self_directory).toBe(SELF_DIR)
 	})
 
-	it('resolves the kit version library url from the current project (cwd)', () => {
+	it('resolves the kit version library to a real on-disk module in the project', () => {
 		const url = jgame_version.resolve_kit_version_url()
+		const file = fileURLToPath(url)
 
-		expect(url).toContain('kit')
-		expect(url).toContain('version')
+		expect(url.startsWith('file://')).toBe(true)
+		expect(file).toContain(path.join('node_modules', KIT_PACKAGE_NAME))
+		expect(existsSync(file)).toBe(true)
+	})
+
+	it('anchors kit resolution on the project package.json (cwd), not the running binary', () => {
+		const seen: Array<string> = []
+
+		function recording_resolver(from: string): ModuleResolver {
+			seen.push(from)
+
+			return {
+				resolve(id: string): string {
+					return id
+				},
+			}
+		}
+
+		jgame_version.resolve_kit_version_url(recording_resolver)
+
+		const cwd_manifest_url = pathToFileURL(path.join(process.cwd(), 'package.json')).href
+
+		expect(seen[0]).toBe(cwd_manifest_url)
 	})
 
 	it('throws a clear error naming kit when the version library cannot be resolved', () => {
 		expect(() => jgame_version.resolve_kit_version_url(throwing_resolver)).toThrow(KIT_PACKAGE_NAME)
+	})
+
+	it('accepts a modern kit and rejects one missing the effective-upstream resolver', () => {
+		expect(jgame_version.has_effective_resolver({})).toBe(false)
+		expect(jgame_version.has_effective_resolver(null)).toBe(false)
+		expect(
+			jgame_version.has_effective_resolver({
+				resolve_effective_upstream_version: 'not-a-function',
+			}),
+		).toBe(false)
+		expect(
+			jgame_version.has_effective_resolver({
+				resolve_effective_upstream_version: noop_effective_resolver,
+			}),
+		).toBe(true)
 	})
 
 	it('routes the fix-gh-packages path to the centralized kit script', async () => {
