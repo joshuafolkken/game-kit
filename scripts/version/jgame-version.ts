@@ -1,7 +1,12 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import type { UpstreamDescriptor, VersionCommandConfig } from '@joshuafolkken/kit/version'
+import type {
+	EffectiveUpstreamOptions,
+	UpstreamDescriptor,
+	UpstreamHookContext,
+	VersionCommandConfig,
+} from '@joshuafolkken/kit/version'
 
 // jgame consumes kit's parameterized version-command library (kit#604) rather than copying it —
 // game-kit's only local input is its own package name; kit derives the GitHub Packages versions
@@ -40,23 +45,20 @@ const GLOBAL_UPGRADE_COMMAND = `pnpm add -g ${PACKAGE_NAME}`
 // it, and those run inside a project where kit is present. So load `@joshuafolkken/kit/version`
 // LAZILY (dynamic `import()` inside `build_config`) — a static top-level import would crash every
 // command at module load when kit is absent (the global `jgame init` regression #356 introduced;
-// the type-only import above is elided at build and does not load kit). See #357. The kit resolver
-// type is declared from kit's exported types (not `typeof import(...)`, which lint forbids); the
-// real `resolve_effective_upstream_version` passed in `build_config` is structurally assignable.
+// the type-only import above is elided at build and does not load kit). See #357. The resolver
+// signature is declared from kit's exported option type (not `typeof import(...)`, which lint
+// forbids); the real `resolve_effective_upstream_version` passed in `build_config` is assignable.
 type ResolveEffectiveUpstream = (
 	base_url: string,
 	package_name: string,
-	options?: { resolve_marker?: string },
+	options?: EffectiveUpstreamOptions,
 ) => string | undefined
 
-// kit 1.11.0 hands each effective-global hook the primary report context, whose `latest` is
-// game-kit's own already-fetched latest (kit builds it from the primary snapshot). Reusing it for
-// the upgrade command keeps that hint consistent with the reported `Latest:` line and avoids a
-// redundant fetch. kit's public hook type takes no arguments, so `context` is optional here: a missing
-// `latest` (kit called without context, or an unresolved latest) degrades to an unpinned install.
-interface UpstreamEffectiveContext {
-	latest?: string
-}
+// kit 1.11.0 hands each effective-global hook a typed `UpstreamHookContext`, whose `latest` is
+// game-kit's own already-fetched primary latest (kit builds it from the primary snapshot). Reusing
+// it for the upgrade command keeps that hint consistent with the reported `Latest:` line and avoids
+// a redundant fetch. `context` is optional in our signature only so the unpinned fallback and the
+// direct unit tests can call it without one; a missing/empty `latest` degrades to an unpinned install.
 
 function running_bin_base_url(self_directory: string): string {
 	return pathToFileURL(path.join(self_directory, RUNNING_BIN_FILE)).href
@@ -101,7 +103,7 @@ function make_kit_effective_resolver(
 	}
 }
 
-function build_global_upgrade_command(context?: UpstreamEffectiveContext): string {
+function build_global_upgrade_command(context?: UpstreamHookContext): string {
 	const latest = context?.latest
 
 	return latest ? `${GLOBAL_UPGRADE_COMMAND}@${latest}` : GLOBAL_UPGRADE_COMMAND
