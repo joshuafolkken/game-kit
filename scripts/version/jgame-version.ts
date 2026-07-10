@@ -6,6 +6,7 @@ import type {
 	UpstreamDescriptor,
 	UpstreamHookContext,
 	VersionCommandConfig,
+	VersionCommandConfigOptions,
 } from '@joshuafolkken/kit/version'
 
 // jgame consumes kit's parameterized version-command library (kit#604) rather than copying it —
@@ -42,23 +43,81 @@ const GLOBAL_UPGRADE_COMMAND = `pnpm add -g ${PACKAGE_NAME}`
 
 // `@joshuafolkken/kit` is a devDependency, so a global `jgame` install (`pnpm add -g`) does NOT
 // install it. `init`/`sync` must stay loadable without kit; only `version`/`version:upgrade` need
-// it, and those run inside a project where kit is present. So load `@joshuafolkken/kit/version`
-// LAZILY (dynamic `import()` inside `build_config`) — a static top-level import would crash every
-// command at module load when kit is absent (the global `jgame init` regression #356 introduced;
-// the type-only import above is elided at build and does not load kit). See #357. The resolver
-// signature is declared from kit's exported option type (not `typeof import(...)`, which lint
-// forbids); the real `resolve_effective_upstream_version` passed in `build_config` is assignable.
+// it. So load `@joshuafolkken/kit/version` LAZILY (never a static top-level value import — that
+// would crash every command at module load when kit is absent, the global `jgame init` regression
+// #356; the type-only import above is elided at build and does not load kit). See #357.
+//
+// Resolve the library relative to the PROJECT (cwd), NOT this bundled binary (#395): a global jgame
+// carries no kit, so a binary-relative `import('@joshuafolkken/kit/version')` would fall through to
+// an unrelated/stale ambient kit (observed: a home-dir kit predating endpoint derivation kit#632,
+// yielding `gh api undefined`). Version commands are meant to run inside a project, which provides
+// a modern kit; resolve it from cwd and fail with a clear message when run outside one.
+const KIT_VERSION_MODULE = '@joshuafolkken/kit/version'
+
+// The subset of `@joshuafolkken/kit/version` jgame consumes, typed from kit's exported types so the
+// cwd-resolved dynamic import (whose static type is otherwise lost) stays checked. Function
+// signatures are declared here rather than via `typeof import(...)`, which lint forbids.
+interface KitVersionCommands {
+	run_check: (config: VersionCommandConfig) => void
+	run_upgrade: (config: VersionCommandConfig) => number
+}
+
 type ResolveEffectiveUpstream = (
 	base_url: string,
 	package_name: string,
 	options?: EffectiveUpstreamOptions,
 ) => string | undefined
 
-// kit 1.11.0 hands each effective-global hook a typed `UpstreamHookContext`, whose `latest` is
-// game-kit's own already-fetched primary latest (kit builds it from the primary snapshot). Reusing
-// it for the upgrade command keeps that hint consistent with the reported `Latest:` line and avoids
-// a redundant fetch. `context` is optional in our signature only so the unpinned fallback and the
-// direct unit tests can call it without one; a missing/empty `latest` degrades to an unpinned install.
+interface KitVersionModule {
+	create_version_command_config: (options: VersionCommandConfigOptions) => VersionCommandConfig
+	kit_package_descriptor: UpstreamDescriptor
+	resolve_effective_upstream_version: ResolveEffectiveUpstream
+	version_commands: KitVersionCommands
+}
+
+// Narrow structural type of the `createRequire` factory (only `.resolve` is used), injectable so the
+// resolution-failure path is testable — vitest's shared module registry makes real base-relative
+// resolution always succeed, so cwd manipulation can't reproduce the missing-kit case deterministically.
+interface ModuleResolver {
+	resolve: (id: string) => string
+}
+
+type CreateModuleResolver = (from: string) => ModuleResolver
+
+function resolve_kit_version_url(create_resolver: CreateModuleResolver = createRequire): string {
+	const cwd_manifest_url = pathToFileURL(path.join(process.cwd(), 'package.json')).href
+	const require_from_cwd = create_resolver(cwd_manifest_url)
+
+	try {
+		return pathToFileURL(require_from_cwd.resolve(KIT_VERSION_MODULE)).href
+	} catch {
+		throw new Error(
+			`jgame version needs ${KIT_PACKAGE_NAME}. Run \`jgame v\` / \`jgame vu\` inside a game project that depends on it.`,
+		)
+	}
+}
+
+// The resolved kit must be recent enough to expose `resolve_effective_upstream_version` (kit#651).
+// An older kit resolvable from cwd would otherwise be accepted and then crash mid-report (missing
+// hook) or silently render blank effective versions — so validate the capability and fail clearly,
+// mirroring the missing-kit message. This guard doubles as the module-boundary type narrowing (no
+// blind `as KitVersionModule`).
+function has_effective_resolver(value: unknown): value is KitVersionModule {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		typeof (value as Partial<KitVersionModule>).resolve_effective_upstream_version === 'function'
+	)
+}
+
+async function load_kit_version(): Promise<KitVersionModule> {
+	const loaded: unknown = await import(resolve_kit_version_url())
+	if (has_effective_resolver(loaded)) return loaded
+
+	throw new Error(
+		`${KIT_PACKAGE_NAME} in this project is too old for jgame version. Upgrade it (e.g. \`jgame sync\`).`,
+	)
+}
 
 function running_bin_base_url(self_directory: string): string {
 	return pathToFileURL(path.join(self_directory, RUNNING_BIN_FILE)).href
@@ -103,6 +162,11 @@ function make_kit_effective_resolver(
 	}
 }
 
+// kit 1.11.0 hands each effective-global hook a typed `UpstreamHookContext`, whose `latest` is
+// game-kit's own already-fetched primary latest (kit builds it from the primary snapshot). Reusing
+// it for the upgrade command keeps that hint consistent with the reported `Latest:` line and avoids
+// a redundant fetch. `context` is optional in our signature only so the unpinned fallback and the
+// direct unit tests can call it without one; a missing/empty `latest` degrades to an unpinned install.
 function build_global_upgrade_command(context?: UpstreamHookContext): string {
 	const latest = context?.latest
 
@@ -140,7 +204,7 @@ async function build_config(self_directory: string): Promise<VersionCommandConfi
 		create_version_command_config,
 		kit_package_descriptor,
 		resolve_effective_upstream_version,
-	} = await import('@joshuafolkken/kit/version')
+	} = await load_kit_version()
 
 	return create_version_command_config({
 		package_name: PACKAGE_NAME,
@@ -157,13 +221,13 @@ async function build_config(self_directory: string): Promise<VersionCommandConfi
 }
 
 async function run_check(self_directory: string): Promise<void> {
-	const { version_commands } = await import('@joshuafolkken/kit/version')
+	const { version_commands } = await load_kit_version()
 
 	version_commands.run_check(await build_config(self_directory))
 }
 
 async function run_upgrade(self_directory: string): Promise<number> {
-	const { version_commands } = await import('@joshuafolkken/kit/version')
+	const { version_commands } = await load_kit_version()
 
 	return version_commands.run_upgrade(await build_config(self_directory))
 }
@@ -174,8 +238,11 @@ const jgame_version = {
 	KIT_PACKAGE_NAME,
 	build_config,
 	build_global_upgrade_command,
+	has_effective_resolver,
+	resolve_kit_version_url,
 	run_check,
 	run_upgrade,
 }
 
 export { jgame_version }
+export type { ModuleResolver }
