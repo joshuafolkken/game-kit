@@ -34,6 +34,17 @@ function installed_version(package_name: string): string {
 	throw new Error(`missing version for ${package_name}`)
 }
 
+// A createRequire stand-in whose `.resolve` always throws — simulates kit being unresolvable from
+// the project so the clear-error path is covered deterministically (real resolution can't fail
+// under vitest's shared module registry).
+function throwing_resolver(): { resolve: (id: string) => string } {
+	return {
+		resolve(): string {
+			throw new Error('module not found')
+		},
+	}
+}
+
 describe('jgame version commands', () => {
 	it('builds a kit version-command config targeting game-kit', async () => {
 		const config = await jgame_version.build_config(SELF_DIR)
@@ -41,6 +52,17 @@ describe('jgame version commands', () => {
 		expect(config.package_name).toBe(PACKAGE_NAME)
 		expect(config.versions_endpoint).toContain('game-kit/versions')
 		expect(config.self_directory).toBe(SELF_DIR)
+	})
+
+	it('resolves the kit version library url from the current project (cwd)', () => {
+		const url = jgame_version.resolve_kit_version_url()
+
+		expect(url).toContain('kit')
+		expect(url).toContain('version')
+	})
+
+	it('throws a clear error naming kit when the version library cannot be resolved', () => {
+		expect(() => jgame_version.resolve_kit_version_url(throwing_resolver)).toThrow(KIT_PACKAGE_NAME)
 	})
 
 	it('routes the fix-gh-packages path to the centralized kit script', async () => {
