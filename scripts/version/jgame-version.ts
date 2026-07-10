@@ -1,12 +1,7 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import type {
-	UpstreamDescriptor,
-	VersionCommandConfig,
-	VersionCommandConfigOptions,
-	VersionSnapshot,
-} from '@joshuafolkken/kit/version'
+import type { UpstreamDescriptor, VersionCommandConfig } from '@joshuafolkken/kit/version'
 
 // jgame consumes kit's parameterized version-command library (kit#604) rather than copying it —
 // game-kit's only local input is its own package name; kit derives the GitHub Packages versions
@@ -37,26 +32,29 @@ const RUNNING_BIN_FILE = 'jgame.js'
 // `jgame vu` upgrades a stale effective upstream by bumping the *global game-kit*, which re-bundles
 // the whole app-kit → kit chain. A bare `pnpm add -g @joshuafolkken/app-kit` / `... /kit` would be
 // shadowed by game-kit's own resolution and never change what jgame runs, so both upstreams share
-// this game-kit-targeted command (#393). The `@<version>` suffix is appended per invocation.
-const GLOBAL_UPGRADE_PREFIX = `pnpm add -g ${PACKAGE_NAME}@`
+// this game-kit-targeted command (#393).
+const GLOBAL_UPGRADE_COMMAND = `pnpm add -g ${PACKAGE_NAME}`
 
 // `@joshuafolkken/kit` is a devDependency, so a global `jgame` install (`pnpm add -g`) does NOT
 // install it. `init`/`sync` must stay loadable without kit; only `version`/`version:upgrade` need
 // it, and those run inside a project where kit is present. So load `@joshuafolkken/kit/version`
 // LAZILY (dynamic `import()` inside `build_config`) — a static top-level import would crash every
 // command at module load when kit is absent (the global `jgame init` regression #356 introduced;
-// the type-only imports above are elided at build and do not load kit). See #357. The kit function
-// types are declared from kit's exported types (not `typeof import(...)`, which lint forbids); the
-// real functions passed in `build_config` are structurally assignable to them.
+// the type-only import above is elided at build and does not load kit). See #357. The kit resolver
+// type is declared from kit's exported types (not `typeof import(...)`, which lint forbids); the
+// real `resolve_effective_upstream_version` passed in `build_config` is structurally assignable.
 type ResolveEffectiveUpstream = (
 	base_url: string,
 	package_name: string,
 	options?: { resolve_marker?: string },
 ) => string | undefined
-type ReadSnapshot = (config: VersionCommandConfig) => VersionSnapshot
-type CreateVersionConfig = (options: VersionCommandConfigOptions) => VersionCommandConfig
 
-interface LatestState {
+// kit 1.11.0 hands each effective-global hook the primary report context, whose `latest` is
+// game-kit's own already-fetched latest (kit builds it from the primary snapshot). Reusing it for
+// the upgrade command keeps that hint consistent with the reported `Latest:` line and avoids a
+// redundant fetch. kit's public hook type takes no arguments, so `context` is optional here: a missing
+// `latest` (kit called without context, or an unresolved latest) degrades to an unpinned install.
+interface UpstreamEffectiveContext {
 	latest?: string
 }
 
@@ -103,37 +101,20 @@ function make_kit_effective_resolver(
 	}
 }
 
-// Resolve game-kit's own latest once and memoize it: kit invokes `resolve_global_upgrade_command`
-// eagerly for every upstream when building the report, so a shared memo dedupes the two upstreams
-// to a single latest fetch per run (mirrors app-kit#83; the fetch-vs-primary dedupe is kit#650).
-function create_game_kit_latest_resolver(
-	read_snapshot: ReadSnapshot,
-	create_config: CreateVersionConfig,
-): () => string {
-	const state: LatestState = {}
+function build_global_upgrade_command(context?: UpstreamEffectiveContext): string {
+	const latest = context?.latest
 
-	return function resolve_game_kit_latest(): string {
-		state.latest ??= read_snapshot(create_config({ package_name: PACKAGE_NAME })).latest
-
-		return state.latest
-	}
-}
-
-function make_global_upgrade_resolver(resolve_latest: () => string): () => string {
-	return function build_global_upgrade_command(): string {
-		return `${GLOBAL_UPGRADE_PREFIX}${resolve_latest()}`
-	}
+	return latest ? `${GLOBAL_UPGRADE_COMMAND}@${latest}` : GLOBAL_UPGRADE_COMMAND
 }
 
 function build_app_kit_upstream(
 	self_directory: string,
 	resolve_effective: ResolveEffectiveUpstream,
-	resolve_latest: () => string,
 ): UpstreamDescriptor {
 	return {
 		package_name: APP_KIT_PACKAGE_NAME,
 		resolve_effective_version: make_app_kit_effective_resolver(self_directory, resolve_effective),
-		resolve_global_upgrade_command: make_global_upgrade_resolver(resolve_latest),
+		resolve_global_upgrade_command: build_global_upgrade_command,
 	}
 }
 
@@ -141,42 +122,32 @@ function build_kit_upstream(
 	kit_descriptor: UpstreamDescriptor,
 	self_directory: string,
 	resolve_effective: ResolveEffectiveUpstream,
-	resolve_latest: () => string,
 ): UpstreamDescriptor {
 	return {
 		...kit_descriptor,
 		resolve_effective_version: make_kit_effective_resolver(self_directory, resolve_effective),
-		resolve_global_upgrade_command: make_global_upgrade_resolver(resolve_latest),
+		resolve_global_upgrade_command: build_global_upgrade_command,
 	}
 }
 
 // `self_directory` is the running bin's own directory, so the report can show the running install
 // and resolve the effective chain relative to it. The CLI passes it from the bundled entry point
-// (dist/scripts/jgame.js). `resolve_latest` is injectable so tests exercise upgrade-command
-// generation deterministically without a network fetch; production uses the memoized resolver.
-async function build_config(
-	self_directory: string,
-	resolve_latest?: () => string,
-): Promise<VersionCommandConfig> {
+// (dist/scripts/jgame.js).
+async function build_config(self_directory: string): Promise<VersionCommandConfig> {
 	const {
 		create_version_command_config,
 		kit_package_descriptor,
 		resolve_effective_upstream_version,
-		version_commands,
 	} = await import('@joshuafolkken/kit/version')
-	const latest =
-		resolve_latest ??
-		create_game_kit_latest_resolver(version_commands.read_snapshot, create_version_command_config)
 
 	return create_version_command_config({
 		package_name: PACKAGE_NAME,
 		upstreams: [
-			build_app_kit_upstream(self_directory, resolve_effective_upstream_version, latest),
+			build_app_kit_upstream(self_directory, resolve_effective_upstream_version),
 			build_kit_upstream(
 				kit_package_descriptor,
 				self_directory,
 				resolve_effective_upstream_version,
-				latest,
 			),
 		],
 		self_directory,
@@ -200,6 +171,7 @@ const jgame_version = {
 	APP_KIT_PACKAGE_NAME,
 	KIT_PACKAGE_NAME,
 	build_config,
+	build_global_upgrade_command,
 	run_check,
 	run_upgrade,
 }

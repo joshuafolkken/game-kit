@@ -34,10 +34,6 @@ function installed_version(package_name: string): string {
 	throw new Error(`missing version for ${package_name}`)
 }
 
-function stub_latest(): string {
-	return STUB_LATEST
-}
-
 describe('jgame version commands', () => {
 	it('builds a kit version-command config targeting game-kit', async () => {
 		const config = await jgame_version.build_config(SELF_DIR)
@@ -69,17 +65,19 @@ describe('jgame version commands', () => {
 		expect(config.upstreams[1]?.versions_endpoint).toContain('npm/kit/versions')
 	})
 
-	it('wires both effective-global hooks onto each upstream', async () => {
-		const config = await jgame_version.build_config(SELF_DIR, stub_latest)
+	it('wires both effective-global hooks onto each upstream, sharing the upgrade command', async () => {
+		const config = await jgame_version.build_config(SELF_DIR)
 
 		for (const upstream of config.upstreams) {
 			expect(typeof upstream.resolve_effective_version).toBe('function')
-			expect(typeof upstream.resolve_global_upgrade_command).toBe('function')
+			expect(upstream.resolve_global_upgrade_command).toBe(
+				jgame_version.build_global_upgrade_command,
+			)
 		}
 	})
 
 	it('reports the effective app-kit resolved relative to the running jgame', async () => {
-		const config = await jgame_version.build_config(REAL_SELF_DIR, stub_latest)
+		const config = await jgame_version.build_config(REAL_SELF_DIR)
 
 		expect(config.upstreams[0]?.resolve_effective_version?.()).toBe(
 			installed_version(APP_KIT_PACKAGE_NAME),
@@ -87,21 +85,26 @@ describe('jgame version commands', () => {
 	})
 
 	it('reports the effective kit resolved through the app-kit chain', async () => {
-		const config = await jgame_version.build_config(REAL_SELF_DIR, stub_latest)
+		const config = await jgame_version.build_config(REAL_SELF_DIR)
 
 		expect(config.upstreams[1]?.resolve_effective_version?.()).toMatch(SEMVER_PREFIX)
 	})
 
-	it('upgrades a stale effective upstream via the global game-kit, for both upstreams', async () => {
-		const config = await jgame_version.build_config(SELF_DIR, stub_latest)
-		const expected = `pnpm add -g ${PACKAGE_NAME}@${STUB_LATEST}`
+	it('pins the global game-kit upgrade command to the latest from the kit context', () => {
+		const command = jgame_version.build_global_upgrade_command({ latest: STUB_LATEST })
 
-		expect(config.upstreams[0]?.resolve_global_upgrade_command?.()).toBe(expected)
-		expect(config.upstreams[1]?.resolve_global_upgrade_command?.()).toBe(expected)
+		expect(command).toBe(`pnpm add -g ${PACKAGE_NAME}@${STUB_LATEST}`)
+	})
+
+	it('falls back to an unpinned global install when no context latest is available', () => {
+		const unpinned = `pnpm add -g ${PACKAGE_NAME}`
+
+		expect(jgame_version.build_global_upgrade_command()).toBe(unpinned)
+		expect(jgame_version.build_global_upgrade_command({ latest: '' })).toBe(unpinned)
 	})
 
 	it('returns undefined effective versions when the running bin resolves no chain', async () => {
-		const config = await jgame_version.build_config(SELF_DIR, stub_latest)
+		const config = await jgame_version.build_config(SELF_DIR)
 
 		expect(config.upstreams[0]?.resolve_effective_version?.()).toBeUndefined()
 		expect(config.upstreams[1]?.resolve_effective_version?.()).toBeUndefined()
