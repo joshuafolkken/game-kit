@@ -44,6 +44,25 @@ For a full game (score display, credits, gameover overlay, switches), use `Scene
 </GameScene>
 ```
 
+The default `HINT_FONT_SIZE` and `anchorY="middle"` centering are tuned for PressStart2P, whose caps fill ~100% of the em. A custom `hint_font` with a different cap-per-em ratio or em placement can render too small or off-center. Two optional adjustment props correct this without editing the font binary — they apply to **both** the hint line and the WASD / ESC / Z letters so they stay consistent:
+
+- `hint_font_scale` (default `1`) — multiplies the hint fontSize and the keyboard letter sizes to compensate for a face whose caps fill a smaller fraction of the em (e.g. a face at ~68% cap-per-em needs `~1.46`).
+- `hint_font_y_offset` (default `0`) — a vertical re-centering nudge in **em units** (a fraction of each Text's fontSize), so one value re-centers both the hint and the differently-sized letters. Positive nudges up, negative nudges down.
+
+Omitting both keeps rendering identical to today.
+
+```svelte
+<GameScene
+	{hint_text}
+	hint_font="/fonts/MyTheme.woff"
+	hint_font_scale={1.46}
+	hint_font_y_offset={-0.08}
+>
+	<Room />
+	<Player />
+</GameScene>
+```
+
 ### Room dimensions
 
 `SceneObjects` accepts optional `room_width`, `room_depth`, and `room_height` props to override the room footprint and ceiling height (defaults: `ROOM_W` / `ROOM_D` / `ROOM_H`). Player movement bounds follow the configured `room_width` / `room_depth` automatically.

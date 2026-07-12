@@ -2,6 +2,7 @@
 	import { T, useThrelte } from '@threlte/core'
 	import { Text } from '@threlte/extras'
 	import { compute_fit_scale } from '$lib/game-kit/controls/controls-fit'
+	import { controls_hint_adjust } from '$lib/game-kit/controls/controls-hint-adjust'
 	import { crt } from '$lib/game-kit/Crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
 	import { onMount } from 'svelte'
@@ -77,9 +78,22 @@
 		// `| undefined` (exactOptionalPropertyTypes): GameScene forwards its own optional
 		// hint_font, whose value is `string | undefined`, straight through to this prop.
 		hint_font?: string | undefined
+		// Multiplies the hint fontSize AND the WASD/ESC/Z letter sizes, so a custom hint_font
+		// whose caps fill a different fraction of the em renders at the intended size. Default 1
+		// leaves today's rendering unchanged. `| undefined` mirrors GameScene's forwarded prop.
+		hint_font_scale?: number | undefined
+		// Vertical re-centering nudge in em units (fraction of each Text's fontSize); one value
+		// re-centers both the hint and the differently-sized letters. Default 0 is a no-op.
+		hint_font_y_offset?: number | undefined
 	}
 
-	const { hint_text, is_touch, hint_font }: Props = $props()
+	const {
+		hint_text,
+		is_touch,
+		hint_font,
+		hint_font_scale = 1,
+		hint_font_y_offset = 0,
+	}: Props = $props()
 
 	const { size } = useThrelte()
 
@@ -90,6 +104,13 @@
 	// An explicit hint_font prop overrides the CRT-driven default (e.g. a scene-specific theme font).
 	const resolved_font = $derived(hint_font ?? current_font)
 	const current_font_size_mul = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
+	// Hint line: apply the per-font scale, then re-center by the em-relative offset.
+	const hint_font_size = $derived(
+		controls_hint_adjust.scale_font_size(HINT_FONT_SIZE, hint_font_scale),
+	)
+	const hint_position_y = $derived(
+		controls_hint_adjust.offset_position_y(0, hint_font_y_offset, hint_font_size),
+	)
 	const viewport_aspect = $derived($size.width / $size.height)
 	const view_width_at_plane = $derived(TOUCH_VIEW_HEIGHT_AT_PLANE * viewport_aspect)
 	const touch_world_width = $derived(view_width_at_plane * TOUCH_WIDTH_RATIO)
@@ -141,6 +162,22 @@
 
 	function viewbox_size_to_world(vsize: number, size_mul: number): number {
 		return (vsize / KEYBOARD_VIEWBOX_H) * KEYBOARD_H * size_mul
+	}
+
+	// Keyboard letters share the hint's per-font scale and em-relative offset so all
+	// controls-hint glyphs stay sized and centered consistently under a custom hint_font.
+	function letter_font_size(vsize: number): number {
+		const base_size = viewbox_size_to_world(vsize, current_font_size_mul)
+
+		return controls_hint_adjust.scale_font_size(base_size, hint_font_scale)
+	}
+
+	function letter_position_y(letter: KeyboardLetter): number {
+		return controls_hint_adjust.offset_position_y(
+			viewbox_y_to_plane(letter.vy),
+			hint_font_y_offset,
+			letter_font_size(letter.vsize),
+		)
 	}
 
 	const MOUSE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="13 -7 64 120" fill="none">
@@ -278,8 +315,9 @@
 	<Text
 		text={hint_text}
 		font={resolved_font}
-		fontSize={HINT_FONT_SIZE}
+		fontSize={hint_font_size}
 		color={HINT_COLOR}
+		position={[0, hint_position_y, 0]}
 		anchorX="center"
 		anchorY="middle"
 	/>
@@ -315,12 +353,12 @@
 				<Text
 					text={letter.text}
 					font={resolved_font}
-					fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}
+					fontSize={letter_font_size(letter.vsize)}
 					color={letter.color}
 					fillOpacity={letter.opacity}
 					position={[
 						KEYBOARD_X + viewbox_x_to_plane(letter.vx),
-						viewbox_y_to_plane(letter.vy),
+						letter_position_y(letter),
 						KEYBOARD_LETTER_Z,
 					]}
 					anchorX="center"
