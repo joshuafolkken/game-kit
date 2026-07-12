@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.178.0",
+	"version": "0.179.0",
 	"keywords": [
 		"svelte"
 	],
@@ -58,7 +58,7 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/app-kit": "0.36.0",
+		"@joshuafolkken/app-kit": "^0.36.0",
 		"@joshuafolkken/kit": "1.14.0",
 		"@playwright/test": "1.61.1",
 		"@size-limit/file": "^12.1.0",
@@ -77,13 +77,13 @@
 		"@vitest/browser-playwright": "^4.1.10",
 		"cspell": "^10.0.1",
 		"esbuild": "^0.28.1",
-		"eslint": "^10.6.0",
+		"eslint": "^10.7.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.20.0",
 		"globals": "^17.7.0",
 		"lefthook": "^2.1.10",
 		"playwright": "^1.61.1",
-		"prettier": "^3.9.4",
+		"prettier": "^3.9.5",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"publint": "^0.3.21",
@@ -91,6 +91,7 @@
 		"size-limit": "^12.1.0",
 		"svelte": "^5.56.4",
 		"svelte-check": "^4.7.2",
+		"svelte-fast-check": "^0.4.5",
 		"tailwindcss": "^4.3.2",
 		"three": "^0.185.1",
 		"tsx": "^4.23.0",
@@ -102,8 +103,7 @@
 		"vitest-browser-svelte": "^2.2.1",
 		"workbox-build": "^7.4.1",
 		"workbox-window": "^7.4.1",
-		"wrangler": "^4.108.0",
-		"svelte-fast-check": "^0.4.5"
+		"wrangler": "^4.110.0"
 	},
 	"peerDependencies": {
 		"@joshuafolkken/app-kit": ">=0.20.0",

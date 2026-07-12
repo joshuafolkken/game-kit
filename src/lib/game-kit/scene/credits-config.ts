@@ -13,8 +13,9 @@ export const FLOOR_TEXT_ROTATION_X = -(Math.PI / HALF_DIVISOR)
 function make_credits_scroll_bounds(
 	line_count: number,
 	half_depth: number,
+	font_size: number = CREDITS_FONT_SIZE,
 ): { start_z: number; end_z: number } {
-	const height = line_count * CREDITS_FONT_SIZE * CREDITS_LINE_HEIGHT
+	const height = line_count * font_size * CREDITS_LINE_HEIGHT
 	const offset = half_depth + height / HALF_DIVISOR
 
 	return { start_z: offset, end_z: -offset }
