@@ -24,9 +24,10 @@
 		scroll_end_z: number
 		font?: string
 		color?: string
+		font_size?: number
 	}
 
-	const { is_alt, credits, scroll_start_z, scroll_end_z, font, color }: Props = $props()
+	const { is_alt, credits, scroll_start_z, scroll_end_z, font, color, font_size }: Props = $props()
 
 	// Font is driven by CRT state, independent of is_alt (CYBER) palette.
 	const should_use_alt_font = $derived(!crt.is_crt_enabled)
@@ -36,6 +37,8 @@
 	// is_alt picks the default palette; an explicit color prop overrides it (e.g. a scene accent).
 	const default_color = $derived(is_alt ? CREDITS_CYBER_COLOR : CREDITS_NORMAL_COLOR)
 	const resolved_color = $derived(color ?? default_color)
+	// An explicit font_size prop overrides the default; bounds callers must pass the same size.
+	const resolved_font_size = $derived(font_size ?? CREDITS_FONT_SIZE)
 	let scroll_z = $state(untrack(() => scroll_start_z))
 
 	function tick(delta: number): void {
@@ -54,7 +57,7 @@
 <Text
 	text={credits}
 	font={resolved_font}
-	fontSize={CREDITS_FONT_SIZE}
+	fontSize={resolved_font_size}
 	lineHeight={CREDITS_LINE_HEIGHT}
 	textAlign="center"
 	color={resolved_color}

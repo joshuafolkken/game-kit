@@ -90,6 +90,39 @@ describe('credits-config', () => {
 
 			expect(deep.start_z).toBeGreaterThan(shallow.start_z)
 		})
+
+		it('defaults to CREDITS_FONT_SIZE when font_size is omitted', () => {
+			const omitted = credits_scroll.make_credits_scroll_bounds(10, TEST_HALF_DEPTH)
+			const explicit = credits_scroll.make_credits_scroll_bounds(
+				10,
+				TEST_HALF_DEPTH,
+				CREDITS_FONT_SIZE,
+			)
+
+			expect(omitted).toEqual(explicit)
+		})
+
+		it('start_z increases as font_size increases', () => {
+			const small = credits_scroll.make_credits_scroll_bounds(
+				10,
+				TEST_HALF_DEPTH,
+				CREDITS_FONT_SIZE,
+			)
+			const large = credits_scroll.make_credits_scroll_bounds(
+				10,
+				TEST_HALF_DEPTH,
+				CREDITS_FONT_SIZE * 2,
+			)
+
+			expect(large.start_z).toBeGreaterThan(small.start_z)
+		})
+
+		it('scales the text height contribution proportionally to font_size', () => {
+			const base = credits_scroll.make_credits_scroll_bounds(10, 0, CREDITS_FONT_SIZE)
+			const doubled = credits_scroll.make_credits_scroll_bounds(10, 0, CREDITS_FONT_SIZE * 2)
+
+			expect(doubled.start_z).toBeCloseTo(base.start_z * 2)
+		})
 	})
 
 	describe('advance_scroll', () => {

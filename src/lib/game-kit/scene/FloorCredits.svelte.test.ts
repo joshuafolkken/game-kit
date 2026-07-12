@@ -76,6 +76,32 @@ describe('FloorCredits', () => {
 
 		expect(container).toBeTruthy()
 	})
+
+	it('renders without error when an explicit font_size override is supplied', () => {
+		const { container } = render(FloorCredits, {
+			props: {
+				is_alt: false,
+				credits: SAMPLE_CREDITS,
+				scroll_start_z: START_Z,
+				scroll_end_z: END_Z,
+				font_size: 0.2,
+			},
+		})
+
+		expect(container).toBeTruthy()
+	})
+})
+
+describe('FloorCredits font_size override — optional font_size prop', () => {
+	it('resolves the font size from the prop, falling back to CREDITS_FONT_SIZE', () => {
+		expect(FLOOR_CREDITS_SOURCE).toMatch(
+			/(?:let|const)\s+resolved_font_size\s*=\s*\$derived\(\s*font_size\s*\?\?\s*CREDITS_FONT_SIZE\s*\)/u,
+		)
+	})
+
+	it('passes the resolved font size into the Text', () => {
+		expect(FLOOR_CREDITS_SOURCE).toMatch(/fontSize=\{resolved_font_size\}/u)
+	})
 })
 
 describe('FloorCredits font override — optional font prop', () => {
