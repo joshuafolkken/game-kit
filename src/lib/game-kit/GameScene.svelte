@@ -48,6 +48,12 @@
 		// `| undefined` (exactOptionalPropertyTypes): lets consumers forward a
 		// `string | undefined` variable, and matches ControlsScene's hint_font prop.
 		hint_font?: string | undefined
+		// Adjustments for a custom hint_font, forwarded to ControlsScene and applied to both the
+		// hint line and the WASD/ESC/Z letters. hint_font_scale (default 1) compensates for a
+		// different cap-per-em; hint_font_y_offset (default 0, em units) re-centers a face whose
+		// ink sits off-center. Omitting both keeps today's rendering unchanged.
+		hint_font_scale?: number | undefined
+		hint_font_y_offset?: number | undefined
 		// Initial CRT/RETRO mode. Lets a consumer start with the effect off without editing
 		// the synced app shell (game-kit#375). Omit to keep game-kit's default (on).
 		crt_initial?: 'on' | 'off'
@@ -62,6 +68,8 @@
 		children,
 		hint_text = '',
 		hint_font,
+		hint_font_scale,
+		hint_font_y_offset,
 		crt_initial,
 		on_start,
 		label_jump,
@@ -218,7 +226,7 @@
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
-				<ControlsScene {hint_text} {is_touch} {hint_font} />
+				<ControlsScene {hint_text} {is_touch} {hint_font} {hint_font_scale} {hint_font_y_offset} />
 			{/if}
 		</Suspense>
 		<CrtDitherPass {lo_dpr} />
