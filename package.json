@@ -1,6 +1,6 @@
 {
 	"name": "@joshuafolkken/game-kit",
-	"version": "0.177.0",
+	"version": "0.178.0",
 	"keywords": [
 		"svelte"
 	],
@@ -38,7 +38,7 @@
 		"preinstall": "pnpm dlx @aikidosec/safe-chain setup-ci",
 		"dev": "vite dev",
 		"build": "vite build && pnpm run prepack",
-		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
+		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173 --local",
 		"prepare": "pnpm prepare:gen && pnpm prepare:sync && pnpm prepare:lefthook && pnpm prepare:gh-packages",
 		"prepare:gen": "[ ! -f wrangler.jsonc ] || pnpm gen",
 		"prepare:sync": "svelte-kit sync || echo ''",
@@ -58,8 +58,8 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@joshuafolkken/app-kit": "^0.33.0",
-		"@joshuafolkken/kit": "1.11.0",
+		"@joshuafolkken/app-kit": "0.36.0",
+		"@joshuafolkken/kit": "1.14.0",
 		"@playwright/test": "1.61.1",
 		"@size-limit/file": "^12.1.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.9",
@@ -102,7 +102,8 @@
 		"vitest-browser-svelte": "^2.2.1",
 		"workbox-build": "^7.4.1",
 		"workbox-window": "^7.4.1",
-		"wrangler": "^4.108.0"
+		"wrangler": "^4.108.0",
+		"svelte-fast-check": "^0.4.5"
 	},
 	"peerDependencies": {
 		"@joshuafolkken/app-kit": ">=0.20.0",
