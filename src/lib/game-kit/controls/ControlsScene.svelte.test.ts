@@ -16,6 +16,8 @@ const ATTR_BACKDROP_BACK_RENDER_ORDER = 'renderOrder={BACKDROP_BACK_RENDER_ORDER
 const ATTR_DOUBLE_SIDE = 'side={DoubleSide}'
 const ATTR_MOUSE_POSITION = 'position={[MOUSE_X, MOUSE_Y, 0]}'
 const ATTR_RESOLVED_FONT = 'font={resolved_font}'
+const ATTR_LETTER_FONTSIZE_RAW =
+	'fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}'
 
 function find_mesh_open_tag(source: string, position_marker: string): string {
 	const start_index = source.indexOf(position_marker)
@@ -272,12 +274,12 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 		expect(each_block).not.toBeNull()
 		const block = each_block?.[0] ?? ''
 
+		// fontSize and y now route through the hint_font adjustment helpers (letter_font_size /
+		// letter_position_y) — those are asserted in the "hint_font adjustments" describe below.
 		expect(block).toContain(ATTR_RESOLVED_FONT)
-		expect(block).toContain('fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}')
 		expect(block).toContain('color={letter.color}')
 		expect(block).toContain('fillOpacity={letter.opacity}')
 		expect(block).toContain('viewbox_x_to_plane(letter.vx)')
-		expect(block).toContain('viewbox_y_to_plane(letter.vy)')
 	})
 
 	it('uses theme font-size multiplier for visual size parity between PressStart2P and Orbitron', () => {
@@ -333,6 +335,69 @@ describe('ControlsScene hint_font override — optional font prop forwarded by G
 
 	it('does not hardcode font={current_font} on the hint or letter Text (override path would break)', () => {
 		expect(SOURCE).not.toMatch(/font=\{current_font\}/u)
+	})
+})
+
+describe('ControlsScene hint_font adjustments — scale + em-relative y-offset for custom faces', () => {
+	it('declares optional numeric hint_font_scale and hint_font_y_offset props', () => {
+		expect(SOURCE).toMatch(/hint_font_scale\?\s*:\s*number\s*\|\s*undefined/u)
+		expect(SOURCE).toMatch(/hint_font_y_offset\?\s*:\s*number\s*\|\s*undefined/u)
+	})
+
+	it('defaults the adjustments to no-ops (scale 1, offset 0) so existing consumers are unaffected', () => {
+		const properties_block = /const\s*\{[\s\S]*?\}\s*:\s*Props\s*=\n?\s*\$props\(\)/u.exec(SOURCE)
+		const block = properties_block?.[0] ?? ''
+
+		expect(block).toMatch(/hint_font_scale\s*=\s*1/u)
+		expect(block).toMatch(/hint_font_y_offset\s*=\s*0/u)
+	})
+
+	it('imports the controls_hint_adjust helper for the scale and offset math', () => {
+		expect(SOURCE).toMatch(
+			/import\s*\{\s*controls_hint_adjust\s*\}\s*from\s*'\$lib\/game-kit\/controls\/controls-hint-adjust'/u,
+		)
+	})
+
+	it('derives the hint fontSize via scale_font_size(HINT_FONT_SIZE, hint_font_scale)', () => {
+		expect(SOURCE).toMatch(
+			/hint_font_size\s*=\s*\$derived\([\s\S]*?scale_font_size\(HINT_FONT_SIZE,\s*hint_font_scale\)/u,
+		)
+	})
+
+	it('derives the hint position y via offset_position_y with the base 0 and the hint fontSize', () => {
+		expect(SOURCE).toMatch(
+			/hint_position_y\s*=\s*\$derived\([\s\S]*?offset_position_y\(0,\s*hint_font_y_offset,\s*hint_font_size\)/u,
+		)
+	})
+
+	it('hint Text uses the derived fontSize and position y (not the raw HINT_FONT_SIZE constant)', () => {
+		const hint_block = /<Text\s+text=\{hint_text\}[\s\S]*?\/>/u.exec(SOURCE)
+		const block = hint_block?.[0] ?? ''
+
+		expect(block).toContain('fontSize={hint_font_size}')
+		expect(block).toContain('position={[0, hint_position_y, 0]}')
+		expect(block).not.toContain('fontSize={HINT_FONT_SIZE}')
+	})
+
+	it('letter_font_size applies the scale on top of the theme-driven world size', () => {
+		expect(SOURCE).toMatch(
+			/function\s+letter_font_size\([\s\S]*?viewbox_size_to_world\(vsize,\s*current_font_size_mul\)[\s\S]*?scale_font_size\(base_size,\s*hint_font_scale\)/u,
+		)
+	})
+
+	it('letter_position_y applies the em-relative offset on top of the viewbox plane y', () => {
+		expect(SOURCE).toMatch(
+			/function\s+letter_position_y\([\s\S]*?offset_position_y\(\s*viewbox_y_to_plane\(letter\.vy\),\s*hint_font_y_offset,\s*letter_font_size\(letter\.vsize\)/u,
+		)
+	})
+
+	it('each keyboard letter Text uses the adjustment helpers (scale + offset), not the raw values', () => {
+		const each_block = /\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u.exec(SOURCE)
+		const block = each_block?.[0] ?? ''
+
+		expect(block).toContain('fontSize={letter_font_size(letter.vsize)}')
+		expect(block).toContain('letter_position_y(letter)')
+		expect(block).not.toContain(ATTR_LETTER_FONTSIZE_RAW)
 	})
 })
 
