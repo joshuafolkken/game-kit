@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T, useThrelte } from '@threlte/core'
 	import { Text } from '@threlte/extras'
+	import { controls_colors } from '$lib/game-kit/controls/controls-colors'
 	import { compute_fit_scale } from '$lib/game-kit/controls/controls-fit'
 	import { controls_hint_adjust } from '$lib/game-kit/controls/controls-hint-adjust'
 	import { crt } from '$lib/game-kit/Crt.svelte'
@@ -85,6 +86,12 @@
 		// Vertical re-centering nudge in em units (fraction of each Text's fontSize); one value
 		// re-centers both the hint and the differently-sized letters. Default 0 is a no-op.
 		hint_font_y_offset?: number | undefined
+		// Optional color overrides so a consumer can re-theme the pre-start overlay (e.g. a cyan
+		// WarGames palette) instead of the baked purple. Each falls back to today's value when
+		// omitted, so existing consumers render unchanged. `| undefined` mirrors the forwarded props.
+		hint_color?: string | undefined // overrides HINT_COLOR (the start-hint text)
+		key_color?: string | undefined // overrides the per-letter WASD/ESC/Z color
+		icon_color?: string | undefined // recolors the keyboard / space / mouse / touch icon SVGs
 	}
 
 	const {
@@ -93,6 +100,9 @@
 		hint_font,
 		hint_font_scale = 1,
 		hint_font_y_offset = 0,
+		hint_color,
+		key_color,
+		icon_color,
 	}: Props = $props()
 
 	const { size } = useThrelte()
@@ -209,6 +219,13 @@
 	let mouse_tex = $state<CanvasTexture | null>(null)
 	let touch_tex = $state<CanvasTexture | null>(null)
 
+	// Recolor the built-in icon SVGs to icon_color (preserving each element's alpha) before they
+	// are rasterized. Read once at texture-build time — textures load a single time on mount, the
+	// same static-input pattern used for hint_font. Omitting icon_color leaves the SVGs unchanged.
+	function resolve_icon_svg(svg: string): string {
+		return icon_color === undefined ? svg : controls_colors.recolor_icon_svg(svg, icon_color)
+	}
+
 	async function svg_to_texture(svg: string, tex_w: number, tex_h: number): Promise<CanvasTexture> {
 		const blob = new Blob([svg], { type: 'image/svg+xml' })
 		const url = URL.createObjectURL(blob)
@@ -252,9 +269,9 @@
 		void (async function load_textures(): Promise<void> {
 			try {
 				const [kb, ms, tc] = await Promise.all([
-					svg_to_texture(KEYBOARD_SVG, KEYBOARD_TEX_W, KEYBOARD_TEX_H),
-					svg_to_texture(MOUSE_SVG, MOUSE_TEX_W, MOUSE_TEX_H),
-					svg_to_texture(TOUCH_SVG, TOUCH_TEX_W, TOUCH_TEX_H),
+					svg_to_texture(resolve_icon_svg(KEYBOARD_SVG), KEYBOARD_TEX_W, KEYBOARD_TEX_H),
+					svg_to_texture(resolve_icon_svg(MOUSE_SVG), MOUSE_TEX_W, MOUSE_TEX_H),
+					svg_to_texture(resolve_icon_svg(TOUCH_SVG), TOUCH_TEX_W, TOUCH_TEX_H),
 				])
 
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- async race guard: the returned cleanup sets `is_alive = false`, which TS's flow analysis can't see across the await
@@ -316,7 +333,7 @@
 		text={hint_text}
 		font={resolved_font}
 		fontSize={hint_font_size}
-		color={HINT_COLOR}
+		color={hint_color ?? HINT_COLOR}
 		position={[0, hint_position_y, 0]}
 		anchorX="center"
 		anchorY="middle"
@@ -354,7 +371,7 @@
 					text={letter.text}
 					font={resolved_font}
 					fontSize={letter_font_size(letter.vsize)}
-					color={letter.color}
+					color={key_color ?? letter.color}
 					fillOpacity={letter.opacity}
 					position={[
 						KEYBOARD_X + viewbox_x_to_plane(letter.vx),

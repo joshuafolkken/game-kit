@@ -103,6 +103,18 @@ it('declares hint_font (string) plus optional numeric hint_font_scale / hint_fon
 	expect(GAME_SCENE_SOURCE).toMatch(/hint_font_y_offset\?\s*:\s*number\s*\|\s*undefined/u)
 })
 
+it('declares optional hint_color / key_color / icon_color string props (#371)', () => {
+	expect(GAME_SCENE_SOURCE).toMatch(/hint_color\?\s*:\s*string\s*\|\s*undefined/u)
+	expect(GAME_SCENE_SOURCE).toMatch(/key_color\?\s*:\s*string\s*\|\s*undefined/u)
+	expect(GAME_SCENE_SOURCE).toMatch(/icon_color\?\s*:\s*string\s*\|\s*undefined/u)
+})
+
+it('forwards hint_color / key_color / icon_color into <ControlsScene /> (#371)', () => {
+	expect(GAME_SCENE_SOURCE).toMatch(
+		/<ControlsScene[\s\S]*?\{hint_color\}[\s\S]*?\{key_color\}[\s\S]*?\{icon_color\}[\s\S]*?\/>/u,
+	)
+})
+
 it('calls on_start callback when user first clicks', () => {
 	let is_called = false
 	const { container } = render_scene({

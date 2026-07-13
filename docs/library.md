@@ -63,6 +63,21 @@ Omitting both keeps rendering identical to today.
 </GameScene>
 ```
 
+### Controls-hint colors
+
+`GameScene` accepts three optional color props — forwarded to the controls overlay — so a consumer can re-theme the pre-start screen (e.g. a cyan palette) instead of game-kit's baked purple. Each falls back to its current value when omitted, so existing consumers render unchanged:
+
+- `hint_color` (default `#ffffff`) — the start-hint text color.
+- `key_color` (default per-letter purples) — overrides the WASD / ESC / Z keyboard letter color.
+- `icon_color` (default purple) — recolors the keyboard / space / mouse / touch icon SVGs. The icons bake several `rgba()` values at different opacities to fake depth; `icon_color` swaps only the red/green/blue channels and **preserves each element's original alpha**, so the depth cues survive the recolor. Pass any CSS hex (`#rgb` or `#rrggbb`).
+
+```svelte
+<GameScene {hint_text} hint_color="#33ccff" key_color="#33ccff" icon_color="#33ccff">
+	<Room />
+	<Player />
+</GameScene>
+```
+
 ### Room dimensions
 
 `SceneObjects` accepts optional `room_width`, `room_depth`, and `room_height` props to override the room footprint and ceiling height (defaults: `ROOM_W` / `ROOM_D` / `ROOM_H`). Player movement bounds follow the configured `room_width` / `room_depth` automatically.
