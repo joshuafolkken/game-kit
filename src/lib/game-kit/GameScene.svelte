@@ -54,6 +54,13 @@
 		// ink sits off-center. Omitting both keeps today's rendering unchanged.
 		hint_font_scale?: number | undefined
 		hint_font_y_offset?: number | undefined
+		// Optional color overrides for the pre-start controls overlay, forwarded to ControlsScene.
+		// Each falls back to game-kit's baked value when omitted, so existing consumers are
+		// unaffected. hint_color = start-hint text; key_color = WASD/ESC/Z letters; icon_color =
+		// keyboard / space / mouse / touch icon SVGs (recolored while preserving per-element alpha).
+		hint_color?: string | undefined
+		key_color?: string | undefined
+		icon_color?: string | undefined
 		// Initial CRT/RETRO mode. Lets a consumer start with the effect off without editing
 		// the synced app shell (game-kit#375). Omit to keep game-kit's default (on).
 		crt_initial?: 'on' | 'off'
@@ -70,6 +77,9 @@
 		hint_font,
 		hint_font_scale,
 		hint_font_y_offset,
+		hint_color,
+		key_color,
+		icon_color,
 		crt_initial,
 		on_start,
 		label_jump,
@@ -226,7 +236,16 @@
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
-				<ControlsScene {hint_text} {is_touch} {hint_font} {hint_font_scale} {hint_font_y_offset} />
+				<ControlsScene
+					{hint_text}
+					{is_touch}
+					{hint_font}
+					{hint_font_scale}
+					{hint_font_y_offset}
+					{hint_color}
+					{key_color}
+					{icon_color}
+				/>
 			{/if}
 		</Suspense>
 		<CrtDitherPass {lo_dpr} />

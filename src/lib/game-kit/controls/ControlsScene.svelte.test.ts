@@ -18,6 +18,7 @@ const ATTR_MOUSE_POSITION = 'position={[MOUSE_X, MOUSE_Y, 0]}'
 const ATTR_RESOLVED_FONT = 'font={resolved_font}'
 const ATTR_LETTER_FONTSIZE_RAW =
 	'fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}'
+const ATTR_LETTER_COLOR_FALLBACK = 'color={key_color ?? letter.color}'
 
 function find_mesh_open_tag(source: string, position_marker: string): string {
 	const start_index = source.indexOf(position_marker)
@@ -277,7 +278,7 @@ describe('ControlsScene keyboard letters — overlaid as Threlte Text using the 
 		// fontSize and y now route through the hint_font adjustment helpers (letter_font_size /
 		// letter_position_y) — those are asserted in the "hint_font adjustments" describe below.
 		expect(block).toContain(ATTR_RESOLVED_FONT)
-		expect(block).toContain('color={letter.color}')
+		expect(block).toContain(ATTR_LETTER_COLOR_FALLBACK)
 		expect(block).toContain('fillOpacity={letter.opacity}')
 		expect(block).toContain('viewbox_x_to_plane(letter.vx)')
 	})
@@ -398,6 +399,53 @@ describe('ControlsScene hint_font adjustments — scale + em-relative y-offset f
 		expect(block).toContain('fontSize={letter_font_size(letter.vsize)}')
 		expect(block).toContain('letter_position_y(letter)')
 		expect(block).not.toContain(ATTR_LETTER_FONTSIZE_RAW)
+	})
+})
+
+describe('ControlsScene color overrides — hint_color / key_color / icon_color props (#371)', () => {
+	it('declares optional hint_color / key_color / icon_color string props', () => {
+		expect(SOURCE).toMatch(/hint_color\?\s*:\s*string\s*\|\s*undefined/u)
+		expect(SOURCE).toMatch(/key_color\?\s*:\s*string\s*\|\s*undefined/u)
+		expect(SOURCE).toMatch(/icon_color\?\s*:\s*string\s*\|\s*undefined/u)
+	})
+
+	it('destructures the three color props from $props', () => {
+		const properties_block = /const\s*\{[\s\S]*?\}\s*:\s*Props\s*=\n?\s*\$props\(\)/u.exec(SOURCE)
+		const block = properties_block?.[0] ?? ''
+
+		expect(block).toContain('hint_color')
+		expect(block).toContain('key_color')
+		expect(block).toContain('icon_color')
+	})
+
+	it('hint Text falls back to HINT_COLOR when hint_color is omitted', () => {
+		const hint_block = /<Text\s+text=\{hint_text\}[\s\S]*?\/>/u.exec(SOURCE)
+
+		expect(hint_block?.[0] ?? '').toContain('color={hint_color ?? HINT_COLOR}')
+	})
+
+	it('each keyboard letter Text falls back to letter.color when key_color is omitted', () => {
+		const each_block = /\{#each\s+KEYBOARD_LETTERS[\s\S]*?\{\/each\}/u.exec(SOURCE)
+
+		expect(each_block?.[0] ?? '').toContain(ATTR_LETTER_COLOR_FALLBACK)
+	})
+
+	it('imports controls_colors for the icon SVG recolor helper', () => {
+		expect(SOURCE).toMatch(
+			/import\s*\{\s*controls_colors\s*\}\s*from\s*'\$lib\/game-kit\/controls\/controls-colors'/u,
+		)
+	})
+
+	it('resolve_icon_svg recolors via controls_colors only when icon_color is set (no-op otherwise)', () => {
+		expect(SOURCE).toMatch(
+			/function\s+resolve_icon_svg\([\s\S]*?icon_color\s*===\s*undefined\s*\?\s*svg\s*:\s*controls_colors\.recolor_icon_svg\(svg,\s*icon_color\)/u,
+		)
+	})
+
+	it('builds every icon texture through resolve_icon_svg so icon_color reaches the raster', () => {
+		expect(SOURCE).toContain('svg_to_texture(resolve_icon_svg(KEYBOARD_SVG)')
+		expect(SOURCE).toContain('svg_to_texture(resolve_icon_svg(MOUSE_SVG)')
+		expect(SOURCE).toContain('svg_to_texture(resolve_icon_svg(TOUCH_SVG)')
 	})
 })
 
