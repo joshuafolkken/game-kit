@@ -24,8 +24,8 @@ const SEL_STATUS_ROLE = '[role="status"]'
 const REPEATING_LINEAR_GRADIENT = 'repeating-linear-gradient'
 const CLASS_IS_FULLSCREEN = 'is-fullscreen'
 
-function render_scene(extra: Record<string, unknown> = {}): ReturnType<typeof render> {
-	return render(GameScene, {
+async function render_scene(extra: Record<string, unknown> = {}): ReturnType<typeof render> {
+	return await render(GameScene, {
 		props: {
 			label_jump: LABEL_JUMP,
 			label_game: LABEL_GAME,
@@ -45,20 +45,20 @@ afterEach(() => {
 	vi.restoreAllMocks()
 })
 
-it('renders game-scene container', () => {
-	const { container } = render_scene()
+it('renders game-scene container', async () => {
+	const { container } = await render_scene()
 
 	expect(container.querySelector(SEL_GAME_SCENE)).toBeTruthy()
 })
 
-it('hides jump button before the session starts', () => {
-	const { container } = render_scene()
+it('hides jump button before the session starts', async () => {
+	const { container } = await render_scene()
 
 	expect(container.querySelector(SEL_JUMP_BTN)).toBeNull()
 })
 
-it('shows jump button with aria-label after session starts', () => {
-	const { container } = render_scene()
+it('shows jump button with aria-label after session starts', async () => {
+	const { container } = await render_scene()
 	const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 	expect(scene).toBeTruthy()
@@ -72,8 +72,8 @@ it('shows jump button with aria-label after session starts', () => {
 	expect(button?.querySelector('svg')).toBeTruthy()
 })
 
-it('renders a canvas element', () => {
-	const { container } = render_scene()
+it('renders a canvas element', async () => {
+	const { container } = await render_scene()
 
 	expect(container.querySelector('canvas')).toBeTruthy()
 })
@@ -115,9 +115,9 @@ it('forwards hint_color / key_color / icon_color into <ControlsScene /> (#371)',
 	)
 })
 
-it('calls on_start callback when user first clicks', () => {
+it('calls on_start callback when user first clicks', async () => {
 	let is_called = false
-	const { container } = render_scene({
+	const { container } = await render_scene({
 		on_start: () => {
 			is_called = true
 		},
@@ -130,9 +130,9 @@ it('calls on_start callback when user first clicks', () => {
 	expect(is_called).toBe(true)
 })
 
-it('calls on_start only once across multiple clicks', () => {
+it('calls on_start only once across multiple clicks', async () => {
 	let call_count = 0
-	const { container } = render_scene({
+	const { container } = await render_scene({
 		on_start: () => {
 			// eslint-disable-next-line no-plusplus -- idiomatic counter increment inside a test callback
 			call_count++
@@ -148,9 +148,9 @@ it('calls on_start only once across multiple clicks', () => {
 	expect(call_count).toBe(1)
 })
 
-it('start_game runs init_audio only once across multiple clicks', () => {
+it('start_game runs init_audio only once across multiple clicks', async () => {
 	const spy = vi.spyOn(audio, 'init_audio')
-	const { container } = render_scene()
+	const { container } = await render_scene()
 	const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 	expect(scene).toBeTruthy()
@@ -161,10 +161,10 @@ it('start_game runs init_audio only once across multiple clicks', () => {
 	expect(spy).toHaveBeenCalledTimes(1)
 })
 
-it('start_game requests fullscreen on touch-primary devices', () => {
+it('start_game requests fullscreen on touch-primary devices', async () => {
 	vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
 	const fullscreen_spy = vi.spyOn(fullscreen, 'request').mockResolvedValue()
-	const { container } = render_scene()
+	const { container } = await render_scene()
 	const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 	expect(scene).toBeTruthy()
@@ -173,11 +173,11 @@ it('start_game requests fullscreen on touch-primary devices', () => {
 	expect(fullscreen_spy).toHaveBeenCalledTimes(1)
 })
 
-it('start_game does not request fullscreen on desktop devices but still inits audio', () => {
+it('start_game does not request fullscreen on desktop devices but still inits audio', async () => {
 	vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(false)
 	const fullscreen_spy = vi.spyOn(fullscreen, 'request').mockResolvedValue()
 	const audio_spy = vi.spyOn(audio, 'init_audio')
-	const { container } = render_scene()
+	const { container } = await render_scene()
 	const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 	expect(scene).toBeTruthy()
@@ -187,17 +187,17 @@ it('start_game does not request fullscreen on desktop devices but still inits au
 	expect(audio_spy).toHaveBeenCalledTimes(1)
 })
 
-it('registers the game-scene container with fullscreen_switch_input on mount', () => {
+it('registers the game-scene container with fullscreen_switch_input on mount', async () => {
 	const spy = vi.spyOn(fullscreen_switch_input, 'set_container')
-	const { container } = render_scene()
+	const { container } = await render_scene()
 	const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 	expect(scene).toBeTruthy()
 	expect(spy).toHaveBeenCalledWith(scene)
 })
 
-it('sets session.is_session_started to true after first click', () => {
-	const { container } = render_scene()
+it('sets session.is_session_started to true after first click', async () => {
+	const { container } = await render_scene()
 	const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 	expect(scene).toBeTruthy()
@@ -207,22 +207,22 @@ it('sets session.is_session_started to true after first click', () => {
 	expect(session.is_session_started).toBe(true)
 })
 
-it('does not render cyber-glow when game_state.is_alt is false', () => {
-	const { container } = render_scene()
+it('does not render cyber-glow when game_state.is_alt is false', async () => {
+	const { container } = await render_scene()
 
 	expect(container.querySelector(SEL_CYBER_GLOW)).toBeNull()
 })
 
-it('renders cyber-glow when game_state.is_alt is true', () => {
+it('renders cyber-glow when game_state.is_alt is true', async () => {
 	game_state.toggle_alt()
-	const { container } = render_scene()
+	const { container } = await render_scene()
 
 	expect(container.querySelector(SEL_CYBER_GLOW)).toBeTruthy()
 })
 
 describe('ESC / Z key — return to start', () => {
-	it('pressing ESC while session is active calls reset_session', () => {
-		const { container } = render_scene()
+	it('pressing ESC while session is active calls reset_session', async () => {
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -233,8 +233,8 @@ describe('ESC / Z key — return to start', () => {
 		expect(session.is_session_started).toBe(false)
 	})
 
-	it('pressing Z while session is active calls reset_session', () => {
-		const { container } = render_scene()
+	it('pressing Z while session is active calls reset_session', async () => {
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -245,8 +245,8 @@ describe('ESC / Z key — return to start', () => {
 		expect(session.is_session_started).toBe(false)
 	})
 
-	it('pressing uppercase Z while session is active calls reset_session', () => {
-		const { container } = render_scene()
+	it('pressing uppercase Z while session is active calls reset_session', async () => {
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -257,8 +257,8 @@ describe('ESC / Z key — return to start', () => {
 		expect(session.is_session_started).toBe(false)
 	})
 
-	it('pressing ESC while session is not active does not start the game', () => {
-		const { container } = render_scene()
+	it('pressing ESC while session is not active does not start the game', async () => {
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -270,8 +270,8 @@ describe('ESC / Z key — return to start', () => {
 })
 
 describe('Enter / Space — start session', () => {
-	it('pressing Enter starts the session', () => {
-		const { container } = render_scene()
+	it('pressing Enter starts the session', async () => {
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -281,8 +281,8 @@ describe('Enter / Space — start session', () => {
 		expect(session.is_session_started).toBe(true)
 	})
 
-	it('pressing Space does NOT start the session (reserved for jump input)', () => {
-		const { container } = render_scene()
+	it('pressing Space does NOT start the session (reserved for jump input)', async () => {
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -294,19 +294,19 @@ describe('Enter / Space — start session', () => {
 })
 
 describe('mobile move/look during controls overlay', () => {
-	it('joystick zones are rendered before session starts so move/look work in overlay', () => {
+	it('joystick zones are rendered before session starts so move/look work in overlay', async () => {
 		vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
-		const { container } = render_scene()
+		const { container } = await render_scene()
 
 		expect(container.querySelectorAll('.joystick-zone')).toHaveLength(2)
 	})
 })
 
 describe('mobile pause button', () => {
-	it('shows pause button when session is active on touch device', () => {
+	it('shows pause button when session is active on touch device', async () => {
 		vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
 		vi.spyOn(fullscreen, 'request').mockResolvedValue()
-		const { container } = render_scene()
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -316,9 +316,9 @@ describe('mobile pause button', () => {
 		expect(container.querySelector(SEL_PAUSE_BTN)).toBeTruthy()
 	})
 
-	it('does not show pause button on desktop', () => {
+	it('does not show pause button on desktop', async () => {
 		vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(false)
-		const { container } = render_scene()
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -328,17 +328,17 @@ describe('mobile pause button', () => {
 		expect(container.querySelector(SEL_PAUSE_BTN)).toBeNull()
 	})
 
-	it('does not show pause button before session starts', () => {
+	it('does not show pause button before session starts', async () => {
 		vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
-		const { container } = render_scene()
+		const { container } = await render_scene()
 
 		expect(container.querySelector(SEL_PAUSE_BTN)).toBeNull()
 	})
 
-	it('clicking pause button resets session', () => {
+	it('clicking pause button resets session', async () => {
 		vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
 		vi.spyOn(fullscreen, 'request').mockResolvedValue()
-		const { container } = render_scene()
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -354,10 +354,10 @@ describe('mobile pause button', () => {
 		expect(session.is_session_started).toBe(false)
 	})
 
-	it('pause button is positioned at bottom-right of the screen', () => {
+	it('pause button is positioned at bottom-right of the screen', async () => {
 		vi.spyOn(device, 'is_touch_primary', 'get').mockReturnValue(true)
 		vi.spyOn(fullscreen, 'request').mockResolvedValue()
-		const { container } = render_scene()
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -409,14 +409,14 @@ describe('dynamic pixel DPR — dot count stays consistent on narrow viewports',
 })
 
 describe('CRT filter overlay — scanlines + vignette over the whole game screen', () => {
-	it('renders a CRT overlay element over the game container, regardless of session state', () => {
-		const { container } = render_scene()
+	it('renders a CRT overlay element over the game container, regardless of session state', async () => {
+		const { container } = await render_scene()
 
 		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeTruthy()
 	})
 
-	it('CRT overlay is a sibling of the Canvas so it covers the entire game screen', () => {
-		const { container } = render_scene()
+	it('CRT overlay is a sibling of the Canvas so it covers the entire game screen', async () => {
+		const { container } = await render_scene()
 		const game_scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(game_scene).toBeTruthy()
@@ -426,8 +426,8 @@ describe('CRT filter overlay — scanlines + vignette over the whole game screen
 		expect(overlay?.parentElement).toBe(game_scene)
 	})
 
-	it('CRT overlay does not block pointer events (UI underneath stays interactive)', () => {
-		const { container } = render_scene()
+	it('CRT overlay does not block pointer events (UI underneath stays interactive)', async () => {
+		const { container } = await render_scene()
 		const overlay = container.querySelector<HTMLElement>(SEL_CRT_OVERLAY)
 
 		expect(overlay).toBeTruthy()
@@ -612,8 +612,8 @@ describe('CRT chromatic aberration — wiring into GameScene', () => {
 		)
 	})
 
-	it('renders the SVG <filter id="crt-chromatic"> into the DOM at mount', () => {
-		const { container } = render_scene()
+	it('renders the SVG <filter id="crt-chromatic"> into the DOM at mount', async () => {
+		const { container } = await render_scene()
 		const filter = container.querySelector('#crt-chromatic')
 
 		expect(filter).toBeTruthy()
@@ -632,18 +632,18 @@ describe('safe-area drawing when fullscreen is engaged (Issue #80)', () => {
 		expect(GAME_SCENE_SOURCE).toMatch(/class:is-fullscreen=\{is_fullscreen_active\}/u)
 	})
 
-	it('applies the is-fullscreen class when fullscreen.is_active is true', () => {
+	it('applies the is-fullscreen class when fullscreen.is_active is true', async () => {
 		vi.spyOn(fullscreen, 'is_active', 'get').mockReturnValue(true)
-		const { container } = render_scene()
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
 		expect(scene?.classList.contains(CLASS_IS_FULLSCREEN)).toBe(true)
 	})
 
-	it('omits the is-fullscreen class when fullscreen.is_active is false', () => {
+	it('omits the is-fullscreen class when fullscreen.is_active is false', async () => {
 		vi.spyOn(fullscreen, 'is_active', 'get').mockReturnValue(false)
-		const { container } = render_scene()
+		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
 		expect(scene).toBeTruthy()
@@ -724,8 +724,8 @@ describe('antialiasing — enabled on desktop when RETRO mode is off (Issue #116
 describe('status live-region is visually hidden via scoped CSS (Issue #131)', () => {
 	const MAX_VISUALLY_HIDDEN_HEIGHT_PX = 1
 
-	it('keeps [role="status"] visually hidden before the session starts', () => {
-		const { container } = render_scene()
+	it('keeps [role="status"] visually hidden before the session starts', async () => {
+		const { container } = await render_scene()
 		const status = container.querySelector<HTMLElement>(SEL_STATUS_ROLE)
 
 		expect(status).toBeTruthy()
@@ -733,8 +733,8 @@ describe('status live-region is visually hidden via scoped CSS (Issue #131)', ()
 		expect(status.getBoundingClientRect().height).toBeLessThanOrEqual(MAX_VISUALLY_HIDDEN_HEIGHT_PX)
 	})
 
-	it('keeps [role="status"] visually hidden after session.start_session()', () => {
-		const { container } = render_scene()
+	it('keeps [role="status"] visually hidden after session.start_session()', async () => {
+		const { container } = await render_scene()
 
 		session.start_session()
 		flushSync()

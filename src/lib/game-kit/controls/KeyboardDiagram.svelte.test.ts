@@ -7,14 +7,14 @@ const SEL_KEYBOARD_DIAGRAM = 'svg.keyboard-diagram'
 const SEL_KEY_SPACE_POLYLINE = '.key-space polyline'
 
 describe('KeyboardDiagram', () => {
-	it('renders the SVG diagram', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('renders the SVG diagram', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 
 		expect(container.querySelector(SEL_KEYBOARD_DIAGRAM)).toBeTruthy()
 	})
 
-	it('SVG aria-label includes move, jump, and return labels for screen readers', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('SVG aria-label includes move, jump, and return labels for screen readers', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 		const aria = container.querySelector(SEL_KEYBOARD_DIAGRAM)?.getAttribute('aria-label') ?? ''
 
 		expect(aria).toContain(PROPS.label_move)
@@ -22,16 +22,16 @@ describe('KeyboardDiagram', () => {
 		expect(aria).toContain(PROPS.label_return)
 	})
 
-	it('does not render a visible move label text', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('does not render a visible move label text', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 		const texts = [...container.querySelectorAll('text')]
 		const move_label = texts.find((t) => t.textContent.trim() === PROPS.label_move)
 
 		expect(move_label).toBeUndefined()
 	})
 
-	it('renders ESC text centered in its key (dominant-baseline central)', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('renders ESC text centered in its key (dominant-baseline central)', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 		const texts = [...container.querySelectorAll('text')]
 		const esc = texts.find((t) => t.textContent.trim() === 'ESC')
 
@@ -40,23 +40,23 @@ describe('KeyboardDiagram', () => {
 		expect(esc?.getAttribute('y')).toBe('162')
 	})
 
-	it('places A/S/D keys with same gap as W-to-S gap', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('places A/S/D keys with same gap as W-to-S gap', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 		const s_rect = container.querySelector(':scope .key-s rect')
 
 		expect(s_rect?.getAttribute('y')).toBe('46')
 	})
 
-	it('uses Orbitron font for key labels', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('uses Orbitron font for key labels', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 		const texts = [...container.querySelectorAll('text')]
 		const has_orbitron = texts.every((t) => t.getAttribute('font-family')?.includes('Orbitron'))
 
 		expect(has_orbitron).toBe(true)
 	})
 
-	it('spacebar uses double chevron (two 3-point polylines, no straight line)', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('spacebar uses double chevron (two 3-point polylines, no straight line)', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 		const polylines = [...container.querySelectorAll(SEL_KEY_SPACE_POLYLINE)]
 
 		expect(polylines).toHaveLength(2)
@@ -68,8 +68,8 @@ describe('KeyboardDiagram', () => {
 		}
 	})
 
-	it('spacebar chevron is text-sized (total span <= 13 units, similar to WASD font-size)', () => {
-		const { container } = render(KeyboardDiagram, { props: PROPS })
+	it('spacebar chevron is text-sized (total span <= 13 units, similar to WASD font-size)', async () => {
+		const { container } = await render(KeyboardDiagram, { props: PROPS })
 		const polylines = [...container.querySelectorAll(SEL_KEY_SPACE_POLYLINE)]
 		const all_y_values = polylines.flatMap(
 			(polyline) =>

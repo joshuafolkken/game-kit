@@ -8,8 +8,8 @@ const SEL_JUMP_BTN = '[data-testid="jump-btn"]'
 const SEL_JOYSTICK_ZONE = '.joystick-zone'
 const SEL_JOYSTICK_OVERLAY = '.joystick-overlay'
 
-function render_joystick(): ReturnType<typeof render<typeof VirtualJoystick>> {
-	return render(VirtualJoystick, { props: { label_jump: LABEL_JUMP } })
+async function render_joystick(): ReturnType<typeof render<typeof VirtualJoystick>> {
+	return await render(VirtualJoystick, { props: { label_jump: LABEL_JUMP } })
 }
 
 function make_touch(id: number, x: number, y: number, target: Element): Touch {
@@ -50,8 +50,8 @@ function setup_touch_device(): void {
 }
 
 describe('VirtualJoystick', () => {
-	it('renders jump button inside overlay but not inside any joystick zone', () => {
-		const { container } = render_joystick()
+	it('renders jump button inside overlay but not inside any joystick zone', async () => {
+		const { container } = await render_joystick()
 
 		expect(
 			container.querySelector(':scope .joystick-overlay [data-testid="jump-btn"]'),
@@ -59,8 +59,8 @@ describe('VirtualJoystick', () => {
 		expect(container.querySelector(':scope .joystick-zone [data-testid="jump-btn"]')).toBeNull()
 	})
 
-	it('jump button has aria-label and svg icon instead of visible text', () => {
-		const { container } = render_joystick()
+	it('jump button has aria-label and svg icon instead of visible text', async () => {
+		const { container } = await render_joystick()
 		const button = container.querySelector<HTMLElement>(SEL_JUMP_BTN)
 
 		expect(button?.getAttribute('aria-label')).toBe(LABEL_JUMP)
@@ -68,8 +68,8 @@ describe('VirtualJoystick', () => {
 		expect(button?.textContent.trim()).toBe('')
 	})
 
-	it('joystick-zone does not capture pointer events on non-touch devices', () => {
-		const { container } = render_joystick()
+	it('joystick-zone does not capture pointer events on non-touch devices', async () => {
+		const { container } = await render_joystick()
 		const zone = container.querySelector<HTMLElement>(SEL_JOYSTICK_ZONE)
 
 		expect(zone).toBeTruthy()
@@ -77,8 +77,8 @@ describe('VirtualJoystick', () => {
 		expect(getComputedStyle(zone).pointerEvents).toBe('none')
 	})
 
-	it('overlay has touch-action none to allow simultaneous two-finger input', () => {
-		const { container } = render_joystick()
+	it('overlay has touch-action none to allow simultaneous two-finger input', async () => {
+		const { container } = await render_joystick()
 		const overlay = container.querySelector<HTMLElement>(SEL_JOYSTICK_OVERLAY)
 
 		expect(overlay).toBeTruthy()
@@ -86,24 +86,24 @@ describe('VirtualJoystick', () => {
 		expect(getComputedStyle(overlay).touchAction).toBe('none')
 	})
 
-	it('hides jump button when should_show_jump=false', () => {
-		const { container } = render(VirtualJoystick, {
+	it('hides jump button when should_show_jump=false', async () => {
+		const { container } = await render(VirtualJoystick, {
 			props: { label_jump: LABEL_JUMP, should_show_jump: false },
 		})
 
 		expect(container.querySelector(SEL_JUMP_BTN)).toBeNull()
 	})
 
-	it('still renders joystick zones even when should_show_jump=false (move/look usable in overlay)', () => {
-		const { container } = render(VirtualJoystick, {
+	it('still renders joystick zones even when should_show_jump=false (move/look usable in overlay)', async () => {
+		const { container } = await render(VirtualJoystick, {
 			props: { label_jump: LABEL_JUMP, should_show_jump: false },
 		})
 
 		expect(container.querySelectorAll(SEL_JOYSTICK_ZONE)).toHaveLength(2)
 	})
 
-	it('jump button is positioned near the bottom-right corner', () => {
-		const { container } = render_joystick()
+	it('jump button is positioned near the bottom-right corner', async () => {
+		const { container } = await render_joystick()
 		const overlay = container.querySelector<HTMLElement>(SEL_JOYSTICK_OVERLAY)
 
 		expect(overlay).toBeTruthy()
@@ -114,8 +114,8 @@ describe('VirtualJoystick', () => {
 		expect(styles.getPropertyValue('--jump-btn-left').trim()).toBe('82%')
 	})
 
-	it('jump button matches pause button styling (size, background, border, color)', () => {
-		const { container } = render_joystick()
+	it('jump button matches pause button styling (size, background, border, color)', async () => {
+		const { container } = await render_joystick()
 		const button = container.querySelector<HTMLElement>(SEL_JUMP_BTN)
 
 		expect(button).toBeTruthy()
@@ -133,9 +133,9 @@ describe('VirtualJoystick', () => {
 describe('VirtualJoystick touch — joystick move/look input', () => {
 	setup_touch_device()
 
-	it('dragging move zone calls set_joystick_move with normalized vector at max distance', () => {
+	it('dragging move zone calls set_joystick_move with normalized vector at max distance', async () => {
 		const spy = vi.spyOn(input, 'set_joystick_move')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -153,9 +153,9 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 		expect(spy).toHaveBeenCalledWith(1, 0)
 	})
 
-	it('movement within dead zone gives zero joystick output', () => {
+	it('movement within dead zone gives zero joystick output', async () => {
 		const spy = vi.spyOn(input, 'set_joystick_move')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -173,9 +173,9 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 		expect(spy).toHaveBeenCalledWith(0, 0)
 	})
 
-	it('movement at dead zone boundary gives zero joystick output', () => {
+	it('movement at dead zone boundary gives zero joystick output', async () => {
 		const spy = vi.spyOn(input, 'set_joystick_move')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -193,9 +193,9 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 		expect(spy).toHaveBeenCalledWith(0, 0)
 	})
 
-	it('movement beyond dead zone gives scaled output', () => {
+	it('movement beyond dead zone gives scaled output', async () => {
 		const spy = vi.spyOn(input, 'set_joystick_move')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -217,9 +217,9 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 		expect(dx).toBeCloseTo(0.5)
 	})
 
-	it('first touchmove after look start applies reduced delta to soften browser-slop snap', () => {
+	it('first touchmove after look start applies reduced delta to soften browser-slop snap', async () => {
 		const spy = vi.spyOn(input, 'apply_look_delta')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const look_zone = container.querySelectorAll(SEL_JOYSTICK_ZONE).item(1)
 
 		expect(look_zone).toBeTruthy()
@@ -241,9 +241,9 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 		expect(delta_pitch).toBeCloseTo(-10 * TOUCH_LOOK_SENSITIVITY * FIRST_MOVE_SENSITIVITY_FRACTION)
 	})
 
-	it('second touchmove after look start applies full-sensitivity delta', () => {
+	it('second touchmove after look start applies full-sensitivity delta', async () => {
 		const spy = vi.spyOn(input, 'apply_look_delta')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const look_zone = container.querySelectorAll(SEL_JOYSTICK_ZONE).item(1)
 
 		expect(look_zone).toBeTruthy()
@@ -268,10 +268,10 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 		expect(delta_pitch).toBeCloseTo(-10 * TOUCH_LOOK_SENSITIVITY)
 	})
 
-	it('two simultaneous touches on both zones both get handled independently', () => {
+	it('two simultaneous touches on both zones both get handled independently', async () => {
 		const move_spy = vi.spyOn(input, 'set_joystick_move')
 		const look_spy = vi.spyOn(input, 'apply_look_delta')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const zones = container.querySelectorAll(SEL_JOYSTICK_ZONE)
 		const move_zone = zones.item(0)
 		const look_zone = zones.item(1)
@@ -295,9 +295,9 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 		expect(look_spy).toHaveBeenCalled()
 	})
 
-	it('move zone touchend resets joystick to zero', () => {
+	it('move zone touchend resets joystick to zero', async () => {
 		const spy = vi.spyOn(input, 'set_joystick_move')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -315,13 +315,13 @@ describe('VirtualJoystick touch — joystick move/look input', () => {
 describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => {
 	setup_touch_device()
 
-	it('touching move zone dispatches pointerdown to threlte dom (canvas parent)', () => {
+	it('touching move zone dispatches pointerdown to threlte dom (canvas parent)', async () => {
 		const { dom } = setup_threlte_dom()
 		const spy = vi.fn()
 
 		dom.addEventListener('pointerdown', spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -340,13 +340,13 @@ describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => 
 		dom.remove()
 	})
 
-	it('drag on move zone (touchmove > threshold) does NOT dispatch click on touchend', () => {
+	it('drag on move zone (touchmove > threshold) does NOT dispatch click on touchend', async () => {
 		const { dom } = setup_threlte_dom()
 		const click_spy = vi.fn()
 
 		dom.addEventListener('click', click_spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -366,13 +366,13 @@ describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => 
 		dom.remove()
 	})
 
-	it('drag on look zone (touchmove > threshold) does NOT dispatch click on touchend', () => {
+	it('drag on look zone (touchmove > threshold) does NOT dispatch click on touchend', async () => {
 		const { dom } = setup_threlte_dom()
 		const click_spy = vi.fn()
 
 		dom.addEventListener('click', click_spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const look_zone = container.querySelectorAll(SEL_JOYSTICK_ZONE).item(1)
 
 		expect(look_zone).toBeTruthy()
@@ -391,13 +391,13 @@ describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => 
 		dom.remove()
 	})
 
-	it('releasing move zone dispatches click to threlte dom at start position', () => {
+	it('releasing move zone dispatches click to threlte dom at start position', async () => {
 		const { dom } = setup_threlte_dom()
 		const spy = vi.fn()
 
 		dom.addEventListener('click', spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -420,13 +420,13 @@ describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => 
 		dom.remove()
 	})
 
-	it('releasing move zone dispatches pointerleave to threlte dom', () => {
+	it('releasing move zone dispatches pointerleave to threlte dom', async () => {
 		const { dom } = setup_threlte_dom()
 		const spy = vi.fn()
 
 		dom.addEventListener('pointerleave', spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -441,13 +441,13 @@ describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => 
 		dom.remove()
 	})
 
-	it('touching look zone dispatches pointerdown to threlte dom', () => {
+	it('touching look zone dispatches pointerdown to threlte dom', async () => {
 		const { dom } = setup_threlte_dom()
 		const spy = vi.fn()
 
 		dom.addEventListener('pointerdown', spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const look_zone = container.querySelectorAll(SEL_JOYSTICK_ZONE).item(1)
 
 		expect(look_zone).toBeTruthy()
@@ -469,13 +469,13 @@ describe('VirtualJoystick touch — threlte pointer dispatch & gestures', () => 
 describe('VirtualJoystick touch — touchcancel', () => {
 	setup_touch_device()
 
-	it('touchcancel does not dispatch click to threlte dom', () => {
+	it('touchcancel does not dispatch click to threlte dom', async () => {
 		const { dom } = setup_threlte_dom()
 		const click_spy = vi.fn()
 
 		dom.addEventListener('click', click_spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -490,13 +490,13 @@ describe('VirtualJoystick touch — touchcancel', () => {
 		dom.remove()
 	})
 
-	it('touchcancel dispatches pointerup to threlte dom', () => {
+	it('touchcancel dispatches pointerup to threlte dom', async () => {
 		const { dom } = setup_threlte_dom()
 		const spy = vi.fn()
 
 		dom.addEventListener('pointerup', spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -511,13 +511,13 @@ describe('VirtualJoystick touch — touchcancel', () => {
 		dom.remove()
 	})
 
-	it('touchcancel dispatches pointerleave to threlte dom', () => {
+	it('touchcancel dispatches pointerleave to threlte dom', async () => {
 		const { dom } = setup_threlte_dom()
 		const spy = vi.fn()
 
 		dom.addEventListener('pointerleave', spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const move_zone = container.querySelector(SEL_JOYSTICK_ZONE)
 
 		expect(move_zone).toBeTruthy()
@@ -536,13 +536,13 @@ describe('VirtualJoystick touch — touchcancel', () => {
 describe('VirtualJoystick touch — jump button', () => {
 	setup_touch_device()
 
-	it('tapping jump button does not dispatch to threlte dom', () => {
+	it('tapping jump button does not dispatch to threlte dom', async () => {
 		const { dom } = setup_threlte_dom()
 		const spy = vi.fn()
 
 		dom.addEventListener('pointerdown', spy)
 
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const jump_button = container.querySelector<HTMLButtonElement>(SEL_JUMP_BTN)
 
 		expect(jump_button).toBeTruthy()
@@ -556,9 +556,9 @@ describe('VirtualJoystick touch — jump button', () => {
 		dom.remove()
 	})
 
-	it('touchstart on jump button calls trigger_jump', () => {
+	it('touchstart on jump button calls trigger_jump', async () => {
 		const spy = vi.spyOn(input, 'trigger_jump')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const jump_button = container.querySelector<HTMLButtonElement>(SEL_JUMP_BTN)
 
 		expect(jump_button).toBeTruthy()
@@ -571,9 +571,9 @@ describe('VirtualJoystick touch — jump button', () => {
 		expect(spy).toHaveBeenCalledOnce()
 	})
 
-	it('touchstart on jump button calls trigger_jump even while look zone is dragging', () => {
+	it('touchstart on jump button calls trigger_jump even while look zone is dragging', async () => {
 		const spy = vi.spyOn(input, 'trigger_jump')
-		const { container } = render_joystick()
+		const { container } = await render_joystick()
 		const look_zone = container.querySelectorAll(SEL_JOYSTICK_ZONE).item(1)
 		const jump_button = container.querySelector<HTMLButtonElement>(SEL_JUMP_BTN)
 

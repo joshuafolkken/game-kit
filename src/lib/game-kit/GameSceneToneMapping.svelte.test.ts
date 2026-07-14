@@ -37,15 +37,15 @@ describe('GameScene tone_mapping prop — true (non-tone-mapped) color is the de
 		expect(GAME_SCENE_SOURCE).toMatch(/<Canvas[^>]*\btoneMapping=\{tone_mapping\}/u)
 	})
 
-	it('renders with the default (no tone_mapping prop) — the NoToneMapping true-color path', () => {
-		const { container } = render(GameScene, { props: { ...BASE_LABELS } })
+	it('renders with the default (no tone_mapping prop) — the NoToneMapping true-color path', async () => {
+		const { container } = await render(GameScene, { props: { ...BASE_LABELS } })
 
 		expect(container.querySelector(SEL_GAME_SCENE)).toBeTruthy()
 	})
 
-	it('renders when a consumer overrides tone_mapping (e.g. AgXToneMapping) instead of the default', () => {
+	it('renders when a consumer overrides tone_mapping (e.g. AgXToneMapping) instead of the default', async () => {
 		expect(NoToneMapping).not.toBe(AgXToneMapping)
-		const { container } = render(GameScene, {
+		const { container } = await render(GameScene, {
 			props: { ...BASE_LABELS, tone_mapping: AgXToneMapping },
 		})
 

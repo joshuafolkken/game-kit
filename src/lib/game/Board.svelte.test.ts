@@ -35,40 +35,40 @@ const TITLE_DERIVES_ALT_FONT = 'derives should_use_alt_font from !crt.is_crt_ena
 const TITLE_NO_IS_ALT_IN_FONTS = 'does not pass is_alt directly into fonts helpers'
 
 describe('Board', () => {
-	it('renders without error in idle state', () => {
-		const { container } = render(Board, {
+	it('renders without error in idle state', async () => {
+		const { container } = await render(Board, {
 			props: { game_data: make_game_data(), ...BOARD_TEXT_PROPS },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error when a color is active', () => {
-		const { container } = render(Board, {
+	it('renders without error when a color is active', async () => {
+		const { container } = await render(Board, {
 			props: { game_data: make_game_data({ active_color: 'green' }), ...BOARD_TEXT_PROPS },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error in gameover phase', () => {
-		const { container } = render(Board, {
+	it('renders without error in gameover phase', async () => {
+		const { container } = await render(Board, {
 			props: { game_data: make_game_data({ phase: 'gameover' }), ...BOARD_TEXT_PROPS },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error when round is in progress', () => {
-		const { container } = render(Board, {
+	it('renders without error when round is in progress', async () => {
+		const { container } = await render(Board, {
 			props: { game_data: make_game_data({ phase: 'showing', round: 3 }), ...BOARD_TEXT_PROPS },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error with flash colors', () => {
-		const { container } = render(Board, {
+	it('renders without error with flash colors', async () => {
+		const { container } = await render(Board, {
 			props: {
 				game_data: make_game_data({ flash_colors: ['red', 'blue'] }),
 				...BOARD_TEXT_PROPS,
