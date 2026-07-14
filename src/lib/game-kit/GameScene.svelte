@@ -61,6 +61,14 @@
 		hint_color?: string | undefined
 		key_color?: string | undefined
 		icon_color?: string | undefined
+		// Optional icon-SVG overrides for the pre-start controls overlay, forwarded to ControlsScene.
+		// Each replaces the built-in keyboard / space / mouse / touch icon and falls back to game-kit's
+		// baked SVG when omitted, so existing consumers are unaffected. An override MUST keep the
+		// built-in viewBox/layout (keyboard "0 0 148 176", mouse "13 -7 64 120", touch "0 0 240 90")
+		// so the WASD letters and icon alignment stay correct — see ControlsScene Props for details.
+		keyboard_svg?: string | undefined
+		mouse_svg?: string | undefined
+		touch_svg?: string | undefined
 		// Initial CRT/RETRO mode. Lets a consumer start with the effect off without editing
 		// the synced app shell (game-kit#375). Omit to keep game-kit's default (on).
 		crt_initial?: 'on' | 'off'
@@ -80,6 +88,9 @@
 		hint_color,
 		key_color,
 		icon_color,
+		keyboard_svg,
+		mouse_svg,
+		touch_svg,
 		crt_initial,
 		on_start,
 		label_jump,
@@ -245,6 +256,9 @@
 					{hint_color}
 					{key_color}
 					{icon_color}
+					{keyboard_svg}
+					{mouse_svg}
+					{touch_svg}
 				/>
 			{/if}
 		</Suspense>
