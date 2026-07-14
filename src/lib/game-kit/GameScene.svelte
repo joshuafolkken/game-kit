@@ -17,7 +17,7 @@
 	import { game_state } from '$lib/game-kit/State.svelte'
 	import { fullscreen_switch_input } from '$lib/game-kit/switch/fullscreen-switch-input'
 	import { onMount, untrack, type Snippet } from 'svelte'
-	import { WebGLRenderer } from 'three'
+	import { NoToneMapping, WebGLRenderer, type ToneMapping } from 'three'
 
 	// DPR is calibrated so the shorter buffer edge targets TARGET_SHORT_EDGE_PIXELS for
 	// consistent dot density across landscape / portrait / narrow viewports.
@@ -72,6 +72,13 @@
 		// Initial CRT/RETRO mode. Lets a consumer start with the effect off without editing
 		// the synced app shell (game-kit#375). Omit to keep game-kit's default (on).
 		crt_initial?: 'on' | 'off'
+		// Renderer tone mapping. Defaults to NoToneMapping so the scene renders at true sRGB
+		// out of the box — crisp white (255) borders and exact brand/console colors for
+		// game-kit's stylized flat/emissive UI (game-kit#389). Threlte's <Canvas> otherwise
+		// defaults to AgXToneMapping, which compresses whites to ~0.8 and desaturates bright
+		// colors (a film/PBR roll-off unsuited to unlit exact-color UI). Consumers who want a
+		// filmic/PBR look can opt back into AgXToneMapping (or any three ToneMapping) via this prop.
+		tone_mapping?: ToneMapping
 		on_start?: () => void
 		label_jump: string
 		label_game: string
@@ -92,6 +99,7 @@
 		mouse_svg,
 		touch_svg,
 		crt_initial,
+		tone_mapping = NoToneMapping,
 		on_start,
 		label_jump,
 		label_game,
@@ -243,7 +251,11 @@
 		<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
 		<CrtChromaticFilter />
 	{/if}
-	<Canvas dpr={1} createRenderer={create_renderer_factory(is_aa_enabled)}>
+	<Canvas
+		dpr={1}
+		toneMapping={tone_mapping}
+		createRenderer={create_renderer_factory(is_aa_enabled)}
+	>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
@@ -319,7 +331,7 @@
 		/* WebGL pipeline handles nearest-neighbour upscale in the upscale pass —
 		   no CSS pixelated scaling needed. CSS handles vibrance boost and chromatic
 		   aberration on the already-upscaled, native-resolution bitmap. */
-		filter: contrast(0.9) saturate(1.8) brightness(1.1) url(#crt-chromatic);
+		filter: contrast(0.95) saturate(1.2) brightness(1) url(#crt-chromatic);
 	}
 
 	.game-container.pseudo-fullscreen {
