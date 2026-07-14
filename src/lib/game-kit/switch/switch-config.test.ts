@@ -20,6 +20,8 @@ import {
 	LEFT_SWITCH_X,
 	PANEL_DEPTH,
 	PANEL_HALF,
+	PANEL_OPACITY_ACTIVE,
+	PANEL_OPACITY_INACTIVE,
 	PANEL_SIZE,
 	PANEL_TEXT_FONT_SIZE,
 	PANEL_TEXT_Y,
@@ -192,5 +194,27 @@ describe('DEFAULT_SWITCH_GEOMETRY', () => {
 		for (const [key, value] of Object.entries(DEFAULT_SWITCH_GEOMETRY)) {
 			expect(value, `${key} should not be undefined`).not.toBeUndefined()
 		}
+	})
+})
+
+describe('PANEL_OPACITY — active face stays translucent (holographic), not a dense fill', () => {
+	// Regression for game-kit#389: once NoToneMapping became the default, the active panel
+	// face (previously opacity 0.18) rendered at full sRGB and — amplified by the CRT
+	// low-res quantization — read as a dense, opaque color block, hiding the panel's frame
+	// and icon. Lowered to 0.08 so the ON face reads as a subtle holographic tint while the
+	// glowing border/icon still signal the active state. Value-pin catches drift back toward
+	// the dense 0.18.
+	const DENSE_ACTIVE_OPACITY = 0.18
+
+	it('pins PANEL_OPACITY_ACTIVE to 0.08 (subtle translucent face)', () => {
+		expect(PANEL_OPACITY_ACTIVE).toBe(0.08)
+	})
+
+	it('keeps the active face well below the old dense 0.18 that read as opaque under CRT', () => {
+		expect(PANEL_OPACITY_ACTIVE).toBeLessThan(DENSE_ACTIVE_OPACITY)
+	})
+
+	it('keeps the active face at least as visible as the inactive face (ON stays distinguishable)', () => {
+		expect(PANEL_OPACITY_ACTIVE).toBeGreaterThanOrEqual(PANEL_OPACITY_INACTIVE)
 	})
 })
