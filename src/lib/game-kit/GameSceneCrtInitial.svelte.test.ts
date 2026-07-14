@@ -6,7 +6,7 @@ import GameScene from './GameScene.svelte'
 // Focused coverage for the crt_initial prop (game-kit#375). Lives in its own file because the
 // main GameScene.svelte.test.ts is at the test-file line cap. The prop lets a consumer choose
 // the initial CRT/RETRO mode through game-kit API instead of hand-toggling it in the synced app
-// shell — which jgame sync would clobber on the next bump.
+// shell — which josh-game sync would clobber on the next bump.
 
 const SEL_GAME_SCENE = '[data-testid="game-scene"]'
 const SEL_CRT_OVERLAY = '[data-testid="crt-overlay"]'

@@ -1,13 +1,13 @@
 import { realpathSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { jgame_init } from './init/jgame-init.ts'
-import { jgame_sync } from './init/jgame-sync.ts'
-import { jgame_version } from './version/jgame-version.ts'
+import { josh_game_init } from './init/josh-game-init.ts'
+import { josh_game_sync } from './init/josh-game-sync.ts'
+import { josh_game_version } from './version/josh-game-version.ts'
 
 // `[name]` is the init project name; `sync` accepts `--force` to overwrite locally-modified
 // free-form files (e.g. layout.css) instead of skipping them (game-kit#375).
-const USAGE = 'Usage: jgame <init|sync|version|v|version:upgrade|vu> [name|--force]'
+const USAGE = 'Usage: josh-game <init|sync|version|v|version:upgrade|vu> [name|--force]'
 
 const COMMAND_ARG_INDEX = 2
 const NAME_ARG_INDEX = 3
@@ -15,23 +15,23 @@ const NAME_ARG_INDEX = 3
 const ROUTING_FAILURE_EXIT_CODE = 1
 
 // The running bin's own directory, passed to kit's version library so the report can show the
-// running install. This module is bundled to dist/scripts/jgame.js (the published bin entry).
+// running install. This module is bundled to dist/scripts/josh-game.js (the published bin entry).
 const SELF_DIR = path.dirname(fileURLToPath(import.meta.url))
 
 async function run_version(): Promise<void> {
-	await jgame_version.run_check(SELF_DIR)
+	await josh_game_version.run_check(SELF_DIR)
 }
 
-// run_upgrade returns the exit code; the CLI owns the process exit. (jgame_version loads kit's
-// version library lazily, so init/sync never require kit — see jgame-version.ts.)
+// run_upgrade returns the exit code; the CLI owns the process exit. (josh_game_version loads kit's
+// version library lazily, so init/sync never require kit — see josh-game-version.ts.)
 async function run_version_upgrade(): Promise<void> {
-	const code = await jgame_version.run_upgrade(SELF_DIR)
+	const code = await josh_game_version.run_upgrade(SELF_DIR)
 	if (code !== 0) process.exit(code)
 }
 
 const COMMAND_HANDLERS: Record<string, (argument?: string) => void | Promise<void>> = {
-	init: jgame_init.run,
-	sync: jgame_sync.run,
+	init: josh_game_init.run,
+	sync: josh_game_sync.run,
 	version: run_version,
 	'version:upgrade': run_version_upgrade,
 }
@@ -69,9 +69,9 @@ async function route_command(command: string | undefined, argument?: string): Pr
 	process.exit(1)
 }
 
-const jgame = { route_command, is_invoked_directly, resolve_command }
+const josh_game = { route_command, is_invoked_directly, resolve_command }
 
-export { jgame }
+export { josh_game }
 
 if (is_invoked_directly(process.argv[1] ?? '', fileURLToPath(import.meta.url))) {
 	try {

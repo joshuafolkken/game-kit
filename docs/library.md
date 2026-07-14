@@ -166,6 +166,6 @@ Switch geometry: `SwitchIconType`, `SwitchGeometry`, `SWITCH_ICON_TYPES`, `DEFAU
 
 ## Reference implementation
 
-The [`templates/`](../templates/) directory in this repository contains a complete working game (a Simon-style memory game) built on every export above. After running [`jgame init`](./install.md), your project starts from a copy of that template.
+The [`templates/`](../templates/) directory in this repository contains a complete working game (a Simon-style memory game) built on every export above. After running [`josh-game init`](./install.md), your project starts from a copy of that template.
 
 See [`src/lib/index.ts`](../src/lib/index.ts) for the canonical, always-up-to-date export list.

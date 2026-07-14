@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs', () => ({ readFileSync: vi.fn() }))
-vi.mock('./jgame-paths.ts', () => ({
-	jgame_paths: {
+vi.mock('./josh-game-paths.ts', () => ({
+	josh_game_paths: {
 		PACKAGE_DIR: '/pkg',
 		TEMPLATES_DIR: '/pkg/templates',
 		PROJECT_ROOT: '/project',
@@ -29,10 +29,10 @@ const KIT_DEV_DEPS = {
 	'vitest-browser-svelte': '^2.1.1',
 }
 
-describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
+describe('josh_game_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 	it('includes the lint/format toolchain that kit declares only as devDeps (#184)', async () => {
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const required = jgame_managed_dev_deps.REQUIRED_DEV_DEPS
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const required = josh_game_managed_dev_deps.REQUIRED_DEV_DEPS
 
 		expect(required).toContain('prettier')
 		expect(required).toContain('eslint')
@@ -46,15 +46,15 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 		// The scaffold's eslint.config.js imports `@joshuafolkken/app-kit/eslint/sveltekit`
 		// and its cspell dictionary chains `@joshuafolkken/app-kit/cspell/sveltekit`, so
 		// app-kit must be a direct devDep of every scaffolded project to resolve them.
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const required = jgame_managed_dev_deps.REQUIRED_DEV_DEPS
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const required = josh_game_managed_dev_deps.REQUIRED_DEV_DEPS
 
 		expect(required).toContain('@joshuafolkken/app-kit')
 	})
 
 	it('caret-normalizes app-kit so scaffolds receive patch/minor presets updates (#355)', async () => {
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.pick_required_deps({
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.pick_required_deps({
 			...KIT_DEV_DEPS,
 			'@joshuafolkken/app-kit': '0.18.0',
 		})
@@ -68,8 +68,8 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 		// `command -v tsx ... && tsx fix-gh-packages.ts`. Without these as direct
 		// devDeps the guards skip silently, so git hooks and the GH Packages lockfile
 		// fix never run in scaffolded projects.
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const required = jgame_managed_dev_deps.REQUIRED_DEV_DEPS
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const required = josh_game_managed_dev_deps.REQUIRED_DEV_DEPS
 
 		expect(required).toContain('lefthook')
 		expect(required).toContain('tsx')
@@ -78,8 +78,8 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 	it('resolves lefthook + tsx to pinned versions, never the wildcard fallback (#272)', async () => {
 		// game-kit MUST declare lefthook + tsx in its own devDependencies so the
 		// pinned versions flow into scaffolds; a `*` here means the source pin is missing.
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
 
 		expect(result.lefthook).toBe('^2.1.9')
 		expect(result.tsx).toBe('^4.22.4')
@@ -90,8 +90,8 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 		// `@vitest/browser-playwright`, and its client project runs in chromium via
 		// playwright. Without these as direct devDeps `josh test:unit` (a plain
 		// `vitest run`) fails in scaffolded projects after a sync.
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const required = jgame_managed_dev_deps.REQUIRED_DEV_DEPS
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const required = josh_game_managed_dev_deps.REQUIRED_DEV_DEPS
 
 		expect(required).toContain('vitest')
 		expect(required).toContain('@vitest/browser-playwright')
@@ -103,8 +103,8 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 	it('resolves the vitest browser-mode toolchain to pinned versions, never the wildcard fallback (#322)', async () => {
 		// game-kit MUST declare the toolchain in its own devDependencies so pinned
 		// versions flow into scaffolds; a `*` here means the source pin is missing.
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
 
 		expect(result.vitest).toBe('^4.1.8')
 		expect(result['@vitest/browser-playwright']).toBe('^4.1.8')
@@ -114,18 +114,18 @@ describe('jgame_managed_dev_deps.REQUIRED_DEV_DEPS', () => {
 	})
 
 	it('stays alphabetically sorted so additions are insertion-stable', async () => {
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const required = [...jgame_managed_dev_deps.REQUIRED_DEV_DEPS]
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const required = [...josh_game_managed_dev_deps.REQUIRED_DEV_DEPS]
 		const sorted = [...required].toSorted((left, right) => left.localeCompare(right))
 
 		expect(required).toEqual(sorted)
 	})
 })
 
-describe('jgame_managed_dev_deps.pick_required_deps', () => {
+describe('josh_game_managed_dev_deps.pick_required_deps', () => {
 	it('resolves versions from the supplied source map', async () => {
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
 
 		expect(result.prettier).toBe('^3.8.3')
 		expect(result.eslint).toBe('^10.4.0')
@@ -135,21 +135,21 @@ describe('jgame_managed_dev_deps.pick_required_deps', () => {
 		// Regression for #326: game-kit exact-pins @joshuafolkken/kit (and @playwright/test)
 		// for its own toolchain; copying those verbatim froze freshly-init'd projects on one
 		// version while every other managed dep was caret-ranged.
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
 
 		expect(result['@joshuafolkken/kit']).toBe('^0.162.0')
 		expect(result['@playwright/test']).toBe('^1.60.0')
 	})
 
 	it('passes existing ranges through unchanged (#326)', async () => {
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
 		const source: Record<string, string> = {
 			eslint: '^10.4.0',
 			prettier: '~3.8.3',
 			svelte: '>=5.0.0',
 		}
-		const result = jgame_managed_dev_deps.pick_required_deps(source)
+		const result = josh_game_managed_dev_deps.pick_required_deps(source)
 
 		expect(result.eslint).toBe('^10.4.0')
 		expect(result.prettier).toBe('~3.8.3')
@@ -159,25 +159,25 @@ describe('jgame_managed_dev_deps.pick_required_deps', () => {
 	})
 
 	it('falls back to wildcard when the source is missing a required dep', async () => {
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
 		const partial: Record<string, string> = { prettier: '^3.8.3' }
-		const result = jgame_managed_dev_deps.pick_required_deps(partial)
+		const result = josh_game_managed_dev_deps.pick_required_deps(partial)
 
 		expect(result.prettier).toBe('^3.8.3')
 		expect(result.eslint).toBe('*')
 	})
 
 	it('emits every required key in the output', async () => {
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.pick_required_deps(KIT_DEV_DEPS)
 
-		for (const key of jgame_managed_dev_deps.REQUIRED_DEV_DEPS) {
+		for (const key of josh_game_managed_dev_deps.REQUIRED_DEV_DEPS) {
 			expect(result[key]).toBeDefined()
 		}
 	})
 })
 
-describe('jgame_managed_dev_deps.read_required_deps_from_kit', () => {
+describe('josh_game_managed_dev_deps.read_required_deps_from_kit', () => {
 	beforeEach(async () => {
 		const { readFileSync } = await import('node:fs')
 
@@ -188,8 +188,8 @@ describe('jgame_managed_dev_deps.read_required_deps_from_kit', () => {
 		const { readFileSync } = await import('node:fs')
 
 		vi.mocked(readFileSync).mockReturnValue(JSON.stringify({ devDependencies: KIT_DEV_DEPS }))
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.read_required_deps_from_kit()
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.read_required_deps_from_kit()
 
 		expect(readFileSync).toHaveBeenCalledWith('/pkg/package.json', 'utf8')
 		expect(result.prettier).toBe('^3.8.3')
@@ -199,10 +199,10 @@ describe('jgame_managed_dev_deps.read_required_deps_from_kit', () => {
 		const { readFileSync } = await import('node:fs')
 
 		vi.mocked(readFileSync).mockReturnValue(JSON.stringify({}))
-		const { jgame_managed_dev_deps } = await import('./jgame-managed-development-deps.ts')
-		const result = jgame_managed_dev_deps.read_required_deps_from_kit()
+		const { josh_game_managed_dev_deps } = await import('./josh-game-managed-development-deps.ts')
+		const result = josh_game_managed_dev_deps.read_required_deps_from_kit()
 
-		for (const key of jgame_managed_dev_deps.REQUIRED_DEV_DEPS) {
+		for (const key of josh_game_managed_dev_deps.REQUIRED_DEV_DEPS) {
 			expect(result[key]).toBe('*')
 		}
 	})

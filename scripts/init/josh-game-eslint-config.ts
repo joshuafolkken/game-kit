@@ -1,8 +1,8 @@
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 
-// Single source of truth for the scaffold's eslint.config.js. Both `jgame init` (new projects)
-// and `jgame sync` (existing projects self-heal) write this so they cannot drift (#260).
+// Single source of truth for the scaffold's eslint.config.js. Both `josh-game init` (new projects)
+// and `josh-game sync` (existing projects self-heal) write this so they cannot drift (#260).
 //
 // The generated config delegates to game-kit's distributable preset
 // (`@joshuafolkken/game-kit/eslint/game` → `create_game_config`), which wraps app-kit's
@@ -30,5 +30,5 @@ function write_eslint_config(project_directory: string): void {
 	console.info('  ✔ wrote    eslint.config.js (game-dir lint overrides)')
 }
 
-const jgame_eslint_config = { generate_eslint_config, write_eslint_config }
-export { jgame_eslint_config }
+const josh_game_eslint_config = { generate_eslint_config, write_eslint_config }
+export { josh_game_eslint_config }

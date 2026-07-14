@@ -9,14 +9,14 @@ import type {
 	VersionCommandConfigOptions,
 } from '@joshuafolkken/kit/version'
 
-// jgame consumes kit's parameterized version-command library (kit#604) rather than copying it —
+// josh-game consumes kit's parameterized version-command library (kit#604) rather than copying it —
 // game-kit's only local input is its own package name; kit derives the GitHub Packages versions
 // endpoint from it (kit#632). Everything else (read global/project/running version, fetch latest,
 // format the report, upgrade) is single-sourced from `@joshuafolkken/kit/version`. See #356.
 const PACKAGE_NAME = '@joshuafolkken/game-kit'
 
 // game-kit's upstream chain is `@joshuafolkken/app-kit` → `@joshuafolkken/kit` (nearest first), so
-// `jgame v` / `vu` cover the whole chain (#391). The kit descriptor is single-sourced from kit's
+// `josh-game v` / `vu` cover the whole chain (#391). The kit descriptor is single-sourced from kit's
 // own export (kit#632). app-kit exports none, so its descriptor is named here — a bare package
 // name, not a hardcoded endpoint (kit derives the endpoint from the name via kit#632).
 const APP_KIT_PACKAGE_NAME = '@joshuafolkken/app-kit'
@@ -29,32 +29,32 @@ const KIT_PACKAGE_NAME = '@joshuafolkken/kit'
 const APP_KIT_RESOLVE_MARKER = '@joshuafolkken/app-kit/eslint/sveltekit'
 const KIT_RESOLVE_MARKER = '@joshuafolkken/kit/config-merge'
 
-// The running bin file inside `self_directory` (dist/scripts/jgame.js). Its URL is the base against
+// The running bin file inside `self_directory` (dist/scripts/josh-game.js). Its URL is the base against
 // which the effective (running-relative) upstream chain is resolved: `createRequire(base).resolve`
 // walks the running install's dependency closure, NOT `pnpm ls -g` (#393). The file need not exist
 // for `.resolve()` — only its directory drives resolution — but the running bin does live here.
-const RUNNING_BIN_FILE = 'jgame.js'
+const RUNNING_BIN_FILE = 'josh-game.js'
 
-// `jgame vu` upgrades a stale effective upstream by bumping the *global game-kit*, which re-bundles
+// `josh-game vu` upgrades a stale effective upstream by bumping the *global game-kit*, which re-bundles
 // the whole app-kit → kit chain. A bare `pnpm add -g @joshuafolkken/app-kit` / `... /kit` would be
-// shadowed by game-kit's own resolution and never change what jgame runs, so both upstreams share
+// shadowed by game-kit's own resolution and never change what josh-game runs, so both upstreams share
 // this game-kit-targeted command (#393).
 const GLOBAL_UPGRADE_COMMAND = `pnpm add -g ${PACKAGE_NAME}`
 
-// `@joshuafolkken/kit` is a devDependency, so a global `jgame` install (`pnpm add -g`) does NOT
+// `@joshuafolkken/kit` is a devDependency, so a global `josh-game` install (`pnpm add -g`) does NOT
 // install it. `init`/`sync` must stay loadable without kit; only `version`/`version:upgrade` need
 // it. So load `@joshuafolkken/kit/version` LAZILY (never a static top-level value import — that
-// would crash every command at module load when kit is absent, the global `jgame init` regression
+// would crash every command at module load when kit is absent, the global `josh-game init` regression
 // #356; the type-only import above is elided at build and does not load kit). See #357.
 //
-// Resolve the library relative to the PROJECT (cwd), NOT this bundled binary (#395): a global jgame
+// Resolve the library relative to the PROJECT (cwd), NOT this bundled binary (#395): a global josh-game
 // carries no kit, so a binary-relative `import('@joshuafolkken/kit/version')` would fall through to
 // an unrelated/stale ambient kit (observed: a home-dir kit predating endpoint derivation kit#632,
 // yielding `gh api undefined`). Version commands are meant to run inside a project, which provides
 // a modern kit; resolve it from cwd and fail with a clear message when run outside one.
 const KIT_VERSION_MODULE = '@joshuafolkken/kit/version'
 
-// The subset of `@joshuafolkken/kit/version` jgame consumes, typed from kit's exported types so the
+// The subset of `@joshuafolkken/kit/version` josh-game consumes, typed from kit's exported types so the
 // cwd-resolved dynamic import (whose static type is otherwise lost) stays checked. Function
 // signatures are declared here rather than via `typeof import(...)`, which lint forbids.
 interface KitVersionCommands {
@@ -92,7 +92,7 @@ function resolve_kit_version_url(create_resolver: CreateModuleResolver = createR
 		return pathToFileURL(require_from_cwd.resolve(KIT_VERSION_MODULE)).href
 	} catch {
 		throw new Error(
-			`jgame version needs ${KIT_PACKAGE_NAME}. Run \`jgame v\` / \`jgame vu\` inside a game project that depends on it.`,
+			`josh-game version needs ${KIT_PACKAGE_NAME}. Run \`josh-game v\` / \`josh-game vu\` inside a game project that depends on it.`,
 		)
 	}
 }
@@ -115,7 +115,7 @@ async function load_kit_version(): Promise<KitVersionModule> {
 	if (has_effective_resolver(loaded)) return loaded
 
 	throw new Error(
-		`${KIT_PACKAGE_NAME} in this project is too old for jgame version. Upgrade it (e.g. \`jgame sync\`).`,
+		`${KIT_PACKAGE_NAME} in this project is too old for josh-game version. Upgrade it (e.g. \`josh-game sync\`).`,
 	)
 }
 
@@ -123,7 +123,7 @@ function running_bin_base_url(self_directory: string): string {
 	return pathToFileURL(path.join(self_directory, RUNNING_BIN_FILE)).href
 }
 
-// The effective app-kit is the one the running jgame resolves — its direct dependency, present even
+// The effective app-kit is the one the running josh-game resolves — its direct dependency, present even
 // in a global install (kit is not, hence the chain must route kit through app-kit below).
 function make_app_kit_effective_resolver(
 	self_directory: string,
@@ -136,8 +136,8 @@ function make_app_kit_effective_resolver(
 	}
 }
 
-// The effective kit is resolved relative to the *effective app-kit*, not the running jgame: a global
-// jgame carries no kit of its own, so the kit it actually runs is the one bundled under app-kit and
+// The effective kit is resolved relative to the *effective app-kit*, not the running josh-game: a global
+// josh-game carries no kit of its own, so the kit it actually runs is the one bundled under app-kit and
 // reached through app-kit's dependency closure (#357, #393). Resolve app-kit's location first, then
 // hand that base to kit's resolver. Any failure (kit-less install) yields `undefined` — no crash.
 function resolve_app_kit_base_url(self_directory: string): string | undefined {
@@ -198,7 +198,7 @@ function build_kit_upstream(
 
 // `self_directory` is the running bin's own directory, so the report can show the running install
 // and resolve the effective chain relative to it. The CLI passes it from the bundled entry point
-// (dist/scripts/jgame.js).
+// (dist/scripts/josh-game.js).
 async function build_config(self_directory: string): Promise<VersionCommandConfig> {
 	const {
 		create_version_command_config,
@@ -232,7 +232,7 @@ async function run_upgrade(self_directory: string): Promise<number> {
 	return version_commands.run_upgrade(await build_config(self_directory))
 }
 
-const jgame_version = {
+const josh_game_version = {
 	PACKAGE_NAME,
 	APP_KIT_PACKAGE_NAME,
 	KIT_PACKAGE_NAME,
@@ -244,5 +244,5 @@ const jgame_version = {
 	run_upgrade,
 }
 
-export { jgame_version }
+export { josh_game_version }
 export type { ModuleResolver }
