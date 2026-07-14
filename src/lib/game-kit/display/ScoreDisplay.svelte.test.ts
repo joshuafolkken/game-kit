@@ -29,32 +29,32 @@ function make_score_data(overrides: Partial<ScoreData> = {}): ScoreData {
 const LABEL_PROPS = { label_high_score: 'HI', label_round: 'RND', label_current: 'SCORE' }
 
 describe('ScoreDisplay', () => {
-	it('renders without error in normal mode', () => {
-		const { container } = render(ScoreDisplay, {
+	it('renders without error in normal mode', async () => {
+		const { container } = await render(ScoreDisplay, {
 			props: { score_data: make_score_data(), is_alt: false, position_z: -4.65, ...LABEL_PROPS },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error in alt mode', () => {
-		const { container } = render(ScoreDisplay, {
+	it('renders without error in alt mode', async () => {
+		const { container } = await render(ScoreDisplay, {
 			props: { score_data: make_score_data(), is_alt: true, position_z: -4.65, ...LABEL_PROPS },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('registers a tick callback via useTask', () => {
+	it('registers a tick callback via useTask', async () => {
 		vi.mocked(useTask).mockClear()
-		render(ScoreDisplay, {
+		await render(ScoreDisplay, {
 			props: { score_data: make_score_data(), is_alt: false, position_z: -4.65, ...LABEL_PROPS },
 		})
 		expect(vi.mocked(useTask)).toHaveBeenCalledOnce()
 	})
 
-	it('accepts is_new_high_score flag via score_data', () => {
-		const { container } = render(ScoreDisplay, {
+	it('accepts is_new_high_score flag via score_data', async () => {
+		const { container } = await render(ScoreDisplay, {
 			props: {
 				score_data: make_score_data({ is_new_high_score: true }),
 				is_alt: false,
@@ -66,9 +66,9 @@ describe('ScoreDisplay', () => {
 		expect(container).toBeTruthy()
 	})
 
-	it('accepts custom format_score function via score_data', () => {
+	it('accepts custom format_score function via score_data', async () => {
 		const format_score = vi.fn((score_number: number) => `${String(score_number)} pts`)
-		const { container } = render(ScoreDisplay, {
+		const { container } = await render(ScoreDisplay, {
 			props: {
 				score_data: make_score_data({ format_score }),
 				is_alt: false,

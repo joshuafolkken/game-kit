@@ -79,56 +79,56 @@ describe('Player', () => {
 		tick_holder.fn = null
 	})
 
-	it('renders without error when not in gameover', () => {
-		const { container } = render(Player, { props: { is_gameover: false } })
+	it('renders without error when not in gameover', async () => {
+		const { container } = await render(Player, { props: { is_gameover: false } })
 
 		expect(container).toBeTruthy()
 	})
 
 	it('triggers camera shake when is_gameover is true', async () => {
-		render(Player, { props: { is_gameover: true } })
+		await render(Player, { props: { is_gameover: true } })
 		await Promise.resolve()
 		expect(vi.mocked(camera_shake.trigger)).toHaveBeenCalledTimes(1)
 	})
 
 	it('does not trigger camera shake when is_gameover is false', async () => {
-		render(Player, { props: { is_gameover: false } })
+		await render(Player, { props: { is_gameover: false } })
 		await Promise.resolve()
 		expect(vi.mocked(camera_shake.trigger)).not.toHaveBeenCalled()
 	})
 
-	it('W key passes forward scaled by KEYBOARD_AXIS_FRACTION to compute_velocity_after_look', () => {
+	it('W key passes forward scaled by KEYBOARD_AXIS_FRACTION to compute_velocity_after_look', async () => {
 		mock_input.keys = { w: true, s: false, a: false, d: false }
-		render(Player, { props: { is_gameover: false } })
+		await render(Player, { props: { is_gameover: false } })
 		tick_holder.fn?.(0.016)
 		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
 
 		expect(call?.forward).toBeCloseTo(KEYBOARD_AXIS_FRACTION)
 	})
 
-	it('W+D diagonal passes pre-normalized forward scaled by KEYBOARD_AXIS_FRACTION', () => {
+	it('W+D diagonal passes pre-normalized forward scaled by KEYBOARD_AXIS_FRACTION', async () => {
 		mock_input.keys = { w: true, s: false, a: false, d: true }
-		render(Player, { props: { is_gameover: false } })
+		await render(Player, { props: { is_gameover: false } })
 		tick_holder.fn?.(0.016)
 		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
 
 		expect(call?.forward).toBeCloseTo(KEYBOARD_AXIS_FRACTION / Math.SQRT2)
 	})
 
-	it('joystick full forward passes forward=1 unchanged', () => {
+	it('joystick full forward passes forward=1 unchanged', async () => {
 		mock_input.joystick_move = { x: 0, y: 1 }
-		render(Player, { props: { is_gameover: false } })
+		await render(Player, { props: { is_gameover: false } })
 		tick_holder.fn?.(0.016)
 		const call = vi.mocked(player_step.compute_velocity_after_look).mock.calls[0]?.[0]
 
 		expect(call?.forward).toBeCloseTo(1)
 	})
 
-	it('builds the room clamp from explicit room_width / room_depth props', () => {
+	it('builds the room clamp from explicit room_width / room_depth props', async () => {
 		const CUSTOM_WIDTH = 16
 		const CUSTOM_DEPTH = 24
 
-		render(Player, {
+		await render(Player, {
 			props: { is_gameover: false, room_width: CUSTOM_WIDTH, room_depth: CUSTOM_DEPTH },
 		})
 		tick_holder.fn?.(0.016)
@@ -139,8 +139,8 @@ describe('Player', () => {
 		)
 	})
 
-	it('falls back to default room dimensions when props are omitted', () => {
-		render(Player, { props: { is_gameover: false } })
+	it('falls back to default room dimensions when props are omitted', async () => {
+		await render(Player, { props: { is_gameover: false } })
 		tick_holder.fn?.(0.016)
 
 		expect(vi.mocked(player_bounds.make_clamp_to_room)).toHaveBeenCalledWith(ROOM_W, ROOM_D)

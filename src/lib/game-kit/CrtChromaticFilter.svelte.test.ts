@@ -65,8 +65,8 @@ describe('CrtChromaticFilter.svelte — SVG defs structure', () => {
 		expect(CRT_CHROMATIC_FILTER_SOURCE).toMatch(/k1="0"\s+k2="1"\s+k3="1"\s+k4="0"/u)
 	})
 
-	it('renders the SVG <filter id="crt-chromatic"> into the DOM when mounted standalone', () => {
-		const { container } = render(CrtChromaticFilter)
+	it('renders the SVG <filter id="crt-chromatic"> into the DOM when mounted standalone', async () => {
+		const { container } = await render(CrtChromaticFilter)
 		const filter = container.querySelector('#crt-chromatic')
 
 		expect(filter).toBeTruthy()

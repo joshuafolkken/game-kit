@@ -30,46 +30,46 @@ const BASE_PROPS = {
 }
 
 describe('Switch', () => {
-	it('renders cyber icon without geometry override', () => {
-		const { container } = render(Switch, { props: BASE_PROPS })
+	it('renders cyber icon without geometry override', async () => {
+		const { container } = await render(Switch, { props: BASE_PROPS })
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders fullscreen icon without geometry override', () => {
-		const { container } = render(Switch, {
+	it('renders fullscreen icon without geometry override', async () => {
+		const { container } = await render(Switch, {
 			props: { ...BASE_PROPS, icon_type: 'fullscreen' as const },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders crt icon without geometry override', () => {
-		const { container } = render(Switch, {
+	it('renders crt icon without geometry override', async () => {
+		const { container } = await render(Switch, {
 			props: { ...BASE_PROPS, icon_type: 'crt' as const },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders in active state', () => {
-		const { container } = render(Switch, {
+	it('renders in active state', async () => {
+		const { container } = await render(Switch, {
 			props: { ...BASE_PROPS, is_active: true },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders with partial geometry override', () => {
+	it('renders with partial geometry override', async () => {
 		const geometry: SwitchGeometry = { panel_size: 0.7, border_thickness: 0.02 }
-		const { container } = render(Switch, {
+		const { container } = await render(Switch, {
 			props: { ...BASE_PROPS, geometry },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders with full geometry override', () => {
+	it('renders with full geometry override', async () => {
 		const geometry: SwitchGeometry = {
 			switch_y: 1.5,
 			switch_z: -4.5,
@@ -103,7 +103,7 @@ describe('Switch', () => {
 			active_light_distance: ACTIVE_LIGHT_DISTANCE,
 			active_light_intensity: ACTIVE_LIGHT_INTENSITY,
 		}
-		const { container } = render(Switch, { props: { ...BASE_PROPS, geometry } })
+		const { container } = await render(Switch, { props: { ...BASE_PROPS, geometry } })
 
 		expect(container).toBeTruthy()
 	})
