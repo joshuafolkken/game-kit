@@ -24,7 +24,7 @@ const HIT_AREA_PADDING = 0.12
 export const PANEL_SIZE = 0.58
 export const PANEL_HALF = PANEL_SIZE / HALF_DIVISOR
 export const PANEL_DEPTH = 0.02
-export const PANEL_OPACITY_ACTIVE = 0.18
+export const PANEL_OPACITY_ACTIVE = 0.08
 export const PANEL_OPACITY_INACTIVE = 0.05
 
 export const BORDER_THICKNESS = 0.018

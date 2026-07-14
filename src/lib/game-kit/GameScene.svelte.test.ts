@@ -390,9 +390,10 @@ describe('dynamic pixel DPR — dot count stays consistent on narrow viewports',
 	it('Canvas uses dpr={1} (full CSS resolution) — lo-res rendering is handled by CrtDitherPass', () => {
 		// The canvas runs at CSS resolution so Stage 2 CRT effects (scanlines + barrel)
 		// have full device pixels to work with. The low-res game render is done inside
-		// CrtDitherPass via the lo_dpr prop.
-		expect(GAME_SCENE_SOURCE).toContain('<Canvas dpr={1}')
-		expect(GAME_SCENE_SOURCE).not.toContain('<Canvas dpr={pixel_dpr}')
+		// CrtDitherPass via the lo_dpr prop. Match across whitespace: adding the toneMapping
+		// attr (game-kit#389) makes Prettier wrap <Canvas> onto multiple lines.
+		expect(GAME_SCENE_SOURCE).toMatch(/<Canvas[\s\S]*?dpr=\{1\}/u)
+		expect(GAME_SCENE_SOURCE).not.toMatch(/dpr=\{pixel_dpr\}/u)
 	})
 
 	it('passes lo_dpr={pixel_dpr} to CrtDitherPass for the low-res game render stage', () => {
@@ -463,15 +464,18 @@ describe('CRT filter overlay — scanlines + vignette over the whole game screen
 		expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*0,\s*255/u)
 	})
 
-	it('applies a CRT vibrance filter to the canvas under .crt-active (lowered contrast + boosted saturation, no hue shift)', () => {
-		// Reason: filter chain was retuned from contrast(1.08) saturate(1.1) brightness(1.15)
-		// to contrast(0.9) saturate(1.8) brightness(1.1) for a richer, slightly softer
-		// X68000-style palette. The chromatic aberration url(...) stays last in the chain so
-		// channel separation operates on the post-vibrance image. Value-pin so silent drift
-		// back to prior tunings is caught.
+	it('applies a CRT vibrance filter to the canvas under .crt-active (mild contrast + gentle saturation, no hue shift)', () => {
+		// Reason: filter chain was retuned from contrast(0.9) saturate(1.8) brightness(1.1)
+		// to contrast(0.95) saturate(1.2) brightness(1) once the renderer default became
+		// NoToneMapping (game-kit#389). With AgX no longer taming the input, colors reach the
+		// CRT stage at full sRGB range, so the old saturate(1.8)/brightness(1.1) boost blew
+		// highlights and oversaturated; the gentler values keep CRT ON correct against true
+		// color. The chromatic aberration url(...) stays last in the chain so channel
+		// separation operates on the post-vibrance image. Value-pin so silent drift back to
+		// prior tunings is caught.
 		// Filter is now gated on .crt-active so toggling CRT off removes all post-processing.
 		expect(GAME_SCENE_SOURCE).toMatch(
-			/\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.9\)\s+saturate\(1\.8\)\s+brightness\(1\.1\)\s+url\(#crt-chromatic\)/u,
+			/\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.95\)\s+saturate\(1\.2\)\s+brightness\(1\)\s+url\(#crt-chromatic\)/u,
 		)
 		expect(GAME_SCENE_SOURCE).not.toMatch(
 			/\.game-container\.crt-active\s+:global\(canvas\)[\s\S]*?hue-rotate/u,
@@ -479,9 +483,9 @@ describe('CRT filter overlay — scanlines + vignette over the whole game screen
 
 		// Negative: previous filter values must not be present on the canvas filter chain.
 		for (const prior of [
-			String.raw`contrast\(1\.08\)`,
-			String.raw`saturate\(1\.1\)`,
-			String.raw`brightness\(1\.15\)`,
+			String.raw`contrast\(0\.9\)\s`,
+			String.raw`saturate\(1\.8\)`,
+			String.raw`brightness\(1\.1\)`,
 		]) {
 			expect(GAME_SCENE_SOURCE).not.toMatch(
 				new RegExp(
