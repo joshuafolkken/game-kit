@@ -15,8 +15,8 @@ const START_Z = 10
 const END_Z = -10
 
 describe('FloorCredits', () => {
-	it('renders without error in normal mode', () => {
-		const { container } = render(FloorCredits, {
+	it('renders without error in normal mode', async () => {
+		const { container } = await render(FloorCredits, {
 			props: {
 				is_alt: false,
 				credits: SAMPLE_CREDITS,
@@ -28,8 +28,8 @@ describe('FloorCredits', () => {
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error in alt mode', () => {
-		const { container } = render(FloorCredits, {
+	it('renders without error in alt mode', async () => {
+		const { container } = await render(FloorCredits, {
 			props: {
 				is_alt: true,
 				credits: SAMPLE_CREDITS,
@@ -41,16 +41,16 @@ describe('FloorCredits', () => {
 		expect(container).toBeTruthy()
 	})
 
-	it('accepts empty credits string', () => {
-		const { container } = render(FloorCredits, {
+	it('accepts empty credits string', async () => {
+		const { container } = await render(FloorCredits, {
 			props: { is_alt: false, credits: '', scroll_start_z: START_Z, scroll_end_z: END_Z },
 		})
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error when an explicit font override is supplied', () => {
-		const { container } = render(FloorCredits, {
+	it('renders without error when an explicit font override is supplied', async () => {
+		const { container } = await render(FloorCredits, {
 			props: {
 				is_alt: false,
 				credits: SAMPLE_CREDITS,
@@ -63,8 +63,8 @@ describe('FloorCredits', () => {
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error when an explicit color override is supplied', () => {
-		const { container } = render(FloorCredits, {
+	it('renders without error when an explicit color override is supplied', async () => {
+		const { container } = await render(FloorCredits, {
 			props: {
 				is_alt: false,
 				credits: SAMPLE_CREDITS,
@@ -77,8 +77,8 @@ describe('FloorCredits', () => {
 		expect(container).toBeTruthy()
 	})
 
-	it('renders without error when an explicit font_size override is supplied', () => {
-		const { container } = render(FloorCredits, {
+	it('renders without error when an explicit font_size override is supplied', async () => {
+		const { container } = await render(FloorCredits, {
 			props: {
 				is_alt: false,
 				credits: SAMPLE_CREDITS,

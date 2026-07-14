@@ -61,14 +61,14 @@ vi.mock('$lib/game-kit/scene/credits-config', () => ({
 vi.mock('$lib/game-kit/scene/room-config', () => ({ ROOM_W: 10, ROOM_D: 10, ROOM_H: 5, HALF_D: 5 }))
 
 describe('Scene', () => {
-	it('renders without error', () => {
-		const { container } = render(Scene)
+	it('renders without error', async () => {
+		const { container } = await render(Scene)
 
 		expect(container).toBeTruthy()
 	})
 
-	it('calls make_credits_scroll_bounds with CREDITS_LINE_COUNT and HALF_D', () => {
-		render(Scene)
+	it('calls make_credits_scroll_bounds with CREDITS_LINE_COUNT and HALF_D', async () => {
+		await render(Scene)
 		expect(vi.mocked(make_credits_scroll_bounds)).toHaveBeenCalledWith(1, 5)
 	})
 

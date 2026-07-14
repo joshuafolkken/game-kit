@@ -19,8 +19,8 @@ const BASE_LABELS = {
 	label_pause: 'Pause',
 }
 
-function render_with_crt_initial(crt_initial: 'on' | 'off'): ReturnType<typeof render> {
-	return render(GameScene, { props: { ...BASE_LABELS, crt_initial } })
+async function render_with_crt_initial(crt_initial: 'on' | 'off'): ReturnType<typeof render> {
+	return await render(GameScene, { props: { ...BASE_LABELS, crt_initial } })
 }
 
 function has_crt_active(container: HTMLElement): boolean | undefined {
@@ -33,39 +33,39 @@ describe('GameScene crt_initial prop — pick the initial CRT mode without editi
 		if (!crt.is_crt_enabled) crt.toggle()
 	})
 
-	it('starts with CRT disabled (no .crt-active) when crt_initial is "off"', () => {
-		const { container } = render_with_crt_initial('off')
+	it('starts with CRT disabled (no .crt-active) when crt_initial is "off"', async () => {
+		const { container } = await render_with_crt_initial('off')
 
 		expect(crt.is_crt_enabled).toBe(false)
 		expect(has_crt_active(container)).toBe(false)
 	})
 
-	it('keeps CRT enabled (.crt-active) when crt_initial is "on"', () => {
-		const { container } = render_with_crt_initial('on')
+	it('keeps CRT enabled (.crt-active) when crt_initial is "on"', async () => {
+		const { container } = await render_with_crt_initial('on')
 
 		expect(crt.is_crt_enabled).toBe(true)
 		expect(has_crt_active(container)).toBe(true)
 	})
 
-	it('renders the glass/vignette crt-overlay when crt_initial is "on"', () => {
-		const { container } = render_with_crt_initial('on')
+	it('renders the glass/vignette crt-overlay when crt_initial is "on"', async () => {
+		const { container } = await render_with_crt_initial('on')
 
 		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeTruthy()
 	})
 
-	it('omits the glass/vignette crt-overlay when crt_initial is "off" (clean render)', () => {
+	it('omits the glass/vignette crt-overlay when crt_initial is "off" (clean render)', async () => {
 		// Regression for game-kit#388: the overlay used to render unconditionally, so its
 		// corner darkening + center vignette + glass highlight persisted with CRT off.
-		const { container } = render_with_crt_initial('off')
+		const { container } = await render_with_crt_initial('off')
 
 		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeNull()
 	})
 
-	it('leaves the shared CRT state untouched when crt_initial is omitted (no force-reset)', () => {
+	it('leaves the shared CRT state untouched when crt_initial is omitted (no force-reset)', async () => {
 		// Contract: an omitted prop must not clobber a prior runtime RETRO toggle. Disable CRT,
 		// then render without crt_initial — it must stay disabled, not be forced back on.
 		crt.set_enabled(false)
-		render(GameScene, { props: { ...BASE_LABELS } })
+		await render(GameScene, { props: { ...BASE_LABELS } })
 
 		expect(crt.is_crt_enabled).toBe(false)
 	})

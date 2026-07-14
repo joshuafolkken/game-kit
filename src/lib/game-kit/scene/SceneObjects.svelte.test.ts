@@ -127,25 +127,25 @@ function make_properties(game_board: ReturnType<typeof createRawSnippet>) {
 }
 
 describe('SceneObjects', () => {
-	it('renders without error with a game_board snippet', () => {
+	it('renders without error with a game_board snippet', async () => {
 		const game_board = createRawSnippet(() => ({ render: () => EMPTY_SPAN }))
-		const { container } = render(SceneObjects, { props: make_properties(game_board) })
+		const { container } = await render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container).toBeTruthy()
 	})
 
-	it('renders the game_board snippet content', () => {
+	it('renders the game_board snippet content', async () => {
 		const game_board = createRawSnippet(() => ({
 			render: () => '<span data-testid="board-slot"></span>',
 		}))
-		const { container } = render(SceneObjects, { props: make_properties(game_board) })
+		const { container } = await render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container.querySelector('[data-testid="board-slot"]')).toBeTruthy()
 	})
 
-	it('renders with default props without error', () => {
+	it('renders with default props without error', async () => {
 		const game_board = createRawSnippet(() => ({ render: () => EMPTY_SPAN }))
-		const { container } = render(SceneObjects, { props: make_properties(game_board) })
+		const { container } = await render(SceneObjects, { props: make_properties(game_board) })
 
 		expect(container).toBeTruthy()
 	})
@@ -208,12 +208,12 @@ describe('SceneObjects room dimensions — configurable via props', () => {
 		expect(SCENE_OBJECTS_SOURCE).not.toMatch(/height=\{ROOM_H\}/u)
 	})
 
-	it('renders without error when explicit room dimensions are provided', () => {
+	it('renders without error when explicit room dimensions are provided', async () => {
 		const CUSTOM_WIDTH = 16
 		const CUSTOM_DEPTH = 16
 		const CUSTOM_HEIGHT = 4
 		const game_board = createRawSnippet(() => ({ render: () => EMPTY_SPAN }))
-		const { container } = render(SceneObjects, {
+		const { container } = await render(SceneObjects, {
 			props: {
 				...make_properties(game_board),
 				room_width: CUSTOM_WIDTH,

@@ -14,15 +14,15 @@ describe('Home page', () => {
 		if (game_state.is_alt) game_state.toggle_alt()
 	})
 
-	it('does not render cyber-glow in normal mode', () => {
-		const { container } = render(Page)
+	it('does not render cyber-glow in normal mode', async () => {
+		const { container } = await render(Page)
 
 		expect(container.querySelector(SEL_CYBER_GLOW)).toBeNull()
 	})
 
-	it('renders cyber-glow when cyber mode is active', () => {
+	it('renders cyber-glow when cyber mode is active', async () => {
 		game_state.toggle_alt()
-		const { container } = render(Page)
+		const { container } = await render(Page)
 
 		expect(container.querySelector(SEL_CYBER_GLOW)).toBeTruthy()
 	})
