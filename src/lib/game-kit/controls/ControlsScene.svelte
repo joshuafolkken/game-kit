@@ -92,6 +92,24 @@
 		hint_color?: string | undefined // overrides HINT_COLOR (the start-hint text)
 		key_color?: string | undefined // overrides the per-letter WASD/ESC/Z color
 		icon_color?: string | undefined // recolors the keyboard / space / mouse / touch icon SVGs
+		// Optional icon-SVG overrides so a consumer can swap the built-in smooth vector icons for a
+		// matching aesthetic (e.g. pixel/raster faces paired with a custom hint_font). Each falls back
+		// to the built-in SVG when omitted, so existing consumers render unchanged. `| undefined`
+		// mirrors GameScene's forwarded props. An override is rasterized through the same
+		// svg_to_texture path (NearestFilter) and icon_color recolor as the built-ins.
+		//
+		// viewBox/layout contract — an override MUST keep the built-in viewBox and internal layout,
+		// or downstream geometry breaks:
+		//   keyboard_svg: viewBox "0 0 148 176"; WASD/ESC/Z letters are positioned against this
+		//     viewBox via viewbox_x_to_plane / viewbox_y_to_plane, so the key rectangles must stay
+		//     in the same positions or the letters misalign.
+		//   mouse_svg:    viewBox "13 -7 64 120"; MOUSE_Y aligns the body bottom to the keyboard
+		//     Z-key bottom, so the body rect must keep its position within the viewBox.
+		//   touch_svg:    viewBox "0 0 240 90"; the plane is sized from TOUCH_SVG_ASPECT (240/90),
+		//     so a different aspect ratio would stretch the override.
+		keyboard_svg?: string | undefined // overrides KEYBOARD_SVG (viewBox "0 0 148 176")
+		mouse_svg?: string | undefined // overrides MOUSE_SVG (viewBox "13 -7 64 120")
+		touch_svg?: string | undefined // overrides TOUCH_SVG (viewBox "0 0 240 90")
 	}
 
 	const {
@@ -103,6 +121,9 @@
 		hint_color,
 		key_color,
 		icon_color,
+		keyboard_svg,
+		mouse_svg,
+		touch_svg,
 	}: Props = $props()
 
 	const { size } = useThrelte()
@@ -268,10 +289,15 @@
 
 		void (async function load_textures(): Promise<void> {
 			try {
+				// Each icon uses the consumer override when supplied, else the built-in; both paths
+				// share the icon_color recolor (resolve_icon_svg) and the NearestFilter raster.
+				const resolved_keyboard_svg = resolve_icon_svg(keyboard_svg ?? KEYBOARD_SVG)
+				const resolved_mouse_svg = resolve_icon_svg(mouse_svg ?? MOUSE_SVG)
+				const resolved_touch_svg = resolve_icon_svg(touch_svg ?? TOUCH_SVG)
 				const [kb, ms, tc] = await Promise.all([
-					svg_to_texture(resolve_icon_svg(KEYBOARD_SVG), KEYBOARD_TEX_W, KEYBOARD_TEX_H),
-					svg_to_texture(resolve_icon_svg(MOUSE_SVG), MOUSE_TEX_W, MOUSE_TEX_H),
-					svg_to_texture(resolve_icon_svg(TOUCH_SVG), TOUCH_TEX_W, TOUCH_TEX_H),
+					svg_to_texture(resolved_keyboard_svg, KEYBOARD_TEX_W, KEYBOARD_TEX_H),
+					svg_to_texture(resolved_mouse_svg, MOUSE_TEX_W, MOUSE_TEX_H),
+					svg_to_texture(resolved_touch_svg, TOUCH_TEX_W, TOUCH_TEX_H),
 				])
 
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- async race guard: the returned cleanup sets `is_alive = false`, which TS's flow analysis can't see across the await
