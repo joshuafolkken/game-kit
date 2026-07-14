@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { jgame_paths } from './jgame-paths.ts'
+import { josh_game_paths } from './josh-game-paths.ts'
 
 // devDependency keys that game-kit owns in every scaffolded project. Both
-// `jgame init` (scaffolder) and `jgame sync` (updater) derive their canonical
+// `josh-game init` (scaffolder) and `josh-game sync` (updater) derive their canonical
 // values from this list and from game-kit's own package.json so the two paths
 // cannot drift. `eslint` / `prettier` / the prettier plugins are kit's own
 // devDeps — they are NOT installed transitively for consumers, so they must be
@@ -76,17 +76,17 @@ function pick_required_deps(source: Record<string, string>): Record<string, stri
 }
 
 function read_required_deps_from_kit(): Record<string, string> {
-	const raw = readFileSync(path.join(jgame_paths.PACKAGE_DIR, 'package.json'), 'utf8')
+	const raw = readFileSync(path.join(josh_game_paths.PACKAGE_DIR, 'package.json'), 'utf8')
 	const package_ = JSON.parse(raw) as { devDependencies?: Record<string, string> }
 
 	return pick_required_deps(package_.devDependencies ?? {})
 }
 
-const jgame_managed_development_deps = {
+const josh_game_managed_development_deps = {
 	REQUIRED_DEV_DEPS,
 	pick_required_deps,
 	read_required_deps_from_kit,
 }
 
-export { jgame_managed_development_deps as jgame_managed_dev_deps }
+export { josh_game_managed_development_deps as josh_game_managed_dev_deps }
 export type { RequiredDevelopmentDependency as RequiredDevDep }

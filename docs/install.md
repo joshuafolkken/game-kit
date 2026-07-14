@@ -6,9 +6,9 @@ Create a new SvelteKit + Threlte game from the `@joshuafolkken/game-kit` templat
 
 `@joshuafolkken/game-kit` lives on GitHub Packages, which needs auth even for public packages. Follow the one-time setup in **[authentication.md](./authentication.md)** (get a `gh` token → persist `NODE_AUTH_TOKEN` → configure `.npmrc`), then return here.
 
-For a global `jgame` install, write the `.npmrc` to your home directory (`~/.npmrc`) as described in that guide.
+For a global `josh-game` install, write the `.npmrc` to your home directory (`~/.npmrc`) as described in that guide.
 
-## 2. Install `jgame` globally
+## 2. Install `josh-game` globally
 
 ### One-time pnpm setup
 
@@ -27,7 +27,7 @@ If `pnpm setup` reports it is already configured, you can skip this step.
 pnpm add -g @joshuafolkken/game-kit
 ```
 
-This installs the `jgame` binary into your pnpm global bin directory. Verify with `which jgame`.
+This installs the `josh-game` binary into your pnpm global bin directory. Verify with `which josh-game`.
 
 Update later with:
 
@@ -38,7 +38,7 @@ pnpm up -g @joshuafolkken/game-kit
 ## 3. Scaffold
 
 ```bash
-jgame init my-game
+josh-game init my-game
 ```
 
 Replace `my-game` with your game name. Input is normalized to kebab-case automatically.
@@ -62,18 +62,18 @@ gh repo create my-game --private --source=. --push
 
 ## Other commands
 
-The `jgame` binary exposes:
+The `josh-game` binary exposes:
 
-| Subcommand                           | Description                                                                                                                                                                                                                                                                                                                                             |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jgame init <name>`                  | Scaffold a new game project                                                                                                                                                                                                                                                                                                                             |
-| `jgame sync`                         | Sync managed config files from the latest published kit                                                                                                                                                                                                                                                                                                 |
-| `jgame version` (`jgame v`)          | Show the global, project (node_modules), latest published, and running versions, plus the upstream `@joshuafolkken/app-kit` and `@joshuafolkken/kit` versions — project, latest, and the effective global (running-relative) version the invoked `jgame` actually runs, each with a staleness marker                                                    |
-| `jgame version:upgrade` (`jgame vu`) | Upgrade whichever of the global / project install is behind latest (repairs the lockfile after a project upgrade), upgrade stale `@joshuafolkken/app-kit` / `@joshuafolkken/kit` project dependencies, and when a stale effective global upstream is detected, upgrade the global `@joshuafolkken/game-kit` (which re-bundles the whole upstream chain) |
+| Subcommand                                   | Description                                                                                                                                                                                                                                                                                                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `josh-game init <name>`                      | Scaffold a new game project                                                                                                                                                                                                                                                                                                                             |
+| `josh-game sync`                             | Sync managed config files from the latest published kit                                                                                                                                                                                                                                                                                                 |
+| `josh-game version` (`josh-game v`)          | Show the global, project (node_modules), latest published, and running versions, plus the upstream `@joshuafolkken/app-kit` and `@joshuafolkken/kit` versions — project, latest, and the effective global (running-relative) version the invoked `josh-game` actually runs, each with a staleness marker                                                |
+| `josh-game version:upgrade` (`josh-game vu`) | Upgrade whichever of the global / project install is behind latest (repairs the lockfile after a project upgrade), upgrade stale `@joshuafolkken/app-kit` / `@joshuafolkken/kit` project dependencies, and when a stale effective global upstream is detected, upgrade the global `@joshuafolkken/game-kit` (which re-bundles the whole upstream chain) |
 
-### tsconfig normalization on `jgame sync`
+### tsconfig normalization on `josh-game sync`
 
-`jgame sync` keeps your project's `tsconfig.json` lean. It delegates to the underlying
+`josh-game sync` keeps your project's `tsconfig.json` lean. It delegates to the underlying
 `josh sync`, which ensures the kit base preset is in `extends` and then strips every
 `compilerOptions` key whose value already equals that base — so per-project drift does
 not accumulate. Genuine overrides (a value that differs from the base, e.g.

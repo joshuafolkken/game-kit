@@ -22,7 +22,7 @@ Common errors when installing or using `@joshuafolkken/game-kit`, and how to fix
 
 `pnpm` tried the **public npm registry** instead of GitHub Packages. The scoped registry line is missing from `.npmrc`.
 
-- Re-run §2 of [authentication.md](./authentication.md) in the right location (project root for a dependency, `~/.npmrc` for a global `jgame` install).
+- Re-run §2 of [authentication.md](./authentication.md) in the right location (project root for a dependency, `~/.npmrc` for a global `josh-game` install).
 - Confirm the file contains both lines:
   ```ini
   @joshuafolkken:registry=https://npm.pkg.github.com
@@ -30,21 +30,21 @@ Common errors when installing or using `@joshuafolkken/game-kit`, and how to fix
   ```
 - A project `.npmrc` shadows `~/.npmrc`. If you have both, make sure the project one also carries the scoped registry line.
 
-## `jgame: command not found` after `pnpm add -g`
+## `josh-game: command not found` after `pnpm add -g`
 
 The pnpm global bin directory isn't on your `PATH`.
 
 ```bash
 pnpm setup
 exec $SHELL
-which jgame   # should now print a path
+which josh-game   # should now print a path
 ```
 
-`pnpm setup` registers `PNPM_HOME` and appends it to `PATH` via your shell rc. If `which jgame` is still empty, open a new terminal so the updated `PATH` takes effect.
+`pnpm setup` registers `PNPM_HOME` and appends it to `PATH` via your shell rc. If `which josh-game` is still empty, open a new terminal so the updated `PATH` takes effect.
 
-## `jgame init` fails on `pnpm install`
+## `josh-game init` fails on `pnpm install`
 
-`jgame init` copies the template, then runs `pnpm install` inside it. If that install step hits a `401`/`404`, it's the same auth issue above — the new project needs `NODE_AUTH_TOKEN` and a scoped `.npmrc` too. `jgame init` writes a project `.npmrc`, so usually only the env var is missing. Fix the token, then from inside the generated project:
+`josh-game init` copies the template, then runs `pnpm install` inside it. If that install step hits a `401`/`404`, it's the same auth issue above — the new project needs `NODE_AUTH_TOKEN` and a scoped `.npmrc` too. `josh-game init` writes a project `.npmrc`, so usually only the env var is missing. Fix the token, then from inside the generated project:
 
 ```bash
 cd my-game
@@ -62,21 +62,21 @@ pnpm -v
 
 If pnpm is older than 11, upgrade with `pnpm self-update` (or via Corepack: `corepack prepare pnpm@latest --activate`).
 
-## `jgame sync` reports config drift
+## `josh-game sync` reports config drift
 
-`jgame sync` overwrites managed config files (e.g. `playwright.config.ts`, CI workflow, `eslint.config.js`) with the latest published versions. The synced `eslint.config.js` relaxes a few lint rules for `src/lib/game/**` (game/Three.js/Web-Audio code legitimately uses `null` contracts, definition-site exports, and longer/branchier functions); the rest of the app keeps the strict defaults. If you intentionally customized one of these files, your change will be reverted. Keep local-only config in files **not** managed by the kit, or re-apply the change after syncing.
+`josh-game sync` overwrites managed config files (e.g. `playwright.config.ts`, CI workflow, `eslint.config.js`) with the latest published versions. The synced `eslint.config.js` relaxes a few lint rules for `src/lib/game/**` (game/Three.js/Web-Audio code legitimately uses `null` contracts, definition-site exports, and longer/branchier functions); the rest of the app keeps the strict defaults. If you intentionally customized one of these files, your change will be reverted. Keep local-only config in files **not** managed by the kit, or re-apply the change after syncing.
 
 ### Files that preserve your customizations
 
-Some managed files are designed for you to extend, so `jgame sync` never silently reverts them:
+Some managed files are designed for you to extend, so `josh-game sync` never silently reverts them:
 
 - **`project-words.txt`** — your project-specific cspell words (game nouns, character names) live here, not in `cspell.config.yaml`. The synced `cspell.config.yaml` references it as a dictionary, so it can be refreshed every bump while your words persist. A legacy inline `words:` list is migrated into `project-words.txt` automatically on the next sync.
 - **`cspell.project.yaml`** — your project-specific cspell `ignorePaths` (e.g. generated/binary files that aren't natural-language text) live here, not in `cspell.config.yaml`. The synced `cspell.config.yaml` imports it, and cspell unions the ignore paths, so it can be refreshed every bump while your ignore entries persist. A legacy inline `ignorePaths:` list is migrated into `cspell.project.yaml` automatically on the next sync.
-- **Free-form files (e.g. `src/routes/layout.css`)** — if you have edited one of these, `jgame sync` **skips it with a notice** rather than overwriting your changes. Run `jgame sync --force` to deliberately take the latest baseline (then re-apply your edits).
+- **Free-form files (e.g. `src/routes/layout.css`)** — if you have edited one of these, `josh-game sync` **skips it with a notice** rather than overwriting your changes. Run `josh-game sync --force` to deliberately take the latest baseline (then re-apply your edits).
 - **CRT/RETRO initial mode** — start with the effect off via the `crt_initial="off"` prop on `<GameScene>` in your own `+page.svelte`, instead of editing the synced `src/routes/+layout.svelte` shell.
 
 ## Still stuck?
 
 - Re-read [authentication.md](./authentication.md) end to end — the ordering (token → env var → `.npmrc`) matters.
-- Check installed vs. latest version: `jgame version`.
+- Check installed vs. latest version: `josh-game version`.
 - Open an issue: <https://github.com/joshuafolkken/game-kit/issues>.

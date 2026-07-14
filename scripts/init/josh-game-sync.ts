@@ -1,11 +1,11 @@
 import { execSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { jgame_cspell_config } from './jgame-cspell-config.ts'
-import { jgame_eslint_config } from './jgame-eslint-config.ts'
-import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
-import { jgame_paths } from './jgame-paths.ts'
-import { jgame_root_files } from './jgame-root-files.ts'
+import { josh_game_cspell_config } from './josh-game-cspell-config.ts'
+import { josh_game_eslint_config } from './josh-game-eslint-config.ts'
+import { josh_game_managed_dev_deps as josh_game_managed_development_deps } from './josh-game-managed-development-deps.ts'
+import { josh_game_paths } from './josh-game-paths.ts'
+import { josh_game_root_files } from './josh-game-root-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 // Resolvability probe: `josh help` exits 0 when kit's bin is reachable. josh-app delegates to
@@ -14,8 +14,8 @@ const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 const JOSH_PROBE_OPTIONS = { stdio: 'ignore' as const }
 
 const JOSH_MISSING_MESSAGE =
-	'\n❌ jgame sync: the `josh-app` command (@joshuafolkken/app-kit) and its `josh` base\n' +
-	'   (@joshuafolkken/kit) are not resolvable. Run `pnpm install`, then re-run `jgame sync`.\n'
+	'\n❌ josh-game sync: the `josh-app` command (@joshuafolkken/app-kit) and its `josh` base\n' +
+	'   (@joshuafolkken/kit) are not resolvable. Run `pnpm install`, then re-run `josh-game sync`.\n'
 
 const FORCE_FLAG = '--force'
 
@@ -23,11 +23,11 @@ interface SyncEntry {
 	dest: string
 	src?: string
 	// Free-form files carry consumer additions (fonts, styling) alongside the baseline, so an
-	// edited copy is skipped (notice) unless `jgame sync --force` (game-kit#375). Managed: overwrite.
+	// edited copy is skipped (notice) unless `josh-game sync --force` (game-kit#375). Managed: overwrite.
 	free_form?: boolean
 }
 
-// Files copied from templates/ to the project root on every `jgame sync` run.
+// Files copied from templates/ to the project root on every `josh-game sync` run.
 // Scope: framework / app-shell config that should evolve with game-kit. Scaffold
 // files that projects own and customize (src/lib/<game>/, src/routes/+page.svelte,
 // static/branding, src/lib/game-config.ts) remain init-only. tsconfig.json is
@@ -46,7 +46,7 @@ interface SyncEntry {
 // destination. .npmrc lives at templates/npmrc because npm always strips
 // `.npmrc` from published packages regardless of the package.json `files` field.
 // Byte-identical files (svelte.config.js, src/routes/layout.css) are NOT in templates/:
-// they are sourced directly from the package root via jgame_root_files — sync_file routes
+// they are sourced directly from the package root via josh_game_root_files — sync_file routes
 // those to PACKAGE_DIR.
 const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: '.npmrc', src: 'npmrc' },
@@ -62,11 +62,11 @@ const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 ]
 
 function sync_source_path(entry: SyncEntry): string {
-	if (jgame_root_files.is_root_copy_file(entry.dest)) {
-		return path.join(jgame_paths.PACKAGE_DIR, entry.dest)
+	if (josh_game_root_files.is_root_copy_file(entry.dest)) {
+		return path.join(josh_game_paths.PACKAGE_DIR, entry.dest)
 	}
 
-	return path.join(jgame_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
+	return path.join(josh_game_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
 }
 
 function copy_synced_file(entry: SyncEntry, destination: string): void {
@@ -75,7 +75,7 @@ function copy_synced_file(entry: SyncEntry, destination: string): void {
 }
 
 function sync_file(entry: SyncEntry): void {
-	const destination = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
+	const destination = path.join(josh_game_paths.PROJECT_ROOT, entry.dest)
 
 	copy_synced_file(entry, destination)
 	console.info(`  ✔ synced   ${entry.dest}`)
@@ -84,7 +84,7 @@ function sync_file(entry: SyncEntry): void {
 // Free-form files (e.g. layout.css) may carry consumer additions, so they are never silently
 // overwritten (game-kit#375): missing/pristine is refreshed; a locally-edited copy is skipped.
 function sync_free_form_file(entry: SyncEntry, is_force: boolean): void {
-	const destination = path.join(jgame_paths.PROJECT_ROOT, entry.dest)
+	const destination = path.join(josh_game_paths.PROJECT_ROOT, entry.dest)
 
 	if (!existsSync(destination)) {
 		copy_synced_file(entry, destination)
@@ -111,7 +111,7 @@ function sync_free_form_file(entry: SyncEntry, is_force: boolean): void {
 	}
 
 	console.info(
-		`  ⚠ skipped  ${entry.dest} (local changes; run \`jgame sync --force\` to overwrite)`,
+		`  ⚠ skipped  ${entry.dest} (local changes; run \`josh-game sync --force\` to overwrite)`,
 	)
 }
 
@@ -132,7 +132,7 @@ interface ConsumerPackage {
 
 // The Cloudflare managed-scripts (preview / prepare / prepare:* / gen / gen:pre) are no
 // longer owned here: app-kit's `josh-app sync` overlay syncs them into the consumer's
-// package.json (#357, app-kit#27). jgame only manages the game-specific devDependencies
+// package.json (#357, app-kit#27). josh-game only manages the game-specific devDependencies
 // below.
 
 // A consumer that listed a managed dep under runtime `dependencies` (e.g. mnemecha with
@@ -212,10 +212,10 @@ function did_remove_legacy_pnpm_field(package_: ConsumerPackage): boolean {
 
 // Must run BEFORE pnpm so the preflight install picks up new devDeps (#184 self-heal).
 function sync_managed_development_deps(): void {
-	const package_path = path.join(jgame_paths.PROJECT_ROOT, 'package.json')
+	const package_path = path.join(josh_game_paths.PROJECT_ROOT, 'package.json')
 	const raw = readFileSync(package_path, 'utf8')
 	const package_ = JSON.parse(raw) as ConsumerPackage
-	const required = jgame_managed_development_deps.read_required_deps_from_kit()
+	const required = josh_game_managed_development_deps.read_required_deps_from_kit()
 	const is_dependencies_changed = did_apply_managed_development_deps(package_, required)
 	const is_pnpm_removed = did_remove_legacy_pnpm_field(package_)
 
@@ -266,7 +266,7 @@ function delegate_to_josh_app(): void {
 function run(argument?: string): void {
 	const is_force = argument === FORCE_FLAG
 
-	console.info('\n🔄 jgame sync\n')
+	console.info('\n🔄 josh-game sync\n')
 	sync_managed_development_deps()
 	pre_sync_pnpm_workspace_yaml()
 	delegate_to_josh_app()
@@ -277,16 +277,16 @@ function run(argument?: string): void {
 	// josh-app never overwrites an existing eslint.config.js, so projects scaffolded before #260
 	// keep a bare config that fails on the verbatim game templates. Rewrite it here so existing
 	// projects pick up the src/lib/game/** lint overrides on the next sync.
-	jgame_eslint_config.write_eslint_config(jgame_paths.PROJECT_ROOT)
+	josh_game_eslint_config.write_eslint_config(josh_game_paths.PROJECT_ROOT)
 	// Same self-heal for the bare cspell.config.yaml: rewrite it to pull the game-aware word set
 	// from `@joshuafolkken/game-kit/cspell/game` so existing projects pass `josh cspell:dot` (#286).
-	jgame_cspell_config.write_cspell_config(jgame_paths.PROJECT_ROOT)
+	josh_game_cspell_config.write_cspell_config(josh_game_paths.PROJECT_ROOT)
 	console.info('\nGame-specific files:')
 	sync_managed_files(is_force)
 	console.info('\n✅ Done.\n')
 }
 
-const jgame_sync = {
+const josh_game_sync = {
 	run,
 	apply_managed_dev_deps: did_apply_managed_development_deps,
 	remove_legacy_pnpm_field: did_remove_legacy_pnpm_field,
@@ -296,4 +296,4 @@ const jgame_sync = {
 	// never managed here (their reconciliation is delegated to the josh-app overlay, #357).
 	SYNC_FILES,
 }
-export { jgame_sync }
+export { josh_game_sync }
