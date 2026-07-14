@@ -19,6 +19,9 @@ const ATTR_RESOLVED_FONT = 'font={resolved_font}'
 const ATTR_LETTER_FONTSIZE_RAW =
 	'fontSize={viewbox_size_to_world(letter.vsize, current_font_size_mul)}'
 const ATTR_LETTER_COLOR_FALLBACK = 'color={key_color ?? letter.color}'
+const RESOLVE_KEYBOARD_SVG = 'resolve_icon_svg(keyboard_svg ?? KEYBOARD_SVG)'
+const RESOLVE_MOUSE_SVG = 'resolve_icon_svg(mouse_svg ?? MOUSE_SVG)'
+const RESOLVE_TOUCH_SVG = 'resolve_icon_svg(touch_svg ?? TOUCH_SVG)'
 
 function find_mesh_open_tag(source: string, position_marker: string): string {
 	const start_index = source.indexOf(position_marker)
@@ -442,10 +445,49 @@ describe('ControlsScene color overrides — hint_color / key_color / icon_color 
 		)
 	})
 
-	it('builds every icon texture through resolve_icon_svg so icon_color reaches the raster', () => {
-		expect(SOURCE).toContain('svg_to_texture(resolve_icon_svg(KEYBOARD_SVG)')
-		expect(SOURCE).toContain('svg_to_texture(resolve_icon_svg(MOUSE_SVG)')
-		expect(SOURCE).toContain('svg_to_texture(resolve_icon_svg(TOUCH_SVG)')
+	it('resolves every icon SVG through resolve_icon_svg so icon_color reaches the raster', () => {
+		expect(SOURCE).toContain(RESOLVE_KEYBOARD_SVG)
+		expect(SOURCE).toContain(RESOLVE_MOUSE_SVG)
+		expect(SOURCE).toContain(RESOLVE_TOUCH_SVG)
+	})
+})
+
+describe('ControlsScene icon SVG overrides — keyboard_svg / mouse_svg / touch_svg props (#370)', () => {
+	it('declares optional keyboard_svg / mouse_svg / touch_svg string props', () => {
+		expect(SOURCE).toMatch(/keyboard_svg\?\s*:\s*string\s*\|\s*undefined/u)
+		expect(SOURCE).toMatch(/mouse_svg\?\s*:\s*string\s*\|\s*undefined/u)
+		expect(SOURCE).toMatch(/touch_svg\?\s*:\s*string\s*\|\s*undefined/u)
+	})
+
+	it('destructures the three icon SVG props from $props', () => {
+		const properties_block = /const\s*\{[\s\S]*?\}\s*:\s*Props\s*=\n?\s*\$props\(\)/u.exec(SOURCE)
+		const block = properties_block?.[0] ?? ''
+
+		expect(block).toContain('keyboard_svg')
+		expect(block).toContain('mouse_svg')
+		expect(block).toContain('touch_svg')
+	})
+
+	it('rasterizes each override with a built-in fallback via <prop> ?? <CONST>', () => {
+		// The override composes with icon_color (resolve_icon_svg) and shares the NearestFilter
+		// raster path, so a supplied SVG behaves exactly like the built-in it replaces.
+		expect(SOURCE).toContain(RESOLVE_KEYBOARD_SVG)
+		expect(SOURCE).toContain(RESOLVE_MOUSE_SVG)
+		expect(SOURCE).toContain(RESOLVE_TOUCH_SVG)
+	})
+
+	it('feeds the resolved override SVGs into svg_to_texture', () => {
+		expect(SOURCE).toContain('svg_to_texture(resolved_keyboard_svg')
+		expect(SOURCE).toContain('svg_to_texture(resolved_mouse_svg')
+		expect(SOURCE).toContain('svg_to_texture(resolved_touch_svg')
+	})
+
+	it('documents the viewBox/layout contract for each overridable icon', () => {
+		// The letters and alignment math depend on the built-in viewBoxes, so the contract must
+		// stay documented next to the props to keep overrides aligned.
+		expect(SOURCE).toContain('viewBox "0 0 148 176"')
+		expect(SOURCE).toContain('viewBox "13 -7 64 120"')
+		expect(SOURCE).toContain('viewBox "0 0 240 90"')
 	})
 })
 

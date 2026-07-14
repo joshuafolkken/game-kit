@@ -27,6 +27,8 @@ words:
   - raycaster
   - rgba
   - rrggbb
+  - misalign
+  - rasterizes
   - constructibility
   - destructures
   - inferrable
