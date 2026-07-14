@@ -12,6 +12,7 @@ const PACKAGE_JSON_PATH = path.join(
 interface PackageJsonShape {
 	scripts: Record<string, string | undefined>
 	devDependencies?: Record<string, string | undefined>
+	bin?: Record<string, string | undefined>
 	pnpm?: unknown
 }
 
@@ -76,10 +77,10 @@ describe('package.json lifecycle scripts', () => {
 		expect(prepare_gen).not.toMatch(/\$CI/u)
 	})
 
-	it('does not reference jgame-install-bin in any lifecycle script', () => {
-		expect(package_.scripts.prepare ?? '').not.toMatch(/jgame-install-bin/u)
-		expect(package_.scripts['prepare:gh-packages'] ?? '').not.toMatch(/jgame-install-bin/u)
-		expect(package_.scripts.postinstall ?? '').not.toMatch(/jgame-install-bin/u)
+	it('does not reference josh-game-install-bin in any lifecycle script', () => {
+		expect(package_.scripts.prepare ?? '').not.toMatch(/josh-game-install-bin/u)
+		expect(package_.scripts['prepare:gh-packages'] ?? '').not.toMatch(/josh-game-install-bin/u)
+		expect(package_.scripts.postinstall ?? '').not.toMatch(/josh-game-install-bin/u)
 	})
 
 	it('keeps safe-chain in preinstall for consumer-side malware scanning', () => {
@@ -88,5 +89,10 @@ describe('package.json lifecycle scripts', () => {
 
 	it('does not declare a pnpm field (settings live in pnpm-workspace.yaml)', () => {
 		expect(package_.pnpm).toBeUndefined()
+	})
+
+	it('exposes the CLI as josh-game and no longer as jgame (#365)', () => {
+		expect(package_.bin?.['josh-game']).toBe('dist/scripts/josh-game.js')
+		expect(package_.bin?.jgame).toBeUndefined()
 	})
 })

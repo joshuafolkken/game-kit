@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
-// Single source of truth for the scaffold's cspell.config.yaml. Both `jgame init` (new
-// projects) and `jgame sync` (existing projects self-heal) write this so they cannot drift.
+// Single source of truth for the scaffold's cspell.config.yaml. Both `josh-game init` (new
+// projects) and `josh-game sync` (existing projects self-heal) write this so they cannot drift.
 //
 // `josh init` writes a bare cspell.config.yaml that imports only `@joshuafolkken/kit/cspell/sveltekit`,
 // so every game-template word (gameover, threlte, COEFF, …) and the credits proper nouns trip
@@ -14,7 +14,7 @@ import path from 'node:path'
 // (project-words.txt) referenced as a custom dictionary, NOT inline in this config (game-kit#375).
 // Consumer ignorePaths live in a SEPARATE, never-synced cspell.project.yaml that this config
 // imports — cspell unions ignorePaths across the config and its imports (game-kit#385). Both keep
-// cspell.config.yaml 100% game-kit-owned so jgame sync can refresh it every bump without deleting
+// cspell.config.yaml 100% game-kit-owned so josh-game sync can refresh it every bump without deleting
 // the consumer's words or ignore paths.
 const CONFIG_FILENAME = 'cspell.config.yaml'
 const PROJECT_WORDS_FILENAME = 'project-words.txt'
@@ -33,11 +33,11 @@ dictionaries:
 ignorePaths: []
 `
 
-// Seeded once when project-words.txt does not exist. Consumer-owned thereafter: jgame sync
+// Seeded once when project-words.txt does not exist. Consumer-owned thereafter: josh-game sync
 // never rewrites the file wholesale, it only appends words migrated out of a legacy inline
 // `words:` list (game-kit#375).
 const PROJECT_WORDS_HEADER = `# Project-specific cspell words — owned by this project.
-# jgame sync never overwrites this file, so game nouns, character names, and other project
+# josh-game sync never overwrites this file, so game nouns, character names, and other project
 # terms added here survive every dependency bump (game-kit#375).
 `
 
@@ -45,7 +45,7 @@ const PROJECT_WORDS_HEADER = `# Project-specific cspell words — owned by this 
 // inline config), then consumer-owned and never overwritten — so project ignore entries survive
 // every bump (game-kit#385).
 const PROJECT_CSPELL_HEADER = `version: '0.2'
-# Project-specific cspell config — owned by this project. jgame sync never overwrites this file,
+# Project-specific cspell config — owned by this project. josh-game sync never overwrites this file,
 # so ignorePaths added here survive every dependency bump (game-kit#385). cspell.config.yaml
 # imports it, and cspell unions ignorePaths across the config and its imports.
 `
@@ -257,7 +257,7 @@ function write_cspell_config(project_directory: string): void {
 	console.info(`  ✔ wrote    ${CONFIG_FILENAME} (game-aware words via @joshuafolkken/game-kit)`)
 }
 
-const jgame_cspell_config = {
+const josh_game_cspell_config = {
 	generate_cspell_config,
 	write_cspell_config,
 	extract_words_from_config,
@@ -265,4 +265,4 @@ const jgame_cspell_config = {
 	build_project_words_file,
 	render_project_cspell_config,
 }
-export { jgame_cspell_config }
+export { josh_game_cspell_config }

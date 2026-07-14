@@ -3,7 +3,7 @@
 // Single source of truth for the game-dir relaxation profile. Consumed by:
 //   - game-kit's own eslint.config.js (relative import; applies the idiom/size
 //     parts repo-wide because the whole repo is game code),
-//   - the scaffold generator (scripts/init/jgame-eslint-config.ts), which emits a
+//   - the scaffold generator (scripts/init/josh-game-eslint-config.ts), which emits a
 //     consumer eslint.config.js that imports `create_game_config` from here, and
 //   - downstream scaffolds (waneccha / mnemecha) via that generated config.
 //

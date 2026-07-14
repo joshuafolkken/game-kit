@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { jgame_version, type ModuleResolver } from './jgame-version.ts'
+import { josh_game_version, type ModuleResolver } from './josh-game-version.ts'
 
 const PACKAGE_NAME = '@joshuafolkken/game-kit'
 const APP_KIT_PACKAGE_NAME = '@joshuafolkken/app-kit'
@@ -49,9 +49,9 @@ function noop_effective_resolver(): undefined {
 	return undefined
 }
 
-describe('jgame version commands', () => {
+describe('josh-game version commands', () => {
 	it('builds a kit version-command config targeting game-kit', async () => {
-		const config = await jgame_version.build_config(SELF_DIR)
+		const config = await josh_game_version.build_config(SELF_DIR)
 
 		expect(config.package_name).toBe(PACKAGE_NAME)
 		expect(config.versions_endpoint).toContain('game-kit/versions')
@@ -59,7 +59,7 @@ describe('jgame version commands', () => {
 	})
 
 	it('resolves the kit version library to a real on-disk module in the project', () => {
-		const url = jgame_version.resolve_kit_version_url()
+		const url = josh_game_version.resolve_kit_version_url()
 		const file = fileURLToPath(url)
 
 		expect(url.startsWith('file://')).toBe(true)
@@ -80,7 +80,7 @@ describe('jgame version commands', () => {
 			}
 		}
 
-		jgame_version.resolve_kit_version_url(recording_resolver)
+		josh_game_version.resolve_kit_version_url(recording_resolver)
 
 		const cwd_manifest_url = pathToFileURL(path.join(process.cwd(), 'package.json')).href
 
@@ -88,33 +88,35 @@ describe('jgame version commands', () => {
 	})
 
 	it('throws a clear error naming kit when the version library cannot be resolved', () => {
-		expect(() => jgame_version.resolve_kit_version_url(throwing_resolver)).toThrow(KIT_PACKAGE_NAME)
+		expect(() => josh_game_version.resolve_kit_version_url(throwing_resolver)).toThrow(
+			KIT_PACKAGE_NAME,
+		)
 	})
 
 	it('accepts a modern kit and rejects one missing the effective-upstream resolver', () => {
-		expect(jgame_version.has_effective_resolver({})).toBe(false)
-		expect(jgame_version.has_effective_resolver(null)).toBe(false)
+		expect(josh_game_version.has_effective_resolver({})).toBe(false)
+		expect(josh_game_version.has_effective_resolver(null)).toBe(false)
 		expect(
-			jgame_version.has_effective_resolver({
+			josh_game_version.has_effective_resolver({
 				resolve_effective_upstream_version: 'not-a-function',
 			}),
 		).toBe(false)
 		expect(
-			jgame_version.has_effective_resolver({
+			josh_game_version.has_effective_resolver({
 				resolve_effective_upstream_version: noop_effective_resolver,
 			}),
 		).toBe(true)
 	})
 
 	it('routes the fix-gh-packages path to the centralized kit script', async () => {
-		const config = await jgame_version.build_config(SELF_DIR)
+		const config = await josh_game_version.build_config(SELF_DIR)
 
 		expect(config.fix_gh_packages_path).toContain(KIT_PACKAGE_NAME)
 		expect(config.fix_gh_packages_path).toContain('fix-gh-packages')
 	})
 
 	it('includes the app-kit and kit upstreams, nearest first', async () => {
-		const config = await jgame_version.build_config(SELF_DIR)
+		const config = await josh_game_version.build_config(SELF_DIR)
 
 		expect(config.upstreams).toHaveLength(UPSTREAM_COUNT)
 		expect(config.upstreams[0]?.package_name).toBe(APP_KIT_PACKAGE_NAME)
@@ -122,25 +124,25 @@ describe('jgame version commands', () => {
 	})
 
 	it('derives each upstream versions endpoint from its package name', async () => {
-		const config = await jgame_version.build_config(SELF_DIR)
+		const config = await josh_game_version.build_config(SELF_DIR)
 
 		expect(config.upstreams[0]?.versions_endpoint).toContain('app-kit/versions')
 		expect(config.upstreams[1]?.versions_endpoint).toContain('npm/kit/versions')
 	})
 
 	it('wires both effective-global hooks onto each upstream, sharing the upgrade command', async () => {
-		const config = await jgame_version.build_config(SELF_DIR)
+		const config = await josh_game_version.build_config(SELF_DIR)
 
 		for (const upstream of config.upstreams) {
 			expect(typeof upstream.resolve_effective_version).toBe('function')
 			expect(upstream.resolve_global_upgrade_command).toBe(
-				jgame_version.build_global_upgrade_command,
+				josh_game_version.build_global_upgrade_command,
 			)
 		}
 	})
 
-	it('reports the effective app-kit resolved relative to the running jgame', async () => {
-		const config = await jgame_version.build_config(REAL_SELF_DIR)
+	it('reports the effective app-kit resolved relative to the running josh-game', async () => {
+		const config = await josh_game_version.build_config(REAL_SELF_DIR)
 
 		expect(config.upstreams[0]?.resolve_effective_version?.()).toBe(
 			installed_version(APP_KIT_PACKAGE_NAME),
@@ -148,13 +150,13 @@ describe('jgame version commands', () => {
 	})
 
 	it('reports the effective kit resolved through the app-kit chain', async () => {
-		const config = await jgame_version.build_config(REAL_SELF_DIR)
+		const config = await josh_game_version.build_config(REAL_SELF_DIR)
 
 		expect(config.upstreams[1]?.resolve_effective_version?.()).toMatch(SEMVER_PREFIX)
 	})
 
 	it('pins the global game-kit upgrade command to the latest from the kit context', () => {
-		const command = jgame_version.build_global_upgrade_command({ latest: STUB_LATEST })
+		const command = josh_game_version.build_global_upgrade_command({ latest: STUB_LATEST })
 
 		expect(command).toBe(`pnpm add -g ${PACKAGE_NAME}@${STUB_LATEST}`)
 	})
@@ -162,12 +164,12 @@ describe('jgame version commands', () => {
 	it('falls back to an unpinned global install when no context latest is available', () => {
 		const unpinned = `pnpm add -g ${PACKAGE_NAME}`
 
-		expect(jgame_version.build_global_upgrade_command()).toBe(unpinned)
-		expect(jgame_version.build_global_upgrade_command({ latest: '' })).toBe(unpinned)
+		expect(josh_game_version.build_global_upgrade_command()).toBe(unpinned)
+		expect(josh_game_version.build_global_upgrade_command({ latest: '' })).toBe(unpinned)
 	})
 
 	it('returns undefined effective versions when the running bin resolves no chain', async () => {
-		const config = await jgame_version.build_config(SELF_DIR)
+		const config = await josh_game_version.build_config(SELF_DIR)
 
 		expect(config.upstreams[0]?.resolve_effective_version?.()).toBeUndefined()
 		expect(config.upstreams[1]?.resolve_effective_version?.()).toBeUndefined()

@@ -2,11 +2,11 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { jgame_root_files } from './init/jgame-root-files.ts'
-import { jgame_sync } from './init/jgame-sync.ts'
+import { josh_game_root_files } from './init/josh-game-root-files.ts'
+import { josh_game_sync } from './init/josh-game-sync.ts'
 
 // Contract guard for #333 / #355: game-kit's own tsconfig extends the app-kit SvelteKit
-// preset directly (game-kit layers no preset of its own), and `jgame sync` delegates
+// preset directly (game-kit layers no preset of its own), and `josh-game sync` delegates
 // tsconfig normalization to a `josh sync` step that runs
 // `strip_redundant_compiler_options` against the extended base — dropping compilerOptions
 // keys whose value equals the base while preserving genuine overrides. These tests pin
@@ -87,15 +87,15 @@ describe('consumer tsconfig normalization contract (#333 / #355)', () => {
 	})
 })
 
-describe('jgame sync delegates consumer tsconfig normalization (#333)', () => {
+describe('josh-game sync delegates consumer tsconfig normalization (#333)', () => {
 	it('does not manage tsconfig.json among the templates-copied files (delegated to josh sync)', () => {
 		// A verbatim copy here would shadow josh sync's strip and clobber consumer overrides.
-		const managed_destinations = jgame_sync.SYNC_FILES.map((entry) => entry.dest)
+		const managed_destinations = josh_game_sync.SYNC_FILES.map((entry) => entry.dest)
 
 		expect(managed_destinations).not.toContain('tsconfig.json')
 	})
 
 	it('does not byte-copy tsconfig.json from the package root', () => {
-		expect(jgame_root_files.ROOT_COPY_FILES).not.toContain('tsconfig.json')
+		expect(josh_game_root_files.ROOT_COPY_FILES).not.toContain('tsconfig.json')
 	})
 })

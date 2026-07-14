@@ -6,7 +6,7 @@ import svelteConfig from './svelte.config.js'
 // The game-dir relaxation profile (null idiom #232, definition-site exports #248,
 // size caps #250, complexity #244) lives in the distributable preset eslint/game.js
 // (`@joshuafolkken/game-kit/eslint/game`). Both this config and the scaffold generator
-// (scripts/init/jgame-eslint-config.ts) source it from there so they cannot drift (#261, #368).
+// (scripts/init/josh-game-eslint-config.ts) source it from there so they cannot drift (#261, #368).
 const { GAME_DIR_CAPS, lines_cap, game_idiom_rules, game_complexity_rules } = eslint_game_overrides
 
 // Test files run long by nature (integration it() bodies, table-driven cases) — higher budget than the

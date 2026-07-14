@@ -6,5 +6,5 @@ const PACKAGE_DIR = path.join(DIST_SCRIPTS_DIR, '..', '..')
 const TEMPLATES_DIR = path.join(PACKAGE_DIR, 'templates')
 const PROJECT_ROOT = process.cwd()
 
-const jgame_paths = { PACKAGE_DIR, TEMPLATES_DIR, PROJECT_ROOT }
-export { jgame_paths }
+const josh_game_paths = { PACKAGE_DIR, TEMPLATES_DIR, PROJECT_ROOT }
+export { josh_game_paths }

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Isolated node:fs mock (existsSync + readFileSync controlled per-test) so the free-form
 // protection logic can be exercised without touching the real filesystem. Kept separate from
-// jgame-sync.test.ts, which relies on the REAL existsSync for its template-source guards.
+// josh-game-sync.test.ts, which relies on the REAL existsSync for its template-source guards.
 vi.mock('node:fs', () => ({
 	cpSync: vi.fn(),
 	mkdirSync: vi.fn(),
@@ -11,8 +11,8 @@ vi.mock('node:fs', () => ({
 	writeFileSync: vi.fn(),
 }))
 vi.mock('node:child_process', () => ({ execSync: vi.fn() }))
-vi.mock('./jgame-paths.ts', () => ({
-	jgame_paths: {
+vi.mock('./josh-game-paths.ts', () => ({
+	josh_game_paths: {
 		PACKAGE_DIR: '/pkg',
 		TEMPLATES_DIR: '/pkg/templates',
 		PROJECT_ROOT: '/project',
@@ -23,7 +23,7 @@ const FREE_FORM_ENTRY = { dest: 'src/routes/layout.css', free_form: true } as co
 const SOURCE_PATH = '/pkg/templates/src/routes/layout.css'
 const DEST_PATH = '/project/src/routes/layout.css'
 
-describe('jgame_sync.sync_free_form_file — never silently overwrite consumer edits (game-kit#375)', () => {
+describe('josh_game_sync.sync_free_form_file — never silently overwrite consumer edits (game-kit#375)', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		vi.spyOn(console, 'info').mockImplementation(() => {
@@ -35,9 +35,9 @@ describe('jgame_sync.sync_free_form_file — never silently overwrite consumer e
 		const { existsSync, cpSync } = await import('node:fs')
 
 		vi.mocked(existsSync).mockReturnValue(false)
-		const { jgame_sync } = await import('./jgame-sync.ts')
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
 
-		jgame_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
 		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, DEST_PATH)
 	})
 
@@ -46,9 +46,9 @@ describe('jgame_sync.sync_free_form_file — never silently overwrite consumer e
 
 		vi.mocked(existsSync).mockReturnValue(true)
 		vi.mocked(readFileSync).mockReturnValue('identical')
-		const { jgame_sync } = await import('./jgame-sync.ts')
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
 
-		jgame_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
 		expect(cpSync).not.toHaveBeenCalled()
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('up-to-date'))
 	})
@@ -60,9 +60,9 @@ describe('jgame_sync.sync_free_form_file — never silently overwrite consumer e
 		vi.mocked(readFileSync).mockImplementation((file) =>
 			file === DEST_PATH ? 'line-a\r\nline-b\r\n' : 'line-a\nline-b\n',
 		)
-		const { jgame_sync } = await import('./jgame-sync.ts')
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
 
-		jgame_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
 		expect(cpSync).not.toHaveBeenCalled()
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('up-to-date'))
 		expect(console.info).not.toHaveBeenCalledWith(expect.stringContaining('skipped'))
@@ -75,9 +75,9 @@ describe('jgame_sync.sync_free_form_file — never silently overwrite consumer e
 		vi.mocked(readFileSync).mockImplementation((file) =>
 			file === DEST_PATH ? 'local edits' : 'baseline',
 		)
-		const { jgame_sync } = await import('./jgame-sync.ts')
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
 
-		jgame_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
 		expect(cpSync).not.toHaveBeenCalled()
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('skipped'))
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('--force'))
@@ -90,9 +90,9 @@ describe('jgame_sync.sync_free_form_file — never silently overwrite consumer e
 		vi.mocked(readFileSync).mockImplementation((file) =>
 			file === DEST_PATH ? 'local edits' : 'baseline',
 		)
-		const { jgame_sync } = await import('./jgame-sync.ts')
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
 
-		jgame_sync.sync_free_form_file(FREE_FORM_ENTRY, true)
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, true)
 		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, DEST_PATH)
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('forced'))
 	})

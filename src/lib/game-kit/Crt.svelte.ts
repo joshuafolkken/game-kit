@@ -13,7 +13,7 @@ function create_crt(): Crt {
 
 	// Set the CRT/RETRO state directly. Lets consumers pick the initial mode through
 	// game-kit API (e.g. GameScene's crt_initial prop) instead of hand-toggling it in the
-	// synced app shell, which jgame sync would clobber on the next bump (game-kit#375).
+	// synced app shell, which josh-game sync would clobber on the next bump (game-kit#375).
 	function set_enabled(is_enabled: boolean): void {
 		is_crt_enabled = is_enabled
 	}

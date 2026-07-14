@@ -2,7 +2,7 @@
 
 Svelte + [Threlte](https://threlte.xyz/) component library and CLI scaffold for building 3D mini-games.
 
-- **`jgame` CLI** — scaffold a new SvelteKit + Threlte game project from a working template.
+- **`josh-game` CLI** — scaffold a new SvelteKit + Threlte game project from a working template.
 - **Library exports** — drop-in scenes, player, controls, switches, and reactive state primitives for use inside any SvelteKit app.
 
 ## Prerequisites
@@ -15,7 +15,7 @@ Svelte + [Threlte](https://threlte.xyz/) component library and CLI scaffold for 
 ```bash
 gh auth login --scopes read:packages   # see docs/authentication.md for the full setup
 pnpm add -g @joshuafolkken/game-kit
-jgame init my-game
+josh-game init my-game
 cd my-game && pnpm dev                  # open http://localhost:5173
 ```
 
@@ -24,9 +24,9 @@ cd my-game && pnpm dev                  # open http://localhost:5173
 | Guide                                           | What it covers                                                                               |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | [authentication.md](./docs/authentication.md)   | One-time GitHub Packages auth — `gh` token, `NODE_AUTH_TOKEN`, `.npmrc`                      |
-| [install.md](./docs/install.md)                 | Scaffold a new game project with `jgame init`                                                |
+| [install.md](./docs/install.md)                 | Scaffold a new game project with `josh-game init`                                            |
 | [library.md](./docs/library.md)                 | Use `@joshuafolkken/game-kit` as a library in an existing project, with the full export list |
-| [troubleshooting.md](./docs/troubleshooting.md) | Fixes for `401`/`404` auth errors, `jgame: command not found`, and other common failures     |
+| [troubleshooting.md](./docs/troubleshooting.md) | Fixes for `401`/`404` auth errors, `josh-game: command not found`, and other common failures |
 
 ## Contributing
 

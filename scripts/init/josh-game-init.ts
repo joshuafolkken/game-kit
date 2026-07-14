@@ -9,11 +9,11 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import path from 'node:path'
-import { jgame_cspell_config } from './jgame-cspell-config.ts'
-import { jgame_eslint_config } from './jgame-eslint-config.ts'
-import { jgame_managed_dev_deps as jgame_managed_development_deps } from './jgame-managed-development-deps.ts'
-import { jgame_paths } from './jgame-paths.ts'
-import { jgame_root_files } from './jgame-root-files.ts'
+import { josh_game_cspell_config } from './josh-game-cspell-config.ts'
+import { josh_game_eslint_config } from './josh-game-eslint-config.ts'
+import { josh_game_managed_dev_deps as josh_game_managed_development_deps } from './josh-game-managed-development-deps.ts'
+import { josh_game_paths } from './josh-game-paths.ts'
+import { josh_game_root_files } from './josh-game-root-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 // templates/tsconfig.json only type-checks the templates/ directory inside game-kit
@@ -91,7 +91,7 @@ function derive_names(raw: string): GameNames {
 }
 
 function read_game_kit_package(): GameKitPackage {
-	const raw = readFileSync(path.join(jgame_paths.PACKAGE_DIR, 'package.json'), 'utf8')
+	const raw = readFileSync(path.join(josh_game_paths.PACKAGE_DIR, 'package.json'), 'utf8')
 
 	return JSON.parse(raw) as GameKitPackage
 }
@@ -132,20 +132,20 @@ function build_scripts(): Record<string, string> {
 		preinstall: 'pnpm dlx @aikidosec/safe-chain setup-ci',
 		dev: 'vite dev',
 		build: 'vite build',
-		jgame: 'jgame',
+		'josh-game': 'josh-game',
 		josh: 'josh',
 	}
 }
 
 // Generated games are SvelteKit apps that bundle game-kit at build time (it is not
-// re-published as a library), so game-kit belongs in `devDependencies` — and `jgame vu`
+// re-published as a library), so game-kit belongs in `devDependencies` — and `josh-game vu`
 // already enforces this via `pnpm add -D`. Scaffolding it here too means the first
-// `jgame vu` produces no dependency-field churn. Keys are sorted lexicographically so
+// `josh-game vu` produces no dependency-field churn. Keys are sorted lexicographically so
 // game-kit lands in the same slot `pnpm add -D` would place it (right before
 // `@joshuafolkken/kit`), avoiding key-order churn as well. See #301.
 function build_development_dependencies(package_: GameKitPackage): Record<string, string> {
 	const merged = {
-		...jgame_managed_development_deps.pick_required_deps(package_.devDependencies),
+		...josh_game_managed_development_deps.pick_required_deps(package_.devDependencies),
 		[GAME_KIT_PACKAGE_NAME]: `^${package_.version}`,
 	}
 
@@ -212,7 +212,7 @@ function should_copy_template(source: string): boolean {
 }
 
 function copy_templates(project_directory: string): void {
-	cpSync(jgame_paths.TEMPLATES_DIR, project_directory, {
+	cpSync(josh_game_paths.TEMPLATES_DIR, project_directory, {
 		recursive: true,
 		filter: should_copy_template,
 	})
@@ -221,17 +221,21 @@ function copy_templates(project_directory: string): void {
 
 // Byte-identical files live only at the repo root (single source) and are copied
 // straight from the installed package, not duplicated into templates/. See
-// jgame-root-files.ts.
+// josh-game-root-files.ts.
 function copy_root_files(project_directory: string): void {
-	for (const relative_path of jgame_root_files.ROOT_COPY_FILES) {
-		jgame_root_files.copy_root_file(relative_path, jgame_paths.PACKAGE_DIR, project_directory)
+	for (const relative_path of josh_game_root_files.ROOT_COPY_FILES) {
+		josh_game_root_files.copy_root_file(
+			relative_path,
+			josh_game_paths.PACKAGE_DIR,
+			project_directory,
+		)
 	}
 
 	console.info('  ✔ copied   root-sourced files')
 }
 
 function write_npmrc(project_directory: string): void {
-	const source = path.join(jgame_paths.TEMPLATES_DIR, NPMRC_SRC_NAME)
+	const source = path.join(josh_game_paths.TEMPLATES_DIR, NPMRC_SRC_NAME)
 	const destination = path.join(project_directory, NPMRC_DEST_NAME)
 
 	cpSync(source, destination)
@@ -258,7 +262,7 @@ function assert_empty_target(project_directory: string, kebab: string): void {
 // eslint-disable-next-line max-statements -- CLI entry point: a linear validate -> scaffold -> write sequence that reads better as one run() than fragmented. See #250.
 function run(game_name_raw?: string): void {
 	if (!game_name_raw) {
-		console.error('Error: game name is required.\nUsage: jgame init <name>')
+		console.error('Error: game name is required.\nUsage: josh-game init <name>')
 		process.exit(1)
 	}
 
@@ -271,12 +275,12 @@ function run(game_name_raw?: string): void {
 		process.exit(1)
 	}
 
-	const project_directory = path.join(jgame_paths.PROJECT_ROOT, names.kebab)
+	const project_directory = path.join(josh_game_paths.PROJECT_ROOT, names.kebab)
 	const opts = { ...SPAWN_OPTIONS, cwd: project_directory }
 
 	assert_empty_target(project_directory, names.kebab)
 
-	console.info('\n🎮 jgame init — Scaffolding new game project\n')
+	console.info('\n🎮 josh-game init — Scaffolding new game project\n')
 	mkdirSync(project_directory, { recursive: true })
 	write_package_json(names.kebab, project_directory)
 	copy_templates(project_directory)
@@ -296,18 +300,18 @@ function run(game_name_raw?: string): void {
 	// for src/lib/game/** (#260). The base never overwrites an existing eslint.config.js, so this
 	// stays put on the user's later syncs. (app.html — the game shell — is overwritten by the
 	// templates copy above, taking precedence over app-kit's seeded generic shell.)
-	jgame_eslint_config.write_eslint_config(project_directory)
+	josh_game_eslint_config.write_eslint_config(project_directory)
 	// Override the bare cspell.config.yaml with one that pulls the game-aware word set from
 	// `@joshuafolkken/game-kit/cspell/game` (which chains app-kit/cspell/sveltekit), so the scaffold
 	// passes `josh cspell:dot` out of the box (#286).
-	jgame_cspell_config.write_cspell_config(project_directory)
+	josh_game_cspell_config.write_cspell_config(project_directory)
 	console.info(build_done_message(names.kebab))
 }
 
-const jgame_init = {
+const josh_game_init = {
 	run,
 	generate_package_json,
 	derive_names,
 	generate_game_config,
 }
-export { jgame_init }
+export { josh_game_init }

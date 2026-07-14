@@ -1,6 +1,6 @@
 # Authenticate with GitHub Packages
 
-`@joshuafolkken/game-kit` is published to GitHub Packages, which requires authentication **even for public packages**. Both [install.md](./install.md) (scaffolding with `jgame`) and [library.md](./library.md) (using the kit as a dependency) link here for this one-time setup.
+`@joshuafolkken/game-kit` is published to GitHub Packages, which requires authentication **even for public packages**. Both [install.md](./install.md) (scaffolding with `josh-game`) and [library.md](./library.md) (using the kit as a dependency) link here for this one-time setup.
 
 ## 1. Get a token from the `gh` CLI
 
@@ -46,6 +46,6 @@ The command above writes to `./.npmrc`. To make it machine-global instead, swap 
 
 ## Next
 
-- Scaffolding a new game? Return to [install.md §2](./install.md#2-install-jgame-globally).
+- Scaffolding a new game? Return to [install.md §2](./install.md#2-install-josh-game-globally).
 - Adding the library to an existing project? Return to [library.md §2](./library.md#2-install).
 - Hitting `401`/`403` or `ERR_PNPM_FETCH`? See [troubleshooting.md](./troubleshooting.md).
