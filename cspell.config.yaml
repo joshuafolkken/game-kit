@@ -53,6 +53,8 @@ words:
   - neighbours
   - colour
   - unstub
+  - hfov
+  - vfov
   - viewports
   - vsize
   - WASD

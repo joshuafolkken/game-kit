@@ -5,36 +5,58 @@ import { ROOM_D, ROOM_W } from '$lib/game-kit/scene/room-config'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import Player from './Player.svelte'
+import PLAYER_SOURCE from './Player.svelte?raw'
 
 const KEYBOARD_AXIS_FRACTION = 0.5
 
-const { tick_holder, mock_input } = vi.hoisted(() => ({
-	tick_holder: { fn: null as ((delta: number) => void) | null },
-	mock_input: {
-		keys: { w: false, s: false, a: false, d: false },
-		joystick_move: { x: 0, y: 0 },
-		joystick_look: { x: 0, y: 0 },
-		yaw: 0,
-		pitch: 0,
-		is_jump_requested: false,
-		is_sprinting: false,
-		clear_jump_request: () => {
+const { tick_holder, mock_input, mock_size } = vi.hoisted(() => {
+	const VIEWPORT_WIDTH = 800
+	const VIEWPORT_HEIGHT = 600
+
+	// Object-property arrow (exempt from unicorn/consistent-function-scoping, like the
+	// mock_input no-ops below); returned as the store's unsubscribe handle.
+	const store = {
+		unsubscribe: () => {
 			/* no-op */
 		},
-		apply_look_delta: () => {
-			/* no-op */
+	}
+
+	return {
+		tick_holder: { fn: null as ((delta: number) => void) | null },
+		mock_input: {
+			keys: { w: false, s: false, a: false, d: false },
+			joystick_move: { x: 0, y: 0 },
+			joystick_look: { x: 0, y: 0 },
+			yaw: 0,
+			pitch: 0,
+			is_jump_requested: false,
+			is_sprinting: false,
+			clear_jump_request: () => {
+				/* no-op */
+			},
+			apply_look_delta: () => {
+				/* no-op */
+			},
+			set_joystick_look: () => {
+				/* no-op */
+			},
 		},
-		set_joystick_look: () => {
-			/* no-op */
+		mock_size: {
+			subscribe(run: (value: { width: number; height: number }) => void): () => void {
+				run({ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT })
+
+				return store.unsubscribe
+			},
 		},
-	},
-}))
+	}
+})
 
 vi.mock('@threlte/core', () => ({
 	T: {},
 	useTask: vi.fn((function_: (delta: number) => void) => {
 		tick_holder.fn = function_
 	}),
+	useThrelte: vi.fn(() => ({ size: mock_size })),
 }))
 vi.mock('$lib/game-kit/input/Input.svelte', () => ({ input: mock_input }))
 const { mock_clamp } = vi.hoisted(() => ({
@@ -144,5 +166,28 @@ describe('Player', () => {
 		tick_holder.fn?.(0.016)
 
 		expect(vi.mocked(player_bounds.make_clamp_to_room)).toHaveBeenCalledWith(ROOM_W, ROOM_D)
+	})
+})
+
+describe('Player camera FOV — horizontal-FOV-aware on portrait viewports', () => {
+	it('derives the vertical FOV via camera_fov.compute_vertical_fov(FOV, aspect)', () => {
+		expect(PLAYER_SOURCE).toMatch(
+			/vertical_fov\s*=\s*\$derived\(\s*camera_fov\.compute_vertical_fov\(\s*FOV\s*,/u,
+		)
+	})
+
+	it('subscribes to the Threlte size store via $size so the FOV reacts to resize', () => {
+		expect(PLAYER_SOURCE).toMatch(/const\s*\{\s*size\s*\}\s*=\s*useThrelte\(\)/u)
+		expect(PLAYER_SOURCE).toContain('$size.width')
+		expect(PLAYER_SOURCE).toContain('$size.height')
+	})
+
+	it('does not use the non-reactive size.current accessor (would freeze the FOV)', () => {
+		expect(PLAYER_SOURCE).not.toMatch(/\bsize\.current\b/u)
+	})
+
+	it('passes the derived vertical_fov (not the fixed FOV) into the PerspectiveCamera', () => {
+		expect(PLAYER_SOURCE).toMatch(/<T\.PerspectiveCamera[^>]*fov=\{vertical_fov\}/u)
+		expect(PLAYER_SOURCE).not.toMatch(/<T\.PerspectiveCamera[^>]*fov=\{FOV\}/u)
 	})
 })

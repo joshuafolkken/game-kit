@@ -325,26 +325,23 @@ describe('josh_game_init.run', () => {
 		expect(mkdirSync).toHaveBeenCalledWith('/project/tic-tac-toe', { recursive: true })
 	})
 
-	it('writes package.json into project subdirectory', async () => {
+	it.each([
+		{
+			label: 'package.json',
+			path: '/project/tic-tac-toe/package.json',
+			content: '"name": "tic-tac-toe"',
+		},
+		{
+			label: 'game-config.ts',
+			path: '/project/tic-tac-toe/src/lib/game-config.ts',
+			content: "const GAME_NAME = 'tic-tac-toe'",
+		},
+	])('writes $label into project subdirectory', async ({ path, content }) => {
 		const { writeFileSync } = await import('node:fs')
 		const { josh_game_init } = await import('./josh-game-init.ts')
 
 		josh_game_init.run('tic-tac-toe')
-		expect(writeFileSync).toHaveBeenCalledWith(
-			'/project/tic-tac-toe/package.json',
-			expect.stringContaining('"name": "tic-tac-toe"'),
-		)
-	})
-
-	it('writes game-config.ts into project subdirectory', async () => {
-		const { writeFileSync } = await import('node:fs')
-		const { josh_game_init } = await import('./josh-game-init.ts')
-
-		josh_game_init.run('tic-tac-toe')
-		expect(writeFileSync).toHaveBeenCalledWith(
-			'/project/tic-tac-toe/src/lib/game-config.ts',
-			expect.stringContaining("const GAME_NAME = 'tic-tac-toe'"),
-		)
+		expect(writeFileSync).toHaveBeenCalledWith(path, expect.stringContaining(content))
 	})
 
 	it('never writes its own tsconfig.json — josh init owns it (#326)', async () => {

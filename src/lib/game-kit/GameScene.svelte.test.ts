@@ -221,7 +221,11 @@ it('renders cyber-glow when game_state.is_alt is true', async () => {
 })
 
 describe('ESC / Z key — return to start', () => {
-	it('pressing ESC while session is active calls reset_session', async () => {
+	it.each([
+		{ label: 'ESC', key: 'Escape' },
+		{ label: 'Z', key: 'z' },
+		{ label: 'uppercase Z', key: 'Z' },
+	])('pressing $label while session is active calls reset_session', async ({ key }) => {
 		const { container } = await render_scene()
 		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
 
@@ -229,31 +233,7 @@ describe('ESC / Z key — return to start', () => {
 		if (!scene) return
 		scene.click()
 		expect(session.is_session_started).toBe(true)
-		scene.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-		expect(session.is_session_started).toBe(false)
-	})
-
-	it('pressing Z while session is active calls reset_session', async () => {
-		const { container } = await render_scene()
-		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
-
-		expect(scene).toBeTruthy()
-		if (!scene) return
-		scene.click()
-		expect(session.is_session_started).toBe(true)
-		scene.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', bubbles: true }))
-		expect(session.is_session_started).toBe(false)
-	})
-
-	it('pressing uppercase Z while session is active calls reset_session', async () => {
-		const { container } = await render_scene()
-		const scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
-
-		expect(scene).toBeTruthy()
-		if (!scene) return
-		scene.click()
-		expect(session.is_session_started).toBe(true)
-		scene.dispatchEvent(new KeyboardEvent('keydown', { key: 'Z', bubbles: true }))
+		scene.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }))
 		expect(session.is_session_started).toBe(false)
 	})
 

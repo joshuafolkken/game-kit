@@ -33,11 +33,11 @@ interface TsconfigShape {
 }
 
 // The kit base preset is JSONC: every comment sits on its own line, so dropping
-// lines whose trimmed content starts with `//` is sufficient and string-safe.
+// lines whose leading-trimmed content starts with `//` is sufficient and string-safe.
 function strip_line_comments(content: string): string {
 	return content
 		.split('\n')
-		.filter((line) => !line.trim().startsWith('//'))
+		.filter((line) => !line.trimStart().startsWith('//'))
 		.join('\n')
 }
 
