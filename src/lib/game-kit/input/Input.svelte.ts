@@ -356,7 +356,7 @@ function make_input_api(
 			const specs = make_listener_specs(state, references)
 			// eslint-disable-next-line no-multi-assign -- idiomatic lazy-init `??=` pattern
 			const listener_mgr = (manager ??= create_listener_manager(specs))
-			if (!listener_mgr.is_active || canvas_element !== null) references.canvas_el = canvas_element
+			if (canvas_element !== null || !listener_mgr.is_active) references.canvas_el = canvas_element
 
 			return listener_mgr.setup(on_cleanup)
 		},
