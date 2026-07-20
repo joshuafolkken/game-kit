@@ -69,6 +69,9 @@
 		room_width?: number
 		room_depth?: number
 		room_height?: number
+		// World-unit height of the game title. Exposed so a game can opt into a portrait-friendly
+		// title size; defaults to TITLE_FONT_SIZE, leaving existing rendering unchanged.
+		title_font_size?: number
 	}
 
 	const {
@@ -83,6 +86,7 @@
 		room_width = ROOM_W,
 		room_depth = ROOM_D,
 		room_height = ROOM_H,
+		title_font_size = TITLE_FONT_SIZE,
 	}: Props = $props()
 
 	const { camera } = useThrelte()
@@ -100,7 +104,7 @@
 	const point_light_color = $derived(is_alt ? CYBER_POINT_LIGHT_COLOR : NORMAL_POINT_LIGHT_COLOR)
 	const current_font = $derived(fonts.get_font(should_use_alt_font))
 	const current_font_size_multiplier = $derived(fonts.get_font_size_multiplier(should_use_alt_font))
-	const current_title_font_size = $derived(TITLE_FONT_SIZE * current_font_size_multiplier)
+	const current_title_font_size = $derived(title_font_size * current_font_size_multiplier)
 	const floor_color = $derived(is_alt ? CYBER_FLOOR_COLOR : FLOOR_COLOR)
 	const wall_color = $derived(is_alt ? CYBER_WALL_COLOR : WALL_COLOR)
 	const ceiling_color = $derived(is_alt ? CYBER_CEILING_COLOR : CEILING_COLOR)

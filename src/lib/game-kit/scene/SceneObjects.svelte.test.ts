@@ -225,3 +225,29 @@ describe('SceneObjects room dimensions — configurable via props', () => {
 		expect(container).toBeTruthy()
 	})
 })
+
+describe('SceneObjects title size — configurable via prop', () => {
+	it('declares an optional title_font_size prop defaulting to TITLE_FONT_SIZE', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/title_font_size\?\s*:\s*number/u)
+		expect(SCENE_OBJECTS_SOURCE).toMatch(/title_font_size\s*=\s*TITLE_FONT_SIZE/u)
+	})
+
+	it('drives current_title_font_size from the prop, not the fixed TITLE_FONT_SIZE constant', () => {
+		expect(SCENE_OBJECTS_SOURCE).toMatch(
+			/current_title_font_size\s*=\s*\$derived\(\s*title_font_size\s*\*\s*current_font_size_multiplier\s*\)/u,
+		)
+		expect(SCENE_OBJECTS_SOURCE).not.toMatch(
+			/current_title_font_size\s*=\s*\$derived\(\s*TITLE_FONT_SIZE\s*\*/u,
+		)
+	})
+
+	it('renders without error when an explicit title_font_size is provided', async () => {
+		const CUSTOM_TITLE_FONT_SIZE = 0.4
+		const game_board = createRawSnippet(() => ({ render: () => EMPTY_SPAN }))
+		const { container } = await render(SceneObjects, {
+			props: { ...make_properties(game_board), title_font_size: CUSTOM_TITLE_FONT_SIZE },
+		})
+
+		expect(container).toBeTruthy()
+	})
+})

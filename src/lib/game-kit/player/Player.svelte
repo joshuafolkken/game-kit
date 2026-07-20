@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { T, useTask } from '@threlte/core'
+	import { T, useTask, useThrelte } from '@threlte/core'
 	import { input } from '$lib/game-kit/input/Input.svelte'
+	import { camera_fov } from '$lib/game-kit/player/camera-fov'
 	import { camera_shake } from '$lib/game-kit/player/CameraShake.svelte'
 	import { player_bounds } from '$lib/game-kit/player/player-bounds'
 	import { player_jump } from '$lib/game-kit/player/player-jump'
@@ -26,6 +27,13 @@
 
 	const { is_gameover, room_width = ROOM_W, room_depth = ROOM_D }: Props = $props()
 	const clamp_to_room = $derived(player_bounds.make_clamp_to_room(room_width, room_depth))
+
+	// Keep the horizontal FOV constant on portrait viewports so the title / side content is not
+	// clipped: read the live canvas size and widen the vertical FOV when aspect < 1. Subscribing
+	// via the reactive $size store (not the non-reactive .current accessor) re-derives this on
+	// resize / orientation change.
+	const { size } = useThrelte()
+	const vertical_fov = $derived(camera_fov.compute_vertical_fov(FOV, $size.width / $size.height))
 
 	let pos_x = $state(SPAWN_X)
 	let pos_y = $state(SPAWN_Y)
@@ -116,6 +124,6 @@
 	rotation.y={input.yaw + shake_yaw}
 >
 	<T.Group rotation.x={input.pitch + shake_pitch} rotation.z={shake_roll}>
-		<T.PerspectiveCamera makeDefault fov={FOV} near={NEAR_PLANE} far={FAR_PLANE} />
+		<T.PerspectiveCamera makeDefault fov={vertical_fov} near={NEAR_PLANE} far={FAR_PLANE} />
 	</T.Group>
 </T.Group>
