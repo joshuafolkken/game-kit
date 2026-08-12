@@ -10,6 +10,12 @@ words:
   - COEFF
   - gameover
   - jgame
+  # three.js mesh-compression codec (the EXT_meshopt_compression glTF extension); its decoder is
+  # the reason script-src carries 'wasm-unsafe-eval' in svelte.config.js.
+  - meshopt
+  # SvelteKit verb form; the dictionary app-kit ships already carries `prerendered`. Used by the
+  # `josh-game sync` guard that warns when a prerendered route meets %sveltekit.nonce%.
+  - prerenders
   - Orbitron
   - SAMEORIGIN
   - threlte
