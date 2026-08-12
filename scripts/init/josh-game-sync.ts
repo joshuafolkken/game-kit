@@ -129,7 +129,9 @@ function sync_managed_files(is_force: boolean): void {
 // contains %sveltekit.nonce%". A consumer who prerenders a route therefore finds their build broken
 // by a sync that touched no file of theirs, with nothing in the output pointing at the cause.
 // Detecting it here turns that into a warning naming the file and the fix (#416).
-const PRERENDER_ENABLED_REGEX = /\bprerender\s*[=:]\s*true\b/u
+// `true` AND `'auto'`: SvelteKit prerenders a route under either, so matching only `true` would let
+// the `'auto'` half through silently — the failure mode this guard exists to prevent.
+const PRERENDER_ENABLED_REGEX = /\bprerender\s*[=:]\s*(?:true\b|['"]auto['"])/u
 const ROUTE_EXTENSIONS = new Set(['.ts', '.js', '.svelte'])
 
 function is_route_source(name: string): boolean {
@@ -160,7 +162,7 @@ function warn_prerender_nonce_conflict(): void {
 
 	console.info(
 		'\n  ⚠ src/app.html uses %sveltekit.nonce%, which cannot be prerendered, but these routes\n' +
-			`      set prerender = true:\n${listed}\n` +
+			`      opt into prerendering:\n${listed}\n` +
 			'      Your build will fail with "Cannot use prerendering if page template contains\n' +
 			'      %sveltekit.nonce%". Drop prerendering on those routes to unblock it.\n' +
 			'      Editing src/app.html is NOT a fix: it is a managed file this command overwrites on\n' +

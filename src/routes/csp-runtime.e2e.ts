@@ -30,6 +30,13 @@ test('loads the game with no CSP violation, on dev and preview alike', async ({ 
 	// app-kit's default settle window, not a restated number — the seeded spec uses the same one.
 	await security_headers_e2e.settle(page)
 
+	// Proves the page under test is actually THIS game before reading the violation list. An
+	// empty-violations assertion on its own passes vacuously against an error page, or against a
+	// different app entirely: `playwright.config.ts` sets `reuseExistingServer: true` on a fixed dev
+	// port, so an unrelated project already listening there is silently adopted (observed during
+	// #416, and reported upstream as joshuafolkken/kit#775). A green run then means nothing.
+	await expect(page.locator('[data-testid="game-scene"]')).toBeVisible()
+
 	// Only CSP violations are asserted, deliberately. Uncaught page errors would be a broader net,
 	// but the dev server legitimately produces one: `sw.js` is emitted at build time, so
 	// `app.html`'s registration call rejects with a 404 in dev and would make this permanently red

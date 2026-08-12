@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { josh_game_root_files } from './init/josh-game-root-files.ts'
 import { version_range } from './init/version-range.ts'
 
 // Contract guard for #416. `templates/` is the code game-kit SHIPS INTO consumer projects, so an
@@ -29,6 +30,13 @@ const SCANNED_EXTENSIONS = new Set(['.ts', '.js', '.svelte', '.html'])
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const TEMPLATES_DIRECTORY = path.join(REPO_ROOT, 'templates', 'src')
+// `templates/src` is not the whole shipped surface: `josh_game_root_files.ROOT_COPY_FILES` is
+// byte-copied into consumers straight from the repo root, so an app-kit subpath imported there
+// reaches them the same way and has to clear the same floor. Scanning only templates/ would leave
+// that half unguarded — the same blind spot that let the too-low floor ship in the first place.
+const ROOT_SHIPPED_FILES = josh_game_root_files.ROOT_COPY_FILES.map((file) =>
+	path.join(REPO_ROOT, file),
+)
 
 interface PackageJsonShape {
 	devDependencies?: Record<string, string>
@@ -47,12 +55,15 @@ function read_template_file(entry: { parentPath: string; name: string }): string
 	return readFileSync(path.join(entry.parentPath, entry.name), 'utf8')
 }
 
-// Every app-kit subpath referenced anywhere under templates/src, deduplicated.
+// Every app-kit subpath referenced anywhere in the shipped surface, deduplicated.
 function collect_referenced_subpaths(): ReadonlyArray<string> {
 	const entries = readdirSync(TEMPLATES_DIRECTORY, { recursive: true, withFileTypes: true })
-	const contents = entries
-		.filter((entry) => entry.isFile() && is_scanned_file(entry.name))
-		.map((entry) => read_template_file(entry))
+	const contents = [
+		...entries
+			.filter((entry) => entry.isFile() && is_scanned_file(entry.name))
+			.map((entry) => read_template_file(entry)),
+		...ROOT_SHIPPED_FILES.map((file) => readFileSync(file, 'utf8')),
+	]
 	const found = contents.flatMap((content) =>
 		content
 			.matchAll(APP_KIT_SUBPATH_REGEX)

@@ -16,12 +16,14 @@ describe('josh_game_sync.find_prerendering_routes (#416)', () => {
 		'__fixtures__',
 	)
 
-	it('reports every route that opts into prerendering, in both spellings', () => {
+	it('reports every route that opts into prerendering, in all three spellings', () => {
 		expect(
 			josh_game_sync.find_prerendering_routes(path.join(FIXTURES_ROOT, 'prerender-project')),
 		).toStrictEqual([
 			path.join('src', 'routes', '+layout.ts'),
 			path.join('src', 'routes', 'about', '+page.ts'),
+			// `'auto'` prerenders too; matching only `true` would let this one through silently.
+			path.join('src', 'routes', 'auto', '+page.ts'),
 		])
 	})
 
