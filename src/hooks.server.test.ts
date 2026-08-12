@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { security_headers } from '@joshuafolkken/app-kit/security'
 import type { RequestEvent, ResolveOptions } from '@sveltejs/kit'
 import { describe, expect, it, vi } from 'vitest'
 // eslint-disable-next-line import/extensions -- `hooks.server` is a SvelteKit-mandated multi-part filename, not an extension
@@ -20,41 +21,26 @@ function make_resolve(): ResolveFunction {
 const MOCK_EVENT = {} as RequestEvent
 
 describe('handle', () => {
-	it('adds X-Frame-Options: SAMEORIGIN', async () => {
+	// Asserted against app-kit's exported baseline rather than a restated literal list: the point of
+	// #416 was to stop game-kit keeping its own copy of these values, and a hardcoded expectation
+	// here would reintroduce exactly that drift one layer down. `composed_headers()` rather than
+	// SECURITY_HEADERS because it is what the hook actually applies — the two differ the moment an
+	// `extra` array is passed.
+	it.each(security_headers.composed_headers())(
+		'serves the app-kit baseline %s',
+		async (name, value) => {
+			const response = await handle({ event: MOCK_EVENT, resolve: make_resolve() })
+
+			expect(response.headers.get(name.toLowerCase())).toBe(value)
+		},
+	)
+
+	it('leaves Content-Security-Policy to kit.csp so the per-request nonce is the only policy', async () => {
+		// Two delivered policies are enforced as their intersection, so a flat header set here would
+		// block the scripts svelte.config.js's nonce exists to allow.
 		const response = await handle({ event: MOCK_EVENT, resolve: make_resolve() })
 
-		expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN')
-	})
-
-	it('adds X-Content-Type-Options: nosniff', async () => {
-		const response = await handle({ event: MOCK_EVENT, resolve: make_resolve() })
-
-		expect(response.headers.get('x-content-type-options')).toBe('nosniff')
-	})
-
-	it('adds Referrer-Policy: strict-origin-when-cross-origin', async () => {
-		const response = await handle({ event: MOCK_EVENT, resolve: make_resolve() })
-
-		expect(response.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin')
-	})
-
-	it('adds Permissions-Policy restricting camera, microphone, geolocation, payment', async () => {
-		const response = await handle({ event: MOCK_EVENT, resolve: make_resolve() })
-		const policy = response.headers.get('permissions-policy')
-
-		expect(policy).toContain('camera=()')
-		expect(policy).toContain('microphone=()')
-		expect(policy).toContain('geolocation=()')
-		expect(policy).toContain('payment=()')
-	})
-
-	it("adds Content-Security-Policy with default-src 'self'", async () => {
-		const response = await handle({ event: MOCK_EVENT, resolve: make_resolve() })
-		const csp = response.headers.get('content-security-policy')
-
-		expect(csp).toContain("default-src 'self'")
-		expect(csp).toContain("object-src 'none'")
-		expect(csp).toContain("frame-ancestors 'self'")
+		expect(response.headers.get('content-security-policy')).toBeNull()
 	})
 
 	it('still injects app version via transformPageChunk', async () => {

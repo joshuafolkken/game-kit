@@ -11,7 +11,11 @@
 		<link rel="icon" href="/icon.svg" type="image/svg+xml" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<link rel="manifest" href="/manifest.webmanifest" />
-		<script>
+		<!--
+			The nonce placeholder below opts this inline script into the per-request CSP nonce that
+			kit.csp in svelte.config.js emits. Remove it and the policy's script-src blocks the script.
+		-->
+		<script nonce="%sveltekit.nonce%">
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', function () {
 					navigator.serviceWorker.register('/sw.js')
@@ -149,7 +153,7 @@
 				</g>
 			</svg>
 			<p class="brand">Joshua Folkken</p>
-			<!-- game-block: injected at request time from src/lib/game/game-name.ts via inject_game_name() in src/hooks.server.ts -->
+			<!-- game-block: injected at request time by inject_game_name() in src/hooks.server.ts, which reads src/lib/game/game-name.ts. Comments in this file are SERVED, so ZAP's Suspicious Comments rule [10027] scans them and flags a set of SQL keywords; phrase additions here to avoid them rather than silencing the rule, which still has to catch a real leak. See zap-baseline.conf. -->
 			<div class="game-block">
 				<p class="game-title">__GAME_NAME__</p>
 				<p class="game-version">v__APP_VERSION__</p>
@@ -166,7 +170,7 @@
 				aria-labelledby="loading-status"
 			></progress>
 		</output>
-		<script>
+		<script nonce="%sveltekit.nonce%">
 			/*
 				Pseudo download-progress tracker. Watches resource entries via PerformanceObserver,
 				accumulates bytes and file count, and updates the <progress> bar value

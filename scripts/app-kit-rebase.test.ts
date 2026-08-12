@@ -21,7 +21,9 @@ function read_repo_file(relative_path: string): string {
 describe("game-kit's own config consumes app-kit, not kit, for the SvelteKit layer (#355)", () => {
 	it.each([
 		['eslint.config.js', '@joshuafolkken/app-kit/eslint/sveltekit'],
-		['tsconfig.json', '@joshuafolkken/app-kit/tsconfig/sveltekit.jsonc'],
+		// Export subpath, not the raw `node_modules` path it replaced: app-kit renamed the file
+		// behind it and the raw path resolved to nothing (#415 / app-kit#113).
+		['tsconfig.json', '@joshuafolkken/app-kit/tsconfig/sveltekit'],
 		['cspell/game.yaml', '@joshuafolkken/app-kit/cspell/sveltekit'],
 	])('%s references the app-kit SvelteKit preset', (file, app_kit_reference) => {
 		expect(read_repo_file(file)).toContain(app_kit_reference)
