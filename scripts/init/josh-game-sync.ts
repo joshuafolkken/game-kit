@@ -1,11 +1,12 @@
 import { execSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { josh_game_cspell_config } from './josh-game-cspell-config.ts'
 import { josh_game_eslint_config } from './josh-game-eslint-config.ts'
 import { josh_game_managed_dev_deps as josh_game_managed_development_deps } from './josh-game-managed-development-deps.ts'
 import { josh_game_paths } from './josh-game-paths.ts'
 import { josh_game_root_files } from './josh-game-root-files.ts'
+import { version_range } from './version-range.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 // Resolvability probe: `josh help` exits 0 when kit's bin is reachable. josh-app delegates to
@@ -122,6 +123,54 @@ function sync_managed_files(is_force: boolean): void {
 	}
 }
 
+// `src/app.html` is a managed (unconditionally overwritten) entry and carries
+// `%sveltekit.nonce%`, which SvelteKit refuses to render on a PRERENDERED page — a nonce has to
+// change per request, so it hard-fails the build with "Cannot use prerendering if page template
+// contains %sveltekit.nonce%". A consumer who prerenders a route therefore finds their build broken
+// by a sync that touched no file of theirs, with nothing in the output pointing at the cause.
+// Detecting it here turns that into a warning naming the file and the fix (#416).
+// `true` AND `'auto'`: SvelteKit prerenders a route under either, so matching only `true` would let
+// the `'auto'` half through silently — the failure mode this guard exists to prevent.
+const PRERENDER_ENABLED_REGEX = /\bprerender\s*[=:]\s*(?:true\b|['"]auto['"])/u
+const ROUTE_EXTENSIONS = new Set(['.ts', '.js', '.svelte'])
+
+function is_route_source(name: string): boolean {
+	return ROUTE_EXTENSIONS.has(path.extname(name))
+}
+
+// `project_root` is a parameter so the guard can be pointed at a fixture tree; production callers
+// take the default.
+function find_prerendering_routes(
+	project_root: string = josh_game_paths.PROJECT_ROOT,
+): ReadonlyArray<string> {
+	const routes_directory = path.join(project_root, 'src', 'routes')
+	if (!existsSync(routes_directory)) return []
+
+	return readdirSync(routes_directory, { recursive: true, withFileTypes: true })
+		.filter((entry) => entry.isFile() && is_route_source(entry.name))
+		.map((entry) => path.join(entry.parentPath, entry.name))
+		.filter((file) => PRERENDER_ENABLED_REGEX.test(readFileSync(file, 'utf8')))
+		.map((file) => path.relative(project_root, file))
+		.toSorted((left, right) => left.localeCompare(right))
+}
+
+function warn_prerender_nonce_conflict(): void {
+	const routes = find_prerendering_routes()
+	if (routes.length === 0) return
+
+	const listed = routes.map((route) => `      ${route}`).join('\n')
+
+	console.info(
+		'\n  ⚠ src/app.html uses %sveltekit.nonce%, which cannot be prerendered, but these routes\n' +
+			`      opt into prerendering:\n${listed}\n` +
+			'      Your build will fail with "Cannot use prerendering if page template contains\n' +
+			'      %sveltekit.nonce%". Drop prerendering on those routes to unblock it.\n' +
+			'      Editing src/app.html is NOT a fix: it is a managed file this command overwrites on\n' +
+			'      every run, so the change would be reverted on the next sync. If your project needs\n' +
+			'      prerendering, open a game-kit issue — the shell has to change there, not here.',
+	)
+}
+
 interface ConsumerPackage {
 	scripts?: Record<string, string>
 	dependencies?: Record<string, string>
@@ -154,17 +203,49 @@ function partition_runtime_required_deps(
 	return { moved, remaining }
 }
 
-// Fills in only the missing entries with game-kit's canonical ranges. Preserves
-// existing pins so consumers who upgraded individual packages are not downgraded.
-function did_add_missing_required_deps(
+// Whether sync should write game-kit's canonical range over what the consumer has.
+//
+// Missing entries are filled, as they always were. An EXISTING pin is raised only when it sits
+// below the floor game-kit declares in `peerDependencies` for that package — the synced templates
+// are written against that floor, so a pin under it is not a preference to respect but a build
+// break waiting for the next sync. Everything else is left exactly as the consumer set it: a pin
+// at or above the floor still wins, so someone who upgraded a package ahead of game-kit is never
+// downgraded, and a range we cannot read is never rewritten (see `version_range.is_below`).
+function should_adopt_canonical_range(
+	current: string | undefined,
+	canonical: string,
+	floor: string | undefined,
+): boolean {
+	if (current === undefined) return true
+	if (floor === undefined) return false
+	// Never trade a real pin for one we cannot read: `pick_required_deps` falls back to `*` for a
+	// package game-kit does not itself depend on, and writing that over `^0.36.0` loses information.
+	if (version_range.floor_of(canonical) === undefined) return false
+	// Never adopt a canonical range that does not itself clear the floor. If a peerDependencies entry
+	// is ever raised ahead of the matching devDependency, adopting would DOWNGRADE a consumer sitting
+	// between the two and still leave them under the floor — rewriting package.json on every sync
+	// without ever converging. Leaving the pin alone is the safe direction; the fix belongs in
+	// game-kit's own manifest.
+	if (version_range.is_below(canonical, floor)) return false
+
+	return version_range.is_below(current, floor)
+}
+
+// Applies game-kit's canonical ranges per `should_adopt_canonical_range`. `floors` is game-kit's
+// own `peerDependencies`: only a managed dep that also appears there carries a stated floor, which
+// is exactly the set whose API the synced templates call into.
+function did_apply_required_dependency_ranges(
 	development_deps: Record<string, string>,
 	required: Record<string, string>,
+	floors: Record<string, string>,
 ): boolean {
-	const missing = Object.entries(required).filter(([key]) => !Object.hasOwn(development_deps, key))
+	const adopted = Object.entries(required).filter(([key, canonical]) =>
+		should_adopt_canonical_range(development_deps[key], canonical, floors[key]),
+	)
 
-	for (const [key, value] of missing) development_deps[key] = value
+	for (const [key, value] of adopted) development_deps[key] = value
 
-	return missing.length > 0
+	return adopted.length > 0
 }
 
 // Writes the reconciled `dependencies` back, dropping the field entirely when it has
@@ -191,12 +272,16 @@ function did_apply_managed_development_deps(
 	const dependencies = package_.dependencies ?? {}
 	const { moved, remaining } = partition_runtime_required_deps(dependencies, required)
 	const development_deps = { ...moved, ...package_.devDependencies }
-	const is_added = did_add_missing_required_deps(development_deps, required)
+	const is_applied = did_apply_required_dependency_ranges(
+		development_deps,
+		required,
+		josh_game_managed_development_deps.read_peer_floors_from_kit(),
+	)
 
 	package_.devDependencies = development_deps
 	reconcile_dependencies_field(package_, remaining)
 
-	return Object.keys(moved).length > 0 || is_added
+	return Object.keys(moved).length > 0 || is_applied
 }
 
 // pnpm >= 11 no longer reads the package.json `pnpm` field (settings live in
@@ -283,6 +368,7 @@ function run(argument?: string): void {
 	josh_game_cspell_config.write_cspell_config(josh_game_paths.PROJECT_ROOT)
 	console.info('\nGame-specific files:')
 	sync_managed_files(is_force)
+	warn_prerender_nonce_conflict()
 	console.info('\n✅ Done.\n')
 }
 
@@ -292,6 +378,7 @@ const josh_game_sync = {
 	remove_legacy_pnpm_field: did_remove_legacy_pnpm_field,
 	is_josh_resolvable,
 	sync_free_form_file,
+	find_prerendering_routes,
 	// Exposed so the tsconfig-normalization contract test can assert tsconfig.json / app.d.ts are
 	// never managed here (their reconciliation is delegated to the josh-app overlay, #357).
 	SYNC_FILES,

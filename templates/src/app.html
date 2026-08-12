@@ -9,7 +9,23 @@
 		<link rel="icon" href="/icon.svg" type="image/svg+xml" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<link rel="manifest" href="/manifest.webmanifest" />
-		<script>
+		<!--
+			The nonce placeholder below opts this inline script into the per-request CSP nonce that
+			kit.csp in svelte.config.js emits. Remove it and the policy's script-src blocks the script.
+
+			IF YOU PRERENDER A ROUTE, READ THIS FIRST. SvelteKit refuses to prerender while the page
+			template contains %sveltekit.nonce% — a nonce has to change per request, which a static
+			file cannot do — and fails the build with "Cannot use prerendering if page template
+			contains %sveltekit.nonce%". Adding `export const prerender = true` to any route without
+			acting on this will break `pnpm run build`.
+
+			The fix is NOT to delete the placeholder and leave the script inline: script-src has no
+			'unsafe-inline', so the script would simply be blocked. Move both inline scripts in this
+			file into files under static/ and load them with <script src="...">, which 'self' allows
+			on prerendered and SSR pages alike. The scripts are self-contained, so this is a move
+			rather than a rewrite.
+		-->
+		<script nonce="%sveltekit.nonce%">
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', function () {
 					navigator.serviceWorker.register('/sw.js')
@@ -164,7 +180,7 @@
 				aria-labelledby="loading-status"
 			></progress>
 		</output>
-		<script>
+		<script nonce="%sveltekit.nonce%">
 			/*
 				Pseudo download-progress tracker. Watches resource entries via PerformanceObserver,
 				accumulates bytes and file count, and updates the <progress> bar value

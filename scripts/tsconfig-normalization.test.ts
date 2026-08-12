@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -14,13 +15,16 @@ import { josh_game_sync } from './init/josh-game-sync.ts'
 // if the app-kit preset flipped `noEmitOnError` to false, or game-kit dropped its override,
 // the strip would silently change game-kit's effective config.
 
-const APP_KIT_SVELTEKIT_PRESET = './node_modules/@joshuafolkken/app-kit/tsconfig/sveltekit.jsonc'
+// The package-export subpath, not a raw `node_modules/...` path: app-kit 0.59.0 renamed the file
+// behind it (`sveltekit.jsonc` -> `sveltekit.json`, app-kit#113) and a raw path silently resolved
+// to nothing, collapsing the whole toolchain (#415). Going through the export makes both the
+// tsconfig and this guard immune to the next rename.
+const APP_KIT_SVELTEKIT_PRESET = '@joshuafolkken/app-kit/tsconfig/sveltekit'
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const GAME_KIT_TSCONFIG_PATH = path.join(REPO_ROOT, 'tsconfig.json')
-const APP_KIT_BASE_PRESET_PATH = path.join(
-	REPO_ROOT,
-	'node_modules/@joshuafolkken/app-kit/tsconfig/sveltekit.jsonc',
-)
+// Resolved through the same export the tsconfig extends, so this reads whichever file app-kit maps
+// the subpath to rather than restating a filename that is app-kit's to change.
+const APP_KIT_BASE_PRESET_PATH = createRequire(import.meta.url).resolve(APP_KIT_SVELTEKIT_PRESET)
 
 interface CompilerOptionsShape {
 	noEmitOnError?: boolean
@@ -32,8 +36,10 @@ interface TsconfigShape {
 	compilerOptions?: CompilerOptionsShape
 }
 
-// The kit base preset is JSONC: every comment sits on its own line, so dropping
-// lines whose leading-trimmed content starts with `//` is sufficient and string-safe.
+// The app-kit base preset is JSONC content under a `.json` name (the extension is load-bearing for
+// Playwright >= 1.62, which appends `.json` to an extension-less `extends` entry): every comment
+// sits on its own line, so dropping lines whose leading-trimmed content starts with `//` is
+// sufficient and string-safe.
 function strip_line_comments(content: string): string {
 	return content
 		.split('\n')

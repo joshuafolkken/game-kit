@@ -12,16 +12,11 @@ const SEL_LOADING_OVERLAY = '[data-testid="loading-overlay"]'
 const SEL_CLICK_HINT = '.click-hint'
 const SEL_LOADING_PROGRESS_BAR = '[data-testid="loading-overlay"] progress.bar'
 
-test('page response includes HTTP security headers', async ({ page }) => {
-	const response = await page.goto('/')
-	const headers = response?.headers() ?? {}
-
-	expect(headers['x-frame-options']).toBe('SAMEORIGIN')
-	expect(headers['x-content-type-options']).toBe('nosniff')
-	expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin')
-	expect(headers['permissions-policy']).toContain('camera=()')
-	expect(headers['content-security-policy']).toContain("default-src 'self'")
-})
+// The security-header assertions that used to live here were removed with #416, not lost: they
+// restated app-kit's baseline as literals, which is the drift the move to `apply_security_headers`
+// exists to end. `src/routes/security-headers.e2e.ts` now covers the same ground by deriving the
+// expectation from app-kit's own exported baseline, so a header added upstream is checked here on
+// the next update instead of needing this list edited.
 
 test('game scene renders immediately with canvas', async ({ page }) => {
 	await page.goto('/')

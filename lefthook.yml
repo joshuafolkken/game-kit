@@ -4,11 +4,18 @@ pre-commit:
   commands:
     template-source-parity:
       run: pnpm exec tsx scripts/templates/reconcile-templates.ts --check
-pre-push:
-  commands:
-    test-e2e:
-      glob: '{*.{svelte,ts,js,mjs,cjs},package.json}'
-      env:
-        CI: '1'
-        PLAYWRIGHT_HTML_OPEN: never
-      run: pnpm exec playwright test
+# No `pre-push` block: E2E is app-kit's `verify` command now (#416).
+#
+# This file used to define `pre-push.test-e2e`, which worked because app-kit <= 0.36.0 shipped a
+# command of the SAME name — lefthook merges by name, so the local one simply replaced it and
+# exactly one command owned the preview server on port 4173.
+#
+# app-kit 0.39.0 (app-kit#97) renamed it to `verify` and folded the ZAP baseline scan into it. The
+# name no longer collides, so redefining `test-e2e` here adds a SECOND preview-owning command: both
+# run `pnpm run build && pnpm run preview` on 4173, `parallel: true` runs them at once, and the
+# loser dies with "Process from config.webServer was not able to start" — a push blocked by a port
+# conflict rather than by anything wrong with the code.
+#
+# `verify` runs the same Playwright suite, so nothing is lost by dropping the local copy; the scan
+# is added on top. Before re-adding any pre-push command here, check it does not boot a server —
+# see the audit note in @joshuafolkken/kit/lefthook/base.yml.

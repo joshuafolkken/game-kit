@@ -58,6 +58,11 @@ const REQUIRED_DEV_DEPS = [
 
 type RequiredDevelopmentDependency = (typeof REQUIRED_DEV_DEPS)[number]
 
+interface KitPackage {
+	devDependencies?: Record<string, string>
+	peerDependencies?: Record<string, string>
+}
+
 const WILDCARD_VERSION = '*'
 
 // game-kit exact-pins some of its own devDeps (e.g. @joshuafolkken/kit, @playwright/test)
@@ -75,17 +80,30 @@ function pick_required_deps(source: Record<string, string>): Record<string, stri
 	)
 }
 
-function read_required_deps_from_kit(): Record<string, string> {
+function read_kit_package(): KitPackage {
 	const raw = readFileSync(path.join(josh_game_paths.PACKAGE_DIR, 'package.json'), 'utf8')
-	const package_ = JSON.parse(raw) as { devDependencies?: Record<string, string> }
 
-	return pick_required_deps(package_.devDependencies ?? {})
+	return JSON.parse(raw) as KitPackage
+}
+
+function read_required_deps_from_kit(): Record<string, string> {
+	return pick_required_deps(read_kit_package().devDependencies ?? {})
+}
+
+// game-kit's own `peerDependencies`, which state the minimum a consumer's install must satisfy for
+// the SYNCED templates to work — `templates/src/hooks.server.ts` imports
+// `@joshuafolkken/app-kit/security`, so a consumer below that floor gets a template their app-kit
+// cannot resolve. `josh-game sync` raises a pin below one of these; every other managed dep keeps
+// whatever the consumer set. Kept next to REQUIRED_DEV_DEPS because the two are read together.
+function read_peer_floors_from_kit(): Record<string, string> {
+	return read_kit_package().peerDependencies ?? {}
 }
 
 const josh_game_managed_development_deps = {
 	REQUIRED_DEV_DEPS,
 	pick_required_deps,
 	read_required_deps_from_kit,
+	read_peer_floors_from_kit,
 }
 
 export { josh_game_managed_development_deps as josh_game_managed_dev_deps }

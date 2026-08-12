@@ -305,6 +305,36 @@ describe('josh_game_sync.SYNC_FILES contract', () => {
 	})
 })
 
+// Runs a sync where game-kit declares an app-kit peer floor of >=0.38.0 and pins ^0.71.0 itself,
+// against a consumer holding `consumer_range`, and reports the range the consumer ends up with.
+async function sync_app_kit_range(consumer_range: string, kit_range = '^0.71.0'): Promise<string> {
+	const { readFileSync, writeFileSync } = await import('node:fs')
+
+	stub_fs_roundtrip(vi.mocked(readFileSync), vi.mocked(writeFileSync), {
+		'/pkg/package.json': JSON.stringify({
+			scripts: CONSUMER_SCRIPTS,
+			devDependencies: { ...KIT_DEV_DEPS_FIXTURE, '@joshuafolkken/app-kit': kit_range },
+			peerDependencies: { '@joshuafolkken/app-kit': '>=0.38.0' },
+		}),
+		'/project/package.json': JSON.stringify({
+			name: 'consumer',
+			scripts: CONSUMER_SCRIPTS,
+			devDependencies: { ...KIT_DEV_DEPS_FIXTURE, '@joshuafolkken/app-kit': consumer_range },
+		}),
+	})
+	const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+	josh_game_sync.run()
+	const package_writes = vi
+		.mocked(writeFileSync)
+		.mock.calls.filter(([file_path]) => String(file_path) === '/project/package.json')
+	const final_package = JSON.parse(String(package_writes.at(-1)?.[1])) as {
+		devDependencies: Record<string, string>
+	}
+
+	return final_package.devDependencies['@joshuafolkken/app-kit'] ?? ''
+}
+
 describe('josh_game_sync managed package.json devDependencies', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -369,6 +399,33 @@ describe('josh_game_sync managed package.json devDependencies', () => {
 		const final_package = JSON.parse(String(package_writes.at(-1)?.[1]))
 
 		expect(final_package.devDependencies.prettier).toBe('^3.99.0')
+	})
+
+	// Regression for #416. `src/hooks.server.ts` is a SYNC_FILES entry and is not free-form, so a
+	// sync overwrites it unconditionally — and it now imports `@joshuafolkken/app-kit/security`,
+	// a subpath app-kit did not export until 0.38.0. Filling only MISSING deps left a consumer
+	// pinned at ^0.36.0 with a template their app-kit cannot resolve: the next build died with
+	// ERR_PACKAGE_PATH_NOT_EXPORTED. The floor comes from game-kit's own peerDependencies, so the
+	// declaration and the enforcement cannot drift apart.
+	it.each([
+		['^0.36.0', '^0.71.0', 'raises a pin below the floor'],
+		// One-directional: a consumer who moved ahead of game-kit keeps their version, which is the
+		// #186 guarantee the floor check must not undo.
+		['^0.99.0', '^0.99.0', 'leaves a pin above the floor untouched'],
+	])('%s -> %s: %s (#416)', async (consumer_range, expected) => {
+		const app_kit_range = await sync_app_kit_range(consumer_range)
+
+		expect(app_kit_range).toBe(expected)
+	})
+
+	it("leaves the pin alone when game-kit's own range does not clear its declared floor (#416)", async () => {
+		// A peerDependencies entry raised ahead of the matching devDependency. Adopting `^0.30.0`
+		// here would downgrade the consumer AND leave them under the >=0.38.0 floor, so the sync
+		// would rewrite package.json on every run without ever converging. Leaving it alone is the
+		// safe direction; the contradiction belongs in game-kit's manifest, not the consumer's.
+		const app_kit_range = await sync_app_kit_range('^0.36.0', '^0.30.0')
+
+		expect(app_kit_range).toBe('^0.36.0')
 	})
 
 	it('does not rewrite package.json when every required dep is already present', async () => {
