@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Canvas } from '@threlte/core'
 	import { Suspense } from '@threlte/extras'
-	import { should_use_antialias } from '$lib/game-kit/antialias'
 	import { audio } from '$lib/game-kit/audio'
 	import ControlsScene from '$lib/game-kit/controls/ControlsScene.svelte'
 	import VirtualJoystick from '$lib/game-kit/controls/VirtualJoystick.svelte'
@@ -28,14 +27,19 @@
 	const FALLBACK_DPR_DIVISOR = 3
 	const FALLBACK_DPR = 1 / FALLBACK_DPR_DIVISOR
 
-	function create_renderer_factory(
-		is_antialias: boolean,
-	): (canvas: HTMLCanvasElement) => WebGLRenderer {
+	// Antialiasing is unconditional since game-kit#429. It used to be disabled on touch-primary
+	// devices (#116) on the assumption that MSAA is too expensive for a phone; once game-kit#419
+	// removed the CSS filter's ~6 ms per frame, a Pixel 6 Pro held 120 fps with it on in both RETRO
+	// modes. It buys nothing while RETRO is on — the scene renders into the CRT composer's target,
+	// not the multisampled default framebuffer — but it cannot be toggled with the RETRO switch
+	// either: `antialias` is fixed at WebGL context creation, and changing it needs a <Canvas>
+	// remount, which resets the player position.
+	function create_renderer_factory(): (canvas: HTMLCanvasElement) => WebGLRenderer {
 		return function create_renderer(canvas: HTMLCanvasElement): WebGLRenderer {
 			return new WebGLRenderer({
 				canvas,
 				powerPreference: 'high-performance',
-				antialias: is_antialias,
+				antialias: true,
 				alpha: true,
 			})
 		}
@@ -141,11 +145,6 @@
 	const game_status = $derived(is_started ? label_game_started : '')
 	const is_alt = $derived(game_state.is_alt)
 	const is_crt_enabled = $derived(crt.is_crt_enabled)
-	// AA is intentionally derived from is_touch only — not is_crt_enabled. Toggling RETRO must
-	// not change the WebGL antialias setting, because that requires remounting <Canvas>, which
-	// resets the player position. When RETRO is on the CRT post-process (dither + barrel)
-	// overwrites the framebuffer with low-res pixels, so always-on AA is visually transparent.
-	const is_aa_enabled = $derived(should_use_antialias(is_touch))
 
 	function start_game(): void {
 		if (session.is_session_started) return
@@ -250,11 +249,7 @@
 		     here: they moved into the barrel fragment shader in game-kit#419. -->
 		<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
 	{/if}
-	<Canvas
-		dpr={1}
-		toneMapping={tone_mapping}
-		createRenderer={create_renderer_factory(is_aa_enabled)}
-	>
+	<Canvas dpr={1} toneMapping={tone_mapping} createRenderer={create_renderer_factory()}>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
