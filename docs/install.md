@@ -32,8 +32,10 @@ This installs the `josh-game` binary into your pnpm global bin directory. Verify
 Update later with:
 
 ```bash
-pnpm up -g @joshuafolkken/game-kit
+pnpm remove -g @joshuafolkken/game-kit; pnpm add -g @joshuafolkken/game-kit
 ```
+
+The removal is not optional. `@joshuafolkken/app-kit` (and `@joshuafolkken/kit` behind it) ride along as auto-installed peers, and pnpm resolves them once into the global install's own lockfile. Upgrading in place therefore bumps `@joshuafolkken/game-kit` alone and leaves both upstreams on whatever version they were first pinned at; only a fresh global root re-resolves the whole chain. From inside a game project, `josh-game v` reports the versions actually in effect and `josh-game vu` prints this same command.
 
 ## 3. Scaffold
 
