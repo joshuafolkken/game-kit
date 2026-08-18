@@ -3,9 +3,17 @@ import {
 	BARREL_FRAGMENT_SHADER,
 	BARREL_STRENGTH,
 	BARREL_VERTEX_SHADER,
+	CHANNEL_OFFSET_PIXELS,
 	crt_barrel,
+	CRT_CONTRAST,
+	CRT_SATURATION,
 	type BarrelUv,
 } from './crt-barrel'
+
+const NEUTRAL_CONTRAST = 1
+const NEUTRAL_SATURATION = 1
+const MID_GREY = 0.5
+const FULL_WIDTH = 1000
 
 const CENTER_X = 0.5
 const CENTER_Y = 0.5
@@ -147,16 +155,46 @@ describe('BARREL shader sources', () => {
 	})
 
 	it('fragment shader declares every required uniform', () => {
-		for (const uniform of ['tDiffuse', 'u_strength', 'u_aspect']) {
+		for (const uniform of [
+			'tDiffuse',
+			'u_strength',
+			'u_aspect',
+			'u_channel_offset',
+			'u_contrast',
+			'u_saturation',
+			'u_resolution',
+		]) {
 			expect(BARREL_FRAGMENT_SHADER).toContain(uniform)
 		}
 	})
 
-	it('fragment shader does NOT declare u_resolution (unused — would be dead per-frame work)', () => {
-		// Regression: an earlier draft declared u_resolution and copied drawing-buffer
-		// size into it every frame, but the shader's main() never read it. Removed to
-		// avoid stranding a dead uniform and a wasted Vector2 copy per render.
-		expect(BARREL_FRAGMENT_SHADER).not.toContain('u_resolution')
+	it('fragment shader READS u_resolution — it converts the pixel channel offset to UV (#419)', () => {
+		// This contract used to be the opposite: u_resolution was declared but never read, so it
+		// was removed as dead per-frame work. The chromatic aberration brought it back with an
+		// actual consumer, so the guard now proves the uniform is used rather than absent.
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/u_channel_offset\s*\/\s*max\(u_resolution\.x/u)
+	})
+
+	it('fragment shader samples three times, one per channel, offset along x only', () => {
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/sample_graded\(v_uv - vec2\(offset, 0\.0\)\)/u)
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/sample_graded\(v_uv\)/u)
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/sample_graded\(v_uv \+ vec2\(offset, 0\.0\)\)/u)
+		// R from the left-shifted tap, G from the centre, B from the right-shifted one.
+		expect(BARREL_FRAGMENT_SHADER).toMatch(
+			/gl_FragColor = vec4\(shifted_r\.r, centered_rgb\.g, shifted_b\.b, 1\.0\)/u,
+		)
+	})
+
+	it('fragment shader grades AFTER the out-of-bounds mask, matching the CSS filter order', () => {
+		// The browser graded the finished canvas, so contrast() lifted the masked frame off pure
+		// black. Grading before the mask would clamp the frame back to black and change the look.
+		expect(BARREL_FRAGMENT_SHADER).toMatch(
+			/grade\(texture2D\(tDiffuse, sample_uv\)\.rgb \* visible\)/u,
+		)
+	})
+
+	it('fragment shader uses the Filter Effects luminance weights for saturation', () => {
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/dot\(contrasted, vec3\(0\.213, 0\.715, 0\.072\)\)/u)
 	})
 
 	it('fragment shader applies aspect correction (centered.x *= u_aspect ... centered.x /= u_aspect)', () => {
@@ -169,10 +207,137 @@ describe('BARREL shader sources', () => {
 		// background — the visible mask multiplies those texels by 0 so the frame stays clean.
 		expect(BARREL_FRAGMENT_SHADER).toContain('step(vec2(0.0), sample_uv)')
 		expect(BARREL_FRAGMENT_SHADER).toContain('step(sample_uv, vec2(1.0))')
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/sampled\s*\*\s*visible/u)
+		expect(BARREL_FRAGMENT_SHADER).toMatch(/\.rgb\s*\*\s*visible/u)
 	})
 
 	it('fragment shader applies a quadratic warp (1.0 + u_strength * r2)', () => {
 		expect(BARREL_FRAGMENT_SHADER).toMatch(/1\.0\s*\+\s*u_strength\s*\*\s*r2/u)
+	})
+})
+
+describe('crt-barrel grading constants', () => {
+	it('pins the grading that moved out of the CSS filter chain (#419)', () => {
+		// These were `contrast(0.95) saturate(1.2)` on the canvas. The chain's `brightness(1)` was
+		// a no-op and has no shader counterpart. Pinned so silent drift is caught here now that
+		// GameScene no longer carries the values.
+		expect(CRT_CONTRAST).toBe(0.95)
+		expect(CRT_SATURATION).toBe(1.2)
+	})
+
+	it('pins the channel offset to the 3 CSS px the SVG feOffset used', () => {
+		expect(CHANNEL_OFFSET_PIXELS).toBe(3)
+	})
+})
+
+describe('crt_barrel.apply_grade', () => {
+	it('is the identity at neutral contrast and saturation', () => {
+		const color = { r: 0.2, g: 0.6, b: 0.9 }
+		const out = crt_barrel.apply_grade(color, NEUTRAL_CONTRAST, NEUTRAL_SATURATION)
+
+		expect(out.r).toBeCloseTo(color.r, 10)
+		expect(out.g).toBeCloseTo(color.g, 10)
+		expect(out.b).toBeCloseTo(color.b, 10)
+	})
+
+	it('leaves mid-grey untouched — contrast pivots around 0.5', () => {
+		const out = crt_barrel.apply_grade(
+			{ r: MID_GREY, g: MID_GREY, b: MID_GREY },
+			CRT_CONTRAST,
+			CRT_SATURATION,
+		)
+
+		expect(out.r).toBeCloseTo(MID_GREY, 10)
+		expect(out.g).toBeCloseTo(MID_GREY, 10)
+		expect(out.b).toBeCloseTo(MID_GREY, 10)
+	})
+
+	it('lifts pure black exactly as the CSS contrast() function did', () => {
+		// (0 - 0.5) * 0.95 + 0.5 = 0.025. This is why grading has to run after the barrel mask:
+		// the browser graded the finished canvas, so the masked frame was never pure black.
+		const out = crt_barrel.apply_grade({ r: 0, g: 0, b: 0 }, CRT_CONTRAST, NEUTRAL_SATURATION)
+
+		expect(out.r).toBeCloseTo(0.025, 10)
+		expect(out.g).toBeCloseTo(0.025, 10)
+		expect(out.b).toBeCloseTo(0.025, 10)
+	})
+
+	it('collapses every channel to the same luminance at saturation 0', () => {
+		const out = crt_barrel.apply_grade({ r: 0.9, g: 0.2, b: 0.4 }, NEUTRAL_CONTRAST, 0)
+
+		expect(out.g).toBeCloseTo(out.r, 10)
+		expect(out.b).toBeCloseTo(out.r, 10)
+	})
+
+	it('uses the Filter Effects luminance weights, so green dominates the grey it collapses to', () => {
+		const from_green = crt_barrel.apply_grade({ r: 0, g: 1, b: 0 }, NEUTRAL_CONTRAST, 0)
+		const from_red = crt_barrel.apply_grade({ r: 1, g: 0, b: 0 }, NEUTRAL_CONTRAST, 0)
+		const from_blue = crt_barrel.apply_grade({ r: 0, g: 0, b: 1 }, NEUTRAL_CONTRAST, 0)
+
+		expect(from_green.r).toBeCloseTo(0.715, 10)
+		expect(from_red.r).toBeCloseTo(0.213, 10)
+		expect(from_blue.r).toBeCloseTo(0.072, 10)
+	})
+
+	it('pushes saturation above 1 away from grey without moving the grey point', () => {
+		const color = { r: 0.6, g: 0.5, b: 0.4 }
+		const out = crt_barrel.apply_grade(color, NEUTRAL_CONTRAST, CRT_SATURATION)
+
+		expect(out.r).toBeGreaterThan(color.r)
+		expect(out.b).toBeLessThan(color.b)
+	})
+})
+
+describe('crt_barrel.offset_channel_uvs', () => {
+	it('separates R and B by one offset each, in opposite directions, leaving G centred', () => {
+		const [red, green, blue] = crt_barrel.offset_channel_uvs(
+			{ x: 0.5, y: 0.5 },
+			CHANNEL_OFFSET_PIXELS,
+			FULL_WIDTH,
+		)
+		const offset = CHANNEL_OFFSET_PIXELS / FULL_WIDTH
+
+		expect(red?.x).toBeCloseTo(0.5 - offset, 10)
+		expect(green?.x).toBeCloseTo(0.5, 10)
+		expect(blue?.x).toBeCloseTo(0.5 + offset, 10)
+	})
+
+	it('never moves the vertical coordinate — the aberration is horizontal only', () => {
+		const uvs = crt_barrel.offset_channel_uvs({ x: 0.3, y: 0.7 }, CHANNEL_OFFSET_PIXELS, FULL_WIDTH)
+
+		for (const uv of uvs) {
+			expect(uv.y).toBeCloseTo(0.7, 10)
+		}
+	})
+
+	it('collapses to a single point at zero offset — the identity case', () => {
+		const uvs = crt_barrel.offset_channel_uvs({ x: 0.42, y: 0.24 }, 0, FULL_WIDTH)
+
+		for (const uv of uvs) {
+			expect(uv.x).toBeCloseTo(0.42, 10)
+		}
+	})
+
+	it('treats a zero width as no offset rather than dividing by zero', () => {
+		const uvs = crt_barrel.offset_channel_uvs({ x: 0.5, y: 0.5 }, CHANNEL_OFFSET_PIXELS, 0)
+
+		for (const uv of uvs) {
+			expect(Number.isFinite(uv.x)).toBe(true)
+			expect(uv.x).toBeCloseTo(0.5, 10)
+		}
+	})
+
+	it('narrows the fringe as the buffer widens — the offset is a fixed pixel count', () => {
+		const [narrow_red] = crt_barrel.offset_channel_uvs(
+			{ x: 0.5, y: 0.5 },
+			CHANNEL_OFFSET_PIXELS,
+			FULL_WIDTH * 2,
+		)
+		const [wide_red] = crt_barrel.offset_channel_uvs(
+			{ x: 0.5, y: 0.5 },
+			CHANNEL_OFFSET_PIXELS,
+			FULL_WIDTH,
+		)
+
+		expect(0.5 - (narrow_red?.x ?? 0)).toBeLessThan(0.5 - (wide_red?.x ?? 0))
 	})
 })
