@@ -226,10 +226,10 @@ importers:
         version: 4.7.1(prettier@3.9.6)(supports-color@10.2.2)
       '@joshuafolkken/app-kit':
         specifier: ^0.73.0
-        version: 0.73.0(@joshuafolkken/kit@1.78.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
+        version: 0.73.0(@joshuafolkken/kit@1.79.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
       '@joshuafolkken/kit':
-        specifier: 1.78.0
-        version: 1.78.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
+        specifier: 1.79.0
+        version: 1.79.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
       '@playwright/test':
         specifier: 1.62.1
         version: 1.62.1
@@ -1767,8 +1767,8 @@ packages:
       eslint: ^10.0.0
       svelte: ^5.0.0
 
-  '@joshuafolkken/kit@1.78.0':
-    resolution: {integrity: sha512-j0fAXxW4KfkfILE/19aXS/Ur6+QB+cbRM/sGexyPU+xU/WCD7bf6ZuT8SUYVQ8vHuSQbCV43B5wrsUFlbHT7pA==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/1.78.0/b0323dc5a1fff5ee14e08225618e061d4c50ec6d}
+  '@joshuafolkken/kit@1.79.0':
+    resolution: {integrity: sha512-DQrcOOwDIdNnBKTHrpKb6dLKNJ7+xHgpKG4jHGEZnmN4JG/4XWTRRiKqs7PClYObajZGmyN6Nxz9/7FUrh3Vuw==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/kit/1.79.0/3beb49d1eb6283e1065f9cfe83d3a85fe52dfd23}
     engines: {node: '>=22.19.0'}
     hasBin: true
     peerDependencies:
@@ -3147,8 +3147,8 @@ packages:
     resolution: {integrity: sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw==}
     engines: {node: '>= 0.4'}
 
-  es-module-lexer@2.3.1:
-    resolution: {integrity: sha512-shc1dbU90Yl/xq1QrC7QRtfcwURZuVRfPhZbDoldJ1cn1gzDvBaBWlv0eFolj5+0znnPJz5TXLxsN77X/12KTA==}
+  es-module-lexer@2.3.2:
+    resolution: {integrity: sha512-poHGpORABojJJucnV9KbOavETW8lBVnphkW77ER5/BQ5Fz7oXSoCNek7IH3vR5nRjdsEz926ibFYX8KtLQmdyw==}
 
   es-object-atoms@1.1.2:
     resolution: {integrity: sha512-HWcBoN6NileqtSydK2FqHbS/LoDd2pqrnQHLyJzBj4kOp/ky2MWMN694xOfkK8/SnUsW2DH7EfyVlydKCsm1Zw==}
@@ -6634,9 +6634,9 @@ snapshots:
 
   '@isaacs/cliui@9.0.0': {}
 
-  '@joshuafolkken/app-kit@0.73.0(@joshuafolkken/kit@1.78.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)':
+  '@joshuafolkken/app-kit@0.73.0(@joshuafolkken/kit@1.79.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)':
     dependencies:
-      '@joshuafolkken/kit': 1.78.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
+      '@joshuafolkken/kit': 1.79.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
       eslint: 10.8.1(jiti@2.7.0)(supports-color@10.2.2)
       eslint-plugin-svelte: 3.23.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       svelte: 5.56.9(@typescript-eslint/types@8.67.0)
@@ -6646,7 +6646,7 @@ snapshots:
       - ts-node
       - typescript
 
-  '@joshuafolkken/kit@1.78.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)':
+  '@joshuafolkken/kit@1.79.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)':
     dependencies:
       '@eslint/compat': 2.1.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))
       '@eslint/js': 10.0.1(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))
@@ -8016,7 +8016,7 @@ snapshots:
 
   es-errors@1.3.0: {}
 
-  es-module-lexer@2.3.1: {}
+  es-module-lexer@2.3.2: {}
 
   es-object-atoms@1.1.2:
     dependencies:
@@ -10030,7 +10030,7 @@ snapshots:
       '@vitest/snapshot': 4.1.10
       '@vitest/spy': 4.1.10
       '@vitest/utils': 4.1.10
-      es-module-lexer: 2.3.1
+      es-module-lexer: 2.3.2
       expect-type: 1.4.0
       magic-string: 0.30.21
       obug: 2.1.4

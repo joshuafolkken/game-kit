@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import CRT_DITHER_PASS_SOURCE from './CrtDitherPass.svelte?raw'
 
+const LO_SET_SIZE_CALL = 'lo_composer.setSize('
+const HI_SET_SIZE_CALL = 'hi_composer.setSize('
+
 // Component-level runtime tests would require a live WebGL post-processing pipeline inside
 // vitest-browser-svelte, which is impractical. The dither math itself is verified in
 // crt-dither.test.ts. Here we assert that the EffectComposer wiring stays correct so
@@ -76,15 +79,51 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 	})
 
 	it('syncs lo_composer and hi_composer sizes inside the render task (not $effect)', () => {
-		// Same rAF-vs-microtask rationale as the original single-composer setup.
+		// Same rAF-vs-microtask rationale as the original single-composer setup: a Svelte effect
+		// flushes a microtask later than Threlte's resize stage, which would leave the composer
+		// targets a frame behind the drawing buffer while a resize is in progress.
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector2[^}]*\}\s*from\s*'three'/u)
-		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setSize(')
-		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setPixelRatio(lo_dpr)')
-		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setSize(')
-		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setPixelRatio(context.dpr.current)')
+		expect(CRT_DITHER_PASS_SOURCE).toContain(LO_SET_SIZE_CALL)
+		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setPixelRatio(signature.lo_dpr)')
+		expect(CRT_DITHER_PASS_SOURCE).toContain(HI_SET_SIZE_CALL)
+		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setPixelRatio(signature.dpr)')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('dither_uniforms.u_resolution.value.set(')
 		// Negative: must NOT compute u_resolution from CSS × DPR (old bug).
 		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/u_resolution\.value\.set\(\s*width\s*\*\s*dpr/u)
+		// Bounded to a single effect body: an unbounded [\s\S]* would span the whole file.
+		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/\$effect\(\(\)\s*=>\s*\{[^}]*setSize\(/u)
+	})
+})
+
+describe('CrtDitherPass.svelte — per-frame sizing', () => {
+	it('applies composer sizing only when the size gate reports a change (#423)', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-resize'/u)
+		expect(CRT_DITHER_PASS_SOURCE).toContain('crt_resize.create_size_gate()')
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/const change = size_gate\.resolve_change\(signature\)/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/if \(change !== undefined\) apply_sizes\(signature, change\)/u,
+		)
+		// Every sizing call lives in apply_sizes, which only the gated branch reaches.
+		const apply_index = CRT_DITHER_PASS_SOURCE.indexOf('function apply_sizes(')
+		const task_index = CRT_DITHER_PASS_SOURCE.indexOf('useTask(')
+
+		expect(apply_index).toBeGreaterThan(-1)
+		expect(CRT_DITHER_PASS_SOURCE.indexOf(LO_SET_SIZE_CALL)).toBeGreaterThan(apply_index)
+		expect(CRT_DITHER_PASS_SOURCE.indexOf(LO_SET_SIZE_CALL)).toBeLessThan(task_index)
+		expect(CRT_DITHER_PASS_SOURCE.indexOf(HI_SET_SIZE_CALL)).toBeLessThan(task_index)
+	})
+
+	it('leaves renderer sizing to Threlte instead of re-applying it every frame (#423)', () => {
+		// Threlte's resize-stage task calls renderer.setSize() only when the element changed, and an
+		// $effect.pre applies the dpr; repeating either here reset the drawing buffer every frame.
+		expect(CRT_DITHER_PASS_SOURCE).not.toContain('context.renderer.setSize(')
+		expect(CRT_DITHER_PASS_SOURCE).not.toContain('context.renderer.setPixelRatio(')
+	})
+
+	it('derives the low-resolution buffer through the clamped helper', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/crt_resize\.compute_lo_size\(/u)
+		// Negative: the inline Math.max/Math.floor clamp moved into crt-resize.ts.
+		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/Math\.max\(1,\s*Math\.floor\(/u)
 	})
 
 	it('initializes the u_color_levels uniform as a Vector3 (per-channel quantization)', () => {
