@@ -229,3 +229,46 @@ test('service worker is ready after page load', async ({ page }) => {
 
 	expect(scope).toBeTruthy()
 })
+
+// #423 deleted this component's own per-frame renderer.setSize() / setPixelRatio() calls, on the
+// grounds that Threlte already sizes the renderer from its resize stage whenever the element
+// actually changes. This test is the guard for exactly that assumption: if Threlte's sizing were
+// ever insufficient, the drawing buffer would stop tracking its CSS box after a resize. The
+// composer half of the change is covered by the gate's own unit tests in crt-resize.test.ts.
+const RESIZE_STEPS = [
+	{ width: 900, height: 700 },
+	{ width: 1280, height: 800 },
+	{ width: 480, height: 900 },
+]
+const RESIZE_SETTLE_TIMEOUT_MS = 5000
+const BUFFER_SIZE_TOLERANCE_PX = 1
+
+test('canvas drawing buffer keeps tracking its CSS size across viewport resizes', async ({
+	page,
+}) => {
+	await page.goto('/')
+	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
+	const canvas = page.locator('[data-testid="game-scene"] canvas')
+
+	await expect(canvas).toBeVisible()
+
+	for (const size of RESIZE_STEPS) {
+		await page.setViewportSize(size)
+
+		// The drawing buffer is floored from the CSS box at dpr 1, so allow a single pixel.
+		await expect
+			.poll(
+				async () =>
+					await canvas.evaluate((element: HTMLCanvasElement, tolerance: number) => {
+						const rect = element.getBoundingClientRect()
+
+						return (
+							Math.abs(element.width - rect.width) <= tolerance &&
+							Math.abs(element.height - rect.height) <= tolerance
+						)
+					}, BUFFER_SIZE_TOLERANCE_PX),
+				{ timeout: RESIZE_SETTLE_TIMEOUT_MS },
+			)
+			.toBe(true)
+	}
+})

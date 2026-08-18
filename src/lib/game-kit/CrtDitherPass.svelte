@@ -21,6 +21,12 @@
 		SCANLINE_SHARPNESS,
 		UPSCALE_FRAGMENT_SHADER,
 	} from '$lib/game-kit/crt-dither'
+	import {
+		crt_resize,
+		type CrtLoSize,
+		type CrtSizeChange,
+		type CrtSizeSignature,
+	} from '$lib/game-kit/crt-resize'
 	import { crt } from '$lib/game-kit/Crt.svelte'
 	import { onDestroy } from 'svelte'
 	import { NearestFilter, ShaderMaterial, Vector2, Vector3, type Texture } from 'three'
@@ -101,8 +107,8 @@
 	const upscale_pass = new ShaderPass(upscale_material)
 
 	// One scanline cycle = DOTS_PER_SCANLINE × 2 phases (dark + light). The period
-	// in hi-res pixels is computed each frame from the hi/lo resolution ratio so the
-	// line density always matches one dark/light pair per virtual low-res dot row.
+	// in hi-res pixels is recomputed whenever the size changes, from the hi/lo resolution ratio,
+	// so the line density always matches one dark/light pair per virtual low-res dot row.
 	const SCANLINE_PHASES_PER_CYCLE = 2
 	const scanline_uniforms = {
 		tDiffuse: { value: null },
@@ -142,28 +148,82 @@
 	})
 
 	const hi_drawing_buffer = new Vector2()
+	const size_gate = crt_resize.create_size_gate()
+
+	// Scale the scanline period so one cycle spans one virtual lo-res dot row.
+	function apply_scanline_uniforms(lo_size: CrtLoSize): void {
+		scanline_uniforms.u_resolution.value.copy(hi_drawing_buffer)
+
+		const is_portrait = hi_drawing_buffer.x < hi_drawing_buffer.y
+
+		scanline_uniforms.u_scanline_axis.value.set(is_portrait ? 1 : 0, is_portrait ? 0 : 1)
+
+		// compute_lo_size clamps both dimensions to >= 1, so this cannot divide by zero.
+		const hi_lo_ratio = is_portrait
+			? hi_drawing_buffer.x / lo_size.width
+			: hi_drawing_buffer.y / lo_size.height
+		const period = Math.max(
+			DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE,
+			Math.round(DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE * hi_lo_ratio),
+		)
+
+		scanline_uniforms.u_scanline_period.value = period
+		scanline_uniforms.u_bleed.value = Math.min(
+			SCANLINE_BLEED,
+			(SCANLINE_BLEED * period) / SCANLINE_BLEED_FULL_PERIOD,
+		)
+	}
+
+	// Applied on the frames the gate reports a change, never per frame (#423). The pixel ratios are
+	// set only when they actually moved: EffectComposer.setPixelRatio() re-runs setSize() over every
+	// pass, so pairing the two unconditionally walks the chain twice on a plain resize.
+	function apply_sizes(signature: CrtSizeSignature, change: CrtSizeChange): void {
+		if (change.is_lo_dpr_changed) lo_composer.setPixelRatio(signature.lo_dpr)
+		lo_composer.setSize(signature.width, signature.height)
+
+		const lo_size = crt_resize.compute_lo_size(signature.width, signature.height, signature.lo_dpr)
+
+		dither_uniforms.u_resolution.value.set(lo_size.width, lo_size.height)
+		upscale_uniforms.u_lo_resolution.value.set(lo_size.width, lo_size.height)
+
+		if (change.is_dpr_changed) hi_composer.setPixelRatio(signature.dpr)
+		hi_composer.setSize(signature.width, signature.height)
+
+		apply_scanline_uniforms(lo_size)
+
+		barrel_uniforms.u_aspect.value =
+			hi_drawing_buffer.y > 0 ? hi_drawing_buffer.x / hi_drawing_buffer.y : 1
+	}
+
 	useTask(
-		// eslint-disable-next-line max-statements -- per-frame render scheduler: one cohesive CRT/no-CRT branch sequence; splitting the task callback fragments the frame logic. See #250.
 		(delta) => {
 			if (!crt.is_crt_enabled) {
-				context.renderer.setPixelRatio(context.dpr.current)
-				context.renderer.setSize(context.size.current.width, context.size.current.height)
+				// Renderer sizing belongs to Threlte: its resize-stage task calls renderer.setSize() only
+				// when the element actually changed, and an $effect.pre applies the dpr. Repeating it here
+				// re-assigned canvas.width / canvas.height every frame, which the HTML spec defines as
+				// resetting the drawing buffer (#423).
 				context.renderer.render(context.scene, context.camera.current)
 
 				return
 			}
 
-			// Stage 1: render game + dither at low resolution.
-			lo_composer.setSize(context.size.current.width, context.size.current.height)
-			lo_composer.setPixelRatio(lo_dpr)
-			// Clamp to at least 1 so neither dimension is 0 on the first frame
-			// or on very small viewports — prevents divide-by-zero in the portrait
-			// hi_lo_ratio and guards against (0,0) reaching u_lo_resolution in the shader.
-			const lo_w = Math.max(1, Math.floor(context.size.current.width * lo_dpr))
-			const lo_h = Math.max(1, Math.floor(context.size.current.height * lo_dpr))
+			// Read every frame so the gate also opens for a renderer resize that never reached
+			// context.size — two multiplications into an existing vector, not a pass traversal.
+			context.renderer.getDrawingBufferSize(hi_drawing_buffer)
 
-			dither_uniforms.u_resolution.value.set(lo_w, lo_h)
-			upscale_uniforms.u_lo_resolution.value.set(lo_w, lo_h)
+			const signature = {
+				width: context.size.current.width,
+				height: context.size.current.height,
+				dpr: context.dpr.current,
+				lo_dpr,
+				buffer_width: hi_drawing_buffer.x,
+				buffer_height: hi_drawing_buffer.y,
+			}
+			const change = size_gate.resolve_change(signature)
+
+			if (change !== undefined) apply_sizes(signature, change)
+
+			// Stage 1: render game + dither at low resolution.
 			lo_composer.render(delta)
 
 			// Inject lo-res dithered output into the upscale pass.
@@ -171,31 +231,6 @@
 			upscale_uniforms.u_lo_tex.value = lo_composer.readBuffer.texture
 
 			// Stage 2: CRT effects at full canvas resolution.
-			hi_composer.setSize(context.size.current.width, context.size.current.height)
-			hi_composer.setPixelRatio(context.dpr.current)
-			context.renderer.getDrawingBufferSize(hi_drawing_buffer)
-			scanline_uniforms.u_resolution.value.copy(hi_drawing_buffer)
-			// Scale scanline period so one cycle spans one virtual lo-res dot row.
-			const is_portrait = hi_drawing_buffer.x < hi_drawing_buffer.y
-
-			scanline_uniforms.u_scanline_axis.value.set(is_portrait ? 1 : 0, is_portrait ? 0 : 1)
-
-			if (lo_h > 0) {
-				const hi_lo_ratio = is_portrait ? hi_drawing_buffer.x / lo_w : hi_drawing_buffer.y / lo_h
-				const period = Math.max(
-					DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE,
-					Math.round(DOTS_PER_SCANLINE * SCANLINE_PHASES_PER_CYCLE * hi_lo_ratio),
-				)
-
-				scanline_uniforms.u_scanline_period.value = period
-				scanline_uniforms.u_bleed.value = Math.min(
-					SCANLINE_BLEED,
-					(SCANLINE_BLEED * period) / SCANLINE_BLEED_FULL_PERIOD,
-				)
-			}
-
-			barrel_uniforms.u_aspect.value =
-				hi_drawing_buffer.y > 0 ? hi_drawing_buffer.x / hi_drawing_buffer.y : 1
 			hi_composer.render(delta)
 		},
 		{ stage: context.renderStage, autoInvalidate: false },
