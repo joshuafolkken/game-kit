@@ -6,7 +6,6 @@
 	import ControlsScene from '$lib/game-kit/controls/ControlsScene.svelte'
 	import VirtualJoystick from '$lib/game-kit/controls/VirtualJoystick.svelte'
 	import { crt } from '$lib/game-kit/Crt.svelte'
-	import CrtChromaticFilter from '$lib/game-kit/CrtChromaticFilter.svelte'
 	import CrtDitherPass from '$lib/game-kit/CrtDitherPass.svelte'
 	import { device } from '$lib/game-kit/Device.svelte'
 	import { fullscreen } from '$lib/game-kit/Fullscreen.svelte'
@@ -246,10 +245,10 @@
 		<div class="cyber-glow" data-testid="cyber-glow" aria-hidden="true"></div>
 	{/if}
 	{#if is_crt_enabled}
-		<!-- Glass/vignette overlay is a CRT cue, so it shares the single is_crt_enabled switch
-		     with <CrtChromaticFilter />. With CRT off it must be absent for a clean render. -->
+		<!-- Glass/vignette overlay is a CRT cue, so it follows is_crt_enabled. With CRT off it must
+		     be absent for a clean render. Chromatic aberration and grading are no longer siblings
+		     here: they moved into the barrel fragment shader in game-kit#419. -->
 		<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
-		<CrtChromaticFilter />
 	{/if}
 	<Canvas
 		dpr={1}
@@ -325,13 +324,6 @@
 
 	.game-container :global(canvas) {
 		border-radius: clamp(12px, 3vmin, 28px);
-	}
-
-	.game-container.crt-active :global(canvas) {
-		/* WebGL pipeline handles nearest-neighbour upscale in the upscale pass —
-		   no CSS pixelated scaling needed. CSS handles vibrance boost and chromatic
-		   aberration on the already-upscaled, native-resolution bitmap. */
-		filter: contrast(0.95) saturate(1.2) brightness(1) url(#crt-chromatic);
 	}
 
 	.game-container.pseudo-fullscreen {

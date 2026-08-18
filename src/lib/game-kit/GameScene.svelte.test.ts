@@ -444,35 +444,18 @@ describe('CRT filter overlay — scanlines + vignette over the whole game screen
 		expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*0,\s*255/u)
 	})
 
-	it('applies a CRT vibrance filter to the canvas under .crt-active (mild contrast + gentle saturation, no hue shift)', () => {
-		// Reason: filter chain was retuned from contrast(0.9) saturate(1.8) brightness(1.1)
-		// to contrast(0.95) saturate(1.2) brightness(1) once the renderer default became
-		// NoToneMapping (game-kit#389). With AgX no longer taming the input, colors reach the
-		// CRT stage at full sRGB range, so the old saturate(1.8)/brightness(1.1) boost blew
-		// highlights and oversaturated; the gentler values keep CRT ON correct against true
-		// color. The chromatic aberration url(...) stays last in the chain so channel
-		// separation operates on the post-vibrance image. Value-pin so silent drift back to
-		// prior tunings is caught.
-		// Filter is now gated on .crt-active so toggling CRT off removes all post-processing.
-		expect(GAME_SCENE_SOURCE).toMatch(
-			/\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:\s*contrast\(0\.95\)\s+saturate\(1\.2\)\s+brightness\(1\)\s+url\(#crt-chromatic\)/u,
-		)
-		expect(GAME_SCENE_SOURCE).not.toMatch(
-			/\.game-container\.crt-active\s+:global\(canvas\)[\s\S]*?hue-rotate/u,
-		)
+	it('leaves no CSS filter on the canvas — grading moved into the barrel shader (#419)', () => {
+		// Reason: `contrast(0.95) saturate(1.2) brightness(1) url(#crt-chromatic)` cost ~6 ms per
+		// frame on a Pixel 6 Pro, where the compositor works at 1440x3120 while the WebGL pipeline
+		// stays at CSS resolution. The grading values are pinned in crt-barrel.test.ts now; what
+		// this file has to guarantee is that no `filter` declaration comes back to the canvas,
+		// since any of them re-introduces the composited-layer path this change removed.
+		expect(GAME_SCENE_SOURCE).not.toMatch(/:global\(canvas\)\s*\{[^}]*filter:/u)
+		expect(GAME_SCENE_SOURCE).not.toMatch(/url\(#crt-chromatic\)/u)
 
-		// Negative: previous filter values must not be present on the canvas filter chain.
-		for (const prior of [
-			String.raw`contrast\(0\.9\)\s`,
-			String.raw`saturate\(1\.8\)`,
-			String.raw`brightness\(1\.1\)`,
-		]) {
-			expect(GAME_SCENE_SOURCE).not.toMatch(
-				new RegExp(
-					String.raw`\.game-container\.crt-active\s+:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*${prior}`,
-					'u',
-				),
-			)
+		// Negative: no filter tuning of any generation may reappear on the canvas.
+		for (const prior of ['contrast(', 'saturate(', 'brightness(', 'hue-rotate(']) {
+			expect(GAME_SCENE_SOURCE).not.toContain(prior)
 		}
 	})
 })
@@ -573,31 +556,22 @@ describe('CRT color quantization + Bayer dithering (WebGL post-process)', () => 
 	})
 })
 
-describe('CRT chromatic aberration — wiring into GameScene', () => {
-	it('imports <CrtChromaticFilter /> and renders it conditionally when CRT is enabled', () => {
-		expect(GAME_SCENE_SOURCE).toMatch(
-			/import\s+CrtChromaticFilter\s+from\s+'\$lib\/game-kit\/CrtChromaticFilter\.svelte'/u,
-		)
-		expect(GAME_SCENE_SOURCE).toMatch(/<CrtChromaticFilter\s*\/>/u)
-		expect(GAME_SCENE_SOURCE).toMatch(/\{#if\s+is_crt_enabled\}[\s\S]*<CrtChromaticFilter/u)
+describe('CRT chromatic aberration — moved out of GameScene (#419)', () => {
+	it('no longer imports or renders the SVG filter component', () => {
+		expect(GAME_SCENE_SOURCE).not.toMatch(/CrtChromaticFilter/u)
 	})
 
-	it('applies the chromatic filter to the canvas via CSS filter chain under .crt-active', () => {
-		// Reason: the SVG <filter> only takes effect when CSS references it. Locking in
-		// `url(#crt-chromatic)` on the canvas filter chain is the wiring contract that
-		// connects GameScene's <canvas> to the externally-defined filter.
-		// Filter is now gated on .crt-active so toggling CRT off removes all post-processing.
-		expect(GAME_SCENE_SOURCE).toMatch(
-			/\.game-container\.crt-active\s*:global\(canvas\)\s*\{[\s\S]*?filter:[^;]*url\(#crt-chromatic\)/u,
-		)
+	it('keeps the .crt-active state class, which no longer carries any canvas styling', () => {
+		// The class survives as the state marker asserted by GameSceneCrtInitial.svelte.test.ts;
+		// only the filter declaration it used to gate is gone.
+		expect(GAME_SCENE_SOURCE).toMatch(/class:crt-active=\{is_crt_enabled\}/u)
 	})
 
-	it('renders the SVG <filter id="crt-chromatic"> into the DOM at mount', async () => {
+	it('renders no #crt-chromatic filter into the DOM at mount', async () => {
 		const { container } = await render_scene()
-		const filter = container.querySelector('#crt-chromatic')
 
-		expect(filter).toBeTruthy()
-		expect(filter?.tagName.toLowerCase()).toBe('filter')
+		expect(container.querySelector('#crt-chromatic')).toBeNull()
+		expect(container.querySelector('[data-testid="crt-chromatic-defs"]')).toBeNull()
 	})
 })
 

@@ -4,6 +4,9 @@
 		BARREL_FRAGMENT_SHADER,
 		BARREL_STRENGTH,
 		BARREL_VERTEX_SHADER,
+		CHANNEL_OFFSET_PIXELS,
+		CRT_CONTRAST,
+		CRT_SATURATION,
 	} from '$lib/game-kit/crt-barrel'
 	import {
 		BAYER_SIZE,
@@ -126,10 +129,17 @@
 	})
 	const scanline_pass = new ShaderPass(scanline_material)
 
+	// Chromatic aberration and grading live here since game-kit#419 — the CSS filter chain they
+	// replace cost ~6 ms per frame on a Pixel 6 Pro. u_resolution supplies the texel width the
+	// channel offset is expressed in.
 	const barrel_uniforms = {
 		tDiffuse: { value: null },
 		u_strength: { value: BARREL_STRENGTH },
 		u_aspect: { value: 1 },
+		u_channel_offset: { value: CHANNEL_OFFSET_PIXELS },
+		u_contrast: { value: CRT_CONTRAST },
+		u_saturation: { value: CRT_SATURATION },
+		u_resolution: { value: new Vector2(1, 1) },
 	}
 	const barrel_material = new ShaderMaterial({
 		uniforms: barrel_uniforms,
@@ -191,6 +201,7 @@
 
 		apply_scanline_uniforms(lo_size)
 
+		barrel_uniforms.u_resolution.value.copy(hi_drawing_buffer)
 		barrel_uniforms.u_aspect.value =
 			hi_drawing_buffer.y > 0 ? hi_drawing_buffer.x / hi_drawing_buffer.y : 1
 	}

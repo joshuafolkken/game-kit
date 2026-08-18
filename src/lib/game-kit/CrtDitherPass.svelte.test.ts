@@ -95,6 +95,31 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 	})
 })
 
+describe('CrtDitherPass.svelte — barrel pass grading uniforms (#419)', () => {
+	it('imports the aberration and grading constants from crt-barrel', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-barrel'/u)
+		expect(CRT_DITHER_PASS_SOURCE).toContain('CHANNEL_OFFSET_PIXELS')
+		expect(CRT_DITHER_PASS_SOURCE).toContain('CRT_CONTRAST')
+		expect(CRT_DITHER_PASS_SOURCE).toContain('CRT_SATURATION')
+	})
+
+	it('seeds the barrel uniforms from those constants rather than inline literals', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/u_channel_offset:\s*\{\s*value:\s*CHANNEL_OFFSET_PIXELS\s*\}/u,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_contrast:\s*\{\s*value:\s*CRT_CONTRAST\s*\}/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_saturation:\s*\{\s*value:\s*CRT_SATURATION\s*\}/u)
+	})
+
+	it('keeps u_resolution on the barrel pass in step with the drawing buffer', () => {
+		// The channel offset is expressed in pixels, so a stale resolution would silently rescale
+		// the fringe after a resize.
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/barrel_uniforms\.u_resolution\.value\.copy\(hi_drawing_buffer\)/u,
+		)
+	})
+})
+
 describe('CrtDitherPass.svelte — per-frame sizing', () => {
 	it('applies composer sizing only when the size gate reports a change (#423)', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-resize'/u)
