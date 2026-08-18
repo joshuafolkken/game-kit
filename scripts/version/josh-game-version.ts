@@ -35,11 +35,11 @@ const KIT_RESOLVE_MARKER = '@joshuafolkken/kit/config-merge'
 // for `.resolve()` — only its directory drives resolution — but the running bin does live here.
 const RUNNING_BIN_FILE = 'josh-game.js'
 
-// `josh-game vu` upgrades a stale effective upstream by bumping the *global game-kit*, which re-bundles
-// the whole app-kit → kit chain. A bare `pnpm add -g @joshuafolkken/app-kit` / `... /kit` would be
-// shadowed by game-kit's own resolution and never change what josh-game runs, so both upstreams share
-// this game-kit-targeted command (#393).
-const GLOBAL_UPGRADE_COMMAND = `pnpm add -g ${PACKAGE_NAME}`
+// `josh-game vu` upgrades a stale effective upstream by bumping the *global game-kit*. A bare
+// `pnpm add -g @joshuafolkken/app-kit` / `... /kit` would be shadowed by game-kit's own resolution and
+// never change what josh-game runs, so both upstreams share this game-kit-targeted command (#393).
+const GLOBAL_REMOVE_COMMAND = `pnpm remove -g ${PACKAGE_NAME}`
+const GLOBAL_ADD_COMMAND = `pnpm add -g ${PACKAGE_NAME}`
 
 // `@joshuafolkken/kit` is a devDependency, so a global `josh-game` install (`pnpm add -g`) does NOT
 // install it. `init`/`sync` must stay loadable without kit; only `version`/`version:upgrade` need
@@ -167,11 +167,31 @@ function make_kit_effective_resolver(
 // it for the upgrade command keeps that hint consistent with the reported `Latest:` line and avoids
 // a redundant fetch. `context` is optional in our signature only so the unpinned fallback and the
 // direct unit tests can call it without one; a missing/empty `latest` degrades to an unpinned install.
+//
+// The removal is what makes the hint work at all (#414). game-kit declares app-kit as an auto-installed
+// *peer* (and kit is app-kit's own peer), and every globally installed package lives in its own pnpm
+// root with its own lockfile, where those peers are resolved once and then pinned. A plain
+// `pnpm add -g game-kit@<latest>` therefore bumps game-kit while both upstreams stay put — the exact
+// symptom this issue reports. Removing game-kit first forces a fresh global root, which re-resolves the
+// whole chain; no explicit upstream pin is needed, so kit#648's "never install a bare global app-kit /
+// kit" constraint still holds.
+//
+// The separator is `;`, not `&&`, so the hint stays recoverable: if the `add` fails after the `remove`
+// succeeded, the user is left with no global josh-game and re-runs this same command — with `&&` the
+// now-failing `remove` would block the `add` that repairs the install.
 function build_global_upgrade_command(context?: UpstreamHookContext): string {
 	const latest = context?.latest
+	const add_command = latest ? `${GLOBAL_ADD_COMMAND}@${latest}` : GLOBAL_ADD_COMMAND
 
-	return latest ? `${GLOBAL_UPGRADE_COMMAND}@${latest}` : GLOBAL_UPGRADE_COMMAND
+	return `${GLOBAL_REMOVE_COMMAND}; ${add_command}`
 }
+
+// kit#697 added a guard that suppresses a hint whose every version pin already matches what is
+// installed. Both upstreams opt out (`false`, set explicitly rather than omitted, so a future flip is a
+// visible test-guarded change): the fresh-root command pins game-kit at a version that is typically
+// already installed, and the canonical broken state is exactly that — game-kit at latest, the bundled
+// app-kit / kit stale. Opting in would suppress the one command that repairs it.
+const IS_GLOBAL_UPGRADE_COMMAND_PINNED = false
 
 function build_app_kit_upstream(
 	self_directory: string,
@@ -181,6 +201,7 @@ function build_app_kit_upstream(
 		package_name: APP_KIT_PACKAGE_NAME,
 		resolve_effective_version: make_app_kit_effective_resolver(self_directory, resolve_effective),
 		resolve_global_upgrade_command: build_global_upgrade_command,
+		is_global_upgrade_command_pinned: IS_GLOBAL_UPGRADE_COMMAND_PINNED,
 	}
 }
 
@@ -193,6 +214,7 @@ function build_kit_upstream(
 		...kit_descriptor,
 		resolve_effective_version: make_kit_effective_resolver(self_directory, resolve_effective),
 		resolve_global_upgrade_command: build_global_upgrade_command,
+		is_global_upgrade_command_pinned: IS_GLOBAL_UPGRADE_COMMAND_PINNED,
 	}
 }
 

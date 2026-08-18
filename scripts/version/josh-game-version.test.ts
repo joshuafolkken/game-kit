@@ -1,16 +1,31 @@
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { KIT_PACKAGE_NAME, type UpstreamHookContext } from '@joshuafolkken/kit/version'
 import { describe, expect, it } from 'vitest'
 import { josh_game_version, type ModuleResolver } from './josh-game-version.ts'
 
 const PACKAGE_NAME = '@joshuafolkken/game-kit'
 const APP_KIT_PACKAGE_NAME = '@joshuafolkken/app-kit'
-const KIT_PACKAGE_NAME = '@joshuafolkken/kit'
 const SELF_DIR = '/workspace/game-kit/dist/scripts'
 const UPSTREAM_COUNT = 2
 const STUB_LATEST = '9.9.9'
+const STUB_UPSTREAM_LATEST = '8.8.8'
 const SEMVER_PREFIX = /^\d+\.\d+\.\d+/u
+const REMOVE_COMMAND = `pnpm remove -g ${PACKAGE_NAME}`
+const ADD_COMMAND = `pnpm add -g ${PACKAGE_NAME}`
+const INSTALL_DOC = 'docs/install.md'
+// The form the fresh-root fix replaces: it bumps game-kit alone and leaves the peer-pinned
+// app-kit / kit behind, which is the whole symptom of #414.
+const STALE_UPDATE_HINT = `pnpm up -g ${PACKAGE_NAME}`
+
+// The shared hook context kit passes to the effective-global hooks: `latest` is game-kit's own latest,
+// already fetched by kit for the primary report; `upstream_latest` is the upstream's own, added by
+// kit#697. The command is built from `latest` — the upstream is never named in it (kit#648).
+const CONTEXT: UpstreamHookContext = {
+	latest: STUB_LATEST,
+	upstream_latest: STUB_UPSTREAM_LATEST,
+}
 
 // A real directory inside this repo, so the running-relative resolvers (#393) can resolve app-kit
 // and kit through the project's node_modules; the fake SELF_DIR above keeps the project-scope
@@ -156,16 +171,18 @@ describe('josh-game version commands', () => {
 	})
 
 	it('pins the global game-kit upgrade command to the latest from the kit context', () => {
-		const command = josh_game_version.build_global_upgrade_command({ latest: STUB_LATEST })
+		const command = josh_game_version.build_global_upgrade_command(CONTEXT)
 
-		expect(command).toBe(`pnpm add -g ${PACKAGE_NAME}@${STUB_LATEST}`)
+		expect(command).toBe(`${REMOVE_COMMAND}; ${ADD_COMMAND}@${STUB_LATEST}`)
 	})
 
 	it('falls back to an unpinned global install when no context latest is available', () => {
-		const unpinned = `pnpm add -g ${PACKAGE_NAME}`
+		const unpinned = `${REMOVE_COMMAND}; ${ADD_COMMAND}`
 
 		expect(josh_game_version.build_global_upgrade_command()).toBe(unpinned)
-		expect(josh_game_version.build_global_upgrade_command({ latest: '' })).toBe(unpinned)
+		expect(josh_game_version.build_global_upgrade_command({ ...CONTEXT, latest: '' })).toBe(
+			unpinned,
+		)
 	})
 
 	it('returns undefined effective versions when the running bin resolves no chain', async () => {
@@ -173,5 +190,89 @@ describe('josh-game version commands', () => {
 
 		expect(config.upstreams[0]?.resolve_effective_version?.()).toBeUndefined()
 		expect(config.upstreams[1]?.resolve_effective_version?.()).toBeUndefined()
+	})
+})
+
+// Read the hint each upstream actually emits, failing loudly when a hook is missing — the assertions
+// below are about the command's shape, so an absent hook must not silently pass as "not contains".
+// The length assertion guards every caller at once: the shape checks below are `for…of` loops and a
+// two-element destructure, all of which pass vacuously (or compare `undefined` to `undefined`) on an
+// empty list, so an upstream that stopped being wired would read as green.
+async function read_global_upgrade_commands(): Promise<Array<string>> {
+	const config = await josh_game_version.build_config(SELF_DIR)
+	const commands = config.upstreams.map(function read_command(upstream): string {
+		const command = upstream.resolve_global_upgrade_command?.(CONTEXT)
+		if (command === undefined) throw new Error(`${upstream.package_name} emits no upgrade command`)
+
+		return command
+	})
+
+	expect(commands).toHaveLength(UPSTREAM_COUNT)
+
+	return commands
+}
+
+describe('josh-game version — fresh global root for the upstream peers (#414)', () => {
+	it('removes the global game-kit before re-adding it so the peer chain re-resolves', async () => {
+		// The regression this guards: game-kit already at latest while the bundled app-kit / kit are
+		// stale. A plain `pnpm add -g game-kit@<latest>` bumps game-kit and leaves both upstreams
+		// pinned there, so the removal must come first — only a fresh global root re-resolves them.
+		const commands = await read_global_upgrade_commands()
+
+		for (const command of commands) {
+			// `startsWith` rather than an index comparison: a missing removal yields index -1, which
+			// would still compare as "before" the add and let the regression through.
+			expect(command.startsWith(REMOVE_COMMAND)).toBe(true)
+			expect(command).toContain(`; ${ADD_COMMAND}@`)
+		}
+	})
+
+	it('keeps the command re-runnable after a failed re-install', async () => {
+		// `;` keeps the hint recoverable: re-running it after a failed `add` still repairs the install,
+		// whereas `&&` would let the now-failing `remove` block that `add`.
+		const commands = await read_global_upgrade_commands()
+
+		for (const command of commands) {
+			expect(command).not.toContain('&&')
+		}
+	})
+
+	it('never names an upstream in the global command (kit#648)', async () => {
+		// app-kit is an auto-installed peer of the global game-kit, and kit is app-kit's own — neither
+		// is ever installed standalone, and the fresh root resolves both on its own, so the emitted
+		// command must name only game-kit.
+		const commands = await read_global_upgrade_commands()
+
+		for (const command of commands) {
+			expect(command).not.toContain(APP_KIT_PACKAGE_NAME)
+			expect(command).not.toContain(KIT_PACKAGE_NAME)
+		}
+	})
+
+	it('emits one identical command for both upstreams so kit can de-duplicate it (kit#697)', async () => {
+		const [app_kit_command, kit_command] = await read_global_upgrade_commands()
+
+		expect(app_kit_command).toBe(kit_command)
+	})
+
+	it('documents the same fresh-root command the upgrade hint emits, not the stale bump (#414)', () => {
+		// The install guide restated the update command in prose, so it drifted into documenting the
+		// very bug this issue fixes. Assert it against the builder rather than against a second copy
+		// of the string, so the doc can only go stale by failing here.
+		const install_document = readFileSync(path.join(PROJECT_ROOT, INSTALL_DOC), 'utf8')
+
+		expect(install_document).toContain(josh_game_version.build_global_upgrade_command())
+		expect(install_document).not.toContain(STALE_UPDATE_HINT)
+	})
+
+	it('keeps the no-op upgrade-hint guard opted out on both upstreams (kit#697)', async () => {
+		const config = await josh_game_version.build_config(SELF_DIR)
+
+		// kit suppresses a hint whose every version pin already matches what is installed. The
+		// fresh-root command pins game-kit at a version that is typically already installed — that is
+		// the point, not a no-op — so opting in would hide the very command that fixes the stale chain.
+		for (const upstream of config.upstreams) {
+			expect(upstream.is_global_upgrade_command_pinned).toBe(false)
+		}
 	})
 })
