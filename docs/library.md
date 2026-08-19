@@ -78,6 +78,21 @@ Omitting both keeps rendering identical to today.
 </GameScene>
 ```
 
+### Shadow map
+
+`GameScene` accepts an optional `is_shadows_enabled` prop (default `true`) that controls whether the renderer keeps its shadow map. The default matches Threlte's own omitted-prop behavior (`PCFSoftShadowMap`), so existing consumers render unchanged.
+
+game-kit deliberately does **not** decide this per device. An earlier device gate on antialiasing was removed in #429 after a Pixel 6 Pro held 120 fps with it on, so guessing what a phone can afford proved wrong once already — and a built-in gate would silently drop shadows on mobile with no way to opt back in. A game that measures the shadow pass as too expensive for its target hardware turns it off itself:
+
+```svelte
+<GameScene {hint_text} is_shadows_enabled={false}>
+	<Room />
+	<Player />
+</GameScene>
+```
+
+Set it once at mount rather than toggling it at runtime. Threlte does re-apply `renderer.shadowMap.enabled`, but three bakes the shadow-map define into each material's compiled program, so materials that already compiled keep their old shading until you flag them with `material.needsUpdate`.
+
 ### Room dimensions
 
 `SceneObjects` accepts optional `room_width`, `room_depth`, and `room_height` props to override the room footprint and ceiling height (defaults: `ROOM_W` / `ROOM_D` / `ROOM_H`). Player movement bounds follow the configured `room_width` / `room_depth` automatically.

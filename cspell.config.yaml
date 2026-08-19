@@ -58,6 +58,7 @@ words:
   - hfov
   - vfov
   - viewports
+  - SHADOWMAP
   - vsize
   - WASD
   - winget
