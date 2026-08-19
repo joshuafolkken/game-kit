@@ -3,5 +3,17 @@
 	"compilerOptions": {
 		"noEmitOnError": false
 	},
-	"exclude": ["node_modules", "build", "dist", "playwright-report", "test-results"]
+	"exclude": [
+		"node_modules",
+		"build",
+		"dist",
+		"playwright-report",
+		"test-results",
+		"src/service-worker.js",
+		"src/service-worker/**/*.js",
+		"src/service-worker.ts",
+		"src/service-worker/**/*.ts",
+		"src/service-worker.d.ts",
+		"src/service-worker/**/*.d.ts"
+	]
 }
