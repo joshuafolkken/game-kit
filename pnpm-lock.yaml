@@ -225,8 +225,8 @@ importers:
         specifier: ^4.7.1
         version: 4.7.1(prettier@3.9.6)(supports-color@10.2.2)
       '@joshuafolkken/app-kit':
-        specifier: ^0.73.0
-        version: 0.73.0(@joshuafolkken/kit@1.82.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
+        specifier: ^0.74.0
+        version: 0.74.0(@joshuafolkken/kit@1.82.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
       '@joshuafolkken/kit':
         specifier: 1.82.0
         version: 1.82.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
@@ -1759,8 +1759,8 @@ packages:
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
     engines: {node: '>=18'}
 
-  '@joshuafolkken/app-kit@0.73.0':
-    resolution: {integrity: sha512-o6M4rokGcksJ1gX6OACzTp/TPsRuuEH7CBoDf/Ucgi+81BlL3ncd3oZteW0zMVPjkAYw4d4sCOYm2srScVpKkg==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/app-kit/0.73.0/118c4bfb62b015db7252cc7c9f66005635c2e906}
+  '@joshuafolkken/app-kit@0.74.0':
+    resolution: {integrity: sha512-9An2L53rsG0VBfeTpTmoNfSg81vr2MrlS43ahH2uhVNKv3FaFQrkFzQ57lH/SbD8KJTUyQ3bCLRJaAsKPPHmWQ==, tarball: https://npm.pkg.github.com/download/@joshuafolkken/app-kit/0.74.0/5bbb756ef31b183c049db58206161793e500e13b}
     hasBin: true
     peerDependencies:
       '@joshuafolkken/kit': '>=1.12.0'
@@ -6634,7 +6634,7 @@ snapshots:
 
   '@isaacs/cliui@9.0.0': {}
 
-  '@joshuafolkken/app-kit@0.73.0(@joshuafolkken/kit@1.82.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)':
+  '@joshuafolkken/app-kit@0.74.0(@joshuafolkken/kit@1.82.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)':
     dependencies:
       '@joshuafolkken/kit': 1.82.0(@playwright/test@1.62.1)(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)
       eslint: 10.8.1(jiti@2.7.0)(supports-color@10.2.2)

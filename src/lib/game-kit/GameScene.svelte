@@ -82,6 +82,17 @@
 		// colors (a film/PBR roll-off unsuited to unlit exact-color UI). Consumers who want a
 		// filmic/PBR look can opt back into AgXToneMapping (or any three ToneMapping) via this prop.
 		tone_mapping?: ToneMapping
+		// Whether the renderer keeps its shadow map. Defaults to true — Threlte's own omitted-prop
+		// default (PCFSoftShadowMap) — so existing consumers render identically. Deliberately not
+		// gated on the device: #429 deleted the equivalent antialias gate after a Pixel 6 Pro held
+		// 120 fps with AA on, and guessing here would drop shadows on mobile with no opt-in. A game
+		// that measures the shadow pass as too expensive for its target hardware passes false.
+		// Set it once at mount: like `antialias`, it is not a live toggle. Threlte does re-apply
+		// `renderer.shadowMap.enabled`, but three bakes USE_SHADOWMAP into each material's compiled
+		// program, so a scene whose materials already compiled keeps its old shading until the
+		// consumer flags them with `material.needsUpdate`. `| undefined`
+		// (exactOptionalPropertyTypes) lets a consumer forward a `boolean | undefined` setting.
+		is_shadows_enabled?: boolean | undefined
 		on_start?: () => void
 		label_jump: string
 		label_game: string
@@ -103,6 +114,7 @@
 		touch_svg,
 		crt_initial,
 		tone_mapping = NoToneMapping,
+		is_shadows_enabled = true,
 		on_start,
 		label_jump,
 		label_game,
@@ -249,7 +261,12 @@
 		     here: they moved into the barrel fragment shader in game-kit#419. -->
 		<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
 	{/if}
-	<Canvas dpr={1} toneMapping={tone_mapping} createRenderer={create_renderer_factory()}>
+	<Canvas
+		dpr={1}
+		shadows={is_shadows_enabled}
+		toneMapping={tone_mapping}
+		createRenderer={create_renderer_factory()}
+	>
 		<Suspense onload={on_scene_loaded}>
 			{@render children?.()}
 			{#if !is_started}
