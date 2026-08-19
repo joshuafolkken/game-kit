@@ -16,6 +16,7 @@
 		DITHER_FRAGMENT_SHADER,
 		DITHER_VERTEX_SHADER,
 		DOT_BLEND,
+		DOT_BLEND_FRAGMENT_SHADER,
 		DOTS_PER_SCANLINE,
 		SCANLINE_BLEED,
 		SCANLINE_BLEED_FULL_PERIOD,
@@ -83,11 +84,28 @@
 	const dither_pass = new ShaderPass(dither_material)
 	const output_pass = new OutputPass()
 
+	// Dot blend: the phosphor bleed between adjacent dots. Lives here rather than in the
+	// upscale pass because one neighbour tap is one low-res texel either way, so running it
+	// at full resolution repeated the identical five taps once per output pixel (#420).
+	const dot_blend_uniforms = {
+		tDiffuse: { value: null },
+		u_lo_resolution: { value: new Vector2(1, 1) },
+		u_dot_blend: { value: DOT_BLEND },
+	}
+	const dot_blend_material = new ShaderMaterial({
+		uniforms: dot_blend_uniforms,
+		vertexShader: DITHER_VERTEX_SHADER,
+		fragmentShader: DOT_BLEND_FRAGMENT_SHADER,
+	})
+	const dot_blend_pass = new ShaderPass(dot_blend_material)
+
 	// Pass order: OutputPass before dither so quantization operates in sRGB display
-	// space — same reason as the original single-composer setup.
+	// space — same reason as the original single-composer setup. The dot blend comes
+	// last so the bleed operates on the dithered 256-colour image.
 	lo_composer.addPass(render_pass)
 	lo_composer.addPass(output_pass)
 	lo_composer.addPass(dither_pass)
+	lo_composer.addPass(dot_blend_pass)
 
 	// ── Stage 2: high-resolution composer ────────────────────────────────────────
 	// Upscales the lo-res dithered image, then applies scanlines and barrel at the
@@ -96,11 +114,10 @@
 
 	// Upscale pass: reads from lo_composer.readBuffer via u_lo_tex. We use a custom
 	// uniform name instead of tDiffuse so ShaderPass.render() does NOT override it
-	// with hi_composer's internal readBuffer (which is empty at this stage).
+	// with hi_composer's internal readBuffer (which is empty at this stage). A single
+	// tap — the dot blend it used to carry now runs in the low-res stage (#420).
 	const upscale_uniforms = {
 		u_lo_tex: { value: null as null | Texture },
-		u_lo_resolution: { value: new Vector2(1, 1) },
-		u_dot_blend: { value: DOT_BLEND },
 	}
 	const upscale_material = new ShaderMaterial({
 		uniforms: upscale_uniforms,
@@ -194,7 +211,7 @@
 		const lo_size = crt_resize.compute_lo_size(signature.width, signature.height, signature.lo_dpr)
 
 		dither_uniforms.u_resolution.value.set(lo_size.width, lo_size.height)
-		upscale_uniforms.u_lo_resolution.value.set(lo_size.width, lo_size.height)
+		dot_blend_uniforms.u_lo_resolution.value.set(lo_size.width, lo_size.height)
 
 		if (change.is_dpr_changed) hi_composer.setPixelRatio(signature.dpr)
 		hi_composer.setSize(signature.width, signature.height)
@@ -249,6 +266,23 @@
 
 	onDestroy(() => {
 		context.autoRender.set(true)
+		// EffectComposer.dispose() frees its two render targets and its internal copy pass only, so
+		// the compiled program behind each pass would otherwise outlive this component when the
+		// Canvas is torn down. The materials are what hold those programs, so disposing them is the
+		// whole fix; the passes wrap a FullScreenQuad over a geometry three keeps as a module-level
+		// singleton, which is shared with every other live pass and not ours to release.
+
+		for (const material of [
+			output_pass.material,
+			dither_material,
+			dot_blend_material,
+			upscale_material,
+			scanline_material,
+			barrel_material,
+		]) {
+			material.dispose()
+		}
+
 		lo_composer.dispose()
 		hi_composer.dispose()
 		bayer_texture.dispose()

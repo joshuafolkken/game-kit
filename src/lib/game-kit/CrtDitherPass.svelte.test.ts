@@ -25,10 +25,11 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		)
 	})
 
-	it('imports dither / scanline / upscale shaders from crt-dither', () => {
+	it('imports dither / dot-blend / scanline / upscale shaders from crt-dither', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-dither'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('DITHER_FRAGMENT_SHADER')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('DITHER_VERTEX_SHADER')
+		expect(CRT_DITHER_PASS_SOURCE).toContain('DOT_BLEND_FRAGMENT_SHADER')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('SCANLINE_FRAGMENT_SHADER')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('UPSCALE_FRAGMENT_SHADER')
 	})
@@ -52,17 +53,21 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/stage:\s*context\.renderStage/u)
 	})
 
-	it('Stage 1 adds passes in order: RenderPass → OutputPass → ShaderPass(dither)', () => {
-		// OutputPass applies sRGB conversion + AgX tonemap before dither/quantize.
+	it('Stage 1 adds passes in order: RenderPass → OutputPass → dither → dot blend', () => {
+		// OutputPass applies sRGB conversion + AgX tonemap before dither/quantize, and the
+		// dot blend comes last so the phosphor bleed operates on the quantized image (#420).
 		const render_index = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(render_pass)')
 		const output_index = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(output_pass)')
 		const dither_index = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(dither_pass)')
+		const dot_blend_index = CRT_DITHER_PASS_SOURCE.indexOf('lo_composer.addPass(dot_blend_pass)')
 
 		expect(render_index).toBeGreaterThan(-1)
 		expect(output_index).toBeGreaterThan(-1)
 		expect(dither_index).toBeGreaterThan(-1)
+		expect(dot_blend_index).toBeGreaterThan(-1)
 		expect(render_index).toBeLessThan(output_index)
 		expect(output_index).toBeLessThan(dither_index)
+		expect(dither_index).toBeLessThan(dot_blend_index)
 	})
 
 	it('Stage 2 adds passes in order: upscale → scanline → barrel', () => {
@@ -92,6 +97,32 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/u_resolution\.value\.set\(\s*width\s*\*\s*dpr/u)
 		// Bounded to a single effect body: an unbounded [\s\S]* would span the whole file.
 		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/\$effect\(\(\)\s*=>\s*\{[^}]*setSize\(/u)
+	})
+})
+
+describe('CrtDitherPass.svelte — dot blend at low resolution (#420)', () => {
+	it('drives the dot-blend pass from a ShaderMaterial so its uniforms stay live', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/new ShaderMaterial\(\s*\{\s*uniforms:\s*dot_blend_uniforms[\s\S]*?\}\s*\)/u,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/new ShaderPass\(\s*dot_blend_material\s*\)/u)
+	})
+
+	it('seeds the dot-blend pass with DOT_BLEND and sizes it from the low-res buffer', () => {
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_dot_blend:\s*\{\s*value:\s*DOT_BLEND\s*\}/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/dot_blend_uniforms\.u_lo_resolution\.value\.set\(lo_size\.width,\s*lo_size\.height\)/u,
+		)
+	})
+
+	it('leaves the upscale pass a single u_lo_tex tap with no dot-blend uniforms', () => {
+		const upscale_block = /const upscale_uniforms = \{[\s\S]*?\n\t\}/u.exec(CRT_DITHER_PASS_SOURCE)
+
+		expect(upscale_block).not.toBeNull()
+		expect(upscale_block?.[0]).toContain('u_lo_tex')
+		// Negative: both uniforms moved to the low-res dot-blend pass.
+		expect(upscale_block?.[0]).not.toContain('u_dot_blend')
+		expect(upscale_block?.[0]).not.toContain('u_lo_resolution')
 	})
 })
 
@@ -227,5 +258,26 @@ describe('CrtDitherPass.svelte — per-frame sizing', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/onDestroy\([\s\S]*context\.autoRender\.set\(\s*true\s*\)/u,
 		)
+	})
+
+	it('disposes every pass material on unmount — EffectComposer.dispose() does not reach them', () => {
+		// EffectComposer.dispose() frees renderTarget1/2 and its internal copyPass only, so a pass
+		// material left undisposed keeps its compiled program for the process lifetime.
+		const teardown = /onDestroy\(\s*\(\)\s*=>\s*\{[\s\S]*?\n\t\}\)/u.exec(CRT_DITHER_PASS_SOURCE)
+
+		expect(teardown).not.toBeNull()
+
+		for (const material of [
+			'output_pass.material',
+			'dither_material',
+			'dot_blend_material',
+			'upscale_material',
+			'scanline_material',
+			'barrel_material',
+		]) {
+			expect(teardown?.[0]).toContain(material)
+		}
+
+		expect(teardown?.[0]).toMatch(/material\.dispose\(\)/u)
 	})
 })
