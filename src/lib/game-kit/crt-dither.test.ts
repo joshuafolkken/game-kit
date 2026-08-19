@@ -10,6 +10,7 @@ import {
 	DITHER_FRAGMENT_SHADER,
 	DITHER_VERTEX_SHADER,
 	DOT_BLEND,
+	DOT_BLEND_FRAGMENT_SHADER,
 	DOTS_PER_SCANLINE,
 	SCANLINE_BLEED,
 	SCANLINE_BLEED_FULL_PERIOD,
@@ -347,28 +348,126 @@ describe('DITHER shader sources', () => {
 	})
 })
 
+describe('crt_dither.blend_dot_neighbors (JS mirror of the dot-blend)', () => {
+	// Fixture values are exact in binary floating point, so the expectations below are
+	// hand-computable and free of rounding slack.
+	const PIXELS = [
+		[0, 0.5, 1],
+		[0.25, 0.75, 0.5],
+		[1, 0, 0.25],
+	]
+	const CENTER_X = 1
+	const CENTER_Y = 1
+	const CENTER_VALUE = 0.75
+	// (2,1)=0.5 + (0,1)=0.25 + (1,2)=0 + (1,0)=0.5 = 1.25, averaged over 4 neighbours.
+	const NEIGHBOR_AVERAGE = 0.3125
+
+	function blend_center(blend: number): number {
+		return crt_dither.blend_dot_neighbors({
+			sample: crt_dither.create_clamped_sampler(PIXELS),
+			x: CENTER_X,
+			y: CENTER_Y,
+			blend,
+		})
+	}
+
+	it('averages the 4 axis-aligned neighbours (not the diagonals, not the centre)', () => {
+		expect(blend_center(1)).toBeCloseTo(NEIGHBOR_AVERAGE, 10)
+	})
+
+	it('blend = 0 is the identity — the centre texel passes through untouched', () => {
+		expect(blend_center(0)).toBeCloseTo(CENTER_VALUE, 10)
+	})
+
+	it('blend = 1 is a full 4-tap box blur — the centre is replaced by the neighbour average', () => {
+		expect(blend_center(1)).toBeCloseTo(NEIGHBOR_AVERAGE, 10)
+		expect(blend_center(1)).not.toBeCloseTo(CENTER_VALUE, 3)
+	})
+
+	it('weights the mix linearly, matching GLSL mix(center, neighbors, blend)', () => {
+		for (const blend of [0.2, 0.25, 0.5, 0.8]) {
+			const expected = CENTER_VALUE + (NEIGHBOR_AVERAGE - CENTER_VALUE) * blend
+
+			expect(blend_center(blend)).toBeCloseTo(expected, 10)
+		}
+	})
+
+	it(`leaves a flat image untouched at DOT_BLEND = ${String(DOT_BLEND)} (blending cannot invent contrast)`, () => {
+		const FLAT_VALUE = 0.4
+		const flat = [
+			[FLAT_VALUE, FLAT_VALUE, FLAT_VALUE],
+			[FLAT_VALUE, FLAT_VALUE, FLAT_VALUE],
+			[FLAT_VALUE, FLAT_VALUE, FLAT_VALUE],
+		]
+		const out = crt_dither.blend_dot_neighbors({
+			sample: crt_dither.create_clamped_sampler(flat),
+			x: CENTER_X,
+			y: CENTER_Y,
+			blend: DOT_BLEND,
+		})
+
+		expect(out).toBeCloseTo(FLAT_VALUE, 10)
+	})
+
+	it('saturates at the border like GL_CLAMP_TO_EDGE (off-image taps re-read the edge texel)', () => {
+		// Corner (0,0): the left and top taps fall outside and clamp back onto (0,0)=0,
+		// so the neighbour average is (0.5 + 0 + 0.25 + 0) / 4.
+		const CORNER_NEIGHBOR_AVERAGE = 0.1875
+		const out = crt_dither.blend_dot_neighbors({
+			sample: crt_dither.create_clamped_sampler(PIXELS),
+			x: 0,
+			y: 0,
+			blend: 1,
+		})
+
+		expect(out).toBeCloseTo(CORNER_NEIGHBOR_AVERAGE, 10)
+	})
+})
+
+describe('DOT_BLEND shader source', () => {
+	it('reads tDiffuse — it runs inside the low-res composer chain, not as an injection', () => {
+		expect(DOT_BLEND_FRAGMENT_SHADER).toContain('tDiffuse')
+		expect(DOT_BLEND_FRAGMENT_SHADER).not.toContain('u_lo_tex')
+	})
+
+	it('declares u_lo_resolution and u_dot_blend for the dot-blend effect', () => {
+		expect(DOT_BLEND_FRAGMENT_SHADER).toContain('u_lo_resolution')
+		expect(DOT_BLEND_FRAGMENT_SHADER).toContain('u_dot_blend')
+	})
+
+	it('samples all 4 axis-aligned neighbours for the dot-blend', () => {
+		// 1 center + 4 neighbours = at least 5 texture2D calls
+		const sample_count = (DOT_BLEND_FRAGMENT_SHADER.match(/texture2D\(\s*tDiffuse/gu) ?? []).length
+
+		expect(sample_count).toBeGreaterThanOrEqual(5)
+	})
+
+	it('offsets the taps by exactly one low-res texel', () => {
+		expect(DOT_BLEND_FRAGMENT_SHADER).toMatch(/vec2\s+texel\s*=\s*1\.0\s*\/\s*u_lo_resolution/u)
+	})
+
+	it('mixes center with neighbour average using u_dot_blend', () => {
+		expect(DOT_BLEND_FRAGMENT_SHADER).toMatch(
+			/mix\(\s*center\s*,\s*neighbors\s*,\s*u_dot_blend\s*\)/u,
+		)
+	})
+})
+
 describe('UPSCALE shader source', () => {
 	it('uses u_lo_tex (not tDiffuse) so ShaderPass does not override the injection', () => {
 		expect(UPSCALE_FRAGMENT_SHADER).toContain('u_lo_tex')
 		expect(UPSCALE_FRAGMENT_SHADER).not.toContain('tDiffuse')
 	})
 
-	it('declares u_lo_resolution and u_dot_blend for dot-blend effect', () => {
-		expect(UPSCALE_FRAGMENT_SHADER).toContain('u_lo_resolution')
-		expect(UPSCALE_FRAGMENT_SHADER).toContain('u_dot_blend')
+	it('is a single tap — the 4 neighbour taps moved to the low-res stage (#420)', () => {
+		const sample_count = (UPSCALE_FRAGMENT_SHADER.match(/texture2D\(/gu) ?? []).length
+
+		expect(sample_count).toBe(1)
 	})
 
-	it('samples all 4 axis-aligned neighbours for the dot-blend', () => {
-		// 1 center + 4 neighbours = at least 5 texture2D calls
-		const sample_count = (UPSCALE_FRAGMENT_SHADER.match(/texture2D\(\s*u_lo_tex/gu) ?? []).length
-
-		expect(sample_count).toBeGreaterThanOrEqual(5)
-	})
-
-	it('mixes center with neighbour average using u_dot_blend', () => {
-		expect(UPSCALE_FRAGMENT_SHADER).toMatch(
-			/mix\(\s*center\s*,\s*neighbors\s*,\s*u_dot_blend\s*\)/u,
-		)
+	it('no longer declares the dot-blend uniforms', () => {
+		expect(UPSCALE_FRAGMENT_SHADER).not.toContain('u_dot_blend')
+		expect(UPSCALE_FRAGMENT_SHADER).not.toContain('u_lo_resolution')
 	})
 })
 

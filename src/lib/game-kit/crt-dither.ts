@@ -40,10 +40,11 @@ export const SCANLINE_BLEED = SCANLINE_BLEED_VALUE
 // viewports (e.g. mobile, where the period may be as few as 3 pixels).
 export const SCANLINE_BLEED_FULL_PERIOD = 8
 
-// Fraction of the 4-neighbor average (up/down/left/right) mixed into each pixel
-// when upscaling from the low-res dithered game image. 0 = sharp pixel art,
-// 1 = fully box-blurred. 0.4 gives the soft "melting dots" look of real CRT
-// phosphors where adjacent colored dots bled into each other.
+// Fraction of the 4-neighbor average (up/down/left/right) mixed into each dot of
+// the low-res dithered game image. 0 = sharp pixel art, 1 = fully box-blurred.
+// The tuned value gives the soft "melting dots" look of real CRT phosphors where
+// adjacent colored dots bled into each other. Single tuning knob for the effect:
+// the blend runs once per low-res dot (#420), so this is the only place to change.
 export const DOT_BLEND = DOT_BLEND_VALUE
 
 // 8 × 8 × 4 = 256 unique colors (VGA 3-3-2: 3-bit R, 3-bit G, 2-bit B — VGA Mode 13h /
@@ -127,6 +128,44 @@ function quantize_with_dither_2d(
 	return Math.max(clamped, floor_value)
 }
 
+// Samples the low-res image at integer texel coordinates. Out-of-range coordinates
+// saturate to the border texel, mirroring the GL_CLAMP_TO_EDGE wrapping that three's
+// render targets use — the dot blend relies on it at the image border.
+export type DotSampler = (x: number, y: number) => number
+
+export interface DotBlendInput {
+	sample: DotSampler
+	x: number
+	y: number
+	blend: number
+}
+
+function clamp_index(value: number, length: number): number {
+	return Math.min(length - 1, Math.max(0, value))
+}
+
+function create_clamped_sampler(pixels: ReadonlyArray<ReadonlyArray<number>>): DotSampler {
+	return function sample(x: number, y: number): number {
+		const row = pixels[clamp_index(y, pixels.length)]
+		if (row === undefined) return 0
+
+		return row[clamp_index(x, row.length)] ?? 0
+	}
+}
+
+// JS mirror of the GLSL dot-blend. Mixes the centre texel toward the average of its
+// four axis-aligned neighbours: blend=0 returns the texel untouched, blend=1 replaces
+// it with the neighbour average (a full 4-tap box blur). Tested in isolation so the
+// shader math is verified without spinning up WebGL.
+function blend_dot_neighbors({ sample, x, y, blend }: DotBlendInput): number {
+	const NEIGHBOR_COUNT = 4
+	const center = sample(x, y)
+	const neighbor_average =
+		(sample(x + 1, y) + sample(x - 1, y) + sample(x, y + 1) + sample(x, y - 1)) / NEIGHBOR_COUNT
+
+	return center + (neighbor_average - center) * blend
+}
+
 export const DITHER_VERTEX_SHADER = /* glsl */ `
 varying vec2 v_uv;
 
@@ -160,13 +199,24 @@ void main() {
 }
 `
 
-// Nearest-neighbour upscale pass with optional dot-blend. Samples the low-res
-// dithered game texture via u_lo_tex (NOT tDiffuse) so ShaderPass does not
-// override it with the hi-res composer's readBuffer.
-// u_dot_blend mixes each pixel with the average of its 4 low-res neighbours,
+// Dot-blend pass. u_dot_blend mixes each dot with the average of its 4 neighbours,
 // reproducing the colour bleeding between adjacent CRT phosphor dots.
-export const UPSCALE_FRAGMENT_SHADER = /* glsl */ `
-uniform sampler2D u_lo_tex;
+//
+// Runs in the low-resolution stage, right after the dither pass, so the bleed still
+// operates on the quantized 256-colour image. It used to run inside the upscale pass
+// at full resolution (#420): with the low-res target on NearestFilter, a neighbour tap
+// one low-res texel away resolves to that same texel whatever the fraction inside it,
+// so the two placements produce the same picture — the full-resolution one just did it
+// once per output pixel instead of once per dot, roughly 12x the work.
+//
+// One exception, verified in CrtDotBlend.svelte.test.ts: an output pixel whose centre maps
+// exactly onto a texel boundary. There the old shader resolved its five taps from five
+// coordinates all sitting on the seam and could land them on both sides of it, leaving a
+// hairline row or column blended from a neighbourhood that does not exist. Sampling texel
+// centres here removes that, so those pixels are the one place the output legitimately
+// differs from the pre-#420 rendering.
+export const DOT_BLEND_FRAGMENT_SHADER = /* glsl */ `
+uniform sampler2D tDiffuse;
 uniform vec2 u_lo_resolution;
 uniform float u_dot_blend;
 
@@ -174,14 +224,28 @@ varying vec2 v_uv;
 
 void main() {
 	vec2 texel = 1.0 / u_lo_resolution;
-	vec3 center = texture2D(u_lo_tex, v_uv).rgb;
+	vec3 center = texture2D(tDiffuse, v_uv).rgb;
 	vec3 neighbors = (
-		texture2D(u_lo_tex, v_uv + vec2( texel.x, 0.0)).rgb +
-		texture2D(u_lo_tex, v_uv + vec2(-texel.x, 0.0)).rgb +
-		texture2D(u_lo_tex, v_uv + vec2(0.0,  texel.y)).rgb +
-		texture2D(u_lo_tex, v_uv + vec2(0.0, -texel.y)).rgb
+		texture2D(tDiffuse, v_uv + vec2( texel.x, 0.0)).rgb +
+		texture2D(tDiffuse, v_uv + vec2(-texel.x, 0.0)).rgb +
+		texture2D(tDiffuse, v_uv + vec2(0.0,  texel.y)).rgb +
+		texture2D(tDiffuse, v_uv + vec2(0.0, -texel.y)).rgb
 	) * 0.25;
 	gl_FragColor = vec4(mix(center, neighbors, u_dot_blend), 1.0);
+}
+`
+
+// Nearest-neighbour upscale pass — a single tap, since the dot blend now happens
+// upstream at low resolution. Samples the low-res dithered game texture via u_lo_tex
+// (NOT tDiffuse) so ShaderPass does not override it with the hi-res composer's
+// readBuffer.
+export const UPSCALE_FRAGMENT_SHADER = /* glsl */ `
+uniform sampler2D u_lo_tex;
+
+varying vec2 v_uv;
+
+void main() {
+	gl_FragColor = vec4(texture2D(u_lo_tex, v_uv).rgb, 1.0);
 }
 `
 
@@ -232,4 +296,6 @@ export const crt_dither = {
 	create_bayer_texture,
 	quantize_with_dither_2d,
 	compute_scanline_factor,
+	create_clamped_sampler,
+	blend_dot_neighbors,
 }
