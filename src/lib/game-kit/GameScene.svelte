@@ -255,12 +255,6 @@
 	{#if is_alt}
 		<div class="cyber-glow" data-testid="cyber-glow" aria-hidden="true"></div>
 	{/if}
-	{#if is_crt_enabled}
-		<!-- Glass/vignette overlay is a CRT cue, so it follows is_crt_enabled. With CRT off it must
-		     be absent for a clean render. Chromatic aberration and grading are no longer siblings
-		     here: they moved into the barrel fragment shader in game-kit#419. -->
-		<div class="crt-overlay" data-testid="crt-overlay" aria-hidden="true"></div>
-	{/if}
 	<Canvas
 		dpr={1}
 		shadows={is_shadows_enabled}
@@ -409,25 +403,6 @@
 		);
 		mix-blend-mode: screen;
 		animation: cyber-pulse 2s ease-in-out infinite;
-	}
-
-	.crt-overlay {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		z-index: 6;
-		/* Match the canvas border-radius so corner-darkening clips on the same curve. */
-		border-radius: clamp(12px, 3vmin, 28px);
-		/* Stack: glass-dome highlight → 4 corner darkening (curvature illusion) → center
-		   vignette. Scanlines live in the WebGL dither shader so they curve with the
-		   barrel-distortion pass; this overlay carries only static glass-face cues. */
-		background:
-			radial-gradient(ellipse 65% 45% at 28% 22%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
-			radial-gradient(circle at top left, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
-			radial-gradient(circle at top right, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
-			radial-gradient(circle at bottom left, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
-			radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.4) 0%, transparent 38%),
-			radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.3) 100%);
 	}
 
 	@keyframes cyber-pulse {

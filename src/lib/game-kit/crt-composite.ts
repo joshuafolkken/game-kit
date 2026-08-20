@@ -10,6 +10,7 @@ import {
 	SCANLINE_FUNCTIONS_GLSL,
 	SCANLINE_UNIFORMS_GLSL,
 } from '$lib/game-kit/crt-dither'
+import { crt_glass, GLASS_FUNCTIONS_GLSL } from '$lib/game-kit/crt-glass'
 
 const HALF = 0.5
 const NEIGHBOR_PAIR = 2
@@ -99,18 +100,26 @@ function sample_channel(
 
 // JS mirror of the merged stage-2 shader. The channel separation is applied to the OUTPUT
 // coordinate before the warp, because the CSS filter this replaces shifted the finished canvas.
+// The glass cues come last and in unwarped screen space, where the `.crt-overlay` div they replace
+// sat (game-kit#422) — over the finished picture, outside the barrel warp.
 function compose_crt_pixel({ sample, uv, config }: CrtCompositeInput): BarrelRgb {
 	const [red_uv, green_uv, blue_uv] = crt_barrel.offset_channel_uvs(
 		uv,
 		config.channel_offset,
 		config.width,
 	)
-
-	return {
+	const color = {
 		r: sample_channel(sample, red_uv ?? uv, config).r,
 		g: sample_channel(sample, green_uv ?? uv, config).g,
 		b: sample_channel(sample, blue_uv ?? uv, config).b,
 	}
+
+	// The gradient positions were authored in CSS coordinates, where y grows downward.
+	return crt_glass.apply_glass_cues(
+		color,
+		{ x: uv.x, y: 1 - uv.y },
+		{ width: config.width, height: config.height },
+	)
 }
 
 // The whole of stage 2 in one pass (game-kit#421). It replaces an upscale pass, a scanline pass and
@@ -123,6 +132,9 @@ function compose_crt_pixel({ sample, uv, config }: CrtCompositeInput): BarrelRgb
 // before, six of which read a full-resolution RGBA16F surface. The saving is bandwidth and memory,
 // not arithmetic.
 //
+// Since game-kit#422 it also carries the glass-face cues that a composited `.crt-overlay` div used to
+// draw over the canvas at device resolution, so RETRO adds no compositor layer at all.
+//
 // One deliberate difference from the pre-#421 rendering: the barrel pass used to read the scanlined
 // image back through a LinearFilter target, so warped samples were bilinearly resampled. Evaluating
 // the scanline analytically at the warped coordinate skips that resampling, which leaves the
@@ -133,7 +145,7 @@ uniform sampler2D u_lo_tex;
 uniform vec2 u_resolution;
 ${BARREL_UNIFORMS_GLSL}${SCANLINE_UNIFORMS_GLSL}
 varying vec2 v_uv;
-${BARREL_FUNCTIONS_GLSL}${SCANLINE_FUNCTIONS_GLSL}
+${BARREL_FUNCTIONS_GLSL}${SCANLINE_FUNCTIONS_GLSL}${GLASS_FUNCTIONS_GLSL}
 vec3 sample_channel(vec2 uv) {
 	vec2 sample_uv = warp_uv(uv);
 	float visible = in_bounds(sample_uv);
@@ -147,7 +159,10 @@ void main() {
 	vec3 centered_rgb = sample_channel(v_uv);
 	vec3 shifted_b = sample_channel(v_uv + vec2(offset, 0.0));
 
-	gl_FragColor = vec4(shifted_r.r, centered_rgb.g, shifted_b.b, 1.0);
+	vec3 color = vec3(shifted_r.r, centered_rgb.g, shifted_b.b);
+
+	// v_uv has y growing upward; the glass cues were authored in CSS coordinates.
+	gl_FragColor = vec4(apply_glass(color, vec2(v_uv.x, 1.0 - v_uv.y), u_resolution), 1.0);
 }
 `
 
