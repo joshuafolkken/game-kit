@@ -301,9 +301,10 @@ test('CRT renders in both orientations without a shader or WebGL error', async (
 	await page.goto('/')
 	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
 
-	// The RETRO overlay is only in the DOM while CRT mode is on, so it doubles as the signal that
-	// the pipeline under test is the one being exercised (game-kit#388).
-	await expect(page.locator('[data-testid="crt-overlay"]')).toBeAttached()
+	// .crt-active is the DOM signal that CRT mode is on, so it confirms the pipeline under test is
+	// the one being exercised. It replaced the overlay element the glass cues used to live on, which
+	// #422 folded into the shader.
+	await expect(page.locator(SEL_GAME_SCENE)).toHaveClass(/crt-active/u)
 
 	const canvas = page.locator(SEL_GAME_CANVAS)
 

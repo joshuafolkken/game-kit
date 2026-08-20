@@ -47,18 +47,16 @@ describe('GameScene crt_initial prop — pick the initial CRT mode without editi
 		expect(has_crt_active(container)).toBe(true)
 	})
 
-	it('renders the glass/vignette crt-overlay when crt_initial is "on"', async () => {
-		const { container } = await render_with_crt_initial('on')
+	// game-kit#388's contract — the glass cues must not persist with CRT off — is unchanged, but the
+	// cues moved into the fragment shader in #422, so there is no element left to look for. The
+	// observable is .crt-active, which gates the whole CRT pipeline including that shader; the two
+	// tests above already assert it follows crt_initial in both directions.
+	it('renders no overlay element in either state', async () => {
+		const on = await render_with_crt_initial('on')
+		const off = await render_with_crt_initial('off')
 
-		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeTruthy()
-	})
-
-	it('omits the glass/vignette crt-overlay when crt_initial is "off" (clean render)', async () => {
-		// Regression for game-kit#388: the overlay used to render unconditionally, so its
-		// corner darkening + center vignette + glass highlight persisted with CRT off.
-		const { container } = await render_with_crt_initial('off')
-
-		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeNull()
+		expect(on.container.querySelector(SEL_CRT_OVERLAY)).toBeNull()
+		expect(off.container.querySelector(SEL_CRT_OVERLAY)).toBeNull()
 	})
 
 	it('leaves the shared CRT state untouched when crt_initial is omitted (no force-reset)', async () => {
