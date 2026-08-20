@@ -15,10 +15,10 @@ function signature(overrides: Partial<CrtSizeSignature>): CrtSizeSignature {
 }
 
 describe('crt_resize.create_size_gate', () => {
-	it('reports a change on the first call, with both pixel ratios treated as new', () => {
+	it('reports a change on the first call, with the low-res pixel ratio treated as new', () => {
 		const gate = crt_resize.create_size_gate()
 
-		expect(gate.resolve_change(BASE)).toEqual({ is_dpr_changed: true, is_lo_dpr_changed: true })
+		expect(gate.resolve_change(BASE)).toEqual({ is_lo_dpr_changed: true })
 	})
 
 	it('reports no change while the signature stays the same across frames', () => {
@@ -30,43 +30,36 @@ describe('crt_resize.create_size_gate', () => {
 		expect(gate.resolve_change(signature({}))).toBeUndefined()
 	})
 
-	it('reports a change when the viewport resizes, without re-applying either pixel ratio', () => {
+	it('reports a change when the viewport resizes, without re-applying the pixel ratio', () => {
 		const gate = crt_resize.create_size_gate()
 
 		gate.resolve_change(BASE)
 
-		expect(gate.resolve_change(signature({ width: 1441 }))).toEqual({
-			is_dpr_changed: false,
-			is_lo_dpr_changed: false,
-		})
+		expect(gate.resolve_change(signature({ width: 1441 }))).toEqual({ is_lo_dpr_changed: false })
 		expect(gate.resolve_change(signature({ width: 1441, height: 901 }))).toEqual({
-			is_dpr_changed: false,
 			is_lo_dpr_changed: false,
 		})
 	})
 
-	it('flags only the pixel ratio that moved', () => {
+	// A device pixel ratio change still re-opens the gate — stage 2 reads the drawing buffer into
+	// its uniforms — but it no longer carries a flag of its own, because no composer re-scales (#421).
+	it('flags the low-res pixel ratio only when it moved, and still re-opens on a dpr change', () => {
 		const gate = crt_resize.create_size_gate()
 
 		gate.resolve_change(BASE)
 
-		expect(gate.resolve_change(signature({ dpr: 2 }))).toEqual({
-			is_dpr_changed: true,
-			is_lo_dpr_changed: false,
-		})
+		expect(gate.resolve_change(signature({ dpr: 2 }))).toEqual({ is_lo_dpr_changed: false })
 		expect(gate.resolve_change(signature({ dpr: 2, lo_dpr: 0.5 }))).toEqual({
-			is_dpr_changed: false,
 			is_lo_dpr_changed: true,
 		})
 	})
 
-	it('reports a change when only the drawing buffer moved, leaving both ratios untouched', () => {
+	it('reports a change when only the drawing buffer moved, leaving the ratio untouched', () => {
 		const gate = crt_resize.create_size_gate()
 
 		gate.resolve_change(BASE)
 
 		expect(gate.resolve_change(signature({ buffer_width: 2880, buffer_height: 1800 }))).toEqual({
-			is_dpr_changed: false,
 			is_lo_dpr_changed: false,
 		})
 	})

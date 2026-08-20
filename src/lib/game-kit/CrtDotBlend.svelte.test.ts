@@ -15,12 +15,7 @@ import {
 	type IUniform,
 } from 'three'
 import { afterAll, describe, expect, it } from 'vitest'
-import {
-	DITHER_VERTEX_SHADER,
-	DOT_BLEND,
-	DOT_BLEND_FRAGMENT_SHADER,
-	UPSCALE_FRAGMENT_SHADER,
-} from './crt-dither'
+import { DOT_BLEND, DOT_BLEND_FRAGMENT_SHADER, FULLSCREEN_VERTEX_SHADER } from './crt-dither'
 
 // #420 moved the CRT dot blend out of the full-resolution upscale pass into the low-resolution
 // stage, on the argument that a neighbour tap offset by one low-res texel resolves to that same
@@ -32,6 +27,20 @@ import {
 // The argument holds everywhere except on output pixels whose centre maps exactly onto a low-res
 // texel boundary, where the legacy shader resolved its five taps independently and could land
 // them on both sides of the seam. The last test pins that exception down; see its comment.
+
+// The single-tap upscale #420 left behind. It stopped being a pass of its own in #421, which folded
+// it into the merged stage-2 shader, so it is spelled out here: this test isolates the dot-blend
+// equivalence, and running it through the whole composite pass would drag scanlines, the barrel
+// warp and the grading into a comparison that is not about any of them.
+const SINGLE_TAP_UPSCALE_FRAGMENT_SHADER = /* glsl */ `
+uniform sampler2D u_lo_tex;
+
+varying vec2 v_uv;
+
+void main() {
+	gl_FragColor = vec4(texture2D(u_lo_tex, v_uv).rgb, 1.0);
+}
+`
 
 // The pre-#420 upscale shader, verbatim: the 5-tap blend at full resolution. This is the
 // reference the current pipeline has to reproduce.
@@ -149,7 +158,7 @@ function create_target(size: Size): WebGLRenderTarget {
 function render_quad(renderer: WebGLRenderer, options: QuadRender): Uint8Array {
 	const material = new ShaderMaterial({
 		uniforms: options.uniforms,
-		vertexShader: DITHER_VERTEX_SHADER,
+		vertexShader: FULLSCREEN_VERTEX_SHADER,
 		fragmentShader: options.fragment_shader,
 	})
 	const geometry = new PlaneGeometry(QUAD_SIZE, QUAD_SIZE)
@@ -203,7 +212,7 @@ function render_current(renderer: WebGLRenderer, run: BlendRun): Uint8Array {
 		target: blended,
 	})
 	const pixels = render_quad(renderer, {
-		fragment_shader: UPSCALE_FRAGMENT_SHADER,
+		fragment_shader: SINGLE_TAP_UPSCALE_FRAGMENT_SHADER,
 		uniforms: { u_lo_tex: { value: blended.texture } },
 		target,
 	})

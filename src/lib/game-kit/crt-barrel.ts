@@ -89,40 +89,32 @@ function offset_channel_uvs(uv: BarrelUv, offset_pixels: number, width: number):
 	]
 }
 
-export const BARREL_VERTEX_SHADER = /* glsl */ `
-varying vec2 v_uv;
-
-void main() {
-	v_uv = uv;
-	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`
-
-// Fragment shader applies quadratic barrel distortion in screen-aspect space, then
-// samples tDiffuse at the warped UV. Out-of-bounds samples are masked to black via
-// a step-product (branchless) so the rectangular frame stays clean while the inner
-// content bulges. Sampling out-of-[0,1] would otherwise smear the edge color due
-// to CLAMP_TO_EDGE wrapping — the visible mask multiply zeroes those texels.
+// GLSL chunk: the barrel warp, the out-of-bounds mask and the grading, as reusable functions
+// rather than a finished pass. The single stage-2 shader in crt-composite.ts is the only consumer
+// (game-kit#421); keeping the math here means the JS mirrors above and the GLSL cannot drift.
+//
+// Quadratic barrel distortion is applied in screen-aspect space. Out-of-bounds samples are masked
+// to black via a step-product (branchless) so the rectangular frame stays clean while the inner
+// content bulges. Sampling out-of-[0,1] would otherwise smear the edge color due to CLAMP_TO_EDGE
+// wrapping — the visible mask multiply zeroes those texels.
 //
 // Chromatic aberration and grading moved here from the CSS filter chain in game-kit#419: the SVG
 // graph cost ~6 ms per frame on a Pixel 6 Pro because it ran over the compositor's 1440x3120
 // surface with several full-screen intermediates, while this pass already runs over the CSS-
 // resolution buffer — about a twelfth of the pixels, and no intermediate surfaces at all.
 //
-// The ordering reproduces what the browser did: warp -> mask -> grade happens per channel tap, and
-// the taps are offsets of the OUTPUT coordinate, because the CSS filter shifted the finished canvas
+// The ordering the consumer must reproduce: warp -> mask -> grade happens per channel tap, and the
+// taps are offsets of the OUTPUT coordinate, because the CSS filter shifted the finished canvas
 // rather than the pre-warp image.
-export const BARREL_FRAGMENT_SHADER = /* glsl */ `
-uniform sampler2D tDiffuse;
+export const BARREL_UNIFORMS_GLSL = /* glsl */ `
 uniform float u_strength;
 uniform float u_aspect;
 uniform float u_channel_offset;
 uniform float u_contrast;
 uniform float u_saturation;
-uniform vec2 u_resolution;
+`
 
-varying vec2 v_uv;
-
+export const BARREL_FUNCTIONS_GLSL = /* glsl */ `
 vec3 grade(vec3 color) {
 	vec3 contrasted = (color - 0.5) * u_contrast + 0.5;
 	float luma = dot(contrasted, ${LUMA_GLSL});
@@ -130,27 +122,21 @@ vec3 grade(vec3 color) {
 	return mix(vec3(luma), contrasted, u_saturation);
 }
 
-vec3 sample_graded(vec2 uv) {
+vec2 warp_uv(vec2 uv) {
 	vec2 centered = uv - 0.5;
 	centered.x *= u_aspect;
 	float r2 = dot(centered, centered);
 	float warp = 1.0 + u_strength * r2;
 	centered *= warp;
 	centered.x /= u_aspect;
-	vec2 sample_uv = centered + 0.5;
-	vec2 in_bounds = step(vec2(0.0), sample_uv) * step(sample_uv, vec2(1.0));
-	float visible = in_bounds.x * in_bounds.y;
 
-	return grade(texture2D(tDiffuse, sample_uv).rgb * visible);
+	return centered + 0.5;
 }
 
-void main() {
-	float offset = u_channel_offset / max(u_resolution.x, 1.0);
-	vec3 shifted_r = sample_graded(v_uv - vec2(offset, 0.0));
-	vec3 centered_rgb = sample_graded(v_uv);
-	vec3 shifted_b = sample_graded(v_uv + vec2(offset, 0.0));
+float in_bounds(vec2 sample_uv) {
+	vec2 inside = step(vec2(0.0), sample_uv) * step(sample_uv, vec2(1.0));
 
-	gl_FragColor = vec4(shifted_r.r, centered_rgb.g, shifted_b.b, 1.0);
+	return inside.x * inside.y;
 }
 `
 
