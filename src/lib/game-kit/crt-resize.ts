@@ -14,10 +14,11 @@ export interface CrtSizeSignature {
 	buffer_height: number
 }
 
-// EffectComposer.setPixelRatio() walks every pass through an internal setSize(), so the two pixel
-// ratios are reported separately: a plain viewport resize should not pay for them.
+// EffectComposer.setPixelRatio() walks every pass through an internal setSize(), so the low-res
+// pixel ratio is reported separately: a plain viewport resize should not pay for it. Stage 2 has
+// no composer to re-scale since #421, so the device pixel ratio stays in the signature — a dpr
+// change still has to re-open the gate — without a flag of its own.
 export interface CrtSizeChange {
-	is_dpr_changed: boolean
 	is_lo_dpr_changed: boolean
 }
 
@@ -67,10 +68,7 @@ function create_size_gate(): CrtSizeGate {
 	function resolve_change(next: CrtSizeSignature): CrtSizeChange | undefined {
 		if (is_same_signature(applied, next)) return undefined
 
-		const change = {
-			is_dpr_changed: applied.dpr !== next.dpr,
-			is_lo_dpr_changed: applied.lo_dpr !== next.lo_dpr,
-		}
+		const change = { is_lo_dpr_changed: applied.lo_dpr !== next.lo_dpr }
 
 		applied = { ...next }
 

@@ -42,6 +42,7 @@ words:
   - GLSL
   - glsl
   - scanline
+  - scanlined
   - scanlines
   - SNES
   - tonemap
@@ -52,6 +53,7 @@ words:
   - Upscales
   - upscales
   - neighbour
+  - neighbouring
   - neighbours
   - neighbourhood
   - behaviour

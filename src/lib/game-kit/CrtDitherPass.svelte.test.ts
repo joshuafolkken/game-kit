@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import CRT_DITHER_PASS_SOURCE from './CrtDitherPass.svelte?raw'
 
 const LO_SET_SIZE_CALL = 'lo_composer.setSize('
-const HI_SET_SIZE_CALL = 'hi_composer.setSize('
 
 // Component-level runtime tests would require a live WebGL post-processing pipeline inside
 // vitest-browser-svelte, which is impractical. The dither math itself is verified in
@@ -25,13 +24,17 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		)
 	})
 
-	it('imports dither / dot-blend / scanline / upscale shaders from crt-dither', () => {
+	it('imports the stage-1 shaders from crt-dither and the merged stage-2 shader from crt-composite', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-dither'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('DITHER_FRAGMENT_SHADER')
-		expect(CRT_DITHER_PASS_SOURCE).toContain('DITHER_VERTEX_SHADER')
+		expect(CRT_DITHER_PASS_SOURCE).toContain('FULLSCREEN_VERTEX_SHADER')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('DOT_BLEND_FRAGMENT_SHADER')
-		expect(CRT_DITHER_PASS_SOURCE).toContain('SCANLINE_FRAGMENT_SHADER')
-		expect(CRT_DITHER_PASS_SOURCE).toContain('UPSCALE_FRAGMENT_SHADER')
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-composite'/u)
+		expect(CRT_DITHER_PASS_SOURCE).toContain('COMPOSITE_FRAGMENT_SHADER')
+		// The three stage-2 passes they replace are gone (#421).
+		expect(CRT_DITHER_PASS_SOURCE).not.toContain('SCANLINE_FRAGMENT_SHADER')
+		expect(CRT_DITHER_PASS_SOURCE).not.toContain('UPSCALE_FRAGMENT_SHADER')
+		expect(CRT_DITHER_PASS_SOURCE).not.toContain('BARREL_FRAGMENT_SHADER')
 	})
 
 	it('uses useThrelte and useTask from @threlte/core', () => {
@@ -47,9 +50,9 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/context\.autoRender\.set\(\s*false\s*\)/u)
 	})
 
-	it('renders both composers in a useTask scheduled on ctx.renderStage', () => {
+	it('renders both stages in a useTask scheduled on ctx.renderStage', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*lo_composer\.render\(/u)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*hi_composer\.render\(/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/useTask\([\s\S]*composite_quad\.render\(/u)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/stage:\s*context\.renderStage/u)
 	})
 
@@ -70,28 +73,44 @@ describe('CrtDitherPass.svelte — EffectComposer wiring', () => {
 		expect(dither_index).toBeLessThan(dot_blend_index)
 	})
 
-	it('Stage 2 adds passes in order: upscale → scanline → barrel', () => {
-		// Scanlines before barrel so they warp with the screen curvature.
-		const upscale_index = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(upscale_pass)')
-		const scanline_index = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(scanline_pass)')
-		const barrel_index = CRT_DITHER_PASS_SOURCE.indexOf('hi_composer.addPass(barrel_pass)')
+	// Stage 2 was three ShaderPasses on a second EffectComposer until #421. The composer allocated
+	// two full-resolution HalfFloatType targets purely to ping-pong between them; a FullScreenQuad
+	// writing to the default framebuffer allocates none.
+	it('Stage 2 is one FullScreenQuad, not a second composer', () => {
+		const composers = (CRT_DITHER_PASS_SOURCE.match(/new EffectComposer\(/gu) ?? []).length
 
-		expect(upscale_index).toBeGreaterThan(-1)
-		expect(scanline_index).toBeGreaterThan(-1)
-		expect(barrel_index).toBeGreaterThan(-1)
-		expect(upscale_index).toBeLessThan(scanline_index)
-		expect(scanline_index).toBeLessThan(barrel_index)
+		expect(composers).toBe(1)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(
+			/from\s+'three\/examples\/jsm\/postprocessing\/Pass\.js'/u,
+		)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/new FullScreenQuad\(\s*composite_material\s*\)/u)
+		expect(CRT_DITHER_PASS_SOURCE).not.toContain('hi_composer')
 	})
 
-	it('syncs lo_composer and hi_composer sizes inside the render task (not $effect)', () => {
+	it('points the renderer at the default framebuffer before drawing the composite pass', () => {
+		// FullScreenQuad.render() draws wherever the renderer currently points, and stage 1 has just
+		// rendered into its own targets.
+		const target_index = CRT_DITHER_PASS_SOURCE.indexOf('context.renderer.setRenderTarget(null)')
+		const draw_index = CRT_DITHER_PASS_SOURCE.indexOf('composite_quad.render(context.renderer)')
+
+		expect(target_index).toBeGreaterThan(-1)
+		expect(draw_index).toBeGreaterThan(target_index)
+	})
+
+	it('disables depth test and write on the composite material', () => {
+		// The composer used to clear for us; a full-screen quad tested against stale canvas depth
+		// could be discarded entirely.
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/depthTest:\s*false/u)
+		expect(CRT_DITHER_PASS_SOURCE).toMatch(/depthWrite:\s*false/u)
+	})
+
+	it('syncs the stage-1 composer size inside the render task (not $effect)', () => {
 		// Same rAF-vs-microtask rationale as the original single-composer setup: a Svelte effect
 		// flushes a microtask later than Threlte's resize stage, which would leave the composer
 		// targets a frame behind the drawing buffer while a resize is in progress.
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/import\s*\{[^}]*Vector2[^}]*\}\s*from\s*'three'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain(LO_SET_SIZE_CALL)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('lo_composer.setPixelRatio(signature.lo_dpr)')
-		expect(CRT_DITHER_PASS_SOURCE).toContain(HI_SET_SIZE_CALL)
-		expect(CRT_DITHER_PASS_SOURCE).toContain('hi_composer.setPixelRatio(signature.dpr)')
 		expect(CRT_DITHER_PASS_SOURCE).toContain('dither_uniforms.u_resolution.value.set(')
 		// Negative: must NOT compute u_resolution from CSS × DPR (old bug).
 		expect(CRT_DITHER_PASS_SOURCE).not.toMatch(/u_resolution\.value\.set\(\s*width\s*\*\s*dpr/u)
@@ -115,18 +134,20 @@ describe('CrtDitherPass.svelte — dot blend at low resolution (#420)', () => {
 		)
 	})
 
-	it('leaves the upscale pass a single u_lo_tex tap with no dot-blend uniforms', () => {
-		const upscale_block = /const upscale_uniforms = \{[\s\S]*?\n\t\}/u.exec(CRT_DITHER_PASS_SOURCE)
+	it('leaves the composite pass reading u_lo_tex with no dot-blend uniforms', () => {
+		const composite_block = /const composite_uniforms = \{[\s\S]*?\n\t\}/u.exec(
+			CRT_DITHER_PASS_SOURCE,
+		)
 
-		expect(upscale_block).not.toBeNull()
-		expect(upscale_block?.[0]).toContain('u_lo_tex')
-		// Negative: both uniforms moved to the low-res dot-blend pass.
-		expect(upscale_block?.[0]).not.toContain('u_dot_blend')
-		expect(upscale_block?.[0]).not.toContain('u_lo_resolution')
+		expect(composite_block).not.toBeNull()
+		expect(composite_block?.[0]).toContain('u_lo_tex')
+		// Negative: both uniforms belong to the low-res dot-blend pass.
+		expect(composite_block?.[0]).not.toContain('u_dot_blend')
+		expect(composite_block?.[0]).not.toContain('u_lo_resolution')
 	})
 })
 
-describe('CrtDitherPass.svelte — barrel pass grading uniforms (#419)', () => {
+describe('CrtDitherPass.svelte — chromatic aberration and grading uniforms (#419)', () => {
 	it('imports the aberration and grading constants from crt-barrel', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/from\s+'\$lib\/game-kit\/crt-barrel'/u)
 		expect(CRT_DITHER_PASS_SOURCE).toContain('CHANNEL_OFFSET_PIXELS')
@@ -134,7 +155,7 @@ describe('CrtDitherPass.svelte — barrel pass grading uniforms (#419)', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toContain('CRT_SATURATION')
 	})
 
-	it('seeds the barrel uniforms from those constants rather than inline literals', () => {
+	it('seeds the composite uniforms from those constants rather than inline literals', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/u_channel_offset:\s*\{\s*value:\s*CHANNEL_OFFSET_PIXELS\s*\}/u,
 		)
@@ -142,11 +163,11 @@ describe('CrtDitherPass.svelte — barrel pass grading uniforms (#419)', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/u_saturation:\s*\{\s*value:\s*CRT_SATURATION\s*\}/u)
 	})
 
-	it('keeps u_resolution on the barrel pass in step with the drawing buffer', () => {
-		// The channel offset is expressed in pixels, so a stale resolution would silently rescale
-		// the fringe after a resize.
+	it('keeps u_resolution on the composite pass in step with the drawing buffer', () => {
+		// The channel offset is expressed in pixels and the scanline phase in pixel rows, so a stale
+		// resolution would silently rescale both after a resize.
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
-			/barrel_uniforms\.u_resolution\.value\.copy\(hi_drawing_buffer\)/u,
+			/composite_uniforms\.u_resolution\.value\.copy\(hi_drawing_buffer\)/u,
 		)
 	})
 })
@@ -166,7 +187,6 @@ describe('CrtDitherPass.svelte — per-frame sizing', () => {
 		expect(apply_index).toBeGreaterThan(-1)
 		expect(CRT_DITHER_PASS_SOURCE.indexOf(LO_SET_SIZE_CALL)).toBeGreaterThan(apply_index)
 		expect(CRT_DITHER_PASS_SOURCE.indexOf(LO_SET_SIZE_CALL)).toBeLessThan(task_index)
-		expect(CRT_DITHER_PASS_SOURCE.indexOf(HI_SET_SIZE_CALL)).toBeLessThan(task_index)
 	})
 
 	it('leaves renderer sizing to Threlte instead of re-applying it every frame (#423)', () => {
@@ -249,11 +269,14 @@ describe('CrtDitherPass.svelte — per-frame sizing', () => {
 		)
 	})
 
-	it('disposes both composers, bayer texture, and restores autoRender on unmount', () => {
+	it('disposes the composer and the bayer texture, and restores autoRender, on unmount', () => {
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/onDestroy\(\s*\(\)\s*=>\s*\{[\s\S]*lo_composer\.dispose\(\)/u,
 		)
-		expect(CRT_DITHER_PASS_SOURCE).toMatch(/hi_composer\.dispose\(\)/u)
+		// Never composite_quad.dispose(): FullScreenQuad.dispose() frees three's module-level
+		// _geometry singleton, which every other FullScreenQuad — including the one inside each
+		// ShaderPass in stage 1 — is still rendering from.
+		expect(CRT_DITHER_PASS_SOURCE).not.toContain('composite_quad.dispose()')
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(/bayer_texture\.dispose\(\)/u)
 		expect(CRT_DITHER_PASS_SOURCE).toMatch(
 			/onDestroy\([\s\S]*context\.autoRender\.set\(\s*true\s*\)/u,
@@ -271,9 +294,7 @@ describe('CrtDitherPass.svelte — per-frame sizing', () => {
 			'output_pass.material',
 			'dither_material',
 			'dot_blend_material',
-			'upscale_material',
-			'scanline_material',
-			'barrel_material',
+			'composite_material',
 		]) {
 			expect(teardown?.[0]).toContain(material)
 		}

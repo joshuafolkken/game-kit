@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
-	BARREL_FRAGMENT_SHADER,
+	BARREL_FUNCTIONS_GLSL,
 	BARREL_STRENGTH,
-	BARREL_VERTEX_SHADER,
+	BARREL_UNIFORMS_GLSL,
 	CHANNEL_OFFSET_PIXELS,
 	crt_barrel,
 	CRT_CONTRAST,
@@ -148,70 +148,51 @@ describe('crt_barrel.apply_barrel_uv', () => {
 	})
 })
 
-describe('BARREL shader sources', () => {
-	it('vertex shader exposes v_uv and computes gl_Position', () => {
-		expect(BARREL_VERTEX_SHADER).toMatch(/varying\s+vec2\s+v_uv/u)
-		expect(BARREL_VERTEX_SHADER).toMatch(/gl_Position\s*=/u)
-	})
-
-	it('fragment shader declares every required uniform', () => {
+describe('BARREL GLSL chunks', () => {
+	it('declares the uniforms the warp and the grading read', () => {
 		for (const uniform of [
-			'tDiffuse',
 			'u_strength',
 			'u_aspect',
 			'u_channel_offset',
 			'u_contrast',
 			'u_saturation',
-			'u_resolution',
 		]) {
-			expect(BARREL_FRAGMENT_SHADER).toContain(uniform)
+			expect(BARREL_UNIFORMS_GLSL).toContain(uniform)
 		}
 	})
 
-	it('fragment shader READS u_resolution — it converts the pixel channel offset to UV (#419)', () => {
-		// This contract used to be the opposite: u_resolution was declared but never read, so it
-		// was removed as dead per-frame work. The chromatic aberration brought it back with an
-		// actual consumer, so the guard now proves the uniform is used rather than absent.
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/u_channel_offset\s*\/\s*max\(u_resolution\.x/u)
+	// tDiffuse and u_resolution belong to the consumer since #421: the merged stage-2 shader owns
+	// the sampler and the resolution, and this chunk only contributes functions over them.
+	it('leaves the sampler and the resolution to the shader that composes it', () => {
+		expect(BARREL_UNIFORMS_GLSL).not.toContain('tDiffuse')
+		expect(BARREL_UNIFORMS_GLSL).not.toContain('u_resolution')
 	})
 
-	it('fragment shader samples three times, one per channel, offset along x only', () => {
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/sample_graded\(v_uv - vec2\(offset, 0\.0\)\)/u)
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/sample_graded\(v_uv\)/u)
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/sample_graded\(v_uv \+ vec2\(offset, 0\.0\)\)/u)
-		// R from the left-shifted tap, G from the centre, B from the right-shifted one.
-		expect(BARREL_FRAGMENT_SHADER).toMatch(
-			/gl_FragColor = vec4\(shifted_r\.r, centered_rgb\.g, shifted_b\.b, 1\.0\)/u,
-		)
+	it('exposes warp, mask and grade as separate functions rather than a finished pass', () => {
+		expect(BARREL_FUNCTIONS_GLSL).toMatch(/vec2\s+warp_uv\(vec2 uv\)/u)
+		expect(BARREL_FUNCTIONS_GLSL).toMatch(/float\s+in_bounds\(vec2 sample_uv\)/u)
+		expect(BARREL_FUNCTIONS_GLSL).toMatch(/vec3\s+grade\(vec3 color\)/u)
+		expect(BARREL_FUNCTIONS_GLSL).not.toContain('void main')
 	})
 
-	it('fragment shader grades AFTER the out-of-bounds mask, matching the CSS filter order', () => {
-		// The browser graded the finished canvas, so contrast() lifted the masked frame off pure
-		// black. Grading before the mask would clamp the frame back to black and change the look.
-		expect(BARREL_FRAGMENT_SHADER).toMatch(
-			/grade\(texture2D\(tDiffuse, sample_uv\)\.rgb \* visible\)/u,
-		)
+	it('uses the Filter Effects luminance weights for saturation', () => {
+		expect(BARREL_FUNCTIONS_GLSL).toMatch(/dot\(contrasted, vec3\(0\.213, 0\.715, 0\.072\)\)/u)
 	})
 
-	it('fragment shader uses the Filter Effects luminance weights for saturation', () => {
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/dot\(contrasted, vec3\(0\.213, 0\.715, 0\.072\)\)/u)
+	it('applies aspect correction (centered.x *= u_aspect ... centered.x /= u_aspect)', () => {
+		expect(BARREL_FUNCTIONS_GLSL).toMatch(/centered\.x\s*\*=\s*u_aspect/u)
+		expect(BARREL_FUNCTIONS_GLSL).toMatch(/centered\.x\s*\/=\s*u_aspect/u)
 	})
 
-	it('fragment shader applies aspect correction (centered.x *= u_aspect ... centered.x /= u_aspect)', () => {
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/centered\.x\s*\*=\s*u_aspect/u)
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/centered\.x\s*\/=\s*u_aspect/u)
-	})
-
-	it('fragment shader masks out-of-bounds samples to black (visible-mask multiply, branchless)', () => {
+	it('masks out-of-bounds samples to black (visible-mask multiply, branchless)', () => {
 		// Out-of-bounds CLAMP_TO_EDGE sampling would smear the edge color across the rectangle
-		// background — the visible mask multiplies those texels by 0 so the frame stays clean.
-		expect(BARREL_FRAGMENT_SHADER).toContain('step(vec2(0.0), sample_uv)')
-		expect(BARREL_FRAGMENT_SHADER).toContain('step(sample_uv, vec2(1.0))')
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/\.rgb\s*\*\s*visible/u)
+		// background — the consumer multiplies those texels by 0 so the frame stays clean.
+		expect(BARREL_FUNCTIONS_GLSL).toContain('step(vec2(0.0), sample_uv)')
+		expect(BARREL_FUNCTIONS_GLSL).toContain('step(sample_uv, vec2(1.0))')
 	})
 
-	it('fragment shader applies a quadratic warp (1.0 + u_strength * r2)', () => {
-		expect(BARREL_FRAGMENT_SHADER).toMatch(/1\.0\s*\+\s*u_strength\s*\*\s*r2/u)
+	it('applies a quadratic warp (1.0 + u_strength * r2)', () => {
+		expect(BARREL_FUNCTIONS_GLSL).toMatch(/1\.0\s*\+\s*u_strength\s*\*\s*r2/u)
 	})
 })
 

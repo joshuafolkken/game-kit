@@ -8,16 +8,16 @@ import {
 	COLOR_LEVELS,
 	crt_dither,
 	DITHER_FRAGMENT_SHADER,
-	DITHER_VERTEX_SHADER,
 	DOT_BLEND,
 	DOT_BLEND_FRAGMENT_SHADER,
 	DOTS_PER_SCANLINE,
+	FULLSCREEN_VERTEX_SHADER,
 	SCANLINE_BLEED,
 	SCANLINE_BLEED_FULL_PERIOD,
 	SCANLINE_DARK,
-	SCANLINE_FRAGMENT_SHADER,
+	SCANLINE_FUNCTIONS_GLSL,
 	SCANLINE_SHARPNESS,
-	UPSCALE_FRAGMENT_SHADER,
+	SCANLINE_UNIFORMS_GLSL,
 } from './crt-dither'
 
 const SQUARED_BAYER_SIZE = BAYER_SIZE * BAYER_SIZE
@@ -304,8 +304,8 @@ describe('crt_dither.create_bayer_texture', () => {
 
 describe('DITHER shader sources', () => {
 	it('vertex shader exposes v_uv and computes gl_Position', () => {
-		expect(DITHER_VERTEX_SHADER).toMatch(/varying\s+vec2\s+v_uv/u)
-		expect(DITHER_VERTEX_SHADER).toMatch(/gl_Position\s*=/u)
+		expect(FULLSCREEN_VERTEX_SHADER).toMatch(/varying\s+vec2\s+v_uv/u)
+		expect(FULLSCREEN_VERTEX_SHADER).toMatch(/gl_Position\s*=/u)
 	})
 
 	it('fragment shader declares every required uniform', () => {
@@ -321,7 +321,7 @@ describe('DITHER shader sources', () => {
 		}
 	})
 
-	it('dither shader does NOT contain scanline uniforms (moved to SCANLINE_FRAGMENT_SHADER)', () => {
+	it('dither shader does NOT contain scanline uniforms (moved to the scanline chunk)', () => {
 		// Scanlines now run at high resolution in their own pass so they appear as
 		// smooth curves rather than chunky pixel blocks.
 		expect(DITHER_FRAGMENT_SHADER).not.toContain('u_scanline_period')
@@ -453,61 +453,64 @@ describe('DOT_BLEND shader source', () => {
 	})
 })
 
-describe('UPSCALE shader source', () => {
-	it('uses u_lo_tex (not tDiffuse) so ShaderPass does not override the injection', () => {
-		expect(UPSCALE_FRAGMENT_SHADER).toContain('u_lo_tex')
-		expect(UPSCALE_FRAGMENT_SHADER).not.toContain('tDiffuse')
-	})
-
-	it('is a single tap — the 4 neighbour taps moved to the low-res stage (#420)', () => {
-		const sample_count = (UPSCALE_FRAGMENT_SHADER.match(/texture2D\(/gu) ?? []).length
-
-		expect(sample_count).toBe(1)
-	})
-
-	it('no longer declares the dot-blend uniforms', () => {
-		expect(UPSCALE_FRAGMENT_SHADER).not.toContain('u_dot_blend')
-		expect(UPSCALE_FRAGMENT_SHADER).not.toContain('u_lo_resolution')
-	})
-})
-
-describe('SCANLINE shader source', () => {
-	it('declares every required uniform', () => {
+describe('SCANLINE GLSL chunks', () => {
+	it('declares the uniforms the profile and the bleed read', () => {
 		for (const uniform of [
-			'tDiffuse',
-			'u_resolution',
 			'u_scanline_period',
 			'u_scanline_axis',
 			'u_scanline_dark',
+			'u_scanline_sharpness',
+			'u_bleed',
 		]) {
-			expect(SCANLINE_FRAGMENT_SHADER).toContain(uniform)
+			expect(SCANLINE_UNIFORMS_GLSL).toContain(uniform)
 		}
 	})
 
+	// The sampler is a parameter and u_resolution belongs to the consumer, so the chunk never names
+	// a uniform it does not declare — the merged stage-2 shader owns both since #421.
+	it('takes the texture as a parameter instead of naming a sampler uniform', () => {
+		expect(SCANLINE_UNIFORMS_GLSL).not.toContain('sampler2D')
+		expect(SCANLINE_FUNCTIONS_GLSL).toMatch(/vec3\s+scanline_color\(sampler2D tex, vec2 uv\)/u)
+		expect(SCANLINE_FUNCTIONS_GLSL).not.toContain('tDiffuse')
+		expect(SCANLINE_FUNCTIONS_GLSL).not.toContain('void main')
+	})
+
 	it('projects pixel coordinate onto u_scanline_axis (portrait/landscape flip)', () => {
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/dot\(\s*pixel\s*,\s*u_scanline_axis\s*\)/u)
+		expect(SCANLINE_FUNCTIONS_GLSL).toMatch(/dot\(\s*pixel\s*,\s*u_scanline_axis\s*\)/u)
 	})
 
 	it('applies smooth cosine profile (no hard step — eliminates moiré with pixel-art grid)', () => {
-		expect(SCANLINE_FRAGMENT_SHADER).toContain('cos(')
-		expect(SCANLINE_FRAGMENT_SHADER).not.toContain('step(')
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/mix\(\s*u_scanline_dark\s*,\s*1\.0\s*,\s*wave\s*\)/u)
+		expect(SCANLINE_FUNCTIONS_GLSL).toContain('cos(')
+		expect(SCANLINE_FUNCTIONS_GLSL).not.toContain('step(')
+		expect(SCANLINE_FUNCTIONS_GLSL).toMatch(/mix\(\s*u_scanline_dark\s*,\s*1\.0\s*,\s*wave\s*\)/u)
 	})
 
-	it('declares u_scanline_sharpness uniform and applies pow() to the cosine wave', () => {
-		expect(SCANLINE_FRAGMENT_SHADER).toContain('u_scanline_sharpness')
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/pow\(\s*wave_cos\s*,\s*u_scanline_sharpness\s*\)/u)
+	it('applies pow() to the cosine wave with u_scanline_sharpness', () => {
+		expect(SCANLINE_FUNCTIONS_GLSL).toMatch(/pow\(\s*wave_cos\s*,\s*u_scanline_sharpness\s*\)/u)
 	})
 
-	it('declares u_bleed and samples neighbors at ±half_period for phosphor glow', () => {
-		expect(SCANLINE_FRAGMENT_SHADER).toContain('u_bleed')
-		// Two neighbor samples offset along the scanline axis
-		const samples = (SCANLINE_FRAGMENT_SHADER.match(/texture2D\(\s*tDiffuse/gu) ?? []).length
+	it('samples neighbors at ±half_period for phosphor glow, attenuated by (1 - wave)', () => {
+		const samples = (SCANLINE_FUNCTIONS_GLSL.match(/texture2D\(\s*tex/gu) ?? []).length
 
-		expect(samples).toBeGreaterThanOrEqual(3)
-		// Bleed attenuates with (1 - wave) so dark bands get max glow, bright bands get none
-		expect(SCANLINE_FRAGMENT_SHADER).toMatch(/\(\s*1\.0\s*-\s*wave\s*\)/u)
-		expect(SCANLINE_FRAGMENT_SHADER).toContain('half_period_uv')
+		expect(samples).toBe(3)
+		expect(SCANLINE_FUNCTIONS_GLSL).toMatch(/\(\s*1\.0\s*-\s*wave\s*\)/u)
+		expect(SCANLINE_FUNCTIONS_GLSL).toContain('half_period_uv')
+	})
+})
+
+describe('crt_dither.compute_scanline_wave', () => {
+	it('returns 0 at the dark-band centre and 1 at the bright-band centre', () => {
+		expect(crt_dither.compute_scanline_wave(0, 4)).toBeCloseTo(0)
+		expect(crt_dither.compute_scanline_wave(2, 4)).toBeCloseTo(1)
+	})
+
+	it('is the unweighted half of compute_scanline_factor', () => {
+		const DARK = 0.25
+		const wave = crt_dither.compute_scanline_wave(1, 4, 0.35)
+
+		expect(crt_dither.compute_scanline_factor(1, 4, DARK, 0.35)).toBeCloseTo(
+			DARK + wave * (1 - DARK),
+		)
 	})
 })
 
