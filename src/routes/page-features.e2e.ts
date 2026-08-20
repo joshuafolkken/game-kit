@@ -11,6 +11,7 @@ const SAMPLE_HIGH_SCORE = 5000
 const SAMPLE_HIGH_ROUND = 3
 const LOADING_OVERLAY_TIMEOUT_MS = 8000
 const SEL_GAME_SCENE = '[data-testid="game-scene"]'
+const SEL_GAME_CANVAS = '[data-testid="game-scene"] canvas'
 const GAME_SCENE_TARGET = 'game-scene'
 
 test('fullscreen is requested on touch-primary devices when start hint is clicked', async ({
@@ -248,7 +249,7 @@ test('canvas drawing buffer keeps tracking its CSS size across viewport resizes'
 }) => {
 	await page.goto('/')
 	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
-	const canvas = page.locator('[data-testid="game-scene"] canvas')
+	const canvas = page.locator(SEL_GAME_CANVAS)
 
 	await expect(canvas).toBeVisible()
 
@@ -271,4 +272,62 @@ test('canvas drawing buffer keeps tracking its CSS size across viewport resizes'
 			)
 			.toBe(true)
 	}
+})
+
+// #421 merged the three stage-2 CRT passes into one shader built from GLSL chunks. The failure mode
+// that no source-level test can reach is the merged program failing to compile or link at runtime —
+// a sampler passed as a function parameter, a uniform declared by one chunk and read by another,
+// a name collision between chunks. three reports all of those through console.error and then draws
+// nothing, so a silent black canvas is what a regression looks like.
+//
+// Both orientations run because the scanline axis flips on portrait, taking a different branch
+// through the merged shader's coordinate math.
+const CRT_ORIENTATIONS = [
+	{ name: 'landscape', width: 1280, height: 800 },
+	{ name: 'portrait', width: 480, height: 900 },
+]
+const SHADER_ERROR_PATTERN = /three|shader|webgl|glsl/iu
+
+test('CRT renders in both orientations without a shader or WebGL error', async ({ page }) => {
+	const errors: Array<string> = []
+
+	page.on('console', (message) => {
+		if (message.type() === 'error') errors.push(message.text())
+	})
+	page.on('pageerror', (error) => {
+		errors.push(error.message)
+	})
+
+	await page.goto('/')
+	await expect(page.locator(SEL_GAME_SCENE)).toBeVisible()
+
+	// The RETRO overlay is only in the DOM while CRT mode is on, so it doubles as the signal that
+	// the pipeline under test is the one being exercised (game-kit#388).
+	await expect(page.locator('[data-testid="crt-overlay"]')).toBeAttached()
+
+	const canvas = page.locator(SEL_GAME_CANVAS)
+
+	for (const orientation of CRT_ORIENTATIONS) {
+		await page.setViewportSize({ width: orientation.width, height: orientation.height })
+		await expect(canvas).toBeVisible()
+		// Wait for the drawing buffer to follow the new viewport rather than for a fixed delay: that
+		// is the point at which the merged pass has rendered at the new scanline axis.
+		await expect
+			.poll(
+				async () =>
+					await canvas.evaluate((element: HTMLCanvasElement, tolerance: number) => {
+						const rect = element.getBoundingClientRect()
+
+						return Math.abs(element.width - rect.width) <= tolerance
+					}, BUFFER_SIZE_TOLERANCE_PX),
+				{ timeout: RESIZE_SETTLE_TIMEOUT_MS },
+			)
+			.toBe(true)
+		await test.info().attach(`crt-${orientation.name}`, {
+			body: await canvas.screenshot(),
+			contentType: 'image/png',
+		})
+	}
+
+	expect(errors.filter((message) => SHADER_ERROR_PATTERN.test(message))).toEqual([])
 })

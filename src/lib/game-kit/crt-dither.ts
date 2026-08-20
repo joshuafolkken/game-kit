@@ -7,6 +7,8 @@ const DOTS_PER_SCANLINE_VALUE = 1
 const SCANLINE_SHARPNESS_VALUE = 0.35
 const SCANLINE_BLEED_VALUE = 0.35
 const DOT_BLEND_VALUE = 0.2
+const HALF = 0.5
+const TWO_PI = Math.PI / HALF
 
 export const BAYER_SIZE = BAYER_SIZE_VALUE
 export const BLACK_FLOOR = BLACK_FLOOR_VALUE
@@ -95,17 +97,20 @@ function create_bayer_texture(): DataTexture {
 // Using a cosine profile instead of a hard step eliminates moiré that the
 // binary dark/light boundary causes when the scanline grid drifts fractionally
 // against the upscaled pixel-art grid.
+function compute_scanline_wave(coord: number, period: number, sharpness = 1): number {
+	const phase = ((coord % period) + period) % period
+	const wave_cos = HALF * (1 - Math.cos((TWO_PI * phase) / period))
+
+	return wave_cos ** sharpness
+}
+
 function compute_scanline_factor(
 	coord: number,
 	period: number,
 	dark_factor: number,
 	sharpness = 1,
 ): number {
-	const HALF = 0.5
-	const TWO_PI = Math.PI / HALF
-	const phase = ((coord % period) + period) % period
-	const wave_cos = HALF * (1 - Math.cos((TWO_PI * phase) / period))
-	const wave = wave_cos ** sharpness
+	const wave = compute_scanline_wave(coord, period, sharpness)
 
 	return dark_factor + wave * (1 - dark_factor)
 }
@@ -118,7 +123,6 @@ function quantize_with_dither_2d(
 	levels: number,
 	floor_value: number,
 ): number {
-	const HALF = 0.5
 	const threshold = bayer_norm - HALF
 	const dither_step = 1 / levels
 	const dithered = channel + threshold * dither_step
@@ -166,7 +170,10 @@ function blend_dot_neighbors({ sample, x, y, blend }: DotBlendInput): number {
 	return center + (neighbor_average - center) * blend
 }
 
-export const DITHER_VERTEX_SHADER = /* glsl */ `
+// Pass-through vertex shader shared by every full-screen pass in the pipeline — stage 1's dither
+// and dot blend, and stage 2's merged composite. One copy: it used to be duplicated verbatim as
+// BARREL_VERTEX_SHADER, and #421 would have made that a third copy.
+export const FULLSCREEN_VERTEX_SHADER = /* glsl */ `
 varying vec2 v_uv;
 
 void main() {
@@ -235,44 +242,35 @@ void main() {
 }
 `
 
-// Nearest-neighbour upscale pass — a single tap, since the dot blend now happens
-// upstream at low resolution. Samples the low-res dithered game texture via u_lo_tex
-// (NOT tDiffuse) so ShaderPass does not override it with the hi-res composer's
-// readBuffer.
-export const UPSCALE_FRAGMENT_SHADER = /* glsl */ `
-uniform sampler2D u_lo_tex;
-
-varying vec2 v_uv;
-
-void main() {
-	gl_FragColor = vec4(texture2D(u_lo_tex, v_uv).rgb, 1.0);
-}
-`
-
-// High-resolution scanline pass. Runs at device/CSS resolution so lines are
-// smooth curves (not chunky pixel blocks). Applied BEFORE the barrel pass so
-// the scanline pattern warps with the screen curvature.
-// Cosine profile avoids the hard step → moiré interaction that occurs when the
-// scanline period drifts fractionally against the upscaled pixel-art grid.
-// At phase=0 the factor equals u_scanline_dark (dark-band centre);
-// at phase=period/2 it equals 1.0 (bright-band centre) — same extremes as the
-// previous step function, but the transition is smooth, not a hard edge.
-export const SCANLINE_FRAGMENT_SHADER = /* glsl */ `
-uniform sampler2D tDiffuse;
-uniform vec2 u_resolution;
+// GLSL chunk: the scanline profile, its phosphor bleed and the low-resolution sample it is applied
+// to, as a reusable function rather than a finished pass. The single stage-2 shader in
+// crt-composite.ts is the only consumer (game-kit#421).
+//
+// The sampler is a parameter so the chunk does not name a uniform it does not declare; the caller
+// passes the low-resolution dithered texture. Nearest-neighbour magnification of that texture IS
+// the upscale — it used to be a pass of its own, writing a full-resolution intermediate that the
+// scanline pass then read back.
+//
+// Runs at device/CSS resolution so the lines are smooth curves, not chunky pixel blocks, and the
+// caller evaluates it at the BARREL-WARPED coordinate so the pattern still curves with the screen.
+// Cosine profile avoids the hard step -> moire interaction that occurs when the scanline period
+// drifts fractionally against the upscaled pixel-art grid. At phase=0 the factor equals
+// u_scanline_dark (dark-band centre); at phase=period/2 it equals 1.0 (bright-band centre) — same
+// extremes as a step function, but the transition is smooth.
+export const SCANLINE_UNIFORMS_GLSL = /* glsl */ `
 uniform float u_scanline_period;
 uniform vec2 u_scanline_axis;
 uniform float u_scanline_dark;
 uniform float u_scanline_sharpness;
 uniform float u_bleed;
+`
 
-varying vec2 v_uv;
-
+export const SCANLINE_FUNCTIONS_GLSL = /* glsl */ `
 #define TWO_PI 6.28318530718
 
-void main() {
-	vec3 color = texture2D(tDiffuse, v_uv).rgb;
-	vec2 pixel = v_uv * u_resolution;
+vec3 scanline_color(sampler2D tex, vec2 uv) {
+	vec3 color = texture2D(tex, uv).rgb;
+	vec2 pixel = uv * u_resolution;
 	float scanline_coord = dot(pixel, u_scanline_axis);
 	float scanline_phase = mod(scanline_coord, u_scanline_period);
 	float wave_cos = 0.5 * (1.0 - cos(TWO_PI * scanline_phase / u_scanline_period));
@@ -284,17 +282,18 @@ void main() {
 	// axis so we always land at the center of the adjacent bright bands.
 	float axis_res = dot(u_resolution, abs(u_scanline_axis));
 	vec2 half_period_uv = u_scanline_axis * (u_scanline_period * 0.5 / axis_res);
-	vec3 neighbor_a = texture2D(tDiffuse, v_uv - half_period_uv).rgb;
-	vec3 neighbor_b = texture2D(tDiffuse, v_uv + half_period_uv).rgb;
+	vec3 neighbor_a = texture2D(tex, uv - half_period_uv).rgb;
+	vec3 neighbor_b = texture2D(tex, uv + half_period_uv).rgb;
 	vec3 bleed_color = (neighbor_a + neighbor_b) * 0.5 * u_bleed * (1.0 - wave);
 
-	gl_FragColor = vec4(color * mix(u_scanline_dark, 1.0, wave) + bleed_color, 1.0);
+	return color * mix(u_scanline_dark, 1.0, wave) + bleed_color;
 }
 `
 
 export const crt_dither = {
 	create_bayer_texture,
 	quantize_with_dither_2d,
+	compute_scanline_wave,
 	compute_scanline_factor,
 	create_clamped_sampler,
 	blend_dot_neighbors,
