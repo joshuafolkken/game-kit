@@ -388,78 +388,27 @@ describe('dynamic pixel DPR — dot count stays consistent on narrow viewports',
 	})
 })
 
-describe('CRT filter overlay — scanlines + vignette over the whole game screen', () => {
-	it('renders a CRT overlay element over the game container, regardless of session state', async () => {
+describe('CRT glass cues — folded into the fragment shader, no composited layer (#422)', () => {
+	it('renders no overlay element over the game container', async () => {
+		// The glass dome, corner darkening and vignette are drawn by the CRT shader now. The div they
+		// used to live on was alpha-composited over the canvas at DEVICE resolution every frame.
 		const { container } = await render_scene()
 
-		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeTruthy()
+		expect(container.querySelector(SEL_CRT_OVERLAY)).toBeNull()
 	})
 
-	it('CRT overlay is a sibling of the Canvas so it covers the entire game screen', async () => {
-		const { container } = await render_scene()
-		const game_scene = container.querySelector<HTMLElement>(SEL_GAME_SCENE)
-
-		expect(game_scene).toBeTruthy()
-		if (!game_scene) return
-		const overlay = game_scene.querySelector<HTMLElement>(SEL_CRT_OVERLAY)
-
-		expect(overlay?.parentElement).toBe(game_scene)
-	})
-
-	it('CRT overlay does not block pointer events (UI underneath stays interactive)', async () => {
-		const { container } = await render_scene()
-		const overlay = container.querySelector<HTMLElement>(SEL_CRT_OVERLAY)
-
-		expect(overlay).toBeTruthy()
-		if (!overlay) return
-		const style = getComputedStyle(overlay)
-
-		expect(style.pointerEvents).toBe('none')
-	})
-
-	it('.crt-overlay no longer renders scanlines in CSS — moved to the WebGL dither shader', () => {
-		// Scanlines now live in DITHER_FRAGMENT_SHADER so they curve with the barrel pass.
+	it('keeps no CRT gradient CSS behind in the component', () => {
+		expect(GAME_SCENE_SOURCE).not.toMatch(/\.crt-overlay\s*\{/u)
+		expect(GAME_SCENE_SOURCE).not.toContain('radial-gradient(circle at top left')
+		expect(GAME_SCENE_SOURCE).not.toContain('radial-gradient(ellipse at center')
 		expect(GAME_SCENE_SOURCE).not.toContain(REPEATING_LINEAR_GRADIENT)
-		expect(GAME_SCENE_SOURCE).not.toContain('--scanline-period')
-		expect(GAME_SCENE_SOURCE).not.toContain('--scanline-angle')
 	})
 
-	it('.crt-overlay still carries static glass-face cues (vignette + highlight)', () => {
-		expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{/u)
-		expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*ellipse\s+at\s+center/u)
-	})
-
-	it('GameScene no longer owns DOTS_PER_SCANLINE / device_pixel_ratio / scanline-derived state', () => {
-		expect(GAME_SCENE_SOURCE).not.toMatch(/const\s+DOTS_PER_SCANLINE\s*=/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/(?:let|const)\s+device_pixel_ratio\s*=\s*\$state\(/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_period_css/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/(?:let|const)\s+is_portrait\s*=\s*\$derived/u)
-	})
-
-	it('does not overlay a phosphor mask (RGB sub-pixel stripes) — kept off intentionally', () => {
-		expect(GAME_SCENE_SOURCE).not.toMatch(/repeating-linear-gradient\(\s*90deg/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*255,\s*0,\s*0/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*255,\s*0/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/rgba\(\s*0,\s*0,\s*255/u)
-	})
-
-	it('leaves no CSS filter on the canvas — grading moved into the barrel shader (#419)', () => {
-		// Reason: `contrast(0.95) saturate(1.2) brightness(1) url(#crt-chromatic)` cost ~6 ms per
-		// frame on a Pixel 6 Pro, where the compositor works at 1440x3120 while the WebGL pipeline
-		// stays at CSS resolution. The grading values are pinned in crt-barrel.test.ts now; what
-		// this file has to guarantee is that no `filter` declaration comes back to the canvas,
-		// since any of them re-introduces the composited-layer path this change removed.
-		expect(GAME_SCENE_SOURCE).not.toMatch(/:global\(canvas\)\s*\{[^}]*filter:/u)
-		expect(GAME_SCENE_SOURCE).not.toMatch(/url\(#crt-chromatic\)/u)
-
-		// Negative: no filter tuning of any generation may reappear on the canvas.
-		for (const prior of ['contrast(', 'saturate(', 'brightness(', 'hue-rotate(']) {
-			expect(GAME_SCENE_SOURCE).not.toContain(prior)
-		}
+	// .cyber-glow belongs to CYBER mode and is deliberately still a composited layer (#422 scope).
+	it('leaves the CYBER glow layer alone', () => {
+		expect(GAME_SCENE_SOURCE).toMatch(/\.cyber-glow\s*\{/u)
 	})
 })
-
 describe('CRT scanline orientation — driven by the shader, not CSS', () => {
 	it('GameScene no longer owns scanline-orientation logic (moved to CrtDitherPass)', () => {
 		expect(GAME_SCENE_SOURCE).not.toMatch(/scanline_angle_css/u)
@@ -468,78 +417,22 @@ describe('CRT scanline orientation — driven by the shader, not CSS', () => {
 	})
 })
 
-describe('CRT curvature — rounded corners + corner darkening + glass-dome highlight', () => {
+describe('CRT curvature — rounded corners on the canvas', () => {
 	it('applies a border-radius to the canvas to simulate the CRT screen shape', () => {
 		expect(GAME_SCENE_SOURCE).toMatch(
 			/\.game-container\s*:global\(canvas\)\s*\{[\s\S]*?border-radius:\s*clamp\(/u,
 		)
 	})
 
-	it('applies the same border-radius to .crt-overlay so scanlines clip on the same curve', () => {
-		expect(GAME_SCENE_SOURCE).toMatch(/\.crt-overlay\s*\{[\s\S]*?border-radius:\s*clamp\(/u)
-	})
+	// The glass cues used to need a matching border-radius on their own layer. Drawn inside the
+	// canvas since #422, they are clipped by the canvas's radius with nothing to keep in step; the
+	// value pins for the corner and vignette alphas moved to crt-glass.test.ts with them.
+	it('needs no second element to keep a border-radius in step with the canvas', () => {
+		const radius_declarations = (GAME_SCENE_SOURCE.match(/border-radius:\s*clamp\(/gu) ?? []).length
 
-	it('adds four corner darkening radial-gradients to fake CRT curvature', () => {
-		expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+left/u)
-		expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+top\s+right/u)
-		expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+left/u)
-		expect(GAME_SCENE_SOURCE).toMatch(/radial-gradient\(\s*circle\s+at\s+bottom\s+right/u)
-	})
-
-	it('uses alpha 0.4 for the four corner darkening gradients (lightened from 0.55 for legibility)', () => {
-		// Reason: corner darkening alpha was 0.55 originally. The scanline overlay was
-		// then bumped to alpha 1 (full-black stripes covering 50% of the screen), which
-		// flooded the periphery. We dropped corners to 0.4 so the screen edges stay
-		// readable while the curvature illusion still reads. Value-pin to catch
-		// regressions in either direction (back to 0.55 = too dark; to 0.25 = no curvature).
-		for (const corner of [
-			String.raw`top\s+left`,
-			String.raw`top\s+right`,
-			String.raw`bottom\s+left`,
-			String.raw`bottom\s+right`,
-		]) {
-			expect(GAME_SCENE_SOURCE).toMatch(
-				new RegExp(
-					String.raw`radial-gradient\(\s*circle\s+at\s+${corner},\s*rgba\(\s*0,\s*0,\s*0,\s*0\.4\s*\)`,
-					'u',
-				),
-			)
-		}
-
-		// Negative: the prior 0.55 alpha must not be present in any corner-darkening position.
-		expect(GAME_SCENE_SOURCE).not.toMatch(
-			/radial-gradient\(\s*circle\s+at\s+(?:top|bottom)\s+(?:left|right),\s*rgba\(\s*0,\s*0,\s*0,\s*0\.55\s*\)/u,
-		)
-	})
-
-	it('adds a glass-dome highlight (light radial gradient in the upper-left quadrant)', () => {
-		expect(GAME_SCENE_SOURCE).toMatch(
-			/radial-gradient\(\s*ellipse\s+\d+%\s+\d+%\s+at\s+\d+%\s+\d+%,[\s\S]*?rgba\(\s*255,\s*255,\s*255/u,
-		)
-	})
-
-	it('keeps the center vignette alongside the curvature layers (scanlines now in shader)', () => {
-		expect(GAME_SCENE_SOURCE).toMatch(
-			/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%/u,
-		)
-		expect(GAME_SCENE_SOURCE).not.toContain(REPEATING_LINEAR_GRADIENT)
-	})
-
-	it('uses alpha 0.3 for the center vignette (lightened from 0.45 to recover edge brightness)', () => {
-		// Reason: same logic as the corner-darkening pin — the alpha-1 scanline overlay
-		// dimmed the periphery too much, so the vignette alpha was dropped from 0.45 to
-		// 0.3 to lift the screen-edge brightness. Pinning the value catches drift in
-		// either direction.
-		expect(GAME_SCENE_SOURCE).toMatch(
-			/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.3\s*\)\s+100%\s*\)/u,
-		)
-		// Negative: prior 0.45 alpha must not be at the vignette's outer stop.
-		expect(GAME_SCENE_SOURCE).not.toMatch(
-			/radial-gradient\(\s*ellipse\s+at\s+center,\s*transparent\s+50%,\s*rgba\(\s*0,\s*0,\s*0,\s*0\.45\s*\)/u,
-		)
+		expect(radius_declarations).toBe(1)
 	})
 })
-
 describe('CRT color quantization + Bayer dithering (WebGL post-process)', () => {
 	it('imports CrtDitherPass and renders it inside <Canvas>', () => {
 		expect(GAME_SCENE_SOURCE).toMatch(

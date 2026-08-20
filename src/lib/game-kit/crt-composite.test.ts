@@ -68,16 +68,24 @@ describe('crt_composite.compose_crt_pixel', () => {
 	})
 
 	it('grades AFTER the mask, so contrast lifts the masked frame exactly as the CSS filter did', () => {
+		// grade(0) with contrast 0.5 is (0 - 0.5) * 0.5 + 0.5 = 0.25, while contrast 1 leaves it at 0.
+		// Masking a graded sample would clamp both to 0 and make the two indistinguishable. The glass
+		// cues run after both and are monotonic in their input, so the ordering survives them.
 		const STRONG = 4
 		const CONTRAST = 0.5
-		const out = crt_composite.compose_crt_pixel({
+		const corner = { x: 0, y: 0 }
+		const lifted = crt_composite.compose_crt_pixel({
 			sample: flat_sampler(1),
-			uv: { x: 0, y: 0 },
+			uv: corner,
 			config: config({ strength: STRONG, channel_offset: 0, contrast: CONTRAST }),
 		})
+		const ungraded = crt_composite.compose_crt_pixel({
+			sample: flat_sampler(1),
+			uv: corner,
+			config: config({ strength: STRONG, channel_offset: 0, contrast: 1 }),
+		})
 
-		// grade(0) = (0 - 0.5) * 0.5 + 0.5 = 0.25. Masking a graded sample would have given 0.
-		expect(out.g).toBeCloseTo(0.25)
+		expect(lifted.g).toBeGreaterThan(ungraded.g)
 	})
 
 	// The screen centre is the warp's fixed point, so v = 0.5 maps to pixel row 450. A period of 5
@@ -178,7 +186,19 @@ describe('COMPOSITE_FRAGMENT_SHADER source', () => {
 		expect(COMPOSITE_FRAGMENT_SHADER).toMatch(/sample_channel\(v_uv - vec2\(offset, 0\.0\)\)/u)
 		expect(COMPOSITE_FRAGMENT_SHADER).toMatch(/sample_channel\(v_uv \+ vec2\(offset, 0\.0\)\)/u)
 		expect(COMPOSITE_FRAGMENT_SHADER).toMatch(
-			/gl_FragColor = vec4\(shifted_r\.r, centered_rgb\.g, shifted_b\.b, 1\.0\)/u,
+			/vec3 color = vec3\(shifted_r\.r, centered_rgb\.g, shifted_b\.b\)/u,
+		)
+	})
+
+	// #422 folded the glass cues in. They are applied once to the finished colour, in unwarped screen
+	// space with y flipped to the CSS orientation the gradient positions were authored in — not per
+	// chromatic channel, and not inside the warp.
+	it('applies the glass cues last, once, in CSS-oriented screen space', () => {
+		const calls = (COMPOSITE_FRAGMENT_SHADER.match(/apply_glass\(/gu) ?? []).length
+
+		expect(calls).toBe(2)
+		expect(COMPOSITE_FRAGMENT_SHADER).toMatch(
+			/gl_FragColor = vec4\(apply_glass\(color, vec2\(v_uv\.x, 1\.0 - v_uv\.y\), u_resolution\), 1\.0\)/u,
 		)
 	})
 
