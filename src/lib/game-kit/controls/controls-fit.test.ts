@@ -1,3 +1,4 @@
+import { camera_fov } from '$lib/game-kit/player/camera-fov'
 import { describe, expect, it } from 'vitest'
 import { compute_fit_scale } from './controls-fit'
 
@@ -64,5 +65,44 @@ describe('compute_fit_scale', () => {
 
 			expect(headroom).toBeGreaterThanOrEqual(-1e-10)
 		}
+	})
+})
+
+// Regression for game-kit#412. ControlsScene fed this function `view_height * aspect`, which is the
+// pre-#276 framing model; on portrait that under-reports the view width by roughly the aspect ratio
+// and the panel came out around half the size that fits. These are the real constants from
+// ControlsScene, so the numbers are the ones the screen actually uses.
+const CONTROLS_PLANE_HEIGHT = 2.45
+const CONTROLS_NATURAL_SPAN = 1.815
+const CONTROLS_SIDE_PADDING = 0.138
+const PORTRAIT_ASPECT = 480 / 900
+
+describe('controls panel fit on a portrait viewport (game-kit#412)', () => {
+	it('does not shrink the panel at a phone aspect ratio', () => {
+		const view_width = camera_fov.compute_view_width_at_plane(
+			CONTROLS_PLANE_HEIGHT,
+			PORTRAIT_ASPECT,
+		)
+
+		expect(compute_fit_scale(view_width, CONTROLS_NATURAL_SPAN, CONTROLS_SIDE_PADDING)).toBe(1)
+	})
+
+	it('would have shrunk it under the pre-#276 framing model — the bug this pins', () => {
+		// Kept as the counter-example so the test above cannot be satisfied by loosening the fit
+		// function instead of fixing the width it is given.
+		const shortcut_width = CONTROLS_PLANE_HEIGHT * PORTRAIT_ASPECT
+
+		expect(
+			compute_fit_scale(shortcut_width, CONTROLS_NATURAL_SPAN, CONTROLS_SIDE_PADDING),
+		).toBeLessThan(1)
+	})
+
+	it('still shrinks the panel when the viewport is genuinely too narrow', () => {
+		const EXTREME_ASPECT = 0.2
+		const view_width = camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, EXTREME_ASPECT)
+
+		expect(
+			compute_fit_scale(view_width, CONTROLS_NATURAL_SPAN, CONTROLS_SIDE_PADDING),
+		).toBeLessThan(1)
 	})
 })
