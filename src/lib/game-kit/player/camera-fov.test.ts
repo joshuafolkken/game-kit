@@ -58,3 +58,68 @@ describe('camera_fov.compute_vertical_fov', () => {
 		expect(camera_fov.compute_vertical_fov(BASE_FOV, NaN)).toBe(BASE_FOV)
 	})
 })
+
+// The controls-plane view height at the base FOV, as ControlsScene measures it.
+const CONTROLS_PLANE_HEIGHT = 2.45
+const PRECISION = 6
+
+describe('camera_fov.compute_view_width_at_plane', () => {
+	it('exposes the base FOV so no consumer has to repeat the literal', () => {
+		expect(camera_fov.BASE_FOV_DEG).toBe(BASE_FOV)
+	})
+
+	it('is height * aspect in landscape, exactly as a fixed vertical FOV would give', () => {
+		const WIDE_ASPECT = 16 / 9
+
+		expect(camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, WIDE_ASPECT)).toBeCloseTo(
+			CONTROLS_PLANE_HEIGHT * WIDE_ASPECT,
+			PRECISION,
+		)
+	})
+
+	it('is unchanged at the square boundary, where the portrait rule starts', () => {
+		expect(camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, 1)).toBeCloseTo(
+			CONTROLS_PLANE_HEIGHT,
+			PRECISION,
+		)
+	})
+
+	// This is the property game-kit#412 turned on: holding the horizontal FOV constant means the
+	// view width at any plane stops moving once the viewport goes portrait. Reporting
+	// height * aspect here instead under-reported it by the aspect ratio.
+	it('holds the width constant across portrait aspects above the FOV cap', () => {
+		const SQUARE_WIDTH = camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, 1)
+
+		for (const aspect of [0.9, 0.75, 0.6, 0.5, 0.45]) {
+			expect(camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, aspect)).toBeCloseTo(
+				SQUARE_WIDTH,
+				PRECISION,
+			)
+		}
+	})
+
+	it('starts shrinking again once the vertical FOV hits its cap', () => {
+		// Past the cap the vertical FOV can no longer widen, so the horizontal FOV — and with it the
+		// width — falls with the aspect again. Without this the panel would be sized for a view
+		// wider than the camera actually shows on an extremely tall viewport.
+		const SQUARE_WIDTH = camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, 1)
+		const CAPPED = camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, 0.3)
+		const NARROWER = camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, 0.2)
+
+		expect(CAPPED).toBeLessThan(SQUARE_WIDTH)
+		expect(NARROWER).toBeLessThan(CAPPED)
+	})
+
+	it('never reports a wider view than the camera shows at the capped FOV', () => {
+		const NARROW_ASPECT = 0.25
+		const capped_half_tan = Math.tan(camera_fov.MAX_VERTICAL_FOV_DEG / HALF_DIVISOR / DEG_PER_RAD)
+		const base_half_tan = Math.tan(BASE_FOV / HALF_DIVISOR / DEG_PER_RAD)
+
+		expect(
+			camera_fov.compute_view_width_at_plane(CONTROLS_PLANE_HEIGHT, NARROW_ASPECT),
+		).toBeCloseTo(
+			(CONTROLS_PLANE_HEIGHT * capped_half_tan * NARROW_ASPECT) / base_half_tan,
+			PRECISION,
+		)
+	})
+})
