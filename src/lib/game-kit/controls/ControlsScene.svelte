@@ -6,6 +6,7 @@
 	import { controls_hint_adjust } from '$lib/game-kit/controls/controls-hint-adjust'
 	import { crt } from '$lib/game-kit/Crt.svelte'
 	import { fonts } from '$lib/game-kit/fonts'
+	import { camera_fov } from '$lib/game-kit/player/camera-fov'
 	import { onMount } from 'svelte'
 	import { BackSide, CanvasTexture, DoubleSide, FrontSide, NearestFilter } from 'three'
 
@@ -143,7 +144,13 @@
 		controls_hint_adjust.offset_position_y(0, hint_font_y_offset, hint_font_size),
 	)
 	const viewport_aspect = $derived($size.width / $size.height)
-	const view_width_at_plane = $derived(TOUCH_VIEW_HEIGHT_AT_PLANE * viewport_aspect)
+	// Not the plane height scaled by the aspect ratio: that assumes a fixed vertical FOV, which
+	// game-kit#276 ended. The camera widens its vertical FOV on portrait to hold the horizontal FOV,
+	// so below aspect 1 the view width stops shrinking — and the shortcut under-reported it by
+	// roughly the aspect ratio, scaling this panel to about half its fitting size (game-kit#412).
+	const view_width_at_plane = $derived(
+		camera_fov.compute_view_width_at_plane(TOUCH_VIEW_HEIGHT_AT_PLANE, viewport_aspect),
+	)
 	const touch_world_width = $derived(view_width_at_plane * TOUCH_WIDTH_RATIO)
 	const touch_world_height = $derived(touch_world_width / TOUCH_SVG_ASPECT)
 	const pc_scale = $derived(

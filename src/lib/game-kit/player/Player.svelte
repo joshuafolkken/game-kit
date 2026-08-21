@@ -12,7 +12,6 @@
 	const SPAWN_Y = 1
 	const SPAWN_Z = 3
 	const HEAD_HEIGHT = 0.6
-	const FOV = 75
 	const NEAR_PLANE = 0.1
 	const FAR_PLANE = 50
 	const JOYSTICK_LOOK_SPEED = 2
@@ -33,7 +32,9 @@
 	// via the reactive $size store (not the non-reactive .current accessor) re-derives this on
 	// resize / orientation change.
 	const { size } = useThrelte()
-	const vertical_fov = $derived(camera_fov.compute_vertical_fov(FOV, $size.width / $size.height))
+	const vertical_fov = $derived(
+		camera_fov.compute_vertical_fov(camera_fov.BASE_FOV_DEG, $size.width / $size.height),
+	)
 
 	let pos_x = $state(SPAWN_X)
 	let pos_y = $state(SPAWN_Y)

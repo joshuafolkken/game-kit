@@ -170,10 +170,14 @@ describe('Player', () => {
 })
 
 describe('Player camera FOV — horizontal-FOV-aware on portrait viewports', () => {
-	it('derives the vertical FOV via camera_fov.compute_vertical_fov(FOV, aspect)', () => {
+	// The base FOV moved into camera-fov.ts with game-kit#412: the controls scene needs the same
+	// value to size itself against the camera, and a local literal here would be a second copy to
+	// keep in step with the portrait rule.
+	it('derives the vertical FOV via camera_fov.compute_vertical_fov with the shared base FOV', () => {
 		expect(PLAYER_SOURCE).toMatch(
-			/vertical_fov\s*=\s*\$derived\(\s*camera_fov\.compute_vertical_fov\(\s*FOV\s*,/u,
+			/vertical_fov\s*=\s*\$derived\(\s*camera_fov\.compute_vertical_fov\(\s*camera_fov\.BASE_FOV_DEG\s*,/u,
 		)
+		expect(PLAYER_SOURCE).not.toMatch(/const\s+FOV\s*=\s*75/u)
 	})
 
 	it('subscribes to the Threlte size store via $size so the FOV reacts to resize', () => {

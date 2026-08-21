@@ -179,6 +179,19 @@ describe('ControlsScene PC icon fit — keyboard and mouse must not overflow the
 		)
 	})
 
+	// game-kit#412: the width fed to compute_fit_scale must come from the module that owns the
+	// camera FOV. Deriving it here as view_height * aspect is the pre-#276 framing model and
+	// under-reports the width on portrait, scaling the panel to about half the size that fits.
+	it('takes the view width from camera_fov rather than multiplying a fixed height by the aspect', () => {
+		expect(SOURCE).toContain(
+			'camera_fov.compute_view_width_at_plane(TOUCH_VIEW_HEIGHT_AT_PLANE, viewport_aspect)',
+		)
+		expect(SOURCE).not.toMatch(/TOUCH_VIEW_HEIGHT_AT_PLANE\s*\*\s*viewport_aspect/u)
+		expect(SOURCE).toMatch(
+			/import\s*\{\s*camera_fov\s*\}\s*from\s*'\$lib\/game-kit\/player\/camera-fov'/u,
+		)
+	})
+
 	it('compute_fit_scale is imported from the controls-fit helper module', () => {
 		expect(SOURCE).toMatch(
 			/import\s*\{\s*compute_fit_scale\s*\}\s*from\s*'\$lib\/game-kit\/controls\/controls-fit'/u,
