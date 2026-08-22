@@ -11,6 +11,19 @@ vi.mock('node:fs', () => ({
 	writeFileSync: vi.fn(),
 }))
 vi.mock('node:child_process', () => ({ execSync: vi.fn() }))
+// The git-backed engine has its own real-binary suite (josh-game-merge.test.ts); here only the
+// wiring is under test, so the merge is stubbed. normalize_eol stays real — the CRLF case needs it.
+const merge_three_way_mock = vi.hoisted(() => vi.fn())
+
+vi.mock('./josh-game-merge.ts', () => ({
+	josh_game_merge: {
+		normalize_eol: (text: string) => text.replaceAll('\r\n', '\n'),
+		has_conflict_markers: (text: string) => text.includes('<<<<<<< '),
+		restore_eol: (merged: string, original: string) =>
+			original.includes('\r\n') ? merged.replaceAll('\n', '\r\n') : merged,
+		merge_three_way: merge_three_way_mock,
+	},
+}))
 vi.mock('./josh-game-paths.ts', () => ({
 	josh_game_paths: {
 		PACKAGE_DIR: '/pkg',
@@ -22,6 +35,7 @@ vi.mock('./josh-game-paths.ts', () => ({
 const FREE_FORM_ENTRY = { dest: 'src/routes/layout.css', free_form: true } as const
 const SOURCE_PATH = '/pkg/templates/src/routes/layout.css'
 const DEST_PATH = '/project/src/routes/layout.css'
+const BASELINE_PATH = '/project/.josh-game/baselines/src/routes/layout.css.baseline'
 
 describe('josh_game_sync.sync_free_form_file — never silently overwrite consumer edits (game-kit#375)', () => {
 	beforeEach(() => {
@@ -49,7 +63,7 @@ describe('josh_game_sync.sync_free_form_file — never silently overwrite consum
 		const { josh_game_sync } = await import('./josh-game-sync.ts')
 
 		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
-		expect(cpSync).not.toHaveBeenCalled()
+		expect(cpSync).not.toHaveBeenCalledWith(SOURCE_PATH, DEST_PATH)
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('up-to-date'))
 	})
 
@@ -63,7 +77,7 @@ describe('josh_game_sync.sync_free_form_file — never silently overwrite consum
 		const { josh_game_sync } = await import('./josh-game-sync.ts')
 
 		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
-		expect(cpSync).not.toHaveBeenCalled()
+		expect(cpSync).not.toHaveBeenCalledWith(SOURCE_PATH, DEST_PATH)
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('up-to-date'))
 		expect(console.info).not.toHaveBeenCalledWith(expect.stringContaining('skipped'))
 	})
@@ -94,6 +108,207 @@ describe('josh_game_sync.sync_free_form_file — never silently overwrite consum
 
 		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, true)
 		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, DEST_PATH)
+		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('forced'))
+	})
+})
+
+// The consumer file diverges from BOTH the persisted base and the incoming baseline, which is the
+// only shape that has something to merge: an upstream change to fold into a locally-edited file.
+const MERGEABLE_READS = (file: unknown): string => {
+	if (file === DEST_PATH) return 'base\nlocal edit\n'
+	if (file === BASELINE_PATH) return 'base\n'
+
+	return 'base\nupstream edit\n'
+}
+
+describe('josh_game_sync.sync_free_form_file — 3-way merge of baseline updates (game-kit#384)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		// clearAllMocks keeps implementations, so a return value would leak into the next case.
+		merge_three_way_mock.mockReset()
+		vi.spyOn(console, 'info').mockImplementation(() => {
+			/* no-op */
+		})
+	})
+
+	it('persists the last-synced baseline when it seeds a missing file', async () => {
+		const { existsSync, cpSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(false)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, BASELINE_PATH)
+	})
+
+	it('applies a clean merge to the file and advances the baseline', async () => {
+		const { existsSync, readFileSync, writeFileSync, cpSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation(MERGEABLE_READS)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		merge_three_way_mock.mockReturnValue({ content: 'merged output\n', has_conflicts: false })
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+
+		expect(merge_three_way_mock).toHaveBeenCalledWith({
+			ours: 'base\nlocal edit\n',
+			base: 'base\n',
+			theirs: 'base\nupstream edit\n',
+		})
+		expect(writeFileSync).toHaveBeenCalledWith(DEST_PATH, 'merged output\n', 'utf8')
+		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, BASELINE_PATH)
+		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('merged'))
+	})
+
+	it('writes the conflict markers and reports them instead of skipping or overwriting', async () => {
+		const { existsSync, readFileSync, writeFileSync } = await import('node:fs')
+		const conflicted = '<<<<<<< ours\nlocal edit\n=======\nupstream edit\n>>>>>>> theirs\n'
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation(MERGEABLE_READS)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		merge_three_way_mock.mockReturnValue({ content: conflicted, has_conflicts: true })
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+
+		expect(writeFileSync).toHaveBeenCalledWith(DEST_PATH, conflicted, 'utf8')
+		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('conflict'))
+		expect(console.info).not.toHaveBeenCalledWith(expect.stringContaining('skipped'))
+	})
+
+	it('advances the baseline on a conflicted merge, so resolving in the consumer favour ends it', async () => {
+		const { existsSync, readFileSync, cpSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation(MERGEABLE_READS)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		merge_three_way_mock.mockReturnValue({ content: '<<<<<<< ours\n', has_conflicts: true })
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+
+		// Without this the next sync re-merges the same base and re-marks a file the consumer already
+		// resolved, on every run, with `--force` (which discards the edit) as the only way out.
+		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, BASELINE_PATH)
+	})
+
+	it('refuses to merge on top of markers left by an earlier conflicted run', async () => {
+		const { existsSync, readFileSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation((file) =>
+			file === DEST_PATH ? 'base\n<<<<<<< ours (your edits)\nmine\n' : 'base\n',
+		)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		expect(josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)).toBe(true)
+		expect(merge_three_way_mock).not.toHaveBeenCalled()
+		expect(console.info).toHaveBeenCalledWith(
+			expect.stringContaining('unresolved conflict markers'),
+		)
+	})
+
+	it('writes the merge back with the working copy line endings instead of forcing LF', async () => {
+		const { existsSync, readFileSync, writeFileSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation((file) => {
+			if (file === DEST_PATH) return 'base\r\nlocal edit\r\n'
+			if (file === BASELINE_PATH) return 'base\n'
+
+			return 'base\nupstream edit\n'
+		})
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		merge_three_way_mock.mockReturnValue({ content: 'a\nb\n', has_conflicts: false })
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+
+		expect(writeFileSync).toHaveBeenCalledWith(DEST_PATH, 'a\r\nb\r\n', 'utf8')
+	})
+})
+
+describe('josh_game_sync.sync_free_form_file — merge fallbacks and escape hatches (game-kit#384)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		merge_three_way_mock.mockReset()
+		vi.spyOn(console, 'info').mockImplementation(() => {
+			/* no-op */
+		})
+	})
+
+	it('skips without recording a base when none exists, since the file is not derived from the incoming one', async () => {
+		const { existsSync, readFileSync, writeFileSync, cpSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockImplementation((file) => file !== BASELINE_PATH)
+		vi.mocked(readFileSync).mockImplementation(MERGEABLE_READS)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+
+		expect(merge_three_way_mock).not.toHaveBeenCalled()
+		expect(writeFileSync).not.toHaveBeenCalledWith(DEST_PATH, expect.anything(), expect.anything())
+		expect(cpSync).not.toHaveBeenCalled()
+		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('no merge base recorded yet'))
+	})
+
+	it('reports the git-unavailable skip distinctly from the missing-base skip', async () => {
+		const { existsSync, readFileSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation(MERGEABLE_READS)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		merge_three_way_mock.mockReturnValue(null)
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+
+		expect(console.info).toHaveBeenCalledWith(
+			expect.stringContaining('`git merge-file` unavailable'),
+		)
+	})
+
+	it('signals a conflict to the caller so the sync can refuse to report success', async () => {
+		const { existsSync, readFileSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation(MERGEABLE_READS)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		merge_three_way_mock.mockReturnValue({ content: '<<<<<<< ours\n', has_conflicts: true })
+
+		expect(josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)).toBe(true)
+
+		merge_three_way_mock.mockReturnValue({ content: 'merged\n', has_conflicts: false })
+
+		expect(josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)).toBe(false)
+	})
+
+	it('does not merge when the persisted baseline already matches the incoming one', async () => {
+		const { existsSync, readFileSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation((file) =>
+			file === DEST_PATH ? 'baseline\nlocal edit\n' : 'baseline\n',
+		)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, false)
+
+		expect(merge_three_way_mock).not.toHaveBeenCalled()
+		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('skipped'))
+	})
+
+	it('still overwrites with the pristine baseline under --force, resetting the merge base', async () => {
+		const { existsSync, readFileSync, cpSync } = await import('node:fs')
+
+		vi.mocked(existsSync).mockReturnValue(true)
+		vi.mocked(readFileSync).mockImplementation(MERGEABLE_READS)
+		const { josh_game_sync } = await import('./josh-game-sync.ts')
+
+		josh_game_sync.sync_free_form_file(FREE_FORM_ENTRY, true)
+
+		expect(merge_three_way_mock).not.toHaveBeenCalled()
+		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, DEST_PATH)
+		expect(cpSync).toHaveBeenCalledWith(SOURCE_PATH, BASELINE_PATH)
 		expect(console.info).toHaveBeenCalledWith(expect.stringContaining('forced'))
 	})
 })

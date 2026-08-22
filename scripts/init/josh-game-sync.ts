@@ -1,11 +1,11 @@
 import { execSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { josh_game_cspell_config } from './josh-game-cspell-config.ts'
 import { josh_game_eslint_config } from './josh-game-eslint-config.ts'
 import { josh_game_managed_dev_deps as josh_game_managed_development_deps } from './josh-game-managed-development-deps.ts'
 import { josh_game_paths } from './josh-game-paths.ts'
-import { josh_game_root_files } from './josh-game-root-files.ts'
+import { josh_game_sync_files } from './josh-game-sync-files.ts'
 import { version_range } from './version-range.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
@@ -19,110 +19,14 @@ const JOSH_MISSING_MESSAGE =
 	'   (@joshuafolkken/kit) are not resolvable. Run `pnpm install`, then re-run `josh-game sync`.\n'
 
 const FORCE_FLAG = '--force'
-
-interface SyncEntry {
-	dest: string
-	src?: string
-	// Free-form files carry consumer additions (fonts, styling) alongside the baseline, so an
-	// edited copy is skipped (notice) unless `josh-game sync --force` (game-kit#375). Managed: overwrite.
-	free_form?: boolean
-}
-
-// Files copied from templates/ to the project root on every `josh-game sync` run.
-// Scope: framework / app-shell config that should evolve with game-kit. Scaffold
-// files that projects own and customize (src/lib/<game>/, src/routes/+page.svelte,
-// static/branding, src/lib/game-config.ts) remain init-only. tsconfig.json is
-// intentionally excluded because `pnpm josh init` owns the consumer's tsconfig.json
-// (extends-only, reaching the kit base) — templates/tsconfig.json only type-checks
-// the templates/ directory inside game-kit and must never reach consumers (#326).
-//
-// Consumer tsconfig.json and src/app.d.ts are NOT synced here: app-kit's `josh-app sync`
-// overlay owns them now (#357) — it reconciles tsconfig to app-kit's SvelteKit preset and
-// seeds a Cloudflare-aware app.d.ts. Adding either here would shadow that overlay with a
-// verbatim copy and clobber the app-kit-owned content. src/app.html stays because it is the
-// game's rich shell (loading overlay, version/name placeholders), which intentionally
-// overrides app-kit's generic seeded shell.
-//
-// `src` is used when the source filename inside templates/ must differ from the
-// destination. .npmrc lives at templates/npmrc because npm always strips
-// `.npmrc` from published packages regardless of the package.json `files` field.
-// Byte-identical files (svelte.config.js, src/routes/layout.css) are NOT in templates/:
-// they are sourced directly from the package root via josh_game_root_files — sync_file routes
-// those to PACKAGE_DIR.
-const SYNC_FILES: ReadonlyArray<SyncEntry> = [
-	{ dest: '.npmrc', src: 'npmrc' },
-	{ dest: 'src/app.html' },
-	{ dest: 'src/hooks.server.ts' },
-	{ dest: 'src/lib/html-inject.ts' },
-	{ dest: 'src/routes/+layout.svelte' },
-	// Free-form: consumers add game-specific @font-face / styling here, so it is protected from
-	// silent overwrite (game-kit#375). CRT init moved to a GameScene prop, so +layout.svelte stays managed.
-	{ dest: 'src/routes/layout.css', free_form: true },
-	{ dest: 'svelte.config.js' },
-	{ dest: 'vite.config.ts' },
-]
-
-function sync_source_path(entry: SyncEntry): string {
-	if (josh_game_root_files.is_root_copy_file(entry.dest)) {
-		return path.join(josh_game_paths.PACKAGE_DIR, entry.dest)
-	}
-
-	return path.join(josh_game_paths.TEMPLATES_DIR, entry.src ?? entry.dest)
-}
-
-function copy_synced_file(entry: SyncEntry, destination: string): void {
-	mkdirSync(path.dirname(destination), { recursive: true })
-	cpSync(sync_source_path(entry), destination)
-}
-
-function sync_file(entry: SyncEntry): void {
-	const destination = path.join(josh_game_paths.PROJECT_ROOT, entry.dest)
-
-	copy_synced_file(entry, destination)
-	console.info(`  ✔ synced   ${entry.dest}`)
-}
-
-// Free-form files (e.g. layout.css) may carry consumer additions, so they are never silently
-// overwritten (game-kit#375): missing/pristine is refreshed; a locally-edited copy is skipped.
-function sync_free_form_file(entry: SyncEntry, is_force: boolean): void {
-	const destination = path.join(josh_game_paths.PROJECT_ROOT, entry.dest)
-
-	if (!existsSync(destination)) {
-		copy_synced_file(entry, destination)
-		console.info(`  ✔ synced   ${entry.dest}`)
-
-		return
-	}
-
-	// Normalize EOLs so a CRLF working copy of an LF baseline isn't misread as edited (#375).
-	const current = readFileSync(destination, 'utf8').replaceAll('\r\n', '\n')
-	const incoming = readFileSync(sync_source_path(entry), 'utf8').replaceAll('\r\n', '\n')
-
-	if (current === incoming) {
-		console.info(`  ✔ checked  ${entry.dest} (up-to-date)`)
-
-		return
-	}
-
-	if (is_force) {
-		copy_synced_file(entry, destination)
-		console.info(`  ✔ forced   ${entry.dest} (overwrote local changes)`)
-
-		return
-	}
-
-	console.info(
-		`  ⚠ skipped  ${entry.dest} (local changes; run \`josh-game sync --force\` to overwrite)`,
-	)
-}
-
-function sync_managed_files(is_force: boolean): void {
-	for (const entry of SYNC_FILES) {
-		if (entry.free_form) sync_free_form_file(entry, is_force)
-		else sync_file(entry)
-	}
-}
-
+// A conflicted free-form merge leaves `<<<<<<<` markers in a file the app imports, so the project no
+// longer builds. Reporting `✅ Done.` and exiting 0 would let a scripted upgrade record that as a
+// success; git exits non-zero on a conflicted merge for the same reason, so this does too (#384).
+const CONFLICT_MESSAGE =
+	'\n❌ josh-game sync: conflict markers were left in a free-form file.\n' +
+	'   The project will not build until they are resolved — search for `<<<<<<<`.\n' +
+	'   Resolve them in place; reverting the file discards a merge already recorded as\n' +
+	'   delivered. To start over from the shipped baseline, run `josh-game sync --force`.\n'
 // `src/app.html` is a managed (unconditionally overwritten) entry and carries
 // `%sveltekit.nonce%`, which SvelteKit refuses to render on a PRERENDERED page — a nonce has to
 // change per request, so it hard-fails the build with "Cannot use prerendering if page template
@@ -322,7 +226,7 @@ function sync_managed_development_deps(): void {
 // have fixed the yaml never runs. Pre-syncing pnpm-workspace.yaml here breaks
 // the chicken-and-egg by updating the file before pnpm is invoked.
 function pre_sync_pnpm_workspace_yaml(): void {
-	sync_file({ dest: 'pnpm-workspace.yaml' })
+	josh_game_sync_files.sync_file({ dest: 'pnpm-workspace.yaml' })
 }
 
 function is_josh_resolvable(): boolean {
@@ -367,8 +271,15 @@ function run(argument?: string): void {
 	// from `@joshuafolkken/game-kit/cspell/game` so existing projects pass `josh cspell:dot` (#286).
 	josh_game_cspell_config.write_cspell_config(josh_game_paths.PROJECT_ROOT)
 	console.info('\nGame-specific files:')
-	sync_managed_files(is_force)
+	const conflict_count = josh_game_sync_files.sync_managed_files(is_force)
+
 	warn_prerender_nonce_conflict()
+
+	if (conflict_count > 0) {
+		console.error(CONFLICT_MESSAGE)
+		process.exit(1)
+	}
+
 	console.info('\n✅ Done.\n')
 }
 
@@ -377,10 +288,10 @@ const josh_game_sync = {
 	apply_managed_dev_deps: did_apply_managed_development_deps,
 	remove_legacy_pnpm_field: did_remove_legacy_pnpm_field,
 	is_josh_resolvable,
-	sync_free_form_file,
+	sync_free_form_file: josh_game_sync_files.sync_free_form_file,
 	find_prerendering_routes,
 	// Exposed so the tsconfig-normalization contract test can assert tsconfig.json / app.d.ts are
 	// never managed here (their reconciliation is delegated to the josh-app overlay, #357).
-	SYNC_FILES,
+	SYNC_FILES: josh_game_sync_files.SYNC_FILES,
 }
 export { josh_game_sync }

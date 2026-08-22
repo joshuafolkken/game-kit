@@ -14,6 +14,7 @@ import { josh_game_eslint_config } from './josh-game-eslint-config.ts'
 import { josh_game_managed_dev_deps as josh_game_managed_development_deps } from './josh-game-managed-development-deps.ts'
 import { josh_game_paths } from './josh-game-paths.ts'
 import { josh_game_root_files } from './josh-game-root-files.ts'
+import { josh_game_sync_files } from './josh-game-sync-files.ts'
 
 const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 // templates/tsconfig.json only type-checks the templates/ directory inside game-kit
@@ -285,6 +286,9 @@ function run(game_name_raw?: string): void {
 	write_package_json(names.kebab, project_directory)
 	copy_templates(project_directory)
 	copy_root_files(project_directory)
+	// Record the merge base for free-form files up front (#384). A project customized before its
+	// first `josh-game sync` would otherwise have no base to merge from, and stay frozen there.
+	josh_game_sync_files.seed_baselines(project_directory)
 	write_npmrc(project_directory)
 	write_game_config(names, project_directory)
 	execSync('git init', opts)
