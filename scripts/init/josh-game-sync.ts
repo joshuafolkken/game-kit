@@ -276,8 +276,12 @@ function run(argument?: string): void {
 	warn_prerender_nonce_conflict()
 
 	if (conflict_count > 0) {
+		// `process.exit` can truncate a piped stderr mid-flush, which in CI leaves a bare exit 1 with
+		// none of the recovery instructions above. Setting the code and returning lets Node drain it.
 		console.error(CONFLICT_MESSAGE)
-		process.exit(1)
+		process.exitCode = 1
+
+		return
 	}
 
 	console.info('\n✅ Done.\n')

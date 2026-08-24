@@ -15,6 +15,16 @@ const BASELINE_DIR = '.josh-game/baselines'
 // consumer's .prettierignore, so an extension the formatters skip beats an ignore entry upstream.
 const BASELINE_SUFFIX = '.baseline'
 
+const MISSING_BASE_REASON = 'local changes, no merge base recorded yet'
+const UNUSABLE_BASE_REASON = 'local changes, the recorded merge base is empty or unreadable'
+const NO_GIT_REASON = 'local changes, `git merge-file` unavailable'
+
+interface BaselineRead {
+	content: string | null
+	// Names which no-base case applies when content is null, so the notice can say which one.
+	reason: string
+}
+
 interface SyncEntry {
 	dest: string
 	src?: string
@@ -42,9 +52,10 @@ interface SyncEntry {
 // `src` is used when the source filename inside templates/ must differ from the
 // destination. .npmrc lives at templates/npmrc because npm always strips
 // `.npmrc` from published packages regardless of the package.json `files` field.
-// Byte-identical files (svelte.config.js, src/routes/layout.css) are NOT in templates/:
-// they are sourced directly from the package root via josh_game_root_files — sync_file routes
-// those to PACKAGE_DIR.
+// `svelte.config.js` is the one entry NOT in templates/: it is byte-identical to the repo-root
+// file and carries no template-only import, so `josh_game_root_files.ROOT_COPY_FILES` lists it and
+// sync_file routes it to PACKAGE_DIR. Everything else here, layout.css included, comes from
+// templates/ (see template-source-logic.ts for why import-coupled copies stay there).
 const SYNC_FILES: ReadonlyArray<SyncEntry> = [
 	{ dest: '.npmrc', src: 'npmrc' },
 	{ dest: 'src/app.html' },
@@ -85,12 +96,22 @@ function baseline_path(entry: SyncEntry, project_directory: string): string {
 // Announced on first write only: the directory is created silently by an otherwise unremarkable
 // sync, and a consumer who leaves it uncommitted loses the merge base on the next clone — landing
 // back on "no merge base recorded yet", whose only exit discards the edits this feature preserves.
+// Never fatal. The baseline is a record for the NEXT sync, not part of delivering this one, and the
+// file itself has already been written by the time this runs — so a read-only `.josh-game/` must
+// not abort the loop and leave the entries after this one un-synced. Losing the record degrades to
+// the documented no-base skip, which the read side already handles.
 function seed_baseline(entry: SyncEntry, project_directory: string): void {
 	const destination = baseline_path(entry, project_directory)
 	const is_first_write = !existsSync(destination)
 
-	mkdirSync(path.dirname(destination), { recursive: true })
-	cpSync(sync_source_path(entry), destination)
+	try {
+		mkdirSync(path.dirname(destination), { recursive: true })
+		cpSync(sync_source_path(entry), destination)
+	} catch {
+		console.info(`  ⚠ skipped  ${BASELINE_DIR}/${entry.dest}${BASELINE_SUFFIX} (not writable)`)
+
+		return
+	}
 
 	if (is_first_write) {
 		console.info(`  ✔ recorded ${BASELINE_DIR}/${entry.dest}${BASELINE_SUFFIX} (commit it)`)
@@ -110,12 +131,43 @@ function persist_baseline(entry: SyncEntry): void {
 	seed_baseline(entry, josh_game_paths.PROJECT_ROOT)
 }
 
-function read_baseline(entry: SyncEntry): string | null {
+function read_baseline_content(source: string): string | null {
+	try {
+		return readFileSync(source, 'utf8')
+	} catch {
+		return null
+	}
+}
+
+// Only a record with content is a merge base. An empty one — a truncated write, or a botched merge
+// of the baseline file itself — would make git read every line as added by both sides and write a
+// whole-file conflict over a working file, and an unreadable one would throw out of the whole sync.
+// Both degrade to skip-with-notice, but they are reported apart from a base that was never written:
+// one is repaired by re-recording, the other by fixing the file, and the notice has to say which.
+function read_baseline(entry: SyncEntry): BaselineRead {
 	const source = baseline_path(entry, josh_game_paths.PROJECT_ROOT)
 
-	if (!existsSync(source)) return null
+	if (!existsSync(source)) return { content: null, reason: MISSING_BASE_REASON }
 
-	return josh_game_merge.normalize_eol(readFileSync(source, 'utf8'))
+	const content = read_baseline_content(source)
+
+	if (content === null || content.length === 0) {
+		return { content: null, reason: UNUSABLE_BASE_REASON }
+	}
+
+	return { content: josh_game_merge.normalize_eol(content), reason: '' }
+}
+
+// Only reached with no upstream change to apply, so `--force` is deliberately NOT suggested here:
+// the difference is the consumer's own edit, and taking the pristine baseline would destroy it for
+// nothing. This is the steady state of every customized project and is reported as such.
+function report_free_form_up_to_date(entry: SyncEntry): void {
+	console.info(`  ✔ checked  ${entry.dest} (local changes; baseline already applied)`)
+}
+
+// No `--force` hint: forcing writes to the same path and fails the same way, so it would mislead.
+function report_free_form_write_failure(entry: SyncEntry): void {
+	console.info(`  ⚠ skipped  ${entry.dest} (merged, but the file could not be written)`)
 }
 
 function report_free_form_skip(entry: SyncEntry, reason: string): void {
@@ -139,8 +191,18 @@ interface FreeFormState {
 // way to resolve a conflict — leaving `--force`, which discards that very edit, as the only exit.
 // The cost is that `git checkout -- <file>` after a conflict discards a merge the base records as
 // delivered; the notice below points at resolving the markers instead, and `--force` re-syncs both.
+// The write is guarded for the same reason `seed_baseline` and `merge_three_way` are: a read-only
+// file or a full disk is an environment problem, and letting it escape would abort the loop with a
+// raw stack and leave the entries after this one un-synced. Nothing landed, so the base stays put.
 function apply_merge(entry: SyncEntry, state: FreeFormState, result: MergeResult): boolean {
-	writeFileSync(state.destination, josh_game_merge.restore_eol(result.content, state.raw), 'utf8')
+	try {
+		writeFileSync(state.destination, josh_game_merge.restore_eol(result.content, state.raw), 'utf8')
+	} catch {
+		report_free_form_write_failure(entry)
+
+		return false
+	}
+
 	persist_baseline(entry)
 
 	if (result.has_conflicts) {
@@ -169,30 +231,31 @@ function merge_free_form_file(entry: SyncEntry, state: FreeFormState): boolean {
 
 	const base = read_baseline(entry)
 
-	// An already-edited file from before #384. Recording the incoming baseline here would be a lie —
-	// the file is not derived from it — and the next merge would read this run's skipped hunks as
-	// consumer deletions and drop them under a `✔ merged`. A base is only ever recorded for content
-	// the file provably matches, so this case stays frozen until `--force` establishes one.
-	if (base === null) {
-		report_free_form_skip(entry, 'local changes, no merge base recorded yet')
+	// An already-edited file from before #384, or a record that cannot serve as a base. Recording the
+	// incoming baseline here would be a lie — the file is not derived from it — and the next merge
+	// would read this run's skipped hunks as consumer deletions and drop them under a `✔ merged`. A
+	// base is only ever recorded for content the file provably matches, so this stays frozen until
+	// `--force` establishes one.
+	if (base.content === null) {
+		report_free_form_skip(entry, base.reason)
 
 		return false
 	}
 
-	if (base === state.incoming) {
-		report_free_form_skip(entry, 'local changes, baseline already up-to-date')
+	if (base.content === state.incoming) {
+		report_free_form_up_to_date(entry)
 
 		return false
 	}
 
 	const result = josh_game_merge.merge_three_way({
 		ours: state.current,
-		base,
+		base: base.content,
 		theirs: state.incoming,
 	})
 
 	if (result === null) {
-		report_free_form_skip(entry, 'local changes, `git merge-file` unavailable')
+		report_free_form_skip(entry, NO_GIT_REASON)
 
 		return false
 	}
