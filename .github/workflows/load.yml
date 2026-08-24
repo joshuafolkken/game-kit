@@ -1,3 +1,5 @@
+# josh-managed-workflow: @joshuafolkken/app-kit
+# Overwritten on every sync of that package. Edit it there, not here.
 # Distributed by @joshuafolkken/app-kit (`josh-app sync` copies this to .github/workflows/load.yml).
 #
 # Deliberately a SEPARATE workflow file, never an edit to .github/workflows/ci.yml: kit
