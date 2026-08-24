@@ -34,6 +34,8 @@ const COMMAND_HANDLERS: Record<string, (argument?: string) => void | Promise<voi
 	init: josh_game_init.run,
 	sync: josh_game_sync.run,
 	version: run_version,
+	// The key is the CLI command name users type, so it cannot be renamed to satisfy the format.
+	// eslint-disable-next-line @typescript-eslint/naming-convention -- public CLI command name
 	'version:upgrade': run_version_upgrade,
 }
 

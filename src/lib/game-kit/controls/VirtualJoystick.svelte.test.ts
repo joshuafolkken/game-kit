@@ -39,7 +39,7 @@ function setup_threlte_dom(): { dom: HTMLDivElement; canvas: HTMLCanvasElement }
 
 function setup_touch_device(): void {
 	beforeEach(() => {
-		// eslint-disable-next-line unicorn/prefer-add-event-listener -- direct property assignment is the standard pattern for stubbing a touch-detection sentinel
+		// eslint-disable-next-line unicorn/prefer-add-event-listener, unicorn/no-global-object-property-assignment -- direct property assignment is the standard pattern for stubbing a touch-detection sentinel
 		;(globalThis as typeof globalThis & { ontouchstart: null }).ontouchstart = null
 	})
 

@@ -191,7 +191,7 @@ function build_global_upgrade_command(context?: UpstreamHookContext): string {
 // visible test-guarded change): the fresh-root command pins game-kit at a version that is typically
 // already installed, and the canonical broken state is exactly that — game-kit at latest, the bundled
 // app-kit / kit stale. Opting in would suppress the one command that repairs it.
-const IS_GLOBAL_UPGRADE_COMMAND_PINNED = false
+const is_global_upgrade_command_pinned = false
 
 function build_app_kit_upstream(
 	self_directory: string,
@@ -201,7 +201,7 @@ function build_app_kit_upstream(
 		package_name: APP_KIT_PACKAGE_NAME,
 		resolve_effective_version: make_app_kit_effective_resolver(self_directory, resolve_effective),
 		resolve_global_upgrade_command: build_global_upgrade_command,
-		is_global_upgrade_command_pinned: IS_GLOBAL_UPGRADE_COMMAND_PINNED,
+		is_global_upgrade_command_pinned,
 	}
 }
 
@@ -214,7 +214,7 @@ function build_kit_upstream(
 		...kit_descriptor,
 		resolve_effective_version: make_kit_effective_resolver(self_directory, resolve_effective),
 		resolve_global_upgrade_command: build_global_upgrade_command,
-		is_global_upgrade_command_pinned: IS_GLOBAL_UPGRADE_COMMAND_PINNED,
+		is_global_upgrade_command_pinned,
 	}
 }
 
