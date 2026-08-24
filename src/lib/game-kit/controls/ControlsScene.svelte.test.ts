@@ -651,9 +651,14 @@ describe('ControlsScene keyboard row spacing — WASD lowered so ASD↔Space gap
 		const asd_to_space = EXPECTED_SPACE_ROW_Y - asd_bottom
 		const space_to_esc = EXPECTED_ESC_ROW_Y - space_bottom
 
+		/* eslint-disable sonarjs/no-trivial-assertions -- both gaps are derived from layout constants, so
+		   the rule constant-folds them and calls the comparison trivial. The design invariant that the two
+		   independently-derived gaps stay equal is exactly what this test guards; asserting it any other
+		   way would be weaker. */
 		expect(asd_to_space).toBe(EXPECTED_ASD_TO_SPACE_GAP)
 		expect(space_to_esc).toBe(EXPECTED_SPACE_TO_ESC_GAP)
 		expect(asd_to_space).toBe(space_to_esc)
+		/* eslint-enable sonarjs/no-trivial-assertions */
 	})
 })
 

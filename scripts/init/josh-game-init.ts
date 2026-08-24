@@ -23,6 +23,10 @@ const SPAWN_OPTIONS = { stdio: 'inherit' as const }
 // its compilerOptions would survive the kit's extends-merge and contradict the base
 // (e.g. noEmitOnError). See #326.
 const TSCONFIG_FILE_NAME = 'tsconfig.json'
+// Local rather than shared with the other readers of this file name: `josh_game_paths` is a directory
+// seam every scaffolder test replaces wholesale, so a name behind it would have to be re-declared in
+// each mock — more copies of the literal, not fewer (#372).
+const PACKAGE_JSON_FILE_NAME = 'package.json'
 const GAME_KIT_PACKAGE_NAME = '@joshuafolkken/game-kit'
 // npm strips `.npmrc` from published packages regardless of the `files` field,
 // so the template is shipped under a non-dotfile name and renamed on copy.
@@ -92,7 +96,7 @@ function derive_names(raw: string): GameNames {
 }
 
 function read_game_kit_package(): GameKitPackage {
-	const raw = readFileSync(path.join(josh_game_paths.PACKAGE_DIR, 'package.json'), 'utf8')
+	const raw = readFileSync(path.join(josh_game_paths.PACKAGE_DIR, PACKAGE_JSON_FILE_NAME), 'utf8')
 
 	return JSON.parse(raw) as GameKitPackage
 }
@@ -199,7 +203,10 @@ function generate_game_config(names: GameNames): string {
 }
 
 function write_package_json(game_name: string, project_directory: string): void {
-	writeFileSync(path.join(project_directory, 'package.json'), generate_package_json(game_name))
+	writeFileSync(
+		path.join(project_directory, PACKAGE_JSON_FILE_NAME),
+		generate_package_json(game_name),
+	)
 	console.info('  ✔ wrote    package.json')
 }
 
