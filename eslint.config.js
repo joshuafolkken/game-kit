@@ -41,8 +41,7 @@ const TEST_SIZE_CAPS = {
 const FILE_IGNORES = ['templates/**/*.config.*', 'scripts/__fixtures__/**', 'eslint/game.js']
 
 // scripts/ (CLI) sit outside the SvelteKit tsconfig, so point ESLint at scripts/tsconfig.json for
-// type-aware rules. no-duplicate-string + naming-convention off: path/fixture strings and Node/external
-// names are inherent glue, not first-party smells (#240).
+// type-aware rules. Rule relaxations live one tier down, on the test files that need them (#372).
 const SCRIPTS_TYPED = {
 	files: ['scripts/**/*.ts'],
 	languageOptions: {
@@ -51,6 +50,17 @@ const SCRIPTS_TYPED = {
 			tsconfigRootDir: import.meta.dirname,
 		},
 	},
+}
+
+// #240 relaxed these across all of scripts/ because path/fixture strings and Node/external names are
+// inherent CLI glue. That reasoning holds, but the reports do not spread the way the glob assumed:
+// 158 of 161 naming-convention reports and 68 of 69 duplicate-string reports come from test files,
+// where `vi.mock` destructures Node's camelCase API (`readFileSync`, `execSync`), fixtures key objects
+// by package specifier (`@sveltejs/kit`), and path literals repeat by the dozen. Applied to the whole
+// tree the relaxation also stopped checking first-party names in the CLI source itself, so it is
+// scoped to the tests that need it — the four source reports it had been hiding are fixed (#372).
+const SCRIPTS_TESTS_EXTERNAL_NAMES = {
+	files: ['scripts/**/*.test.ts'],
 	rules: {
 		'sonarjs/no-duplicate-string': 'off',
 		'@typescript-eslint/naming-convention': 'off',
@@ -97,20 +107,23 @@ const TEMPLATES_ROUTES = {
 // rules that the #358 stop-gaps blanket-disabled. C2 (#364) removed those blanket disables: the
 // consistent-boolean-name and no-top-level-assignment-in-function false positives were fixed at
 // the source (boolean-name renames + closure-factory singletons, mirroring create_game_state),
-// so only the two genuinely-unfixable test-file relaxations below remain.
+// so only the genuinely-unfixable test-file relaxation below remains (#372 took the count from
+// three to one).
 
-// Test files assert exact, deterministic config constants via vitest matchers (`toBe(0.05)`),
-// which `no-floating-point-equality` misreads as fragile float `===`; `no-trivial-assertions`
-// misreads design-invariant equality checks (two independently-derived gaps must match) — both
-// would force weaker assertions. Browser-context mocks also assign global properties
-// (matchMedia / dispatchEvent stubs) by design. These are generic testing idioms, not game
-// specifics, so an app-kit preset uplift could absorb them later; relax for test/e2e files only.
+// Test files assert exact, deterministic config constants via vitest matchers (`toBe(0.05)`), which
+// `no-floating-point-equality` misreads as fragile float `===`; suppressing it any other way would
+// force weaker assertions. It stays a config entry because it reports 49 times across 13 files — a
+// generic vitest idiom rather than a game specific, so an app-kit preset uplift could absorb it and
+// let this entry go (#372 phase 2).
+//
+// `no-trivial-assertions` (3 reports, 1 file) and `unicorn/no-global-object-property-assignment`
+// (2 reports, 2 files) used to sit here too. At that volume a tree-wide `off` bought nothing a
+// directive cannot, and it stopped either rule from catching a genuinely trivial assertion or an
+// unintended global write anywhere else, so both moved to the call sites (#372).
 const TEST_NEW_RULE_RELAXATIONS = {
 	files: ['**/*.test.ts', '**/*.spec.ts', '**/*.e2e.ts', 'src/routes/e2e-helpers.ts'],
 	rules: {
 		'sonarjs/no-floating-point-equality': 'off',
-		'sonarjs/no-trivial-assertions': 'off',
-		'unicorn/no-global-object-property-assignment': 'off',
 	},
 }
 
@@ -122,6 +135,7 @@ export default create_sveltekit_config({
 	{ ignores: FILE_IGNORES },
 	{ rules: PERMANENT_OVERRIDES },
 	SCRIPTS_TYPED,
+	SCRIPTS_TESTS_EXTERNAL_NAMES,
 	SCRIPTS_TESTS_UNTYPED_MOCKS,
 	TEMPLATES_NON_TYPED,
 	// After TEMPLATES_NON_TYPED so template route files keep the no-restricted-syntax relaxation.

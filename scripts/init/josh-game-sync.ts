@@ -153,37 +153,37 @@ function did_apply_required_dependency_ranges(
 }
 
 // Writes the reconciled `dependencies` back, dropping the field entirely when it has
-// emptied out (so a move never leaves a bare `"dependencies": {}`). Mutates `package_`.
+// emptied out (so a move never leaves a bare `"dependencies": {}`). Mutates `consumer_package`.
 function reconcile_dependencies_field(
-	package_: ConsumerPackage,
+	consumer_package: ConsumerPackage,
 	dependencies: Record<string, string>,
 ): void {
 	if (Object.keys(dependencies).length > 0) {
-		package_.dependencies = dependencies
+		consumer_package.dependencies = dependencies
 
 		return
 	}
 
-	delete package_.dependencies
+	delete consumer_package.dependencies
 }
 
-// Mutates `package_` so every managed dep lives only in devDependencies. A managed dep
+// Mutates `consumer_package` so every managed dep lives only in devDependencies. A managed dep
 // already pinned under devDependencies keeps that range (it wins over the runtime copy).
 function did_apply_managed_development_deps(
-	package_: ConsumerPackage,
+	consumer_package: ConsumerPackage,
 	required: Record<string, string>,
 ): boolean {
-	const dependencies = package_.dependencies ?? {}
+	const dependencies = consumer_package.dependencies ?? {}
 	const { moved, remaining } = partition_runtime_required_deps(dependencies, required)
-	const development_deps = { ...moved, ...package_.devDependencies }
+	const development_deps = { ...moved, ...consumer_package.devDependencies }
 	const is_applied = did_apply_required_dependency_ranges(
 		development_deps,
 		required,
 		josh_game_managed_development_deps.read_peer_floors_from_kit(),
 	)
 
-	package_.devDependencies = development_deps
-	reconcile_dependencies_field(package_, remaining)
+	consumer_package.devDependencies = development_deps
+	reconcile_dependencies_field(consumer_package, remaining)
 
 	return Object.keys(moved).length > 0 || is_applied
 }
@@ -191,10 +191,10 @@ function did_apply_managed_development_deps(
 // pnpm >= 11 no longer reads the package.json `pnpm` field (settings live in
 // pnpm-workspace.yaml) and WARNs on every command while it lingers. Once sync has
 // written the workspace yaml, the legacy field is dead weight — remove it (#323).
-function did_remove_legacy_pnpm_field(package_: ConsumerPackage): boolean {
-	if (!('pnpm' in package_)) return false
+function did_remove_legacy_pnpm_field(consumer_package: ConsumerPackage): boolean {
+	if (!('pnpm' in consumer_package)) return false
 
-	delete package_.pnpm
+	delete consumer_package.pnpm
 
 	return true
 }
@@ -203,10 +203,10 @@ function did_remove_legacy_pnpm_field(package_: ConsumerPackage): boolean {
 function sync_managed_development_deps(): void {
 	const package_path = path.join(josh_game_paths.PROJECT_ROOT, 'package.json')
 	const raw = readFileSync(package_path, 'utf8')
-	const package_ = JSON.parse(raw) as ConsumerPackage
+	const consumer_package = JSON.parse(raw) as ConsumerPackage
 	const required = josh_game_managed_development_deps.read_required_deps_from_kit()
-	const is_dependencies_changed = did_apply_managed_development_deps(package_, required)
-	const is_pnpm_removed = did_remove_legacy_pnpm_field(package_)
+	const is_dependencies_changed = did_apply_managed_development_deps(consumer_package, required)
+	const is_pnpm_removed = did_remove_legacy_pnpm_field(consumer_package)
 
 	if (!is_dependencies_changed && !is_pnpm_removed) {
 		console.info('  ✔ checked  package.json devDependencies (up-to-date)')
@@ -214,7 +214,7 @@ function sync_managed_development_deps(): void {
 		return
 	}
 
-	writeFileSync(package_path, `${JSON.stringify(package_, null, '\t')}\n`)
+	writeFileSync(package_path, `${JSON.stringify(consumer_package, null, '\t')}\n`)
 	console.info('  ✔ synced   package.json devDependencies')
 }
 
