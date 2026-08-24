@@ -129,13 +129,16 @@ describe('josh_game_init.generate_package_json', () => {
 
 	it('emits only the game-specific scripts; the Cloudflare lifecycle is owned by app-kit (#357)', async () => {
 		// build_scripts now emits ONLY the game layer (preinstall/dev/build/josh-game/josh).
-		// The Cloudflare lifecycle (preview / prepare / prepare:* / gen / gen:pre) moved to
+		// The Cloudflare lifecycle (dev / preview / prepare / prepare:* / gen / gen:pre) moved to
 		// app-kit's `josh-app init` overlay, so it must be absent from the initial package.json.
 		const { josh_game_init } = await import('./josh-game-init.ts')
 		const result = JSON.parse(josh_game_init.generate_package_json('my-game'))
 
 		expect(result.scripts.preinstall).toBe('pnpm dlx @aikidosec/safe-chain setup-ci')
-		expect(result.scripts.dev).toBe('vite dev')
+		// `dev` joined app-kit's MANAGED_SCRIPT_KEYS in 0.81.0 (app-kit#188): kit's playwright.config.ts
+		// waits for `webServer` on `5173 + PORT_SEED`, so a scaffolded `vite dev` binding 5173 lost the
+		// whole E2E suite to a timeout on any machine with a seed set (#438).
+		expect(result.scripts.dev).toBeUndefined()
 		expect(result.scripts.build).toBe('vite build')
 		expect(result.scripts['josh-game']).toBe('josh-game')
 		expect(result.scripts.josh).toBe('josh')

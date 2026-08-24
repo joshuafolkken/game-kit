@@ -15,7 +15,7 @@ By participating you agree to abide by the [Code of Conduct](./CODE_OF_CONDUCT.m
 gh repo fork joshuafolkken/game-kit --clone
 cd game-kit
 pnpm install
-pnpm dev          # dev server at http://localhost:5173
+pnpm dev          # dev server on the port it prints (5173 by default; `PORT_SEED` shifts it)
 ```
 
 The repository ships a complete reference game (a Simon-style memory game) under [`templates/`](./templates/), built on every library export. Running the dev server exercises it.
