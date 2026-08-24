@@ -469,6 +469,24 @@ describe('josh_game_init.run', () => {
 	})
 })
 
+describe('josh_game_init.run free-form merge baseline (#384)', () => {
+	beforeEach(setup_run_mocks)
+
+	it('records the free-form merge base inside the new project, not the parent directory', async () => {
+		const { cpSync } = await import('node:fs')
+		const { josh_game_init } = await import('./josh-game-init.ts')
+
+		josh_game_init.run('My Game')
+
+		// Seeding at init is what keeps a project customized before its first sync mergeable (#384);
+		// pointed at PROJECT_ROOT instead of the scaffold, it would record nothing usable.
+		expect(cpSync).toHaveBeenCalledWith(
+			'/pkg/templates/src/routes/layout.css',
+			'/project/my-game/.josh-game/baselines/src/routes/layout.css.baseline',
+		)
+	})
+})
+
 describe('josh_game_init.run preflight guard (#273)', () => {
 	// Clear accumulated mock-call history so `not.toHaveBeenCalled()` assertions see a
 	// clean slate (the other run() tests share the same vi.fn instances across the file).

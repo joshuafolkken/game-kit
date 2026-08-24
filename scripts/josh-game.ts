@@ -6,7 +6,8 @@ import { josh_game_sync } from './init/josh-game-sync.ts'
 import { josh_game_version } from './version/josh-game-version.ts'
 
 // `[name]` is the init project name; `sync` accepts `--force` to overwrite locally-modified
-// free-form files (e.g. layout.css) instead of skipping them (game-kit#375).
+// free-form files (e.g. layout.css) with the pristine baseline, instead of 3-way merging the
+// baseline update into them (game-kit#384).
 const USAGE = 'Usage: josh-game <init|sync|version|v|version:upgrade|vu> [name|--force]'
 
 const COMMAND_ARG_INDEX = 2
