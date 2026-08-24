@@ -54,7 +54,7 @@ cd my-game
 pnpm dev
 ```
 
-Open http://localhost:5173.
+Open the URL `pnpm dev` prints — http://localhost:5173 unless a personal `PORT_SEED` in `.env` shifts it (`5173 + PORT_SEED`, so several kit projects can run at once).
 
 To publish the project to a private GitHub repo right away:
 

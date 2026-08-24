@@ -119,7 +119,7 @@ function build_development_engines(
 	}
 }
 
-// Only the game-specific scripts. The Cloudflare lifecycle (`preview`, `prepare`,
+// Only the game-specific scripts. The Cloudflare lifecycle (`dev`, `preview`, `prepare`,
 // `prepare:gen`, `prepare:sync`, `prepare:lefthook`, `prepare:gh-packages`, `gen`,
 // `gen:pre`) is owned by app-kit and merged in by `josh-app init`'s overlay (#357,
 // app-kit#27) — game-kit no longer redefines those keys. They are absent from this
@@ -127,10 +127,14 @@ function build_development_engines(
 // run before `josh-app init` seeds wrangler.jsonc; the overlay adds the lifecycle
 // afterward, and a later install runs the (fail-loud) `prepare:gen` against the now-valid
 // seeded config (app-kit#56).
+//
+// `dev` joined that set in app-kit 0.81.0 (app-kit#188). kit's playwright.config.ts waits for
+// `webServer` on `5173 + PORT_SEED`, so a scaffolded `vite dev` binding 5173 lost the whole E2E
+// suite to a timeout on any machine with a seed set. Redefining it here would be a verbatim copy
+// of app-kit's canonical value with nothing keeping the two in step (#438).
 function build_scripts(): Record<string, string> {
 	return {
 		preinstall: 'pnpm dlx @aikidosec/safe-chain setup-ci',
-		dev: 'vite dev',
 		build: 'vite build',
 		'josh-game': 'josh-game',
 		josh: 'josh',
