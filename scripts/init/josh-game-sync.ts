@@ -83,10 +83,10 @@ interface ConsumerPackage {
 	[key: string]: unknown
 }
 
-// The Cloudflare managed-scripts (preview / prepare / prepare:* / gen / gen:pre) are no
+// The Cloudflare managed-scripts (dev / preview / prepare / prepare:* / gen / gen:pre) are no
 // longer owned here: app-kit's `josh-app sync` overlay syncs them into the consumer's
-// package.json (#357, app-kit#27). josh-game only manages the game-specific devDependencies
-// below.
+// package.json (#357, app-kit#27; `dev` joined the set in app-kit 0.81.0, app-kit#188).
+// josh-game only manages the game-specific devDependencies below.
 
 // A consumer that listed a managed dep under runtime `dependencies` (e.g. mnemecha with
 // @threlte/core / three) must end up with it ONLY in devDependencies — never the same

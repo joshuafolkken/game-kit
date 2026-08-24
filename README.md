@@ -16,7 +16,7 @@ Svelte + [Threlte](https://threlte.xyz/) component library and CLI scaffold for 
 gh auth login --scopes read:packages   # see docs/authentication.md for the full setup
 pnpm add -g @joshuafolkken/game-kit
 josh-game init my-game
-cd my-game && pnpm dev                  # open http://localhost:5173
+cd my-game && pnpm dev                  # open the URL it prints (http://localhost:5173 by default)
 ```
 
 ## Documentation

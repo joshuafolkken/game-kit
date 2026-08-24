@@ -25,6 +25,19 @@ const SUBPATH_INTRODUCED_IN: Readonly<Record<string, string>> = {
 	'@joshuafolkken/app-kit/security': '0.38.0',
 }
 
+// The floor has a second driver: a capability game-kit stopped providing on the grounds that app-kit
+// provides it. That is the same class of hard requirement as an imported subpath — below the
+// recorded version the consumer gets neither side of it — but it is invisible to the scan above,
+// because nothing in the shipped surface names it.
+//
+// `dev` joined app-kit's MANAGED_SCRIPT_KEYS in 0.81.0 (app-kit#188), so `josh-app`'s overlay seeds
+// the `PORT_SEED`-aware value. game-kit's scaffolder stopped emitting its own `dev` in #438 rather
+// than keep a verbatim copy of that value in step by hand. On an older app-kit neither writes it,
+// and a scaffolded game has no `dev` script at all.
+const CAPABILITY_INTRODUCED_IN: Readonly<Record<string, string>> = {
+	'managed `dev` script (app-kit#188)': '0.81.0',
+}
+
 const APP_KIT_SUBPATH_REGEX = /@joshuafolkken\/app-kit\/[a-z0-9/-]+/gu
 const SCANNED_EXTENSIONS = new Set(['.ts', '.js', '.svelte', '.html'])
 
@@ -78,11 +91,14 @@ const package_json = JSON.parse(
 	readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'),
 ) as PackageJsonShape
 
-// The newest introduction version across every recorded subpath — the floor game-kit must declare.
+// The newest introduction version across every recorded requirement — the floor game-kit must
+// declare. Exact equality is asserted below, so a floor above this is over-declaring and fails too.
 const required_floor =
-	Object.values(SUBPATH_INTRODUCED_IN).toSorted(version_range.compare).at(-1) ?? ''
+	[...Object.values(SUBPATH_INTRODUCED_IN), ...Object.values(CAPABILITY_INTRODUCED_IN)]
+		.toSorted(version_range.compare)
+		.at(-1) ?? ''
 
-describe('app-kit peerDependencies floor covers what templates/ imports (#416)', () => {
+describe('app-kit peerDependencies floor covers what game-kit needs from app-kit (#416, #438)', () => {
 	it('declares a floor no lower than the newest subpath requirement', () => {
 		expect(package_json.peerDependencies?.['@joshuafolkken/app-kit']).toBe(`>=${required_floor}`)
 	})
