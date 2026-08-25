@@ -19,6 +19,18 @@ const JOSH_MISSING_MESSAGE =
 	'   (@joshuafolkken/kit) are not resolvable. Run `pnpm install`, then re-run `josh-game sync`.\n'
 
 const FORCE_FLAG = '--force'
+
+const PACKAGE_JSON_NAME = 'package.json'
+
+function self_sync_message(name: string): string {
+	return (
+		`\n❌ josh-game sync: this is the ${name} repository, not a consumer project.\n` +
+		'   Syncing here would copy templates/ over the root files they are generated from.\n' +
+		'   Run `pnpm josh-app sync` instead — game-kit consumes kit and app-kit, and that is the\n' +
+		'   command that refreshes the files those two own.\n'
+	)
+}
+
 // A conflicted free-form merge leaves `<<<<<<<` markers in a file the app imports, so the project no
 // longer builds. Reporting `✅ Done.` and exiting 0 would let a scripted upgrade record that as a
 // success; git exits non-zero on a conflicted merge for the same reason, so this does too (#384).
@@ -201,7 +213,7 @@ function did_remove_legacy_pnpm_field(consumer_package: ConsumerPackage): boolea
 
 // Must run BEFORE pnpm so the preflight install picks up new devDeps (#184 self-heal).
 function sync_managed_development_deps(): void {
-	const package_path = path.join(josh_game_paths.PROJECT_ROOT, 'package.json')
+	const package_path = path.join(josh_game_paths.PROJECT_ROOT, PACKAGE_JSON_NAME)
 	const raw = readFileSync(package_path, 'utf8')
 	const consumer_package = JSON.parse(raw) as ConsumerPackage
 	const required = josh_game_managed_development_deps.read_required_deps_from_kit()
@@ -252,7 +264,57 @@ function delegate_to_josh_app(): void {
 	execSync('pnpm josh-app sync', SPAWN_OPTIONS)
 }
 
+// The package name declared in `directory`, or null when it cannot be read. Unreadable is never
+// treated as a match: a project without a package.json is not the one this command ships from.
+function read_package_name(directory: string): string | null {
+	try {
+		const raw = readFileSync(path.join(directory, PACKAGE_JSON_NAME), 'utf8')
+		const parsed: unknown = JSON.parse(raw)
+
+		if (typeof parsed !== 'object' || parsed === null) return null
+
+		const { name } = parsed as { name?: unknown }
+
+		return typeof name === 'string' ? name : null
+	} catch {
+		return null
+	}
+}
+
+// The name when the project being synced IS the package doing the syncing, else null.
+//
+// `sync` distributes `templates/` INTO a consumer, but in the distributing repository the root files
+// are the sources those templates are generated from (see scripts/templates/reconcile-templates.ts,
+// "Reconcile … against their root sources"), so the same copy runs backwards over the originals.
+//
+// Both names are read at runtime rather than compared against a literal: a hardcoded name is a copy
+// that a rename can leave behind, and the failure mode of a stale copy here is the guard silently
+// not firing — the exact damage it exists to prevent, reported as success.
+function resolve_self_sync_name(): string | null {
+	const distributing = read_package_name(josh_game_paths.PACKAGE_DIR)
+
+	if (distributing === null) return null
+
+	return read_package_name(josh_game_paths.PROJECT_ROOT) === distributing ? distributing : null
+}
+
+// Refuses before anything is written. Every other guard in this file protects one file; this one
+// protects the repository, and it has to come first because `sync_managed_development_deps`
+// rewrites package.json before any other step runs.
+function did_refuse_self_sync(): boolean {
+	const self_name = resolve_self_sync_name()
+
+	if (self_name === null) return false
+
+	console.error(self_sync_message(self_name))
+	process.exitCode = 1
+
+	return true
+}
+
 function run(argument?: string): void {
+	if (did_refuse_self_sync()) return
+
 	const is_force = argument === FORCE_FLAG
 
 	console.info('\n🔄 josh-game sync\n')
@@ -289,6 +351,7 @@ function run(argument?: string): void {
 
 const josh_game_sync = {
 	run,
+	resolve_self_sync_name,
 	apply_managed_dev_deps: did_apply_managed_development_deps,
 	remove_legacy_pnpm_field: did_remove_legacy_pnpm_field,
 	is_josh_resolvable,
