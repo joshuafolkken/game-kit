@@ -20,6 +20,12 @@ pnpm dev          # dev server on the port it prints (5173 by default; `PORT_SEE
 
 The repository ships a complete reference game (a Simon-style memory game) under [`templates/`](./templates/), built on every library export. Running the dev server exercises it.
 
+### Refreshing managed config
+
+Use `pnpm josh-app sync`. game-kit consumes kit and app-kit, and that command refreshes the files those two own.
+
+**Never run `pnpm josh-game sync` here.** That command distributes `templates/` _into_ a consumer project, but in this repository the root files are the sources those templates are generated from (see [`scripts/templates/reconcile-templates.ts`](./scripts/templates/reconcile-templates.ts)), so it copies the generated files back over their own sources. It once cost this repo its entire ESLint profile and the `pnpm-workspace.yaml` overrides. The command now detects this repository and refuses, but the right command is still the one above.
+
 ## Coding conventions
 
 This project uses **non-standard conventions enforced by ESLint** — match them or lint will fail:

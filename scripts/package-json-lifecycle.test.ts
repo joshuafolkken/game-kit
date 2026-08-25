@@ -10,6 +10,7 @@ const PACKAGE_JSON_PATH = path.join(
 )
 
 interface PackageJsonShape {
+	name: string
 	scripts: Record<string, string | undefined>
 	devDependencies?: Record<string, string | undefined>
 	bin?: Record<string, string | undefined>
@@ -94,5 +95,34 @@ describe('package.json lifecycle scripts', () => {
 	it('exposes the CLI as josh-game and no longer as jgame (#365)', () => {
 		expect(package_.bin?.['josh-game']).toBe('dist/scripts/josh-game.js')
 		expect(package_.bin?.jgame).toBeUndefined()
+	})
+})
+
+describe('package.json self-invocation of the josh-game CLI (#447)', () => {
+	it('runs the source in this repository rather than whatever is on PATH', () => {
+		// game-kit is not its own dependency, so pnpm links no `josh-game` into node_modules/.bin and
+		// `pnpm josh-game` falls through to a global install. A stale global (0.187.0) once ran `sync`
+		// here and overwrote the eslint profile and the pnpm-workspace.yaml overrides. kit and app-kit
+		// both point their own CLI at their source for exactly this reason.
+		expect(package_.scripts['josh-game']).toBe('tsx scripts/josh-game.ts')
+	})
+})
+
+describe('the sync guard resolves its own package directory to this checkout (#447)', () => {
+	it('points PACKAGE_DIR at this repository, from source and from the bundle alike', async () => {
+		// The guard compares the package.json at PACKAGE_DIR with the one at PROJECT_ROOT. The mocked
+		// suite covers that comparison; the half it cannot cover is whether PACKAGE_DIR really lands on
+		// this package — from `scripts/init/../..` when run from source and from `dist/scripts/../..`
+		// when run from the bundle. Deriving it wrongly would leave that suite green and disarm the
+		// guard here.
+		//
+		// PROJECT_ROOT is process.cwd(), so it is deliberately not asserted: that would pin where
+		// vitest was started rather than anything about this checkout.
+		const { josh_game_paths } = await import('./init/josh-game-paths.ts')
+		const own_package = JSON.parse(
+			readFileSync(path.join(josh_game_paths.PACKAGE_DIR, 'package.json'), 'utf8'),
+		) as PackageJsonShape
+
+		expect(own_package.name).toBe(package_.name)
 	})
 })
